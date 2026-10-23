@@ -17,7 +17,27 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initData(AccountRepository accountRepository, DataSource dataSource) {
         return args -> {
-            if (accountRepository.findByUsername("samkimchheng").isEmpty()) {
+            // 1. Schema migration: Ensure active column exists in account table
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS \"ACTIVE\" BOOLEAN DEFAULT TRUE");
+                stmt.execute("ALTER TABLE IF EXISTS account ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE");
+                stmt.execute("UPDATE account SET active = TRUE WHERE active IS NULL");
+                stmt.execute("ALTER TABLE IF EXISTS exam ALTER COLUMN class_name SET DATA TYPE VARCHAR(1000)");
+            } catch (Exception e) {
+                System.err.println(">>> [DataInitializer] Schema migration notice: " + e.getMessage());
+            }
+
+            // 2. Check if samkimchheng exists, if not restore from data_dump.sql
+            boolean needRestore = false;
+            try {
+                needRestore = accountRepository.findByUsername("samkimchheng").isEmpty();
+            } catch (Exception e) {
+                System.err.println(">>> [DataInitializer] Query failed, will trigger restore: " + e.getMessage());
+                needRestore = true;
+            }
+
+            if (needRestore) {
                 System.out.println(">>> [DataInitializer] Restoring full database for samkimchheng and all teachers...");
                 try (Connection conn = dataSource.getConnection();
                      Statement stmt = conn.createStatement()) {
@@ -38,7 +58,7 @@ public class DataInitializer {
                 }
             }
 
-            // Ensure all lessons are set to គ្រប់ថ្នាក់ so all classes can access them
+            // 3. Ensure all lessons are set to គ្រប់ថ្នាក់ so all classes can access them
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
                 stmt.executeUpdate("UPDATE lessons SET class_name = 'គ្រប់ថ្នាក់' WHERE class_name = '១០A' OR class_name = '10A'");
