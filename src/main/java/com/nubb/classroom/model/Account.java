@@ -15,6 +15,7 @@ public class Account {
     private String password;
     private String role; // "ADMIN" or "TEACHER"
     private String fullName;
+    private Boolean active = true;
 
     public Account() {}
 
@@ -23,6 +24,15 @@ public class Account {
         this.password = password;
         this.role = role;
         this.fullName = fullName;
+        this.active = true;
+    }
+
+    public Account(String username, String password, String role, String fullName, Boolean active) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.fullName = fullName;
+        this.active = active != null ? active : true;
     }
 
     // Getters and setters
@@ -40,4 +50,8 @@ public class Account {
     
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public Boolean getActive() { return active != null ? active : true; }
+    public void setActive(Boolean active) { this.active = active; }
+    public boolean isActive() { return active != null && active; }
 }

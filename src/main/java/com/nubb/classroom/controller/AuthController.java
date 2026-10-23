@@ -45,6 +45,10 @@ public class AuthController {
         
         if (accOpt.isPresent() && accOpt.get().getPassword().equals(password)) {
             Account acc = accOpt.get();
+            if (Boolean.FALSE.equals(acc.getActive())) {
+                model.addAttribute("error", "គណនីនេះត្រូវបានផ្អាក ឬបិទសិទ្ធិជាបណ្តោះអាសន្ន! សូមទាក់ទង Admin។");
+                return "login";
+            }
             session.setAttribute("ACCOUNT_ID", acc.getId());
             session.setAttribute("ACCOUNT_ROLE", acc.getRole());
             session.setAttribute("ACCOUNT_NAME", acc.getFullName());

@@ -39,6 +39,14 @@ public class AuthInterceptor implements HandlerInterceptor {
                             Optional<Account> accOpt = accountRepository.findById(accountId);
                             if (accOpt.isPresent()) {
                                 Account acc = accOpt.get();
+                                if (Boolean.FALSE.equals(acc.getActive())) {
+                                    Cookie clr = new Cookie("REMEMBER_ACCOUNT_ID", "");
+                                    clr.setMaxAge(0);
+                                    clr.setPath("/");
+                                    response.addCookie(clr);
+                                    response.sendRedirect("/login?disabled=true");
+                                    return false;
+                                }
                                 session.setAttribute("ACCOUNT_ID", acc.getId());
                                 session.setAttribute("ACCOUNT_ROLE", acc.getRole());
                                 session.setAttribute("ACCOUNT_NAME", acc.getFullName());
@@ -101,6 +109,18 @@ public class AuthInterceptor implements HandlerInterceptor {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
             response.sendRedirect("/login");
+            return false;
+        }
+
+        // Verify account is still active (not disabled by admin)
+        Optional<Account> currentAccOpt = accountRepository.findById(accountId);
+        if (currentAccOpt.isPresent() && Boolean.FALSE.equals(currentAccOpt.get().getActive())) {
+            session.invalidate();
+            Cookie clr = new Cookie("REMEMBER_ACCOUNT_ID", "");
+            clr.setMaxAge(0);
+            clr.setPath("/");
+            response.addCookie(clr);
+            response.sendRedirect("/login?disabled=true");
             return false;
         }
         

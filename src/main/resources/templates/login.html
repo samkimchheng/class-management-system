@@ -89,6 +89,7 @@
         </div>
         
         <div th:if="${error}" class="error-msg" th:text="${error}"></div>
+        <div th:if="${param.disabled}" class="error-msg">គណនីនេះត្រូវបានផ្អាក ឬបិទសិទ្ធិជាបណ្តោះអាសន្ន! សូមទាក់ទង Admin។</div>
         
         <form th:action="@{/login}" method="post">
             <div class="form-group">
