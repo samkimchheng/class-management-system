@@ -211,7 +211,6 @@
                 <form id="filterForm" action="/lessons" method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
                     <select name="className" class="form-control" style="width: auto;" onchange="document.getElementById('filterForm').submit()">
                         <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">-- ថ្នាក់រៀនទាំងអស់ --</option>
-                        <option value="គ្រប់ថ្នាក់" th:selected="${selectedClass == 'គ្រប់ថ្នាក់'}">🌟 មេរៀនរៀនរួមគ្នា (គ្រប់ថ្នាក់)</option>
                         <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
                     </select>
 
@@ -373,18 +372,31 @@
                     <input type="text" id="title" name="title" class="form-control" placeholder="ឧទាហរណ៍: Lesson 1: Greetings and Introduction" required>
                 </div>
 
-                <div style="display: flex; gap: 15px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label for="className">ថ្នាក់រៀន <span style="color:red;">*</span></label>
-                        <select id="className" name="className" class="form-control" required>
-                            <option value="គ្រប់ថ្នាក់">🌟 គ្រប់ថ្នាក់ (រៀនរួមគ្នា - All Classes)</option>
-                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}"></option>
-                        </select>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 2; min-width: 280px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                            ជ្រើសរើសថ្នាក់រៀនសម្រាប់មេរៀននេះ <span style="color:red;">*</span>
+                            <span style="font-size: 0.85rem; font-weight: normal; color: #64748b;">(អាចគូសធីកបានច្រើនថ្នាក់)</span>
+                        </label>
+                        <input type="hidden" id="className" name="className" required>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; background: #f8fafc; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; min-height: 44px; align-items: center;">
+                            <label th:each="c : ${myClassrooms}" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 0.95rem; margin: 0; user-select: none;">
+                                <input type="checkbox" th:value="${c.className}" class="class-checkbox" style="width: 17px; height: 17px; cursor: pointer;">
+                                <span th:text="${c.className}"></span>
+                            </label>
+                            <span th:if="${#lists.isEmpty(myClassrooms)}" style="color: #ef4444; font-size: 0.9rem;">
+                                មិនទាន់មានថ្នាក់រៀន (សូមបង្កើតថ្នាក់រៀនជាមុនសិន)
+                            </span>
+                        </div>
+                        <div style="margin-top: 6px; display: flex; gap: 8px;">
+                            <button type="button" onclick="toggleAllClasses(true)" style="font-size: 0.75rem; padding: 3px 8px; background: #e2e8f0; color: #334155; border: none; border-radius: 4px; cursor: pointer; font-family: inherit;">✓ ជ្រើសរើសទាំងអស់</button>
+                            <button type="button" onclick="toggleAllClasses(false)" style="font-size: 0.75rem; padding: 3px 8px; background: #e2e8f0; color: #334155; border: none; border-radius: 4px; cursor: pointer; font-family: inherit;">✕ ដោះធីកទាំងអស់</button>
+                        </div>
                     </div>
 
-                    <div class="form-group" style="flex: 1;">
-                        <label for="subjectName">មុខវិជ្ជា <span style="color:red;">*</span></label>
-                        <select id="subjectName" name="subjectName" class="form-control" required>
+                    <div class="form-group" style="flex: 1; min-width: 180px;">
+                        <label for="subjectName" style="font-weight: 600;">មុខវិជ្ជា <span style="color:red;">*</span></label>
+                        <select id="subjectName" name="subjectName" class="form-control" required style="height: 44px;">
                             <option value="ភាសាខ្មែរ">ភាសាខ្មែរ</option>
                             <option value="គណិតវិទ្យា">គណិតវិទ្យា</option>
                             <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស</option>
@@ -447,10 +459,16 @@
                 .replace(/'/g, '&#39;');
         }
 
+        function toggleAllClasses(checked) {
+            document.querySelectorAll('.class-checkbox').forEach(cb => cb.checked = checked);
+        }
+
         function openAddModal() {
             document.getElementById('modalTitle').innerText = 'បង្កើតមេរៀនថ្មី (មាន Transcripts ៣-៤)';
             document.getElementById('lessonForm').reset();
             document.getElementById('lessonId').value = '';
+            document.getElementById('className').value = '';
+            document.querySelectorAll('.class-checkbox').forEach(cb => cb.checked = false);
             document.getElementById('transcriptsList').innerHTML = '';
             transcriptCount = 0;
 
@@ -525,7 +543,12 @@
             document.getElementById('modalTitle').innerText = 'កែប្រែមេរៀន និង Transcripts';
             document.getElementById('lessonId').value = lessonId;
             document.getElementById('title').value = btn.getAttribute('data-title') || '';
-            document.getElementById('className').value = btn.getAttribute('data-class') || '';
+            const rawClass = btn.getAttribute('data-class') || '';
+            document.getElementById('className').value = rawClass;
+            const classesArray = rawClass.split(',').map(s => s.trim());
+            document.querySelectorAll('.class-checkbox').forEach(cb => {
+                cb.checked = classesArray.includes(cb.value.trim());
+            });
             document.getElementById('subjectName').value = btn.getAttribute('data-subject') || '';
             document.getElementById('content').value = btn.getAttribute('data-content') || '';
             document.getElementById('khmerContent').value = btn.getAttribute('data-khmer') || '';
@@ -555,8 +578,21 @@
 
         async function saveLesson(e) {
             e.preventDefault();
+            const checkedBoxes = Array.from(document.querySelectorAll('.class-checkbox:checked'));
+            if (checkedBoxes.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'សូមជ្រើសរើសថ្នាក់រៀន!',
+                    text: 'សូមគូសធីកជ្រើសរើសថ្នាក់រៀនយ៉ាងហោចណាស់មួយ។'
+                });
+                return;
+            }
+            const selectedClasses = checkedBoxes.map(cb => cb.value.trim()).join(', ');
+            document.getElementById('className').value = selectedClasses;
+
             const form = document.getElementById('lessonForm');
             const formData = new FormData(form);
+            formData.set('className', selectedClasses);
 
             try {
                 const res = await fetch('/api/lessons/save', {

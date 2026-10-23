@@ -12,13 +12,13 @@ import java.util.List;
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
     List<Lesson> findByAccountId(Long accountId);
 
-    @Query("SELECT l FROM Lesson l WHERE l.accountId = :accountId AND (l.className = :className OR l.className = 'គ្រប់ថ្នាក់' OR l.className = 'ថ្នាក់រៀនទាំងអស់')")
+    @Query("SELECT l FROM Lesson l WHERE l.accountId = :accountId AND (l.className = :className OR l.className LIKE CONCAT('%', :className, '%'))")
     List<Lesson> findByClassNameAndAccountId(@Param("className") String className, @Param("accountId") Long accountId);
 
-    @Query("SELECT l FROM Lesson l WHERE l.accountId = :accountId AND l.subjectName = :subjectName AND (l.className = :className OR l.className = 'គ្រប់ថ្នាក់' OR l.className = 'ថ្នាក់រៀនទាំងអស់')")
+    @Query("SELECT l FROM Lesson l WHERE l.accountId = :accountId AND l.subjectName = :subjectName AND (l.className = :className OR l.className LIKE CONCAT('%', :className, '%'))")
     List<Lesson> findByClassNameAndSubjectNameAndAccountId(@Param("className") String className, @Param("subjectName") String subjectName, @Param("accountId") Long accountId);
 
-    @Query("SELECT l FROM Lesson l WHERE l.className = :className OR l.className = 'គ្រប់ថ្នាក់' OR l.className = 'ថ្នាក់រៀនទាំងអស់'")
+    @Query("SELECT l FROM Lesson l WHERE l.className = :className OR l.className LIKE CONCAT('%', :className, '%')")
     List<Lesson> findByClassNameForStudent(@Param("className") String className);
 
     List<Lesson> findByClassName(String className);
