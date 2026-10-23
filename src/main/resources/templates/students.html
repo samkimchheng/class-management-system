@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>បញ្ជីឈ្មោះសិស្ស - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
+    <style>
+        .sticky-col {
+            position: sticky;
+            background-color: white;
+        }
+        thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f8fafc;
+            z-index: 2;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        thead .sticky-col {
+            z-index: 4;
+        }
+        tbody .sticky-col {
+            z-index: 1;
+        }
+        .sticky-col.last-sticky {
+            border-right: 2px solid #cbd5e1;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        tbody tr:hover .sticky-col {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/" class="nav-link">ទំព័រដើម</a></li>
+            <li class="nav-item"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
+            <li class="nav-item active"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន 📚</a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
+            <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍</a></li>
+          </ul>
+          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                  
+            <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
+            <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
+              </ul>
+          </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h3>បញ្ជីឈ្មោះសិស្សតាមថ្នាក់</h3>
+        </div>
+
+        <div class="content">
+            <div class="table-container">
+                <div class="header-action">
+                    <div>
+                        <form action="/students" method="get" id="filterForm">
+                            <select name="className" class="form-control" style="width: auto; display: inline-block;" onchange="document.getElementById('filterForm').submit();">
+                                <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
+                                <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                            </select>
+                        </form>
+                    </div>
+                    <a th:href="@{/student/add}" class="btn btn-primary">+ បន្ថែមសិស្សថ្មី</a>
+                </div>
+                
+                <div style="overflow: auto; max-height: 70vh; border: 1px solid var(--border); border-radius: 8px;">
+                <table style="border-collapse: separate; border-spacing: 0;">
+                    <thead>
+                        <tr>
+                            <th class="sticky-col" style="width: 50px; min-width: 50px; left: 0px; white-space: nowrap;">ល.រ</th>
+                            <th class="sticky-col" style="width: 180px; min-width: 180px; left: 50px; white-space: nowrap;">ឈ្មោះសិស្ស</th>
+                            <th class="sticky-col last-sticky" style="width: 70px; min-width: 70px; left: 230px; white-space: nowrap;">ភេទ</th>
+                            <th style="min-width: 100px; white-space: nowrap;">ថ្នាក់ទី</th>
+                            <th style="min-width: 120px; white-space: nowrap;">ភូមិ</th>
+                            <th style="min-width: 120px; white-space: nowrap;">ឃុំ</th>
+                            <th style="min-width: 120px; white-space: nowrap;">ស្រុក</th>
+                            <th style="min-width: 120px; white-space: nowrap;">ខេត្ត</th>
+                            <th style="min-width: 150px; white-space: nowrap;">ឈ្មោះឪពុក</th>
+                            <th style="min-width: 120px; white-space: nowrap;">មុខរបរ (ឪពុក)</th>
+                            <th style="min-width: 150px; white-space: nowrap;">ឈ្មោះម្តាយ</th>
+                            <th style="min-width: 120px; white-space: nowrap;">មុខរបរ (ម្តាយ)</th>
+                            <th style="min-width: 120px; white-space: nowrap;">លេខកូដប្រឡង</th>
+                            <th style="min-width: 120px; white-space: nowrap;">ស្ថានភាព</th>
+                            <th style="min-width: 120px; white-space: nowrap;">សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="student, iterStat : ${students}">
+                            <td class="sticky-col" style="left: 0px;" th:text="${iterStat.count}">១</td>
+                            <td class="sticky-col" style="left: 50px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${student.name}">ឈ្មោះសិស្ស</td>
+                            <td class="sticky-col last-sticky" style="left: 230px;" th:text="${student.gender}">ភេទ</td>
+                            <td th:text="${student.className}" style="white-space: nowrap;">ថ្នាក់ទី</td>
+                            <td th:text="${student.village}"></td>
+                            <td th:text="${student.commune}"></td>
+                            <td th:text="${student.district}"></td>
+                            <td th:text="${student.province}"></td>
+                            <td th:text="${student.fatherName}"></td>
+                            <td th:text="${student.fatherOccupation}"></td>
+                            <td th:text="${student.motherName}"></td>
+                            <td th:text="${student.motherOccupation}"></td>
+                            <td th:text="${student.studentCode}" style="font-weight: bold; color: var(--primary);"></td>
+                            <td th:text="${student.status}"></td>
+                            <td style="white-space: nowrap;">
+                                <div style="display: flex; gap: 5px;">
+                                    <a th:href="@{/student/edit/{id}(id=${student.id})}" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem; background-color: var(--warning); color: white; text-decoration: none;">កែប្រែ</a>
+                                    <form th:action="@{/student/delete/{id}(id=${student.id})}" method="post" style="display:inline; margin:0;">
+                                        <button type="submit" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem; background-color: var(--danger); color: white; border: none; cursor: pointer;">លុប</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន - Dashboard</title>
+    <!-- Google Fonts for Khmer OS Battambang -->
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active"><a href="/" class="nav-link">ទំព័រដើម</a></li>
+            <li class="nav-item"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
+            <li class="nav-item"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន 📚</a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
+            <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍</a></li>
+          </ul>
+          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                  
+            <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
+            <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
+              </ul>
+          </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="topbar">
+            <h3>ទំព័រដើម (Dashboard)</h3>
+            <div>
+                <span>អ្នកប្រើប្រាស់: គ្រូបង្រៀន</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="header-action" style="margin-bottom: 20px;">
+                <select name="className" class="form-control" style="width: auto;" onchange="window.location.href = '/?className=' + this.value;">
+                    <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
+                    <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                </select>
+            </div>
+            <div class="card-grid">
+                <div class="card">
+                    <h3>សិស្សសរុប</h3>
+                    <div class="value" th:text="${totalStudents} + ' នាក់'">៤២ នាក់</div>
+                    <div style="font-size: 1.1rem; color: #666; margin-top: 8px;" th:text="'ស្រី៖ ' + ${totalFemale} + ' នាក់'">ស្រី៖ ២០ នាក់</div>
+                </div>
+                <div class="card">
+                    <h3>វត្តមានថ្ងៃនេះ</h3>
+                    <div class="value" style="color: var(--success)" th:text="${presentToday} + ' នាក់'">៣៩ នាក់</div>
+                    <div style="font-size: 1.1rem; color: #666; margin-top: 8px;" th:text="'ស្រី៖ ' + ${presentFemale} + ' នាក់'">ស្រី៖ ១៨ នាក់</div>
+                </div>
+                <div class="card">
+                    <h3>អវត្តមានថ្ងៃនេះ</h3>
+                    <div class="value" style="color: var(--danger)" th:text="${absentToday} + ' នាក់'">៣ នាក់</div>
+                    <div style="font-size: 1.1rem; color: #666; margin-top: 8px;" th:text="'ស្រី៖ ' + ${absentFemale} + ' នាក់'">ស្រី៖ ២ នាក់</div>
+                </div>
+
+            </div>
+
+            <div class="table-container">
+                <div class="header-action">
+                    <h3>បញ្ជីសិស្សអវត្តមានថ្មីៗ</h3>
+                    <button class="btn btn-primary">មើលទាំងអស់</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ល.រ</th>
+                            <th style="white-space: nowrap;">ឈ្មោះសិស្ស</th>
+                            <th>ភេទ</th>
+                            <th>ថ្នាក់</th>
+                            <th>កាលបរិច្ឆេទ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="attendance, iterStat : ${recentAbsents}">
+                            <td th:text="${iterStat.count}">១</td>
+                            <td th:text="${attendance.student.name}">ឈ្មោះសិស្ស</td>
+                            <td th:text="${attendance.student.gender}">ភេទ</td>
+                            <td th:text="${attendance.student.className}">ថ្នាក់</td>
+                            <td th:text="${#temporals.format(attendance.date, 'dd-MM-yyyy')}">កាលបរិច្ឆេទ</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentAbsents)}">
+                            <td colspan="5" style="text-align: center;">មិនមានសិស្សអវត្តមានទេថ្ងៃនេះ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

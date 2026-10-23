@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន - មើលមេរៀន</title>
+    <!-- Google Fonts for Khmer OS Battambang -->
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .lesson-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .lesson-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .badge-class { background-color: #e0f2fe; color: #0369a1; }
+        .badge-subject { background-color: #fef3c7; color: #b45309; }
+        
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e2e8f0;
+            border-radius: 10px;
+            height: 14px;
+            overflow: hidden;
+            margin: 12px 0;
+            position: relative;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+        .progress-text {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin-top: 8px;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        /* Transcript Tabs & Cards */
+        .transcript-container {
+            margin-top: 15px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .transcript-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Khmer Translation Box */
+        .khmer-translation-box {
+            display: none;
+            margin-top: 10px;
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-left: 4px solid #10b981;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #064e3b;
+            white-space: pre-wrap;
+        }
+
+        .btn-translate {
+            background: #e0e7ff;
+            color: #3730a3;
+            border: 1px solid #c7d2fe;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+        .btn-translate:hover {
+            background: #c7d2fe;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 800px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        .ts-box {
+            background: #f1f5f9;
+            border: 1px dashed #94a3b8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+                <span th:if="${session.loggedInStudent != null}">សួស្តី, <b th:text="${session.loggedInStudent.name}">សិស្ស</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/" class="nav-link">ទំព័រដើម</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
+            <li class="nav-item active"><a href="/lessons" class="nav-link">មើលមេរៀន 📚</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/report" class="nav-link">របាយការណ៍</a></li>
+            <li class="nav-item" th:if="${session.loggedInStudent != null}"><a href="/test/take" class="nav-link">ផ្ទាំងប្រឡងសិស្ស 📝</a></li>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
+                <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
+                <li class="nav-item" th:if="${session.loggedInStudent != null}"><a href="/test/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Student Logout) 🚪</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="topbar">
+            <h3>មើលមេរៀន (Study Lessons) 📚</h3>
+            <div>
+                <span th:if="${isStudent}">អ្នកប្រើប្រាស់: សិស្សសាលា</span>
+                <span th:if="${!isStudent}">អ្នកប្រើប្រាស់: គ្រូបង្រៀន</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Action Header & Filter -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                <form id="filterForm" action="/lessons" method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                    <select name="className" class="form-control" style="width: auto;" onchange="document.getElementById('filterForm').submit()">
+                        <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">-- ថ្នាក់រៀនទាំងអស់ --</option>
+                        <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                    </select>
+
+                    <select name="subjectName" class="form-control" style="width: auto;" onchange="document.getElementById('filterForm').submit()">
+                        <option value="មុខវិជ្ជាទាំងអស់" th:selected="${selectedSubject == null or selectedSubject == 'មុខវិជ្ជាទាំងអស់'}">-- មុខវិជ្ជាទាំងអស់ --</option>
+                        <option value="ភាសាខ្មែរ" th:selected="${selectedSubject == 'ភាសាខ្មែរ'}">ភាសាខ្មែរ</option>
+                        <option value="គណិតវិទ្យា" th:selected="${selectedSubject == 'គណិតវិទ្យា'}">គណិតវិទ្យា</option>
+                        <option value="ភាសាអង់គ្លេស" th:selected="${selectedSubject == 'ភាសាអង់គ្លេស'}">ភាសាអង់គ្លេស</option>
+                        <option value="រូបវិទ្យា" th:selected="${selectedSubject == 'រូបវិទ្យា'}">រូបវិទ្យា</option>
+                        <option value="គីមីវិទ្យា" th:selected="${selectedSubject == 'គីមីវិទ្យា'}">គីមីវិទ្យា</option>
+                        <option value="ជីវៈវិទ្យា" th:selected="${selectedSubject == 'ជីវៈវិទ្យា'}">ជីវៈវិទ្យា</option>
+                        <option value="ប្រវត្តិវិទ្យា" th:selected="${selectedSubject == 'ប្រវត្តិវិទ្យា'}">ប្រវត្តិវិទ្យា</option>
+                        <option value="ភូមិវិទ្យា" th:selected="${selectedSubject == 'ភូមិវិទ្យា'}">ភូមិវិទ្យា</option>
+                        <option value="សីលធម៌" th:selected="${selectedSubject == 'សីលធម៌'}">សីលធម៌</option>
+                        <option value="ផែនដី" th:selected="${selectedSubject == 'ផែនដី'}">ផែនដី</option>
+                        <option value="កីឡា" th:selected="${selectedSubject == 'កីឡា'}">កីឡា</option>
+                    </select>
+                </form>
+
+                <button th:if="${!isStudent}" class="btn btn-primary" onclick="openAddModal()">➕ បង្កើតមេរៀនថ្មី (មាន Transcripts ៣-៤)</button>
+            </div>
+
+            <!-- Lessons List -->
+            <div id="lessonsList">
+                <div th:each="lesson, lessonStat : ${lessons}" class="lesson-card" th:id="'lesson-card-' + ${lesson.id}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <span class="badge badge-class" th:text="${lesson.className}">ថ្នាក់</span>
+                            <span class="badge badge-subject" th:text="${lesson.subjectName}">មុខវិជ្ជា</span>
+                            <h3 style="margin: 10px 0 5px 0; color: var(--dark);" th:text="${lesson.title}">ចំណងជើងមេរៀន</h3>
+                        </div>
+                        
+                        <!-- Teacher Controls -->
+                        <div th:if="${!isStudent}" style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" 
+                                    th:data-id="${lesson.id}"
+                                    th:data-title="${lesson.title}"
+                                    th:data-class="${lesson.className}"
+                                    th:data-subject="${lesson.subjectName}"
+                                    th:data-content="${lesson.content}"
+                                    th:data-khmer="${lesson.khmerContent}"
+                                    th:data-audio="${lesson.audioUrl}"
+                                    onclick="editLesson(this)">✏️ កែប្រែ</button>
+                            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.85rem; background-color: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer;" 
+                                    th:onclick="'deleteLesson(' + ${lesson.id} + ')'">🗑️ លុប</button>
+                        </div>
+                    </div>
+
+                    <!-- Progress Percentage Display -->
+                    <div style="margin-top: 15px;">
+                        <div class="progress-text">
+                            <span>ភាគរយរៀនសូត្រ (Study Progress):</span>
+                            <span th:id="'progress-badge-' + ${lesson.id}" 
+                                  style="color: var(--primary); font-size: 1rem;" 
+                                  th:text="${progressMap.get(lesson.id)} + '% ' + (${completedMap.get(lesson.id)} ? '✅ រៀនចប់' : '📖 កំពុងរៀន')">
+                                0%
+                            </span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" th:id="'progress-bar-' + ${lesson.id}" 
+                                 th:style="'width: ' + ${progressMap.get(lesson.id)} + '%;'"></div>
+                        </div>
+                    </div>
+
+                    <!-- Main Audio Player (if present) -->
+                    <div th:if="${lesson.audioUrl != null and !lesson.audioUrl.isEmpty()}" style="margin-top: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <label style="font-weight: bold; font-size: 0.9rem; color: #475569; display: flex; align-items: center; gap: 6px;">
+                            🎵 សំឡេងមេរៀនទូទៅ (Main MP3 Audio):
+                        </label>
+                        <audio class="audio-player" controls preload="metadata" th:data-lesson-id="${lesson.id}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
+                            <source th:src="${lesson.audioUrl}" type="audio/mpeg">
+                        </audio>
+                    </div>
+
+                    <!-- Main Content (if present) -->
+                    <div th:if="${lesson.content != null and !lesson.content.isEmpty()}" style="margin-top: 15px;">
+                        <div th:id="'main-content-text-' + ${lesson.id}" style="background: #fafafa; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary); white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;" th:text="${lesson.content}">
+                        </div>
+
+                        <!-- Translate Button for Main Content -->
+                        <button class="btn-translate" th:data-khmer="${lesson.khmerContent != null ? lesson.khmerContent : ''}" th:onclick="'toggleKhmerTranslation(\'main-content-text-' + ${lesson.id} + '\', \'khmer-box-main-' + ${lesson.id} + '\', this)'">
+                            🌐 បកប្រែជាភាសាខ្មែរ (Translate to Khmer)
+                        </button>
+                        <div th:id="'khmer-box-main-' + ${lesson.id}" class="khmer-translation-box"></div>
+                    </div>
+
+                    <!-- Multiple Transcripts Section (3 to 4 Transcripts) -->
+                    <div th:if="${transcriptsMap.get(lesson.id) != null and !#lists.isEmpty(transcriptsMap.get(lesson.id))}" class="transcript-container">
+                        <h4 style="margin: 0 0 12px 0; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                            🎙️ Transcripts / អត្ថបទស្ដាប់ (<span th:text="${#lists.size(transcriptsMap.get(lesson.id))}">3</span> អត្ថបទ):
+                        </h4>
+
+                        <div th:each="ts, stat : ${transcriptsMap.get(lesson.id)}" class="transcript-item">
+                            <div style="font-weight: bold; color: var(--primary); font-size: 1.05rem; margin-bottom: 8px;">
+                                <span>អត្ថបទទី <span th:text="${stat.count}">1</span>: </span>
+                                <span th:text="${ts.title}">ចំណងជើង Transcript</span>
+                            </div>
+
+                            <!-- Audio Player for this Transcript -->
+                            <div th:if="${ts.audioUrl != null and !ts.audioUrl.isEmpty()}" style="margin-bottom: 10px;">
+                                <audio class="audio-player" controls preload="metadata" th:data-lesson-id="${lesson.id}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
+                                    <source th:src="${ts.audioUrl}" type="audio/mpeg">
+                                </audio>
+                            </div>
+
+                            <!-- Script / Content Text for this Transcript -->
+                            <div th:if="${ts.content != null and !ts.content.isEmpty()}">
+                                <div th:id="'ts-content-text-' + ${ts.id}" style="background: #f8fafc; padding: 12px; border-radius: 6px; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; border: 1px solid #e2e8f0;" th:text="${ts.content}">
+                                </div>
+
+                                <!-- Translate Button for Transcript -->
+                                <button class="btn-translate" th:data-khmer="${ts.khmerContent != null ? ts.khmerContent : ''}" th:onclick="'toggleKhmerTranslation(\'ts-content-text-' + ${ts.id} + '\', \'khmer-box-ts-' + ${ts.id} + '\', this)'">
+                                    🌐 បកប្រែជាភាសាខ្មែរ (Translate to Khmer)
+                                </button>
+                                <div th:id="'khmer-box-ts-' + ${ts.id}" class="khmer-translation-box"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons & Lesson Navigation -->
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <button th:if="${!lessonStat.first}" class="btn btn-secondary" style="background-color: #64748b; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" th:onclick="'navigateToLesson(' + (${lessonStat.index} - 1) + ')'">
+                                👈 មេរៀនមុន (Previous Lesson)
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-success" style="background-color: var(--success); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;" th:onclick="'markCompleted(' + ${lesson.id} + ', ' + ${lessonStat.index} + ')'">
+                                ✅ រៀនចប់ ១០០% (Mark Complete)
+                            </button>
+                            <button th:if="${!lessonStat.last}" class="btn btn-primary" style="background-color: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" th:onclick="'navigateToLesson(' + (${lessonStat.index} + 1) + ')'">
+                                ⏭️ មេរៀនបន្ត (Next Lesson)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(lessons)}" style="text-align: center; padding: 50px; background: white; border-radius: var(--radius); color: #64748b;">
+                    <h3>មិនទាន់មានមេរៀននៅក្នុងប្រព័ន្ធនៅឡើយទេ</h3>
+                    <p style="margin-top: 8px;">សូមចុចប៊ូតុង "បង្កើតមេរៀនថ្មី" ដើម្បីបន្ថែមមេរៀន និង Transcripts ៣-៤ សម្រាប់សិស្សរៀន។</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Create / Edit Lesson -->
+    <div id="lessonModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+                <h3 id="modalTitle" style="margin: 0; color: var(--dark);">បង្កើតមេរៀនថ្មី (មាន Transcripts ៣-៤)</h3>
+                <span onclick="closeModal()" style="font-size: 1.5rem; cursor: pointer; color: #94a3b8;">&times;</span>
+            </div>
+            
+            <form id="lessonForm" onsubmit="saveLesson(event)" enctype="multipart/form-data">
+                <input type="hidden" id="lessonId" name="id">
+
+                <div class="form-group">
+                    <label for="title">ចំណងជើងមេរៀនសរុប <span style="color:red;">*</span></label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="ឧទាហរណ៍: Lesson 1: Greetings and Introduction" required>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="className">ថ្នាក់រៀន <span style="color:red;">*</span></label>
+                        <select id="className" name="className" class="form-control" required>
+                            <option th:if="${#lists.isEmpty(myClassrooms)}" value="">-- មិនទាន់មានថ្នាក់រៀន (សូមបង្កើតថ្នាក់រៀនជាមុនសិន) --</option>
+                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="flex: 1;">
+                        <label for="subjectName">មុខវិជ្ជា <span style="color:red;">*</span></label>
+                        <select id="subjectName" name="subjectName" class="form-control" required>
+                            <option value="ភាសាខ្មែរ">ភាសាខ្មែរ</option>
+                            <option value="គណិតវិទ្យា">គណិតវិទ្យា</option>
+                            <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស</option>
+                            <option value="រូបវិទ្យា">រូបវិទ្យា</option>
+                            <option value="គីមីវិទ្យា">គីមីវិទ្យា</option>
+                            <option value="ជីវៈវិទ្យា">ជីវៈវិទ្យា</option>
+                            <option value="ប្រវត្តិវិទ្យា">ប្រវត្តិវិទ្យា</option>
+                            <option value="ភូមិវិទ្យា">ភូមិវិទ្យា</option>
+                            <option value="សីលធម៌">សីលធម៌</option>
+                            <option value="ផែនដី">ផែនដី</option>
+                            <option value="កីឡា">កីឡា</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">ខ្លឹមសារមេរៀនទូទៅ (English Content)</label>
+                    <textarea id="content" name="content" class="form-control" rows="3" placeholder="Enter lesson text in English..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <label for="khmerContent" style="margin:0;">ខ្លឹមសារបកប្រែជាភាសាខ្មែរ (Khmer Translation):</label>
+                        <button type="button" class="btn-translate" onclick="autoTranslateToKhmer(document.getElementById('content').value, 'khmerContent')">✨ បកប្រែស្វ័យប្រវត្តិ (Auto Translate)</button>
+                    </div>
+                    <textarea id="khmerContent" name="khmerContent" class="form-control" rows="3" placeholder="បញ្ចូល ឬកែប្រែខ្លឹមសារបកប្រែជាភាសាខ្មែរ..."></textarea>
+                </div>
+
+                <!-- Section for Transcripts (3 to 4 Transcripts) -->
+                <div style="margin-top: 25px; border-top: 2px dashed #cbd5e1; padding-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="margin: 0; color: #0f172a; font-size: 1.1rem;">🎙️ បញ្ជី Transcripts / អត្ថបទស្ដាប់ (៣ ទៅ ៤ អត្ថបទ)</h4>
+                        <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="addTranscriptRow()">➕ បន្ថែម Transcript</button>
+                    </div>
+
+                    <div id="transcriptsList">
+                        <!-- Dynamic Transcript Rows -->
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
+                    <button type="button" onclick="closeModal()" class="btn btn-secondary">បោះបង់</button>
+                    <button type="submit" class="btn btn-primary">រក្សាទុកមេរៀន និង Transcripts</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const audioProgressMap = {};
+        let transcriptCount = 0;
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').innerText = 'បង្កើតមេរៀនថ្មី (មាន Transcripts ៣-៤)';
+            document.getElementById('lessonForm').reset();
+            document.getElementById('lessonId').value = '';
+            document.getElementById('transcriptsList').innerHTML = '';
+            transcriptCount = 0;
+
+            // Pre-add 3 Transcripts by default
+            addTranscriptRow('Transcript 1: Conversation');
+            addTranscriptRow('Transcript 2: Vocabulary');
+            addTranscriptRow('Transcript 3: Listening Practice');
+
+            document.getElementById('lessonModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('lessonModal').style.display = 'none';
+        }
+
+        function addTranscriptRow(defaultTitle = '', defaultContent = '', defaultKhmer = '', defaultAudioUrl = '') {
+            transcriptCount++;
+            const container = document.getElementById('transcriptsList');
+            const div = document.createElement('div');
+            div.className = 'ts-box';
+            div.id = 'ts-box-' + transcriptCount;
+
+            const titleVal = defaultTitle || ('Transcript ' + transcriptCount);
+            const contentVal = defaultContent || '';
+            const khmerVal = defaultKhmer || '';
+            const audioUrlVal = defaultAudioUrl || '';
+
+            const contentId = 'ts-content-input-' + transcriptCount;
+            const khmerId = 'ts-khmer-input-' + transcriptCount;
+
+            div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong style="color: var(--primary);">អត្ថបទស្ដាប់ #${transcriptCount}</strong>
+                    <button type="button" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.8rem;" onclick="removeTranscriptRow('${div.id}')">🗑️ លុប</button>
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.85rem; font-weight: bold;">ចំណងជើងអត្ថបទ (Title):</label>
+                    <input type="text" name="tsTitle" class="form-control" placeholder="ឧ. Transcript ${transcriptCount}: Conversation" value="${escapeHtml(titleVal)}" required>
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.85rem; font-weight: bold;">ខ្លឹមសារ Script / អត្ថបទស្ដាប់ (English Text):</label>
+                    <textarea id="${contentId}" name="tsContent" class="form-control" rows="3" placeholder="Enter English script text...">${escapeHtml(contentVal)}</textarea>
+                </div>
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <label style="font-size: 0.85rem; font-weight: bold; margin:0;">អត្ថបទបកប្រែជាភាសាខ្មែរ (Khmer Translation):</label>
+                        <button type="button" class="btn-translate" onclick="autoTranslateToKhmer(document.getElementById('${contentId}').value, '${khmerId}')">✨ បកប្រែស្វ័យប្រវត្តិ (Auto Translate)</button>
+                    </div>
+                    <textarea id="${khmerId}" name="tsKhmerContent" class="form-control" rows="3" placeholder="បញ្ចូល ឬកែប្រែអត្ថបទបកប្រែជាភាសាខ្មែរ...">${escapeHtml(khmerVal)}</textarea>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 0.85rem; font-weight: bold;">Upload MP3 File ថ្មី (បើចង់ប្តូរ):</label>
+                        <input type="file" name="tsAudioFile" class="form-control" accept="audio/mp3,audio/*">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 0.85rem; font-weight: bold;">ឬ Link MP3 (URL/Path):</label>
+                        <input type="text" name="tsAudioUrl" class="form-control" placeholder="https://example.com/audio.mp3" value="${escapeHtml(audioUrlVal)}">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeTranscriptRow(boxId) {
+            const box = document.getElementById(boxId);
+            if (box) box.remove();
+        }
+
+        async function editLesson(btn) {
+            const lessonId = btn.getAttribute('data-id');
+            document.getElementById('modalTitle').innerText = 'កែប្រែមេរៀន និង Transcripts';
+            document.getElementById('lessonId').value = lessonId;
+            document.getElementById('title').value = btn.getAttribute('data-title') || '';
+            document.getElementById('className').value = btn.getAttribute('data-class') || '';
+            document.getElementById('subjectName').value = btn.getAttribute('data-subject') || '';
+            document.getElementById('content').value = btn.getAttribute('data-content') || '';
+            document.getElementById('khmerContent').value = btn.getAttribute('data-khmer') || '';
+            document.getElementById('transcriptsList').innerHTML = '<p style="color:#64748b; text-align:center; padding:15px;">កំពុងទាញយកទិន្នន័យ Transcripts...</p>';
+            transcriptCount = 0;
+
+            document.getElementById('lessonModal').style.display = 'flex';
+
+            try {
+                const res = await fetch('/api/lessons/' + lessonId + '/transcripts');
+                if (res.ok) {
+                    const list = await res.json();
+                    document.getElementById('transcriptsList').innerHTML = '';
+                    if (list && list.length > 0) {
+                        list.forEach(ts => {
+                            addTranscriptRow(ts.title, ts.content, ts.khmerContent, ts.audioUrl);
+                        });
+                    } else {
+                        addTranscriptRow('Transcript 1');
+                    }
+                }
+            } catch(e) {
+                document.getElementById('transcriptsList').innerHTML = '';
+                addTranscriptRow('Transcript 1');
+            }
+        }
+
+        async function saveLesson(e) {
+            e.preventDefault();
+            const form = document.getElementById('lessonForm');
+            const formData = new FormData(form);
+
+            try {
+                const res = await fetch('/api/lessons/save', {
+                    method: 'POST',
+                    body: formData
+                });
+                let data;
+                try {
+                    data = await res.json();
+                } catch(pErr) {
+                    data = { error: 'មានបញ្ហាក្នុងការរក្សាទុកមេរៀន' };
+                }
+
+                if (res.ok && data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ជោគជ័យ!',
+                        text: data.message || 'រក្សាទុកមេរៀន និង Transcripts ជោគជ័យ',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('បរាជ័យ', data.error || 'មានបញ្ហាក្នុងការរក្សាទុក', 'error');
+                }
+            } catch(err) {
+                Swal.fire('កំហុស', 'មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server', 'error');
+            }
+        }
+
+        async function deleteLesson(id) {
+            const confirm = await Swal.fire({
+                title: 'តើអ្នកប្រាកដទេ?',
+                text: "មេរៀន និង Transcripts ទាំងអស់ក្នុងមេរៀននេះនឹងត្រូវលុប!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'បាទ/ចាស, លុបវា!',
+                cancelButtonText: 'បោះបង់'
+            });
+
+            if (confirm.isConfirmed) {
+                try {
+                    const res = await fetch('/api/lessons/delete/' + id, { method: 'POST' });
+                    if (res.ok) {
+                        Swal.fire('បានលុប!', 'មេរៀនត្រូវបានលុបជោគជ័យ។', 'success').then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('កំហុស', 'មិនអាចលុបមេរៀនបានទេ', 'error');
+                    }
+                } catch(e) {
+                    Swal.fire('កំហុស', 'មានបញ្ហាក្នុងការលុបមេរៀន', 'error');
+                }
+            }
+        }
+
+        // Live Khmer Translation Toggle for Students & Teachers
+        async function toggleKhmerTranslation(srcElemId, targetBoxId, btnElem) {
+            const box = document.getElementById(targetBoxId);
+            if (!box) return;
+
+            if (box.style.display === 'block') {
+                box.style.display = 'none';
+                return;
+            }
+
+            box.style.display = 'block';
+
+            let prefilledKhmer = '';
+            if (typeof btnElem === 'string') {
+                prefilledKhmer = btnElem;
+            } else if (btnElem && typeof btnElem.getAttribute === 'function') {
+                prefilledKhmer = btnElem.getAttribute('data-khmer') || '';
+            }
+
+            if (prefilledKhmer && typeof prefilledKhmer === 'string' && prefilledKhmer.trim() !== '' && prefilledKhmer !== 'null') {
+                box.innerText = '🇰🇭 អត្ថបទបកប្រែជាភាសាខ្មែរ:\n' + prefilledKhmer;
+                return;
+            }
+
+            if (box.getAttribute('data-translated') === 'true') {
+                return;
+            }
+
+            const srcElem = document.getElementById(srcElemId);
+            if (!srcElem) return;
+
+            const textToTranslate = srcElem.innerText || srcElem.textContent;
+            if (!textToTranslate || !textToTranslate.trim()) return;
+
+            box.innerText = '⏳ កំពុងបកប្រែជាភាសាខ្មែរ...';
+
+            try {
+                // Primary: Google Translate API (fast, high quality Khmer translation)
+                const gRes = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=km&dt=t&q=' + encodeURIComponent(textToTranslate.trim()));
+                if (gRes.ok) {
+                    const gData = await gRes.json();
+                    if (gData && gData[0]) {
+                        const translatedText = gData[0].map(item => item[0] || '').join('');
+                        if (translatedText && translatedText.trim()) {
+                            box.innerText = '🇰🇭 អត្ថបទបកប្រែជាភាសាខ្មែរ:\n' + translatedText;
+                            box.setAttribute('data-translated', 'true');
+                            return;
+                        }
+                    }
+                }
+            } catch(gErr) {
+                console.warn('Google Translate API failed, trying MyMemory...', gErr);
+            }
+
+            try {
+                // Secondary Fallback: MyMemory API
+                const res = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(textToTranslate.trim()) + '&langpair=en|km');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.responseData && data.responseData.translatedText) {
+                        box.innerText = '🇰🇭 អត្ថបទបកប្រែជាភាសាខ្មែរ:\n' + data.responseData.translatedText;
+                        box.setAttribute('data-translated', 'true');
+                        return;
+                    }
+                }
+                box.innerText = 'មិនអាចបកប្រែបានទេ សូមព្យាយាមម្តងទៀត';
+            } catch(e) {
+                box.innerText = 'មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ប្រព័ន្ធបកប្រែ';
+            }
+        }
+
+        // Auto Translate to Khmer Helper inside Modal
+        async function autoTranslateToKhmer(text, targetElemId) {
+            if (!text || !text.trim()) {
+                Swal.fire('ព័ត៌មាន', 'សូមបញ្ចូលអត្ថបទអង់គ្លេសជាមុនសិន!', 'info');
+                return;
+            }
+            const target = document.getElementById(targetElemId);
+            if (!target) return;
+
+            target.value = 'កំពុងបកប្រែ...';
+
+            try {
+                const gRes = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=km&dt=t&q=' + encodeURIComponent(text.trim()));
+                if (gRes.ok) {
+                    const gData = await gRes.json();
+                    if (gData && gData[0]) {
+                        const translatedText = gData[0].map(item => item[0] || '').join('');
+                        if (translatedText && translatedText.trim()) {
+                            target.value = translatedText;
+                            return;
+                        }
+                    }
+                }
+            } catch(gErr) {}
+
+            try {
+                const res = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.trim()) + '&langpair=en|km');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.responseData && data.responseData.translatedText) {
+                        target.value = data.responseData.translatedText;
+                        return;
+                    }
+                }
+                target.value = '';
+                Swal.fire('កំហុស', 'មិនអាចបកប្រែបានទេ សូមបញ្ចូលអត្ថបទបកប្រែដោយផ្ទាល់', 'warning');
+            } catch(e) {
+                target.value = '';
+                Swal.fire('កំហុស', 'មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ប្រព័ន្ធបកប្រែ', 'error');
+            }
+        }
+
+        // Automatic Progress calculation when student listens to MP3 Audio
+        function handleAudioProgress(audio) {
+            const lessonId = audio.getAttribute('data-lesson-id');
+            if (!audio.duration || isNaN(audio.duration)) return;
+
+            const percentage = Math.floor((audio.currentTime / audio.duration) * 100);
+            
+            const lastSaved = audioProgressMap[lessonId] || 0;
+            if (percentage - lastSaved >= 10 || percentage >= 100) {
+                audioProgressMap[lessonId] = percentage;
+                updateProgressOnServer(lessonId, percentage);
+            }
+        }
+
+        function handleAudioEnded(audio) {
+            const lessonId = audio.getAttribute('data-lesson-id');
+            updateProgressOnServer(lessonId, 100);
+        }
+
+        function navigateToLesson(index) {
+            const cards = document.querySelectorAll('.lesson-card');
+            if (cards && cards[index]) {
+                cards[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                cards[index].style.transition = 'box-shadow 0.3s ease, transform 0.3s ease';
+                const origBoxShadow = cards[index].style.boxShadow;
+                cards[index].style.boxShadow = '0 0 0 4px #3b82f6';
+                setTimeout(() => {
+                    cards[index].style.boxShadow = origBoxShadow || 'var(--shadow-md)';
+                }, 2000);
+            }
+        }
+
+        function markCompleted(lessonId, lessonIndex) {
+            updateProgressOnServer(lessonId, 100, true, lessonIndex);
+        }
+
+        async function updateProgressOnServer(lessonId, percentage, showAlert = false, lessonIndex = undefined) {
+            const formData = new FormData();
+            formData.append('lessonId', lessonId);
+            formData.append('progressPercentage', percentage);
+
+            try {
+                const res = await fetch('/api/lessons/progress', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    const bar = document.getElementById('progress-bar-' + lessonId);
+                    const badge = document.getElementById('progress-badge-' + lessonId);
+
+                    if (bar) bar.style.width = data.progressPercentage + '%';
+                    if (badge) {
+                        badge.innerText = data.progressPercentage + '% ' + (data.completed ? '✅ រៀនចប់' : '📖 កំពុងរៀន');
+                    }
+
+                    if (showAlert && data.completed) {
+                        const cards = document.querySelectorAll('.lesson-card');
+                        const hasNext = lessonIndex !== undefined && lessonIndex < cards.length - 1;
+
+                        Swal.fire({
+                            title: 'អបអរសាទរ! 🎉',
+                            text: 'អ្នកបានរៀនចេះ និងរៀនចប់មេរៀននេះ ១០០% ហើយ!',
+                            icon: 'success',
+                            showCancelButton: hasNext,
+                            confirmButtonText: hasNext ? '⏭️ ទៅមេរៀនបន្ត (Next Lesson)' : 'យល់ព្រម',
+                            cancelButtonText: 'នៅទីនេះដដែល',
+                            confirmButtonColor: '#3b82f6',
+                            cancelButtonColor: '#64748b'
+                        }).then((result) => {
+                            if (result.isConfirmed && hasNext) {
+                                navigateToLesson(lessonIndex + 1);
+                            }
+                        });
+                    }
+                }
+            } catch(e) {
+                console.error("Error updating progress:", e);
+            }
+        }
+    </script>
+</body>
+</html>

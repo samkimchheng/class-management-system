@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>បញ្ជីស្រង់វត្តមាន - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
+    <style>
+        .sticky-col {
+            position: sticky;
+            background-color: white;
+        }
+        /* Make ALL table headers sticky vertically */
+        thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f8fafc;
+            z-index: 2; /* Keep above scrolling rows */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        /* Top-Left Corner cells (both sticky vertically and horizontally) */
+        thead .sticky-col {
+            z-index: 4; /* Keep above standard headers and standard sticky columns */
+        }
+        /* Body sticky columns */
+        tbody .sticky-col {
+            z-index: 1;
+        }
+        /* Add shadow only to the last sticky column to make it look clean */
+        .sticky-col.last-sticky {
+            border-right: 2px solid #cbd5e1;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        tbody tr:hover .sticky-col {
+            background-color: #f8fafc;
+        }
+
+        .print-header { display: none; }
+
+        @media print {
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 1.2rem;
+                color: #000;
+            }
+            .sidebar { display: none !important; }
+            .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+            .topbar { display: none !important; }
+            .content { padding: 0 !important; }
+            .header-action, form.header-action { display: none !important; }
+            body { background-color: white !important; margin: 0; }
+            
+            .table-container, .attendance-table-wrapper {
+                overflow: visible !important;
+                max-height: none !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            table {
+                width: 100% !important;
+                min-width: auto !important;
+                border-collapse: collapse !important;
+            }
+            table, th, td {
+                border: 1px solid #000 !important;
+            }
+            .sticky-col, thead th {
+                position: static !important;
+                box-shadow: none !important;
+            }
+            th, td {
+                padding: 4px 2px !important;
+                font-size: 10px !important;
+            }
+            /* Checkboxes show up as normal squares in print, perfect for hand-filling */
+            .btn { display: none !important; }
+            .alert, .success-message { display: none !important; }
+            @page {
+                size: A4 landscape;
+                margin: 5mm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/" class="nav-link">ទំព័រដើម</a></li>
+            <li class="nav-item"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
+            <li class="nav-item"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
+            <li class="nav-item active"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន 📚</a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
+            <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍</a></li>
+          </ul>
+          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                  
+            <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
+            <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
+              </ul>
+          </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h3>បញ្ជីវត្តមានសិស្ស</h3>
+        </div>
+
+        <div class="content">
+            <!-- Success Message -->
+            <div th:if="${successMessage}" style="background-color: var(--success); color: white; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; font-weight: bold; text-align: center;">
+                <span th:text="${successMessage}">ជោគជ័យ!</span>
+            </div>
+            
+            <div class="print-header">
+                <h4 th:text="'បញ្ជីវត្តមានប្រចាំខែ៖ ' + (${selectedClass} ?: 'ថ្នាក់រៀនទាំងអស់')">បញ្ជីវត្តមានប្រចាំខែ</h4>
+            </div>
+
+            <div class="table-container" style="overflow-x: auto;">
+                <form th:action="@{/attendance/save}" method="post">
+                <div class="header-action">
+                    <div>
+                        <select name="month" class="form-control" style="width: auto; display: inline-block;">
+
+                            <option value="តេស្តដើមឆ្នាំ">តេស្តដើមឆ្នាំ</option>
+
+                            <option value="ខែវិច្ឆិកា ២០២៦">ខែវិច្ឆិកា ២០២៦</option>
+
+                            <option value="ខែធ្នូ ២០២៦">ខែធ្នូ ២០២៦</option>
+
+                            <option value="ខែមករា ២០២៧">ខែមករា ២០២៧</option>
+
+                            <option value="ខែកុម្ភៈ ២០២៧">ខែកុម្ភៈ ២០២៧</option>
+                            <option value="ឆមាសទី១">ឆមាសទី១</option>
+
+                            <option value="ខែមីនា ២០២៧">ខែមីនា ២០២៧</option>
+
+                            <option value="ខែមេសា ២០២៧">ខែមេសា ២០២៧</option>
+
+                            <option value="ខែឧសភា ២០២៧">ខែឧសភា ២០២៧</option>
+
+                            <option value="ខែមិថុនា ២០២៧">ខែមិថុនា ២០២៧</option>
+
+                            <option value="ខែកក្កដា ២០២៧">ខែកក្កដា ២០២៧</option>
+                            <option value="ឆមាសទី២">ឆមាសទី២</option>
+
+                            <option value="ខែសីហា ២០២៧">ខែសីហា ២០២៧</option>
+                            <option value="ប្រចាំឆ្នាំ">ប្រចាំឆ្នាំ</option>
+                        </select>
+                        <select name="className" class="form-control" style="width: auto; display: inline-block; margin-left: 10px;" onchange="window.location.href = '/attendance?className=' + this.value;">
+
+                            <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
+
+                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="window.print()">បោះពុម្ពរបាយការណ៍</button>
+                        <button type="submit" class="btn btn-primary">រក្សាទុកទិន្នន័យ</button>
+                    </div>
+                </div>
+                
+                <div class="attendance-table-wrapper" style="overflow: auto; max-height: 65vh; border: 1px solid var(--border); border-radius: 8px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sticky-col" style="width: 60px; min-width: 60px; max-width: 60px; left: 0px; white-space: nowrap;">ល.រ</th>
+                            <th class="sticky-col" style="width: 200px; min-width: 200px; max-width: 200px; left: 60px; white-space: nowrap;">ឈ្មោះសិស្ស</th>
+                            <th class="sticky-col last-sticky" style="width: 80px; min-width: 80px; max-width: 80px; left: 260px; white-space: nowrap;">ភេទ</th>
+                            <!-- Days 1 to 31 -->
+                            <th th:each="i : ${#numbers.sequence(1, 31)}" th:text="${i}" th:attr="data-day=${i}" class="day-cell" style="min-width: 30px; text-align: center;">1</th>
+                            <th style="min-width: 120px; white-space: nowrap;">សរុបអវត្តមាន</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="student, iterStat : ${students}">
+                            <td class="sticky-col" style="width: 60px; min-width: 60px; max-width: 60px; left: 0px;" th:text="${iterStat.count}">១</td>
+                            <td class="sticky-col" style="width: 200px; min-width: 200px; max-width: 200px; left: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${student.name}">ឈ្មោះសិស្ស</td>
+                            <td class="sticky-col last-sticky" style="width: 80px; min-width: 80px; max-width: 80px; left: 260px;" th:text="${student.gender}">ភេទ</td>
+                            <!-- Days 1 to 31 -->
+                            <td th:each="i : ${#numbers.sequence(1, 31)}" th:attr="data-day=${i}" class="day-cell" style="text-align: center;">
+                                <input type="checkbox" class="attendance-cb" name="attendanceData" th:value="${student.id + '_' + i}">
+                            </td>
+                            <td class="total-absent" style="text-align: center; font-weight: bold; color: var(--danger);">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const rows = document.querySelectorAll('tbody tr');
+            
+            // --- Feature 1: Auto Calculate Total Absences ---
+            rows.forEach(row => {
+                const checkboxes = row.querySelectorAll('.attendance-cb');
+                const totalCell = row.querySelector('.total-absent');
+                
+                function updateTotal() {
+                    let count = 0;
+                    checkboxes.forEach(cb => {
+                        if (cb.checked) count++;
+                    });
+                    totalCell.textContent = count;
+                }
+                
+                checkboxes.forEach(cb => {
+                    cb.addEventListener('change', updateTotal);
+                });
+                updateTotal();
+            });
+
+            // --- Feature 2: Dynamic Days based on Month ---
+            const monthSelect = document.querySelector('select[name="month"]');
+            const dayCells = document.querySelectorAll('.day-cell');
+            
+            const khmerDigits = {'០':0,'១':1,'២':2,'៣':3,'៤':4,'៥':5,'៦':6,'៧':7,'៨':8,'៩':9};
+            function parseKhmerYear(str) {
+                return parseInt(str.split('').map(c => khmerDigits[c] !== undefined ? khmerDigits[c] : c).join(''));
+            }
+
+            function updateDaysInMonth() {
+                const val = monthSelect.value;
+                let month = 0;
+                if (val.includes('មករា')) month = 1;
+                else if (val.includes('កុម្ភៈ')) month = 2;
+                else if (val.includes('មីនា')) month = 3;
+                else if (val.includes('មេសា')) month = 4;
+                else if (val.includes('ឧសភា')) month = 5;
+                else if (val.includes('មិថុនា')) month = 6;
+                else if (val.includes('កក្កដា')) month = 7;
+                else if (val.includes('សីហា')) month = 8;
+                else if (val.includes('កញ្ញា')) month = 9;
+                else if (val.includes('តុលា')) month = 10;
+                else if (val.includes('វិច្ឆិកា')) month = 11;
+                else if (val.includes('ធ្នូ')) month = 12;
+
+                const yearMatch = val.match(/[០-៩]+/);
+                let year = 2026;
+                if (yearMatch) {
+                    year = parseKhmerYear(yearMatch[0]);
+                }
+
+                let daysInMonth = 31;
+                if ([4, 6, 9, 11].includes(month)) {
+                    daysInMonth = 30;
+                } else if (month === 2) {
+                    const isLeap = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+                    daysInMonth = isLeap ? 29 : 28;
+                }
+
+                dayCells.forEach(cell => {
+                    const day = parseInt(cell.getAttribute('data-day'));
+                    if (day > daysInMonth) {
+                        cell.style.display = 'none';
+                        // if a hidden day was checked, uncheck it
+                        const input = cell.querySelector('input');
+                        if (input && input.checked) {
+                            input.checked = false;
+                        }
+                    } else {
+                        cell.style.display = 'table-cell';
+                    }
+                });
+                
+                // Recalculate totals in case hidden days were unchecked
+                rows.forEach(row => {
+                    let count = 0;
+                    row.querySelectorAll('.attendance-cb').forEach(cb => {
+                        if (cb.checked) count++;
+                    });
+                    row.querySelector('.total-absent').textContent = count;
+                });
+            }
+
+            monthSelect.addEventListener('change', updateDaysInMonth);
+            updateDaysInMonth();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

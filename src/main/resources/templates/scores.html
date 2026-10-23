@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>បញ្ជីស្រង់ពិន្ទុ - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
+    <style>
+        .scrollable-table-wrapper {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 65vh;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+        }
+        .scrollable-table-wrapper table {
+            margin-top: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 900px;
+        }
+        .scrollable-table-wrapper thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: var(--light);
+            border-bottom: 2px solid #ddd;
+            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+        }
+        .scrollable-table-wrapper th, .scrollable-table-wrapper td {
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .print-header {
+            display: none;
+        }
+
+        @media print {
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 1.2rem;
+                color: #000;
+            }
+            .sidebar { display: none !important; }
+            .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+            .topbar { display: none !important; }
+            .content { padding: 0 !important; }
+            .header-action, form.header-action { display: none !important; }
+            body { background-color: white !important; margin: 0; }
+            .scrollable-table-wrapper, .table-container {
+                max-height: none !important;
+                overflow: visible !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            table {
+                width: 100% !important;
+                min-width: auto !important;
+            }
+            .btn { display: none !important; }
+            .alert, .success-message { display: none !important; }
+            input[type="number"] {
+                border: 1px solid #999 !important;
+                box-shadow: none !important;
+                padding: 4px !important;
+                width: 100% !important;
+                max-width: 50px !important;
+                font-size: 11px !important;
+                text-align: center;
+                -moz-appearance: textfield;
+            }
+            input[type="number"]::-webkit-outer-spin-button,
+            input[type="number"]::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            th, td {
+                padding: 6px 4px !important;
+                font-size: 12px !important;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/" class="nav-link">ទំព័រដើម</a></li>
+            <li class="nav-item"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
+            <li class="nav-item"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item active"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន 📚</a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
+            <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍</a></li>
+          </ul>
+          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                  
+            <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
+            <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
+              </ul>
+          </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h3>បញ្ជីស្រង់ពិន្ទុប្រចាំខែ</h3>
+        </div>
+
+        <div class="content">
+            <!-- Success Message (for future save logic) -->
+            <div th:if="${successMessage}" style="background-color: var(--success); color: white; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; font-weight: bold; text-align: center;">
+                <span th:text="${successMessage}">ជោគជ័យ!</span>
+            </div>
+            
+            <div class="print-header">
+                <h4 th:text="'បញ្ជីស្រង់ពិន្ទុប្រចាំខែ៖ ' + (${selectedClass} ?: 'ថ្នាក់រៀនទាំងអស់')">បញ្ជីស្រង់ពិន្ទុប្រចាំខែ</h4>
+            </div>
+
+            <div class="table-container" style="overflow-x: auto;">
+                <form th:action="@{/scores/save}" method="post">
+                <div class="header-action" style="flex-direction: column; align-items: flex-start; gap: 15px;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
+                        <select name="month" class="form-control" style="width: auto;">
+                    <option value="តេស្តដើមឆ្នាំ">តេស្តដើមឆ្នាំ</option>
+                    <option value="ខែវិច្ឆិកា ២០២៦">ខែវិច្ឆិកា ២០២៦</option>
+                    <option value="ខែធ្នូ ២០២៦">ខែធ្នូ ២០២៦</option>
+                    <option value="ខែមករា ២០២៧">ខែមករា ២០២៧</option>
+                    <option value="ខែកុម្ភៈ ២០២៧">ខែកុម្ភៈ ២០២៧</option>
+                            <option value="ឆមាសទី១">ឆមាសទី១</option>
+                    <option value="ខែមីនា ២០២៧">ខែមីនា ២០២៧</option>
+                    <option value="ខែមេសា ២០២៧">ខែមេសា ២០២៧</option>
+                    <option value="ខែឧសភា ២០២៧">ខែឧសភា ២០២៧</option>
+                    <option value="ខែមិថុនា ២០២៧">ខែមិថុនា ២០២៧</option>
+                    <option value="ខែកក្កដា ២០២៧">ខែកក្កដា ២០២៧</option>
+                            <option value="ឆមាសទី២">ឆមាសទី២</option>
+                    <option value="ខែសីហា ២០២៧">ខែសីហា ២០២៧</option>
+                            <option value="ប្រចាំឆ្នាំ">ប្រចាំឆ្នាំ</option>
+                </select>
+                        <select name="className" class="form-control" style="width: auto; display: inline-block;" onchange="window.location.href = '/scores?className=' + this.value;">
+                            <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
+                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                        </select>
+                        <select name="subjectName" class="form-control" style="width: auto; display: inline-block;">
+                            <option value="គណិតវិទ្យា">គណិតវិទ្យា</option>
+                            <option value="ភាសាខ្មែរ">ភាសាខ្មែរ</option>
+                            <option value="រូបវិទ្យា">រូបវិទ្យា</option>
+                            <option value="គីមីវិទ្យា">គីមីវិទ្យា</option>
+                            <option value="ជីវៈវិទ្យា">ជីវៈវិទ្យា</option>
+                            <option value="ប្រវត្តិវិទ្យា">ប្រវត្តិវិទ្យា</option>
+                            <option value="ភូមិវិទ្យា">ភូមិវិទ្យា</option>
+                            <option value="សីលធម៌">សីលធម៌</option>
+                            <option value="ផែនដី">ផែនដី</option>
+                            <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស</option>
+                            <option value="កីឡា">កីឡា</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%; align-items: center;">
+                        <button type="button" class="btn btn-secondary" onclick="window.print()">បោះពុម្ពរបាយការណ៍</button>
+                        <button type="submit" class="btn btn-primary">រក្សាទុកពិន្ទុ</button>
+                        
+                        <div style="display: flex; gap: 10px; align-items: center; margin-left: auto;">
+                            <span id="currentMaxScoreDisplay" style="font-weight: 600; color: #1f2937; background-color: #e5e7eb; border: 1px solid #d1d5db; padding: 10px 20px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: auto;"></span>
+										        <button type="button" class="btn btn-warning" style="background-color: #f59e0b; color: white;" onclick="configureScores()">⚙️ កំណត់ពិន្ទុពេញ</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="scrollable-table-wrapper">
+                <table style="min-width: 900px;">
+                    <thead style="background-color: var(--light);">
+                        <tr>
+                            <th style="text-align: center; width: 60px;">ល.រ</th>
+                            <th style="white-space: nowrap;">ឈ្មោះសិស្ស</th>
+                            <th style="width: 80px;">ភេទ</th>
+                            <th style="text-align: center; white-space: nowrap;">ពិន្ទុប្រចាំខែ</th>
+                            <th style="text-align: center; white-space: nowrap;">ពិន្ទុវត្តមាន</th>
+                            <th style="text-align: center; white-space: nowrap;">កិច្ចការស្រាវជ្រាវ</th>
+                            <th style="text-align: center; white-space: nowrap;">សរុប</th>
+                            <th style="text-align: center;">និទ្ទេស</th>
+                            <th style="text-align: center; white-space: nowrap;">ចំណាត់ថ្នាក់</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="student, iterStat : ${students}" th:data-student-id="${student.id}" style="transition: all 0.3s ease;">
+                            <td th:text="${iterStat.count}" style="text-align: center; font-weight: bold; color: var(--text-muted);">១</td>
+                            <td  th:text="${student.name}" style="font-weight: bold; color: var(--dark); white-space: nowrap;">ឈ្មោះសិស្ស</td>
+                            <td th:text="${student.gender}">ភេទ</td>
+                            <td style="text-align: center;">
+                                <input type="number" class="form-control score-input" name="monthlyScore" max="100" min="0" placeholder="0" style="width: 70px; text-align: center; margin: 0 auto; padding: 8px;">
+                            </td>
+                            <td style="text-align: center;">
+                                <input type="number" class="form-control score-input" name="attendanceScore" max="100" min="0" placeholder="0" style="width: 70px; text-align: center; margin: 0 auto; padding: 8px;">
+                            </td>
+                            <td style="text-align: center;">
+                                <input type="number" class="form-control score-input" name="assignmentScore" max="100" min="0" placeholder="0" style="width: 70px; text-align: center; margin: 0 auto; padding: 8px;">
+                            </td>
+                            <td class="score-total" style="text-align: center; font-weight: bold; font-size: 1.15rem; color: var(--primary);">0</td>
+                            <td class="score-grade" style="text-align: center;">
+                                <span class="badge" style="background-color: #e2e8f0; color: #64748b;">-</span>
+                            </td>
+                            <td class="score-rank" style="text-align: center; font-weight: bold; color: var(--danger); font-size: 1.1rem;">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentScoreRule = { maxMonthlyScore: 0, maxAttendanceScore: 0, maxAssignmentScore: 0 };
+
+            window.configureScores = function() {
+                const className = document.querySelector('select[name="className"]').value;
+                const subjectName = document.querySelector('select[name="subjectName"]').value;
+                
+                Swal.fire({
+                    title: 'កំណត់ពិន្ទុពេញ',
+                    html: `
+                        <div style="text-align: left; margin-bottom: 15px;">
+                            <b>ថ្នាក់៖</b> ${className} <br>
+                            <b>មុខវិជ្ជា៖</b> ${subjectName}
+                        </div>
+                        <label style="display:block;text-align:left;margin-top:10px;">ពិន្ទុប្រចាំខែ (Monthly Score)</label>
+                        <input id="swal-input1" type="number" class="swal2-input" value="${currentScoreRule.maxMonthlyScore}">
+                        <label style="display:block;text-align:left;margin-top:10px;">ពិន្ទុវត្តមាន (Attendance Score)</label>
+                        <input id="swal-input2" type="number" class="swal2-input" value="${currentScoreRule.maxAttendanceScore}">
+                        <label style="display:block;text-align:left;margin-top:10px;">កិច្ចការស្រាវជ្រាវ (Assignment Score)</label>
+                        <input id="swal-input3" type="number" class="swal2-input" value="${currentScoreRule.maxAssignmentScore}">
+                    `,
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'រក្សាទុក',
+                    cancelButtonText: 'បោះបង់',
+                    preConfirm: () => {
+                        return [
+                            document.getElementById('swal-input1').value,
+                            document.getElementById('swal-input2').value,
+                            document.getElementById('swal-input3').value
+                        ]
+                    }
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const values = result.value;
+                        const payload = {
+                            className: className,
+                            subjectName: subjectName,
+                            maxMonthlyScore: parseFloat(values[0]) || 100,
+                            maxAttendanceScore: parseFloat(values[1]) || 0,
+                            maxAssignmentScore: parseFloat(values[2]) || 0
+                        };
+                        
+                        try {
+                            const res = await fetch('/api/scores/rules', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                            if (res.ok) {
+                                Swal.fire('ជោគជ័យ!', 'កំណត់ពិន្ទុពេញបានរក្សាទុករួចរាល់។', 'success');
+                                currentScoreRule = payload;
+                                updateInputMaxes();
+                                document.querySelectorAll('tbody tr').forEach(row => calculateScoreForRow(row));
+                            }
+                        } catch(e) {
+                            Swal.fire('បរាជ័យ!', 'មានបញ្ហាក្នុងការរក្សាទុក។', 'error');
+                        }
+                    }
+                });
+            };
+
+            async function fetchScoreRule() {
+                const className = document.querySelector('select[name="className"]').value;
+                const subjectName = document.querySelector('select[name="subjectName"]').value;
+                try {
+                    const res = await fetch(`/api/scores/rules?className=${encodeURIComponent(className)}&subjectName=${encodeURIComponent(subjectName)}`);
+                    if (res.ok) {
+                        currentScoreRule = await res.json();
+                        updateInputMaxes();
+                        document.querySelectorAll('tbody tr').forEach(row => calculateScoreForRow(row));
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            function updateInputMaxes() {
+                document.querySelectorAll('input[name="monthlyScore"]').forEach(input => {
+                    input.setAttribute('max', currentScoreRule.maxMonthlyScore);
+                });
+                document.querySelectorAll('input[name="attendanceScore"]').forEach(input => {
+                    input.setAttribute('max', currentScoreRule.maxAttendanceScore);
+                });
+                document.querySelectorAll('input[name="assignmentScore"]').forEach(input => {
+                    input.setAttribute('max', currentScoreRule.maxAssignmentScore);
+                });
+                
+                let maxTotal = parseFloat(currentScoreRule.maxMonthlyScore || 0) + parseFloat(currentScoreRule.maxAttendanceScore || 0) + parseFloat(currentScoreRule.maxAssignmentScore || 0);
+                const displaySpan = document.getElementById('currentMaxScoreDisplay');
+                if (displaySpan) {
+                    displaySpan.innerHTML = '<i class="fas fa-bullseye" style="color:#f59e0b;"></i> ពិន្ទុពេញ៖ ' + maxTotal;
+                }
+            }
+
+            const form = document.querySelector('form');
+            const monthSelect = document.querySelector('select[name="month"]');
+            const classSelect = document.querySelector('select[name="className"]');
+            const subjectSelect = document.querySelector('select[name="subjectName"]');
+            const rows = document.querySelectorAll('tbody tr');
+            
+            function calculateScoreForRow(row) {
+                const inputs = row.querySelectorAll('.score-input');
+                const totalCell = row.querySelector('.score-total');
+                const gradeCell = row.querySelector('.score-grade');
+                
+                let total = 0;
+                let hasInput = false;
+
+                inputs.forEach(input => {
+                    if (input.value !== '') {
+                        hasInput = true;
+                        let val = parseFloat(input.value) || 0;
+                        if (val < 0) { val = 0; input.value = 0; }
+                        
+                        // Limit to max if input exceeds max
+                        let maxVal = parseFloat(input.getAttribute('max')) || 100;
+                        if (val > maxVal) { val = maxVal; input.value = maxVal; }
+                        
+                        total += val;
+                    }
+                });
+                
+                if (!hasInput) {
+                    totalCell.textContent = '0';
+                    gradeCell.innerHTML = '<span class="badge" style="background-color: #e2e8f0; color: #64748b;">-</span>';
+                    row.style.backgroundColor = '';
+                    return;
+                }
+
+                totalCell.textContent = total;
+                row.style.backgroundColor = '#f0fdf4'; 
+                
+                let gradeHTML = '';
+                let maxTotal = parseFloat(currentScoreRule.maxMonthlyScore) + parseFloat(currentScoreRule.maxAttendanceScore) + parseFloat(currentScoreRule.maxAssignmentScore);
+                if (maxTotal <= 0) maxTotal = 100; 
+                let percentage = (total / maxTotal) * 100;
+                
+                if (percentage >= 90) {
+                    gradeHTML = '<span class="badge badge-success" style="font-size: 0.9rem;">A (ល្អណាស់)</span>';
+                } else if (percentage >= 80) {
+                    gradeHTML = '<span class="badge badge-success" style="font-size: 0.9rem; background-color: rgba(16, 185, 129, 0.7);">B (ល្អ)</span>';
+                } else if (percentage >= 70) {
+                    gradeHTML = '<span class="badge badge-warning" style="font-size: 0.9rem;">C (បង្គួរ)</span>';
+                } else if (percentage >= 60) {
+                    gradeHTML = '<span class="badge badge-warning" style="font-size: 0.9rem; background-color: rgba(245, 158, 11, 0.7);">D (មធ្យម)</span>';
+                } else if (percentage >= 50) {
+                    gradeHTML = '<span class="badge badge-warning" style="font-size: 0.9rem; background-color: #fb923c;">E (ខ្សោយ)</span>';
+                } else {
+                    gradeHTML = '<span class="badge badge-danger" style="font-size: 0.9rem;">F (ធ្លាក់)</span>';
+                    row.style.backgroundColor = '#fef2f2'; 
+                }
+                
+                gradeCell.innerHTML = gradeHTML;
+            }
+
+            function updateAllRanks() {
+                const allRows = Array.from(document.querySelectorAll('tbody tr'));
+                const scores = allRows.map(row => {
+                    const totalCell = row.querySelector('.score-total');
+                    return parseFloat(totalCell.textContent) || 0;
+                });
+                
+                allRows.forEach(row => {
+                    const totalCell = row.querySelector('.score-total');
+                    const rankCell = row.querySelector('.score-rank');
+                    if (!rankCell) return;
+                    const currentScore = parseFloat(totalCell.textContent) || 0;
+                    
+                    if (currentScore > 0) {
+                        const rank = scores.filter(s => s > currentScore).length + 1;
+                        rankCell.textContent = rank;
+                    } else {
+                        rankCell.textContent = '-';
+                    }
+                });
+            }
+
+            async function loadScores() {
+                await fetchScoreRule();
+                const month = monthSelect.value;
+                const className = classSelect.value;
+                try {
+                    const res = await fetch(`/api/scores/get?month=${encodeURIComponent(month)}&className=${encodeURIComponent(className)}&subjectName=${encodeURIComponent(subjectSelect.value)}`);
+                    if (res.ok) {
+                        const data = await res.json(); 
+                        
+                        rows.forEach(row => {
+                            const studentId = parseInt(row.getAttribute('data-student-id'));
+                            const inputs = row.querySelectorAll('.score-input');
+                            const scoreData = data.find(s => s.studentId === studentId);
+                            
+                            if (scoreData) {
+                                inputs[0].value = scoreData.monthlyScore;
+                                inputs[1].value = scoreData.attendanceScore;
+                                inputs[2].value = scoreData.assignmentScore;
+                            } else {
+                                inputs.forEach(input => input.value = '');
+                            }
+                            calculateScoreForRow(row);
+                        });
+                        updateAllRanks();
+                    }
+                } catch(e) {
+                    console.error("Error loading scores:", e);
+                }
+            }
+
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('.score-input');
+                inputs.forEach(input => {
+                    input.addEventListener('input', function() {
+                        calculateScoreForRow(row);
+                        updateAllRanks();
+                    });
+                });
+            });
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const btn = form.querySelector('button[type="submit"]');
+                btn.textContent = 'កំពុងរក្សាទុក...';
+                
+                const scoresList = [];
+                rows.forEach(row => {
+                    const studentId = parseInt(row.getAttribute('data-student-id'));
+                    const inputs = row.querySelectorAll('.score-input');
+                    if (inputs[0].value !== '' || inputs[1].value !== '' || inputs[2].value !== '') {
+                        scoresList.push({
+                            studentId: studentId,
+                            monthlyScore: parseFloat(inputs[0].value) || 0,
+                            attendanceScore: parseFloat(inputs[1].value) || 0,
+                            assignmentScore: parseFloat(inputs[2].value) || 0
+                        });
+                    }
+                });
+                
+                try {
+                    const res = await fetch('/api/scores/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            month: monthSelect.value,
+                            subjectName: subjectSelect.value,
+                            className: classSelect.value,
+                            scores: scoresList
+                        })
+                    });
+                    if (res.ok) {
+                        const successDiv = document.createElement('div');
+                        successDiv.style = 'background-color: var(--success); color: white; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; font-weight: bold; text-align: center;';
+                        successDiv.textContent = 'ជោគជ័យ! បញ្ជីពិន្ទុត្រូវបានរក្សាទុកចូល Database។';
+                        
+                        const content = document.querySelector('.content');
+                        content.insertBefore(successDiv, content.firstChild);
+                        setTimeout(() => successDiv.remove(), 3000);
+                    }
+                } catch(e) {
+                    alert('មានបញ្ហាក្នុងការរក្សាទុកពិន្ទុ។');
+                } finally {
+                    btn.textContent = 'រក្សាទុកបញ្ជីពិន្ទុ';
+                }
+            });
+
+            monthSelect.addEventListener('change', () => {
+                localStorage.setItem('scores_month', monthSelect.value);
+                loadScores();
+            });
+            subjectSelect.addEventListener('change', () => {
+                localStorage.setItem('scores_subject', subjectSelect.value);
+                loadScores();
+            });
+            classSelect.addEventListener('change', loadScores);
+            loadScores();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

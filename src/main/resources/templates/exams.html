@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>វិញ្ញាសាប្រឡង - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
+    <style>
+        .exam-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary);
+        }
+        .exam-section h4 {
+            margin-top: 0;
+            color: var(--dark);
+        }
+        .question-card {
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: var(--radius);
+            margin-bottom: 15px;
+            background: #f8fafc;
+        }
+        .question-card input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-family: 'Battambang', cursive;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .option-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .option-row input[type="radio"] {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+        .add-q-btn {
+            background: #e2e8f0;
+            color: #334155;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        .add-q-btn:hover {
+            background: #cbd5e1;
+        }
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+                <span th:if="${session.loggedInStudent != null}">សួស្តី, <b th:text="${session.loggedInStudent.name}">សិស្ស</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/" class="nav-link">ទំព័រដើម</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
+            <li class="nav-item active" th:if="${session.ACCOUNT_ID != null}"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន 📚</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
+            <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/report" class="nav-link">របាយការណ៍</a></li>
+            <li class="nav-item" th:if="${session.loggedInStudent != null}"><a href="/test/take" class="nav-link">ផ្ទាំងប្រឡងសិស្ស 📝</a></li>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
+                <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
+                <li class="nav-item" th:if="${session.loggedInStudent != null}"><a href="/test/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Student Logout) 🚪</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h3>គ្រប់គ្រងវិញ្ញាសាប្រឡង (ពហុជ្រើសរើស)</h3>
+        </div>
+
+        <div class="content">
+            <div id="alertMsg" style="display:none; background-color: var(--success); color: white; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; font-weight: bold; text-align: center;">
+            </div>
+
+            <div class="header-action" style="margin-bottom: 20px;">
+                <div>
+                    <select id="monthSelect" class="form-control" style="width: auto; display: inline-block;">
+                        <option value="តេស្តដើមឆ្នាំ">តេស្តដើមឆ្នាំ</option>
+                        <option value="ខែវិច្ឆិកា ២០២៦">ខែវិច្ឆិកា ២០២៦</option>
+                        <option value="ខែធ្នូ ២០២៦">ខែធ្នូ ២០២៦</option>
+                        <option value="ខែមករា ២០២៧">ខែមករា ២០២៧</option>
+                        <option value="ខែកុម្ភៈ ២០២៧">ខែកុម្ភៈ ២០២៧</option>
+                            <option value="ឆមាសទី១">ឆមាសទី១</option>
+                        <option value="ខែមីនា ២០២៧">ខែមីនា ២០២៧</option>
+                        <option value="ខែមេសា ២០២៧">ខែមេសា ២០២៧</option>
+                        <option value="ខែឧសភា ២០២៧">ខែឧសភា ២០២៧</option>
+                        <option value="ខែមិថុនា ២០២៧">ខែមិថុនា ២០២៧</option>
+                        <option value="ខែកក្កដា ២០២៧">ខែកក្កដា ២០២៧</option>
+                            <option value="ឆមាសទី២">ឆមាសទី២</option>
+                        <option value="ខែសីហា ២០២៧">ខែសីហា ២០២៧</option>
+                            <option value="ប្រចាំឆ្នាំ">ប្រចាំឆ្នាំ</option>
+                    </select>
+                    <select id="classSelect" class="form-control" style="width: auto; display: inline-block; margin-left: 10px;">
+                        <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                    </select>
+                    <select id="subjectSelect" class="form-control" style="width: auto; display: inline-block; margin-left: 10px;">
+                        <option value="គណិតវិទ្យា">គណិតវិទ្យា</option>
+                        <option value="រូបវិទ្យា">រូបវិទ្យា</option>
+                        <option value="គីមីវិទ្យា">គីមីវិទ្យា</option>
+                        <option value="ជីវវិទ្យា">ជីវវិទ្យា</option>
+                        <option value="ប្រវត្តិវិទ្យា">ប្រវត្តិវិទ្យា</option>
+                        <option value="ភូមិវិទ្យា">ភូមិវិទ្យា</option>
+                        <option value="ភាសាខ្មែរ">ភាសាខ្មែរ</option>
+                        <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស</option>
+                        <option value="សីលធម៌">សីលធម៌</option>
+                        <option value="ផែនដីវិទ្យា">ផែនដីវិទ្យា</option>
+                        <option value="កុំព្យូទ័រ">កុំព្យូទ័រ</option>
+                    </select>
+                </div>
+                <div id="actionButtons">
+                    <button type="button" class="btn" id="btnEdit" onclick="enableEditMode()" style="display:none; background: #f59e0b; color: white; border: none; padding: 10px 15px; border-radius: 4px; font-family: inherit; font-size: 1rem; cursor: pointer; font-weight: bold;">កែប្រែវិញ្ញាសា</button>
+                    <button type="button" class="btn btn-primary" id="btnSave" onclick="saveExam()">រក្សាទុកវិញ្ញាសា</button>
+                    <button type="button" class="btn" id="btnCancel" onclick="loadExam()" style="display:none; background: #94a3b8; color: white; border: none; padding: 10px 15px; border-radius: 4px; font-family: inherit; font-size: 1rem; cursor: pointer;">បោះបង់</button>
+                </div>
+            </div>
+
+            <!-- General Exam Questions -->
+            <div class="exam-section" style="border-left-color: #3b82f6;" id="section-general">
+                <h4>ផ្នែកទី១៖ សំណួរពហុជ្រើសរើស (Multiple Choice Questions)</h4>
+                <div class="q-container"></div>
+                <button type="button" class="add-q-btn" onclick="addQuestion('general')">+ បន្ថែមសំណួរ</button>
+            </div>
+    </div>
+
+    <script>
+        let qIdCounter = 0;
+
+        function createQuestionCard(skillType, qData = null) {
+            qIdCounter++;
+            const qId = `q_${qIdCounter}`;
+            
+            const div = document.createElement('div');
+            div.className = 'question-card';
+            div.dataset.skill = skillType;
+            
+            const qText = qData ? qData.questionText : '';
+            const optA = qData ? qData.optionA : '';
+            const optB = qData ? qData.optionB : '';
+            const optC = qData ? qData.optionC : '';
+            const optD = qData ? qData.optionD : '';
+            const correct = qData ? qData.correctOption : 'A';
+            
+            div.innerHTML = `
+                <button type="button" class="delete-btn" onclick="this.parentElement.remove()">លុប</button>
+                <input type="text" class="q-text" placeholder="បញ្ចូលសំណួរ..." value="${qText}" required>
+                <div class="options-grid">
+                    <div class="option-row">
+                        <input type="radio" name="${qId}" value="A" ${correct === 'A' ? 'checked' : ''}>
+                        <label>A.</label>
+                        <input type="text" class="q-optA" placeholder="ជម្រើស A" value="${optA}" required>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="${qId}" value="B" ${correct === 'B' ? 'checked' : ''}>
+                        <label>B.</label>
+                        <input type="text" class="q-optB" placeholder="ជម្រើស B" value="${optB}" required>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="${qId}" value="C" ${correct === 'C' ? 'checked' : ''}>
+                        <label>C.</label>
+                        <input type="text" class="q-optC" placeholder="ជម្រើស C" value="${optC}" required>
+                    </div>
+                    <div class="option-row">
+                        <input type="radio" name="${qId}" value="D" ${correct === 'D' ? 'checked' : ''}>
+                        <label>D.</label>
+                        <input type="text" class="q-optD" placeholder="ជម្រើស D" value="${optD}" required>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        function addQuestion(skillType, qData = null) {
+            const container = document.querySelector(`#section-${skillType} .q-container`);
+            container.appendChild(createQuestionCard(skillType, qData));
+        }
+
+        function clearAllQuestions() {
+            document.querySelectorAll('.q-container').forEach(c => c.innerHTML = '');
+        }
+
+        function disableEditMode() {
+            document.getElementById('btnEdit').style.display = 'inline-block';
+            document.getElementById('btnSave').style.display = 'none';
+            document.getElementById('btnCancel').style.display = 'none';
+            
+            document.querySelectorAll('.question-card input').forEach(el => el.disabled = true);
+            document.querySelectorAll('.add-q-btn, .delete-btn').forEach(el => el.style.display = 'none');
+        }
+
+        function enableEditMode() {
+            document.getElementById('btnEdit').style.display = 'none';
+            document.getElementById('btnSave').style.display = 'inline-block';
+            document.getElementById('btnSave').textContent = 'រក្សាទុកការកែប្រែ';
+            document.getElementById('btnCancel').style.display = 'inline-block';
+            
+            document.querySelectorAll('.question-card input').forEach(el => el.disabled = false);
+            document.querySelectorAll('.add-q-btn, .delete-btn').forEach(el => el.style.display = 'inline-block');
+        }
+
+        async function loadExam() {
+            clearAllQuestions();
+            document.getElementById('btnSave').textContent = 'រក្សាទុកវិញ្ញាសា';
+            const month = document.getElementById('monthSelect').value;
+            const className = document.getElementById('classSelect').value;
+            const subjectName = document.getElementById('subjectSelect').value;
+            
+            let foundExisting = false;
+            try {
+                const res = await fetch(`/api/exams/get?month=${encodeURIComponent(month)}&className=${encodeURIComponent(className)}&subjectName=${encodeURIComponent(subjectName)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.questions && data.questions.length > 0) {
+                        data.questions.forEach(q => {
+                            addQuestion('general', q);
+                        });
+                        foundExisting = true;
+                    }
+                }
+            } catch (e) {
+                console.error("Error loading exam:", e);
+            }
+            
+            if (foundExisting) {
+                disableEditMode();
+            } else {
+                // If none found, start with 1 empty question
+                addQuestion('general');
+
+                
+                // New mode
+                document.getElementById('btnEdit').style.display = 'none';
+                document.getElementById('btnSave').style.display = 'inline-block';
+                document.getElementById('btnCancel').style.display = 'none';
+                document.querySelectorAll('.question-card input').forEach(el => el.disabled = false);
+                document.querySelectorAll('.add-q-btn, .delete-btn').forEach(el => el.style.display = 'inline-block');
+            }
+        }
+
+        async function saveExam() {
+            const month = document.getElementById('monthSelect').value;
+            const className = document.getElementById('classSelect').value;
+            const subjectName = document.getElementById('subjectSelect').value;
+            
+            const questions = [];
+            document.querySelectorAll('.question-card').forEach(card => {
+                const qId = card.querySelector('input[type="radio"]').name;
+                const correctOpt = card.querySelector(`input[name="${qId}"]:checked`);
+                
+                questions.push({
+                    skillType: 'general',
+                    questionText: card.querySelector('.q-text').value,
+                    optionA: card.querySelector('.q-optA').value,
+                    optionB: card.querySelector('.q-optB').value,
+                    optionC: card.querySelector('.q-optC').value,
+                    optionD: card.querySelector('.q-optD').value,
+                    correctOption: correctOpt ? correctOpt.value : 'A'
+                });
+            });
+
+            const payload = {
+                month: month,
+                className: className,
+                subjectName: subjectName,
+                questions: questions
+            };
+
+            try {
+                const res = await fetch('/api/exams/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res.ok) {
+                    const alertMsg = document.getElementById('alertMsg');
+                    alertMsg.textContent = "វិញ្ញាសាត្រូវបានរក្សាទុកដោយជោគជ័យចូលក្នុងប្រព័ន្ធធានាគារទិន្នន័យ (Database)!";
+                    alertMsg.style.display = 'block';
+                    setTimeout(() => alertMsg.style.display = 'none', 3000);
+                    
+                    disableEditMode();
+                }
+            } catch (e) {
+                alert("មានបញ្ហាក្នុងការរក្សាទុក");
+            }
+        }
+
+        document.getElementById('monthSelect').addEventListener('change', loadExam);
+        document.getElementById('classSelect').addEventListener('change', loadExam);
+        document.getElementById('subjectSelect').addEventListener('change', loadExam);
+        
+        // Initial load
+        loadExam();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

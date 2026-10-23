@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>កាលវិភាគសិក្សា - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
+    <style>
+        .schedule-table th, .schedule-table td {
+            text-align: center;
+            vertical-align: middle;
+            border: 1px solid var(--light);
+        }
+        .subject-block {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/" class="nav-link">ទំព័រដើម</a></li>
+            <li class="nav-item"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
+            <li class="nav-item"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន 📚</a></li>
+            <li class="nav-item active"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
+            <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍</a></li>
+          </ul>
+          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                  
+            <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
+            <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
+              </ul>
+          </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h3>កាលវិភាគសិក្សា</h3>
+        </div>
+
+        <div class="content">
+            <div class="table-container">
+                <div class="header-action">
+                    <div>
+                        <select id="classSelect" class="form-control" style="width: auto; display: inline-block;">
+
+                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <span id="scheduleMsg" style="color: var(--success); font-weight: bold; margin-right: 15px; display: none;">ជោគជ័យ!</span>
+                        <button id="editScheduleBtn" class="btn btn-primary">កែប្រែកាលវិភាគ</button>
+                    </div>
+                </div>
+                
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>ម៉ោង/ថ្ងៃ</th>
+                            <th>ច័ន្ទ</th>
+                            <th>អង្គារ</th>
+                            <th>ពុធ</th>
+                            <th>ព្រហស្បតិ៍</th>
+                            <th>សុក្រ</th>
+                            <th>សៅរ៍</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Morning -->
+                        <tr>
+                            <td>ម៉ោង 7:00 - 8:00 ព្រឹក</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td>ម៉ោង 8:00 - 9:00 ព្រឹក</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td>ម៉ោង 9:00 - 10:00 ព្រឹក</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td>ម៉ោង 10:00 - 11:00 ព្រឹក</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+
+                        <!-- Break -->
+                        <tr>
+                            <td colspan="7" style="background-color: #f8f9fa; font-weight: bold; color: var(--primary);">ម៉ោងសម្រាកថ្ងៃត្រង់ (Lunch Break)</td>
+                        </tr>
+
+                        <!-- Afternoon -->
+                        <tr>
+                            <td>ម៉ោង 1:00 - 2:00 រសៀល</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td>ម៉ោង 2:00 - 3:00 រសៀល</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td>ម៉ោង 3:00 - 4:00 រសៀល</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td>ម៉ោង 4:00 - 5:00 រសៀល</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const editBtn = document.getElementById('editScheduleBtn');
+            const msg = document.getElementById('scheduleMsg');
+            const classSelect = document.getElementById('classSelect');
+            let isEditing = false;
+            
+            // 1. Load existing data from API
+            async function loadSchedule() {
+                if (isEditing) {
+                    toggleEditMode(); // turn off edit mode if switching class
+                }
+                const className = classSelect.value;
+                try {
+                    const res = await fetch(`/api/schedule/get?className=${encodeURIComponent(className)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const rows = document.querySelectorAll('.schedule-table tbody tr');
+                        
+                        if (data && data.length > 0) {
+                            let index = 0;
+                            // Sort by blockIndex to ensure correct order
+                            data.sort((a, b) => a.blockIndex - b.blockIndex);
+                            
+                            rows.forEach(row => {
+                                if (row.cells.length === 1) return; // Skip recess row
+                                for(let i = 1; i < row.cells.length; i++) {
+                                    const val = data.find(s => s.blockIndex === index)?.subjectName || '-';
+                                    if (val && val !== '-') {
+                                        row.cells[i].innerHTML = '<div class="subject-block">' + val + '</div>';
+                                    } else {
+                                        row.cells[i].innerHTML = '-';
+                                    }
+                                    index++;
+                                }
+                            });
+                        } else {
+                            // Reset to empty if no data found in DB
+                            rows.forEach(row => {
+                                if (row.cells.length === 1) return;
+                                for(let i = 1; i < row.cells.length; i++) {
+                                    row.cells[i].innerHTML = '-';
+                                }
+                            });
+                        }
+                    }
+                } catch(e) {
+                    console.error('Error fetching schedule', e);
+                }
+            }
+
+            function toggleEditMode() {
+                const rows = document.querySelectorAll('.schedule-table tbody tr');
+                if (!isEditing) {
+                    // SWITCH TO EDIT MODE
+                    isEditing = true;
+                    editBtn.textContent = 'រក្សាទុកកាលវិភាគ';
+                    editBtn.style.backgroundColor = 'var(--success)';
+                    
+                    rows.forEach(row => {
+                        if (row.cells.length === 1) return; // Skip recess row
+                        for(let i = 1; i < row.cells.length; i++) {
+                            const cell = row.cells[i];
+                            let val = cell.innerText.trim();
+                            if (val === '-') val = '';
+                            cell.innerHTML = '<input type="text" class="form-control" style="width: 100%; text-align: center; font-weight: bold; border-color: var(--primary);" value="' + val + '">';
+                        }
+                    });
+                } else {
+                    // SAVE DATA
+                    isEditing = false;
+                    editBtn.textContent = 'កំពុងរក្សាទុក...';
+                    editBtn.style.backgroundColor = '';
+                    editBtn.disabled = true;
+                    
+                    const scheduleArray = [];
+                    let index = 0;
+                    
+                    rows.forEach(row => {
+                        if (row.cells.length === 1) return; // Skip recess row
+                        for(let i = 1; i < row.cells.length; i++) {
+                            const cell = row.cells[i];
+                            const input = cell.querySelector('input');
+                            if (input) {
+                                const val = input.value.trim();
+                                scheduleArray.push(val || '-');
+                            }
+                            index++;
+                        }
+                    });
+
+                    // Save to API
+                    fetch('/api/schedule/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            className: classSelect.value,
+                            subjects: scheduleArray
+                        })
+                    }).then(res => {
+                        if (res.ok) {
+                            msg.style.display = 'inline-block';
+                            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+                        }
+                    }).catch(e => {
+                        alert('មានបញ្ហាក្នុងការរក្សាទុក!');
+                    }).finally(() => {
+                        editBtn.disabled = false;
+                        editBtn.textContent = 'កែប្រែកាលវិភាគ';
+                        // Refresh display
+                        loadSchedule();
+                    });
+                }
+            }
+            
+            // 2. Handle button click
+            editBtn.addEventListener('click', toggleEditMode);
+            classSelect.addEventListener('change', loadSchedule);
+            
+            // Initial load
+            loadSchedule();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

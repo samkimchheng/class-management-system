@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>គ្រប់គ្រងគណនីគ្រូ - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --sidebar: #2b2d42;
+        }
+        body { margin: 0; font-family: 'Kantumruy Pro', sans-serif; background-color: #f0f2f5; display: flex; }
+        
+        /* Sidebar layout */
+        
+        /* New Sidebar CSS */
+        .sidebar { width: 260px; background-color: #1e293b; border-right: none; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.2); position: fixed; height: 100vh; z-index: 100; color: white; }
+        .sidebar-header { padding: 25px 20px; text-align: center; background-color: #0f172a; border-bottom: 1px solid #334155; }
+        .sidebar-header h2 { margin: 0; font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; color: #38bdf8; text-shadow: 0 0 8px rgba(56, 189, 248, 0.6); }
+        .sidebar-header div span, .sidebar-header div b { color: #a5b4fc !important; text-shadow: 0 0 5px rgba(165, 180, 252, 0.4); }
+        .nav-menu { list-style: none; padding: 0; margin: 0; flex: 1; overflow-y: auto; }
+        .nav-item { border-bottom: 1px solid #334155; margin-bottom: 0; }
+        .nav-item a, .nav-link { display: block; padding: 15px 20px; color: #cbd5e1; text-decoration: none; border-radius: 0; transition: all 0.3s ease; font-weight: 600; font-size: 1rem; border-left: 4px solid transparent; }
+        .nav-item a:hover, .nav-link:hover { background-color: #334155; color: white; transform: none; }
+        .nav-item.active a, .nav-item.active .nav-link { background-color: #334155; color: white; border-left: 4px solid #6366f1; box-shadow: none; }
+        .main-content { margin-left: 260px; flex: 1; min-height: 100vh; }
+.topbar { background: white; padding: 15px 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .topbar h3 { margin: 0; color: var(--dark); }
+        .content { padding: 30px; }
+        
+        .panel { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: var(--light); font-weight: 600; color: var(--dark); white-space: nowrap; }
+        tr:hover { background-color: #f8f9fa; }
+        
+        .btn { padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: 500; cursor: pointer; border: none; font-family: inherit; display: inline-block; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; box-sizing: border-box; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>.swal2-popup { font-family: 'Kantumruy Pro', 'Hanuman', sans-serif !important; }</style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>អ្នកគ្រប់គ្រងប្រព័ន្ធ</h2>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/admin">Dashboard ទូទៅ</a></li>
+            <li class="nav-item active"><a href="/admin/accounts">គ្រប់គ្រងគណនីគ្រូ</a></li>
+            <li class="nav-item"><a href="/" target="_blank">ចូលមើលទំព័រសាលា &nearr;</a></li>
+          </ul>
+          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                  
+            <li class="nav-item"><a href="/logout" style="color: var(--danger);">ចាកចេញ (Logout)</a></li>
+              </ul>
+          </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h3>គ្រប់គ្រងគណនីគ្រូបង្រៀន</h3>
+            <div style="font-weight: 500;">
+                <span th:text="${session.ACCOUNT_NAME}">Admin Name</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="panel">
+                <h3 style="margin-top: 0; color: var(--primary);">+ បង្កើតគណនីថ្មី</h3>
+                <form th:action="@{/admin/accounts/add}" method="post">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>ឈ្មោះពេញ (Full Name)</label>
+                            <input type="text" name="fullName" class="form-control" required placeholder="ឧ. លោកគ្រូ សុខ...">
+                        </div>
+                        <div class="form-group">
+                            <label>តួនាទី (Role)</label>
+                            <select name="role" class="form-control" required>
+                                <option value="TEACHER">គ្រូបង្រៀន (TEACHER)</option>
+                                <option value="ADMIN">អ្នកគ្រប់គ្រង (ADMIN)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ឈ្មោះចូលប្រើ (Username)</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>លេខសម្ងាត់ (Password)</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 10px;">រក្សាទុកគណនីថ្មី</button>
+                </form>
+            </div>
+            
+            <div class="panel">
+                <h3 style="margin-top: 0;">បញ្ជីគណនីទាំងអស់</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">ល.រ</th>
+                            <th>ឈ្មោះពេញ</th>
+                            <th>ឈ្មោះចូលប្រើ</th>
+                            <th>លេខសម្ងាត់</th>
+                            <th>តួនាទី</th>
+                            <th style="width: 100px; text-align: center;">សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="acc, iterStat : ${accounts}">
+                            <td th:text="${iterStat.count}">១</td>
+                            <td th:text="${acc.fullName}" style="font-weight: bold;">ឈ្មោះ</td>
+                            <td th:text="${acc.username}">username</td>
+                            <td th:text="${acc.password}">password</td>
+                            <td>
+                                <span th:if="${acc.role == 'ADMIN'}" style="background: var(--primary); color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;">ADMIN</span>
+                                <span th:if="${acc.role == 'TEACHER'}" style="background: var(--success); color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;">TEACHER</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <form th:if="${acc.id != session.ACCOUNT_ID}" th:action="@{/admin/accounts/delete/{id}(id=${acc.id})}" method="post" style="display:inline; margin:0;" onsubmit="return confirm('តើអ្នកពិតជាចង់លុបគណនីនេះមែនទេ?');">
+                                    <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">លុប</button>
+                                </form>
+                                <span th:if="${acc.id == session.ACCOUNT_ID}" style="color: #999; font-size: 0.8rem;">គណនីអ្នក</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function confirmDelete(event, form) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'តើអ្នកពិតជាចង់លុបមែនទេ?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'លុបចេញ (Delete)',
+                cancelButtonText: 'បោះបង់ (Cancel)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

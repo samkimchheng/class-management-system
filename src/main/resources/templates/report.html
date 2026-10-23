@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>របាយការណ៍ - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
+    <style>
+        .scrollable-table-wrapper {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 70vh;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+        }
+        .scrollable-table-wrapper table {
+            margin-top: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 800px;
+        }
+        .scrollable-table-wrapper thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: var(--light);
+            border-bottom: 2px solid #ddd;
+            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+        }
+        .scrollable-table-wrapper th, .scrollable-table-wrapper td {
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .print-header { display: none; }
+
+        @media print {
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 1.2rem;
+                color: #000;
+            }
+            .sidebar { display: none !important; }
+            .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+            .topbar { display: none !important; }
+            .content { padding: 0 !important; }
+            .header-action, form.header-action { display: none !important; }
+            body { background-color: white !important; margin: 0; }
+            .scrollable-table-wrapper, .table-container {
+                max-height: none !important;
+                overflow: visible !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            table { width: 100% !important; min-width: auto !important; }
+            .btn { display: none !important; }
+            @page { size: A4 portrait; margin: 10mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/" class="nav-link">ទំព័រដើម</a></li>
+            <li class="nav-item"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
+            <li class="nav-item"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន 📚</a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
+            <li class="nav-item active"><a href="/report" class="nav-link">របាយការណ៍</a></li>
+          </ul>
+          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                  
+            <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ចូលផ្ទាំង Admin 🔏</a></li>
+            <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
+              </ul>
+          </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h3>របាយការណ៍សរុប (ពិន្ទុ និទ្ទេស វត្តមាន)</h3>
+        </div>
+
+        <div class="content">
+            <div class="print-header">
+                <h4 th:text="'របាយការណ៍សរុបប្រចាំខែ៖ ' + (${selectedMonth} ?: 'តេស្តដើមឆ្នាំ') + ' - ' + (${selectedClass} ?: 'ថ្នាក់រៀនទាំងអស់')">របាយការណ៍សរុប</h4>
+            </div>
+
+            <div class="table-container">
+                <form th:action="@{/report}" method="get" class="header-action">
+                    <div>
+                        <select name="month" class="form-control" style="width: auto; display: inline-block;" onchange="this.form.submit()">
+                            <option value="តេស្តដើមឆ្នាំ" th:selected="${selectedMonth == 'តេស្តដើមឆ្នាំ'}">តេស្តដើមឆ្នាំ</option>
+                            <option value="ខែវិច្ឆិកា ២០២៦" th:selected="${selectedMonth == 'ខែវិច្ឆិកា ២០២៦'}">ខែវិច្ឆិកា ២០២៦</option>
+                            <option value="ខែធ្នូ ២០២៦" th:selected="${selectedMonth == 'ខែធ្នូ ២០២៦'}">ខែធ្នូ ២០២៦</option>
+                            <option value="ខែមករា ២០២៧" th:selected="${selectedMonth == 'ខែមករា ២០២៧'}">ខែមករា ២០២៧</option>
+                            <option value="ខែកុម្ភៈ ២០២៧" th:selected="${selectedMonth == 'ខែកុម្ភៈ ២០២៧'}">ខែកុម្ភៈ ២០២៧</option>
+                            <option value="ឆមាសទី១" th:selected="${selectedMonth == 'ឆមាសទី១'}">ឆមាសទី១</option>
+                            <option value="ខែមីនា ២០២៧" th:selected="${selectedMonth == 'ខែមីនា ២០២៧'}">ខែមីនា ២០២៧</option>
+                            <option value="ខែមេសា ២០២៧" th:selected="${selectedMonth == 'ខែមេសា ២០២៧'}">ខែមេសា ២០២៧</option>
+                            <option value="ខែឧសភា ២០២៧" th:selected="${selectedMonth == 'ខែឧសភា ២០២៧'}">ខែឧសភា ២០២៧</option>
+                            <option value="ខែមិថុនា ២០២៧" th:selected="${selectedMonth == 'ខែមិថុនា ២០២៧'}">ខែមិថុនា ២០២៧</option>
+                            <option value="ខែកក្កដា ២០២៧" th:selected="${selectedMonth == 'ខែកក្កដា ២០២៧'}">ខែកក្កដា ២០២៧</option>
+                            <option value="ឆមាសទី២" th:selected="${selectedMonth == 'ឆមាសទី២'}">ឆមាសទី២</option>
+                            <option value="ខែសីហា ២០២៧" th:selected="${selectedMonth == 'ខែសីហា ២០២៧'}">ខែសីហា ២០២៧</option>
+                            <option value="ប្រចាំឆ្នាំ" th:selected="${selectedMonth == 'ប្រចាំឆ្នាំ'}">ប្រចាំឆ្នាំ</option>
+                        </select>
+                        <select name="className" class="form-control" style="width: auto; display: inline-block; margin-left: 10px;" onchange="this.form.submit()">
+                            <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
+                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="window.print()">បោះពុម្ពរបាយការណ៍</button>
+                    </div>
+                </form>
+                
+                <div class="scrollable-table-wrapper">
+                    <table>
+                        <thead style="background-color: var(--light);">
+                            <tr>
+                                <th style="text-align: center; width: 60px;">ល.រ</th>
+                                <th style="white-space: nowrap;">ឈ្មោះសិស្ស</th>
+                                <th style="width: 80px;">ភេទ</th>
+                                <th style="white-space: nowrap;">ថ្នាក់រៀន</th>
+                                <th style="text-align: center;">ពិន្ទុសរុប</th>
+                                <th style="text-align: center;">និទ្ទេស</th>
+                                <th style="text-align: center; white-space: nowrap;">ចំណាត់ថ្នាក់</th>
+                                <th style="text-align: center; color: var(--success);">វត្តមាន</th>
+                                <th style="text-align: center; color: var(--danger);">អវត្តមាន</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="row, iterStat : ${reportRows}">
+                                <td th:text="${iterStat.count}" style="text-align: center; font-weight: bold; color: var(--text-muted);">១</td>
+                                <td  th:text="${row.student.name}" style="font-weight: bold; color: var(--dark); white-space: nowrap;">ឈ្មោះសិស្ស</td>
+                                <td th:text="${row.student.gender}">ភេទ</td>
+                                <td th:text="${row.student.className}" style="white-space: nowrap;">ថ្នាក់រៀន</td>
+                                <td th:text="${row.totalScore}" style="text-align: center; font-weight: bold; color: var(--primary);">0</td>
+                                <td style="text-align: center;">
+                                    <span th:if="${row.grade.startsWith('A')}" class="badge badge-success" th:text="${row.grade}">A</span>
+                                    <span th:if="${row.grade.startsWith('B')}" class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.7);" th:text="${row.grade}">B</span>
+                                    <span th:if="${row.grade.startsWith('C')}" class="badge badge-warning" th:text="${row.grade}">C</span>
+                                    <span th:if="${row.grade.startsWith('D')}" class="badge badge-warning" style="background-color: rgba(245, 158, 11, 0.7);" th:text="${row.grade}">D</span>
+                                    <span th:if="${row.grade.startsWith('E')}" class="badge badge-warning" style="background-color: #fb923c;" th:text="${row.grade}">E</span>
+                                    <span th:if="${row.grade.startsWith('F')}" class="badge badge-danger" th:text="${row.grade}">F</span>
+                                    <span th:if="${row.grade == '-'}" class="badge" style="background-color: #e2e8f0; color: #64748b;">-</span>
+                                </td>
+                                <td th:text="${row.rank}" style="text-align: center; font-weight: bold; color: var(--danger);">1</td>
+                                <td th:text="${row.presentCount}" style="text-align: center; color: var(--success); font-weight: bold;">0</td>
+                                <td th:text="${row.absentCount}" style="text-align: center; color: var(--danger); font-weight: bold;">0</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(reportRows)}">
+                                <td colspan="9" style="text-align: center; padding: 20px; color: var(--text-muted);">មិនមានទិន្នន័យទេ</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>គ្រប់គ្រងបញ្ជីថ្នាក់រៀន</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #f1f5f9;
+            --dark: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light: #f8fafc;
+            --radius: 8px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', 'Hanuman', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fb;
+            display: flex;
+            height: 100vh;
+        }
+
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background-color: #1e293b; border-right: none; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.2); position: fixed; height: 100vh; z-index: 100; color: white; }
+        .sidebar-header { padding: 25px 20px; text-align: center; background-color: #0f172a; border-bottom: 1px solid #334155; }
+        .sidebar-header h2 { margin: 0; font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; color: #38bdf8; text-shadow: 0 0 8px rgba(56, 189, 248, 0.6); }
+        .sidebar-header div span, .sidebar-header div b { color: #a5b4fc !important; text-shadow: 0 0 5px rgba(165, 180, 252, 0.4); }
+        .nav-menu { list-style: none; padding: 0; margin: 0; flex: 1; overflow-y: auto; }
+        .nav-menu::-webkit-scrollbar { width: 5px; }
+        .nav-menu::-webkit-scrollbar-track { background: transparent; }
+        .nav-menu::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .nav-item { border-bottom: 1px solid #334155; margin-bottom: 0; }
+        .nav-link { display: block; padding: 15px 20px; color: #cbd5e1; text-decoration: none; border-radius: 0; transition: all 0.3s ease; font-weight: 600; font-size: 1rem; border-left: 4px solid transparent; }
+        .nav-link:hover { background-color: #334155; color: white; transform: none; }
+        .nav-item.active .nav-link { background-color: #334155; color: white; border-left: 4px solid #6366f1; box-shadow: none; }
+        
+        /* Main Content */
+        .main-content { margin-left: 260px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .topbar {
+            background-color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .topbar h3 {
+            margin: 0;
+            color: var(--dark);
+        }
+        .content {
+            padding: 30px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            padding: 10px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.2s;
+            color: white;
+        }
+        .btn-primary { background-color: var(--primary); }
+        .btn-primary:hover { background-color: #4338ca; }
+        .btn-danger { background-color: var(--danger); }
+        .btn-danger:hover { background-color: #dc2626; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        th { background-color: var(--light); font-weight: bold; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>.swal2-popup { font-family: 'Kantumruy Pro', 'Hanuman', sans-serif !important; }</style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/" class="nav-link">ទំព័រដើម</a></li>
+            <li class="nav-item active"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
+            <li class="nav-item"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន 📚</a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
+            <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍</a></li>
+          </ul>
+          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                  
+            <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
+            <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
+              </ul>
+          </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h3>គ្រប់គ្រងបញ្ជីថ្នាក់រៀន (Classrooms)</h3>
+        </div>
+
+        <div class="content">
+            <div class="card">
+                <h4 style="margin-top: 0;">បន្ថែមថ្នាក់រៀនថ្មី</h4>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="classNameInput" class="form-control" placeholder="ឧទាហរណ៍៖ ៧A, ១២B..." style="width: 300px;">
+                    <button class="btn btn-primary" onclick="addClass()">+ បង្កើតថ្នាក់</button>
+                </div>
+                <div id="alertMsg" style="margin-top: 15px; display: none; padding: 10px; border-radius: 4px;"></div>
+            </div>
+
+            <div class="card">
+                <h4 style="margin-top: 0;">បញ្ជីថ្នាក់រៀនដែលខ្ញុំបង្រៀន</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 80px; text-align: center;">ល.រ</th>
+                            <th>ឈ្មោះថ្នាក់</th>
+                            <th style="width: 150px; text-align: center;">សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c, iter : ${myClassrooms}">
+                            <td style="text-align: center;" th:text="${iter.count}">1</td>
+                            <td th:text="${c.className}" style="font-weight: bold; color: var(--dark);">7A</td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9rem;" th:onclick="'deleteClass(' + ${c.id} + ')'">លុបចោល</button>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(myClassrooms)}">
+                            <td colspan="3" style="text-align: center; padding: 30px; color: #64748b;">
+                                លោកគ្រូ/អ្នកគ្រូមិនទាន់បានបង្កើតថ្នាក់រៀនណាមួយនៅឡើយទេ។<br>សូមបញ្ចូលឈ្មោះថ្នាក់នៅប្រអប់ខាងលើ!
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function addClass() {
+            const input = document.getElementById('classNameInput');
+            const name = input.value.trim();
+            const alertMsg = document.getElementById('alertMsg');
+            
+            if (!name) {
+                alertMsg.style.display = 'block';
+                alertMsg.style.backgroundColor = '#fee2e2';
+                alertMsg.style.color = '#b91c1c';
+                alertMsg.innerText = 'សូមវាយបញ្ចូលឈ្មោះថ្នាក់រៀន!';
+                return;
+            }
+
+            try {
+                const params = new URLSearchParams();
+                params.append('className', name);
+                const res = await fetch('/api/classrooms/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+                const data = await res.json();
+                
+                alertMsg.style.display = 'block';
+                if (res.ok && data.success) {
+                    alertMsg.style.backgroundColor = '#dcfce3';
+                    alertMsg.style.color = '#15803d';
+                    alertMsg.innerText = data.message;
+                    input.value = '';
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    alertMsg.style.backgroundColor = '#fee2e2';
+                    alertMsg.style.color = '#b91c1c';
+                    alertMsg.innerText = data.message || 'បរាជ័យ';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function deleteClass(id) {
+            const result = await Swal.fire({
+                title: 'តើអ្នកពិតជាចង់លុបថ្នាក់នេះមែនទេ?',
+                text: "ទិន្នន័យពាក់ព័ន្ធអាចនឹងនៅរក្សាទុក តែថ្នាក់នេះនឹងបាត់ពីបញ្ជី។",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'លុបចេញ (Delete)',
+                cancelButtonText: 'បោះបង់ (Cancel)'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const res = await fetch('/api/classrooms/delete/' + id, { method: 'DELETE' });
+                    if (res.ok) {
+                        Swal.fire({
+                            title: 'បានលុបជោគជ័យ!',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('បរាជ័យ!', 'មានបញ្ហាក្នុងការលុប។', 'error');
+                    }
+                } catch (e) {
+                    console.error("Error deleting class:", e);
+                    Swal.fire('បរាជ័យ!', 'មានបញ្ហាបណ្តាញ។', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
