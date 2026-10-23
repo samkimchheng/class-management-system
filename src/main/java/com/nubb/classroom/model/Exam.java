@@ -9,8 +9,9 @@ public class Exam {
     private Long id;
 
         private Long accountId;
-@Column(name = "exam_month")
+    @Column(name = "exam_month")
     private String month;
+    @Column(length = 1000)
     private String className;
     private String subjectName;
 

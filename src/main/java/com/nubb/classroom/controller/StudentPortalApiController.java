@@ -27,8 +27,12 @@ public class StudentPortalApiController {
         Student student = (Student) session.getAttribute("loggedInStudent");
         if (student == null) return ResponseEntity.status(401).build();
         
-        List<Exam> exams = examRepository.findByMonthAndClassNameAndAccountId(month, student.getClassName(), student.getAccountId());
-        List<String> subjects = exams.stream().map(Exam::getSubjectName).distinct().toList();
+        List<Exam> exams = examRepository.findByMonthAndAccountId(month, student.getAccountId());
+        List<String> subjects = exams.stream()
+                .filter(e -> ExamApiController.classMatches(e.getClassName(), student.getClassName()))
+                .map(Exam::getSubjectName)
+                .distinct()
+                .toList();
         return ResponseEntity.ok(subjects);
     }
 
@@ -37,7 +41,11 @@ public class StudentPortalApiController {
         Student student = (Student) session.getAttribute("loggedInStudent");
         if (student == null) return ResponseEntity.status(401).build();
         
-        Optional<Exam> examOpt = examRepository.findByMonthAndClassNameAndSubjectNameAndAccountId(month, student.getClassName(), subjectName, student.getAccountId());
+        List<Exam> exams = examRepository.findByMonthAndSubjectNameAndAccountId(month, subjectName, student.getAccountId());
+        Optional<Exam> examOpt = exams.stream()
+                .filter(e -> ExamApiController.classMatches(e.getClassName(), student.getClassName()))
+                .findFirst();
+                
         if (examOpt.isPresent()) {
             List<Question> questions = questionRepository.findByExamIdAndAccountId(examOpt.get().getId(), student.getAccountId());
             return ResponseEntity.ok(Map.of("exam", examOpt.get(), "questions", questions));
