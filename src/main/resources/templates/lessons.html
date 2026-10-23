@@ -181,7 +181,7 @@
             <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
             <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
             <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
-            <li class="nav-item active"><a href="/lessons" class="nav-link">មើលមេរៀន 📚</a></li>
+            <li class="nav-item active"><a href="/lessons" class="nav-link">មើលមេរៀន</a></li>
             <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
             <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/report" class="nav-link">របាយការណ៍</a></li>
             <li class="nav-item" th:if="${session.loggedInStudent != null}"><a href="/test/take" class="nav-link">ផ្ទាំងប្រឡងសិស្ស 📝</a></li>
@@ -198,7 +198,7 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="topbar">
-            <h3>មើលមេរៀន (Study Lessons) 📚</h3>
+            <h3>មើលមេរៀន (Study Lessons)</h3>
             <div>
                 <span th:if="${isStudent}">អ្នកប្រើប្រាស់: សិស្សសាលា</span>
                 <span th:if="${!isStudent}">អ្នកប្រើប្រាស់: គ្រូបង្រៀន</span>
@@ -265,7 +265,7 @@
                             <span>ភាគរយរៀនសូត្រ (Study Progress):</span>
                             <span th:id="'progress-badge-' + ${lesson.id}" 
                                   style="color: var(--primary); font-size: 1rem;" 
-                                  th:text="${progressMap.get(lesson.id)} + '% ' + (${completedMap.get(lesson.id)} ? '✅ រៀនចប់' : '📖 កំពុងរៀន')">
+                                  th:text="${progressMap.get(lesson.id)} + '% ' + (${completedMap.get(lesson.id)} ? '✅ រៀនចប់' : 'កំពុងរៀន')">
                                 0%
                             </span>
                         </div>
@@ -819,7 +819,7 @@
 
                     if (bar) bar.style.width = data.progressPercentage + '%';
                     if (badge) {
-                        badge.innerText = data.progressPercentage + '% ' + (data.completed ? '✅ រៀនចប់' : '📖 កំពុងរៀន');
+                        badge.innerText = data.progressPercentage + '% ' + (data.completed ? '✅ រៀនចប់' : 'កំពុងរៀន');
                     }
 
                     if (showAlert && data.completed) {
