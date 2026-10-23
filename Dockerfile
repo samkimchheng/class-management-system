@@ -22,8 +22,7 @@ RUN mkdir -p /app/data /app/uploads
 # Copy the built jar
 COPY --from=builder /app/target/*.jar app.jar
 
-# Copy existing database and audio files
-COPY data ./data
+# Copy audio files and uploads
 COPY uploads ./uploads
 
 # Port configuration
