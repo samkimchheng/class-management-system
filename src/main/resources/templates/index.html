@@ -49,11 +49,14 @@
         </div>
 
         <div class="content">
-            <div class="header-action" style="margin-bottom: 20px;">
+            <div class="header-action" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <select name="className" class="form-control" style="width: auto;" onchange="window.location.href = '/?className=' + this.value;">
                     <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
                     <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
                 </select>
+                <a href="/docs/teacher-guide.docx" download class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                    <span>📥 ទាញយកសៀវភៅណែនាំ (.doc)</span>
+                </a>
             </div>
             <div class="card-grid">
                 <div class="card">
