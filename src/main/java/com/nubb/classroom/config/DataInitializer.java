@@ -37,6 +37,12 @@ public class DataInitializer {
                     System.err.println(">>> [DataInitializer] Error restoring database: " + e.getMessage());
                 }
             }
+
+            // Ensure all lessons are set to គ្រប់ថ្នាក់ so all classes can access them
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("UPDATE lessons SET class_name = 'គ្រប់ថ្នាក់' WHERE class_name = '១០A' OR class_name = '10A'");
+            } catch (Exception ignored) {}
         };
     }
 }

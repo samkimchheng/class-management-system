@@ -211,6 +211,7 @@
                 <form id="filterForm" action="/lessons" method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
                     <select name="className" class="form-control" style="width: auto;" onchange="document.getElementById('filterForm').submit()">
                         <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">-- ថ្នាក់រៀនទាំងអស់ --</option>
+                        <option value="គ្រប់ថ្នាក់" th:selected="${selectedClass == 'គ្រប់ថ្នាក់'}">🌟 មេរៀនរៀនរួមគ្នា (គ្រប់ថ្នាក់)</option>
                         <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
                     </select>
 
@@ -376,7 +377,7 @@
                     <div class="form-group" style="flex: 1;">
                         <label for="className">ថ្នាក់រៀន <span style="color:red;">*</span></label>
                         <select id="className" name="className" class="form-control" required>
-                            <option th:if="${#lists.isEmpty(myClassrooms)}" value="">-- មិនទាន់មានថ្នាក់រៀន (សូមបង្កើតថ្នាក់រៀនជាមុនសិន) --</option>
+                            <option value="គ្រប់ថ្នាក់">🌟 គ្រប់ថ្នាក់ (រៀនរួមគ្នា - All Classes)</option>
                             <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}"></option>
                         </select>
                     </div>

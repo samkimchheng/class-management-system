@@ -57,7 +57,7 @@ public class LessonController {
 
         List<Lesson> lessons;
         if (student != null) {
-            lessons = lessonRepository.findByClassName(student.getClassName());
+            lessons = lessonRepository.findByClassNameForStudent(student.getClassName());
         } else if (accountId != null) {
             if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
                 if (subjectName != null && !subjectName.isEmpty() && !"មុខវិជ្ជាទាំងអស់".equals(subjectName)) {
