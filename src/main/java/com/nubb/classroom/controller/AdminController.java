@@ -46,6 +46,40 @@ public class AdminController {
         return "redirect:/admin/accounts";
     }
 
+    @PostMapping("/accounts/update")
+    public String updateAccount(
+            @RequestParam("id") Long id,
+            @RequestParam("fullName") String fullName,
+            @RequestParam("username") String username,
+            @RequestParam("password") String password,
+            @RequestParam(value = "role", required = false) String role,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Optional<Account> accOpt = accountRepository.findById(id);
+        if (accOpt.isPresent()) {
+            Account acc = accOpt.get();
+            acc.setFullName(fullName);
+            acc.setUsername(username);
+            acc.setPassword(password);
+            if (role != null && !role.trim().isEmpty()) {
+                acc.setRole(role);
+            }
+            accountRepository.save(acc);
+
+            // Update session name if Admin edited their own account
+            Long myId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (id.equals(myId)) {
+                session.setAttribute("ACCOUNT_NAME", acc.getFullName());
+            }
+
+            redirectAttributes.addFlashAttribute("successMessage", "បានកែប្រែព័ត៌មានគណនី «" + fullName + "» ដោយជោគជ័យ!");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "រកមិនឃើញគណនីដែលត្រូវកែប្រែទេ!");
+        }
+        return "redirect:/admin/accounts";
+    }
+
     @PostMapping("/accounts/toggle-status/{id}")
     public String toggleAccountStatus(
             @PathVariable Long id,
