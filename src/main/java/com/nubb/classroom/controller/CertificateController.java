@@ -347,9 +347,11 @@ public class CertificateController {
             foundRecord = certificateRecordRepository.findFirstByClassNameOrderByIdDesc(verifiedStudent.getClassName()).orElse(null);
         }
 
-        // 4. Resolve School Name
+        // 4. Resolve School Name (Specific URL parameter or DB record takes precedence over default)
         String finalSchool = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
-        if (foundRecord != null && foundRecord.getSchoolName() != null && !foundRecord.getSchoolName().trim().isEmpty() && !foundRecord.getSchoolName().contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
+        if (school != null && !school.trim().isEmpty() && !school.contains("គ្រឹះស្ថានសិក្សា / សាលារៀន") && !school.equals("វិទ្យាល័យ / អនុវិទ្យាល័យ")) {
+            finalSchool = school.trim();
+        } else if (foundRecord != null && foundRecord.getSchoolName() != null && !foundRecord.getSchoolName().trim().isEmpty() && !foundRecord.getSchoolName().contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
             finalSchool = foundRecord.getSchoolName();
         } else if (school != null && !school.trim().isEmpty() && !school.contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
             finalSchool = school.trim();
@@ -357,7 +359,9 @@ public class CertificateController {
 
         // 5. Resolve Subject
         String finalSubject = "គ្រប់មុខវិជ្ជា";
-        if (foundRecord != null && foundRecord.getSubjectName() != null && !foundRecord.getSubjectName().trim().isEmpty()) {
+        if (subject != null && !subject.trim().isEmpty() && !subject.equals("គ្រប់មុខវិជ្ជា")) {
+            finalSubject = subject.trim();
+        } else if (foundRecord != null && foundRecord.getSubjectName() != null && !foundRecord.getSubjectName().trim().isEmpty()) {
             finalSubject = foundRecord.getSubjectName();
         } else if (subject != null && !subject.trim().isEmpty()) {
             finalSubject = subject.trim();
@@ -365,7 +369,9 @@ public class CertificateController {
 
         // 6. Resolve Province
         String finalProvince = "ខេត្តបាត់ដំបង";
-        if (foundRecord != null && foundRecord.getProvince() != null && !foundRecord.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(foundRecord.getProvince().trim())) {
+        if (province != null && !province.trim().isEmpty() && !"កម្ពុជា".equals(province.trim()) && !"ខេត្តបាត់ដំបង".equals(province.trim())) {
+            finalProvince = province.trim();
+        } else if (foundRecord != null && foundRecord.getProvince() != null && !foundRecord.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(foundRecord.getProvince().trim())) {
             finalProvince = foundRecord.getProvince();
         } else if (province != null && !province.trim().isEmpty() && !"កម្ពុជា".equals(province.trim())) {
             finalProvince = province.trim();
@@ -377,7 +383,9 @@ public class CertificateController {
 
         // 7. Resolve Teacher Name
         String finalTeacher = "លោកគ្រូ សំ គឹមឆេង";
-        if (foundRecord != null && foundRecord.getTeacherName() != null && !foundRecord.getTeacherName().trim().isEmpty() && !foundRecord.getTeacherName().contains("គ្រូបង្រៀនទទួលបន្ទុក")) {
+        if (teacher != null && !teacher.trim().isEmpty() && !teacher.contains("គ្រូបង្រៀនទទួលបន្ទុក") && !teacher.equals("លោកគ្រូ សំ គឹមឆេង")) {
+            finalTeacher = teacher.trim();
+        } else if (foundRecord != null && foundRecord.getTeacherName() != null && !foundRecord.getTeacherName().trim().isEmpty() && !foundRecord.getTeacherName().contains("គ្រូបង្រៀនទទួលបន្ទុក")) {
             finalTeacher = foundRecord.getTeacherName();
         } else if (teacher != null && !teacher.trim().isEmpty() && !teacher.contains("គ្រូបង្រៀនទទួលបន្ទុក")) {
             finalTeacher = teacher.trim();
@@ -389,20 +397,24 @@ public class CertificateController {
         }
 
         // Auto-persist record if student is valid so subsequent scans are instant and permanently consistent
-        if (verifiedStudent != null && (foundRecord == null || !serial.equals(foundRecord.getSerialNumber()))) {
+        if (verifiedStudent != null) {
             try {
-                CertificateRecord autoRec = certificateRecordRepository.findByStudentId(verifiedStudent.getId()).orElse(new CertificateRecord());
+                CertificateRecord autoRec = (foundRecord != null) ? foundRecord : certificateRecordRepository.findByStudentId(verifiedStudent.getId()).orElse(new CertificateRecord());
                 autoRec.setStudentId(verifiedStudent.getId());
                 autoRec.setClassName(verifiedStudent.getClassName());
-                autoRec.setSerialNumber(serial != null ? serial : ("CMS-2027-" + String.format("%04d", verifiedStudent.getId()) + "-" + verifiedStudent.getStudentCode()));
+                if (serial != null && !serial.trim().isEmpty()) {
+                    autoRec.setSerialNumber(serial.trim());
+                } else if (autoRec.getSerialNumber() == null) {
+                    autoRec.setSerialNumber("CMS-2027-" + String.format("%04d", verifiedStudent.getId()) + "-" + verifiedStudent.getStudentCode());
+                }
                 autoRec.setSchoolName(finalSchool);
                 autoRec.setSubjectName(finalSubject);
                 autoRec.setProvince(finalProvince);
                 autoRec.setTeacherName(finalTeacher);
-                autoRec.setRoleSignerLeft("នាយកសាលា / គណៈគ្រប់គ្រង");
-                autoRec.setRoleSignerRight("គ្រូបង្រៀនទទួលបន្ទុក");
-                autoRec.setIssueDateKhmer(toKhmerDate(LocalDate.now()));
-                autoRec.setIssueDateEn(LocalDate.now().getMonth().name() + " " + LocalDate.now().getDayOfMonth() + ", " + LocalDate.now().getYear());
+                if (autoRec.getRoleSignerLeft() == null) autoRec.setRoleSignerLeft("នាយកសាលា / គណៈគ្រប់គ្រង");
+                if (autoRec.getRoleSignerRight() == null) autoRec.setRoleSignerRight("គ្រូបង្រៀនទទួលបន្ទុក");
+                if (autoRec.getIssueDateKhmer() == null) autoRec.setIssueDateKhmer(toKhmerDate(LocalDate.now()));
+                if (autoRec.getIssueDateEn() == null) autoRec.setIssueDateEn(LocalDate.now().getMonth().name() + " " + LocalDate.now().getDayOfMonth() + ", " + LocalDate.now().getYear());
                 autoRec.setUpdatedAt(LocalDateTime.now());
                 certificateRecordRepository.save(autoRec);
             } catch (Exception ignored) {}
