@@ -90,8 +90,13 @@ public class CertificateController {
                 student = loggedInStudent;
             }
 
+            // If no student session (e.g. guest, or template preview), create a sample student for display
+            boolean isPreviewMode = false;
             if (student == null) {
-                return "redirect:/lessons";
+                isPreviewMode = true;
+                student = new Student("សុខ សាន្ត", "ប្រុស", "ថ្នាក់ទី១០ A", "123456");
+                student.setId(1L);
+                student.setProvince("ខេត្តបាត់ដំបង");
             }
 
             // Verify lesson completion for the student safely
@@ -104,17 +109,8 @@ public class CertificateController {
                     ? lessonProgressRepository.findByUserKey("STUDENT_" + student.getId())
                     : Collections.emptyList();
             long completedCount = progressList != null ? progressList.stream().filter(LessonProgress::isCompleted).count() : 0;
-            boolean isAllCompleted = totalLessons > 0 && completedCount >= totalLessons;
-
-            // If a student tries to view certificate before completing, show pending page
-            if (!isTeacher && !isAllCompleted) {
-                model.addAttribute("student", student);
-                model.addAttribute("totalLessons", totalLessons);
-                model.addAttribute("completedCount", completedCount);
-                int percent = totalLessons > 0 ? (int) ((completedCount * 100) / totalLessons) : 0;
-                model.addAttribute("percentage", percent);
-                return "certificate-pending";
-            }
+            boolean isAllCompleted = (totalLessons == 0 || completedCount >= totalLessons);
+            int percent = totalLessons > 0 ? (int) ((completedCount * 100) / totalLessons) : 100;
 
             String sCode = (student.getStudentCode() != null && !student.getStudentCode().trim().isEmpty()) ? student.getStudentCode().trim() : "123456";
             Long sId = student.getId() != null ? student.getId() : 1L;
@@ -241,6 +237,10 @@ public class CertificateController {
             model.addAttribute("verifyUrl", verifyUrl);
             model.addAttribute("qrCodeUrl", qrCodeUrl);
             model.addAttribute("totalLessons", totalLessons);
+            model.addAttribute("completedCount", completedCount);
+            model.addAttribute("percentage", percent);
+            model.addAttribute("isAllCompleted", isAllCompleted);
+            model.addAttribute("isPreviewMode", isPreviewMode);
             model.addAttribute("isTeacher", isTeacher);
             model.addAttribute("schoolName", schoolName);
             model.addAttribute("subjectName", subjectName);

@@ -530,11 +530,14 @@
 
     <!-- Top Toolbar (.no-print) -->
     <div class="toolbar no-print">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <a href="/lessons" class="btn-action btn-back">
-                &larr; ត្រឡប់ទៅមេរៀន
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="/" class="btn-action btn-back">
+                &larr; ទំព័រដើម
             </a>
-            <div style="color: white; font-size: 1.05rem; font-weight: bold;">
+            <a href="/lessons" class="btn-action btn-back">
+                📚 មេរៀន
+            </a>
+            <div style="color: white; font-size: 1.05rem; font-weight: bold; margin-left: 5px;">
                 🎓 វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា
             </div>
         </div>
@@ -564,6 +567,17 @@
                 📥 ទាញយកជារូបភាព (PNG)
             </button>
         </div>
+    </div>
+
+    <!-- Preview Mode Notice -->
+    <div th:if="${isPreviewMode}" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; padding: 12px 20px; border-radius: 10px; margin-bottom: 15px; width: 100%; max-width: 1122px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);" class="no-print">
+        <span>💡 <b>ទម្រង់គំរូវិញ្ញាបនបត្របញ្ជាក់ការសិក្សាស្តង់ដារ (Sample Preview Mode)</b> — លោកគ្រូ-អ្នកគ្រូអាចកែសម្រួលឈ្មោះសាលា មុខវិជ្ជា និងខេត្តក្នុងផ្ទាំងខាងក្រោមបានភ្លាមៗ!</span>
+        <a href="/login" class="btn-action" style="background: #fbbf24; color: #0f172a; padding: 6px 16px; font-weight: bold; font-size: 0.9rem;">🔑 ចូលប្រើប្រាស់គណនី (Login)</a>
+    </div>
+
+    <!-- Student Lessons Pending Notice -->
+    <div th:if="${!isAllCompleted and !isTeacher and !isPreviewMode}" style="background: #fef3c7; color: #92400e; padding: 12px 20px; border-radius: 10px; margin-bottom: 15px; border: 1.5px solid #fcd34d; font-weight: 500; text-align: center; width: 100%; max-width: 1122px;" class="no-print">
+        ⚠️ <b>ទម្រង់គំរូវិញ្ញាបនបត្រ៖</b> ប្អូនបានរៀនបញ្ចប់ <b th:text="${completedCount}">0</b>/<b th:text="${totalLessons}">10</b> មេរៀន (<b th:text="${percentage}">0</b>%)។ សូមបន្តរៀនឱ្យបាន <b>១០០%</b> ដើម្បីទទួលបាន និងទាញយកវិញ្ញាបនបត្រផ្លូវការ!
     </div>
 
     <!-- CUSTOMIZER PANEL (.no-print) -->
