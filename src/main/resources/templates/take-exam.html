@@ -35,7 +35,11 @@
         <div class="header">
             <div>
                 <h2 style="margin:0;">សួស្តី, <span th:text="${student.name}">ឈ្មោះសិស្ស</span></h2>
-                <p style="margin:5px 0 0; color: #64748b;">ថ្នាក់ - <span th:text="${student.className}" id="studentClass" style="font-weight: bold; color: var(--primary);">10A</span></p>
+                <div style="margin:5px 0 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <span style="color: #64748b;">ថ្នាក់ - <span th:text="${student.className}" id="studentClass" style="font-weight: bold; color: var(--primary);">10A</span></span>
+                    <a href="/lessons" style="color: #0284c7; text-decoration: none; font-weight: bold; font-size: 0.92rem; background: #e0f2fe; padding: 3px 10px; border-radius: 6px;">📚 មើលមេរៀន</a>
+                    <a href="/certificate" style="color: #b45309; text-decoration: none; font-weight: bold; font-size: 0.92rem; background: #fef3c7; padding: 3px 10px; border-radius: 6px;">🎓 វិញ្ញាបនបត្រ</a>
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <div id="timerBadge" class="timer-badge" style="display:none;">⏱️ <span id="timeText" style="margin-left: 5px;">60:00</span></div>

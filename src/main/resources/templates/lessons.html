@@ -186,6 +186,7 @@
             <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/report" class="nav-link">របាយការណ៍</a></li>
             <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">✈️ ទាក់ទងខ្ញុំ (Telegram)</a></li>
             <li class="nav-item" th:if="${session.loggedInStudent != null}"><a href="/test/take" class="nav-link">ផ្ទាំងប្រឡងសិស្ស 📝</a></li>
+            <li class="nav-item"><a href="/certificate" class="nav-link" style="color: #fbbf24; display: flex; align-items: center; gap: 8px;">🎓 វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</a></li>
         </ul>
         <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
             <ul class="nav-menu" style="overflow-y: visible; flex: none;">
@@ -231,7 +232,56 @@
                     </select>
                 </form>
 
-                <button th:if="${!isStudent}" class="btn btn-primary" onclick="openAddModal()">➕ បង្កើតមេរៀនថ្មី (មាន Transcripts ៣-៤)</button>
+                <div th:if="${!isStudent}" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="/certificate" class="btn" style="background: #0f172a; color: white; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; border: 1px solid #334155;">
+                        <span>🎓 មើលទម្រង់វិញ្ញាបនបត្រ</span>
+                    </a>
+                    <button class="btn btn-primary" onclick="openAddModal()">➕ បង្កើតមេរៀនថ្មី (មាន Transcripts ៣-៤)</button>
+                </div>
+            </div>
+
+            <!-- Student Course Completion & Certificate Banner -->
+            <div th:if="${isStudent}">
+                <!-- Case A: 100% Completed! -->
+                <div th:if="${isAllCompleted}" style="background: linear-gradient(135deg, #0b1d3a, #0284c7); color: white; padding: 25px 30px; border-radius: 14px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(2, 132, 199, 0.35); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border: 2px solid #38bdf8;">
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <div style="font-size: 3.2rem; background: rgba(255,255,255,0.15); width: 75px; height: 75px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); flex-shrink: 0;">
+                            🎓
+                        </div>
+                        <div>
+                            <h2 style="margin: 0; font-size: 1.55rem; font-weight: bold; color: #fef08a; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                                អបអរសាទរ! អ្នកបានរៀនចប់មេរៀនទាំងអស់ ១០០% ហើយ! 🎉
+                            </h2>
+                            <p style="margin: 6px 0 0; font-size: 1.05rem; color: #e0f2fe; line-height: 1.5;">
+                                អ្នកបានបញ្ចប់មេរៀនសរុប <b th:text="${totalLessonsCount}">10</b> នៃ <b th:text="${totalLessonsCount}">10</b> មេរៀន។ វិញ្ញាបនបត្របញ្ជាក់ការសិក្សាផ្លូវការរបស់អ្នកត្រូវបានចេញជូនរួចរាល់ហើយ!
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="/certificate" style="display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; padding: 14px 28px; border-radius: 10px; font-weight: 800; font-size: 1.15rem; text-decoration: none; box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45); transition: all 0.2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+                            <span>🎓 បើកមើល & ទាញយកវិញ្ញាបនបត្រ</span> &rarr;
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Case B: In Progress (Not 100% yet) -->
+                <div th:if="${!isAllCompleted}" style="background: white; padding: 22px 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                        <span style="font-weight: bold; color: #0f172a; font-size: 1.05rem;">
+                            📊 វឌ្ឍនភាពសិក្សាសរុប (Overall Course Progress)
+                        </span>
+                        <span style="font-weight: 800; color: #0284c7; font-size: 1.05rem;" th:text="${completedLessonsCount} + ' / ' + ${totalLessonsCount} + ' មេរៀន (' + (${totalLessonsCount > 0 ? (completedLessonsCount * 100 / totalLessonsCount) : 0}) + '%)'">
+                            0 / 10 មេរៀន (0%)
+                        </span>
+                    </div>
+                    <div style="background: #e2e8f0; height: 14px; border-radius: 7px; overflow: hidden; margin-bottom: 10px;">
+                        <div th:style="'height: 100%; background: linear-gradient(90deg, #0284c7, #10b981); width: ' + (${totalLessonsCount > 0 ? (completedLessonsCount * 100 / totalLessonsCount) : 0}) + '%; border-radius: 7px; transition: width 0.5s ease;'"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.95rem; color: #64748b;">
+                        <span>💡 <b>គន្លឹះសំខាន់៖</b> នៅពេលប្អូនរៀនចប់គ្រប់មេរៀន ១០០% ប្រព័ន្ធនឹងចេញ <b>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សាផ្លូវការ</b> ដែលអាចទាញយកបានភ្លាមៗ!</span>
+                        <a href="/certificate" style="color: #0284c7; font-weight: bold; text-decoration: none;">មើលទម្រង់វិញ្ញាបនបត្រ &rarr;</a>
+                    </div>
+                </div>
             </div>
 
             <!-- Lessons List -->

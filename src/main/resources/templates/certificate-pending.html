@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>មិនទាន់បញ្ចប់មេរៀន - វិញ្ញាបនបត្រ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 30px 15px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: #f1f5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        h2 {
+            margin: 0 0 12px 0;
+            color: #0f172a;
+            font-size: 1.5rem;
+        }
+        p {
+            color: #64748b;
+            line-height: 1.6;
+            margin: 0 0 25px 0;
+            font-size: 1.05rem;
+        }
+        .progress-box {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #334155;
+        }
+        .progress-bar {
+            height: 14px;
+            background: #e2e8f0;
+            border-radius: 7px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #0284c7);
+            border-radius: 7px;
+            transition: width 0.4s ease;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: #0284c7;
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(2,132,199,0.3);
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #0369a1;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">⏳</div>
+        <h2>អ្នកមិនទាន់បានរៀនចប់គ្រប់មេរៀននៅឡើយទេ</h2>
+        <p>
+            សូមអធ្យាស្រ័យ ប្អូន <b><span th:text="${student.name}">ឈ្មោះសិស្ស</span></b>! 
+            ដើម្បីទទួលបាន <b>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សាស្តង់ដារ</b> ប្អូនត្រូវរៀនបញ្ចប់មេរៀនទាំងអស់ក្នុងថ្នាក់រៀនឱ្យបាន ១០០% ជាមុនសិន។
+        </p>
+
+        <div class="progress-box">
+            <div class="progress-label">
+                <span>វឌ្ឍនភាពសិក្សារបស់អ្នក៖</span>
+                <span th:text="${completedCount} + ' / ' + ${totalLessons} + ' មេរៀន (' + ${percentage} + '%)'" style="color: #0284c7;">
+                    0 / 10 មេរៀន (0%)
+                </span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" th:style="'width: ' + ${percentage} + '%;'"></div>
+            </div>
+        </div>
+
+        <div>
+            <a href="/lessons" class="btn">
+                <span>📚 ចូលទៅរៀនមេរៀនដែលនៅសល់</span> &rarr;
+            </a>
+        </div>
+    </div>
+</body>
+</html>

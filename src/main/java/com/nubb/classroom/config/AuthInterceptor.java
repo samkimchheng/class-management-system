@@ -96,8 +96,13 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // Allow /lessons for logged in students as well
-        if (path.startsWith("/lessons") || path.startsWith("/api/lessons")) {
+        // Public verification of certificate (no login required for verification)
+        if (path.startsWith("/certificate/verify")) {
+            return true;
+        }
+
+        // Allow /lessons and /certificate for logged in students as well as teachers
+        if (path.startsWith("/lessons") || path.startsWith("/api/lessons") || path.startsWith("/certificate")) {
             if (session.getAttribute("ACCOUNT_ID") == null && session.getAttribute("loggedInStudent") == null) {
                 response.sendRedirect("/login");
                 return false;

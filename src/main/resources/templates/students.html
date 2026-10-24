@@ -121,6 +121,7 @@
                             <td th:text="${student.status}"></td>
                             <td style="white-space: nowrap;">
                                 <div style="display: flex; gap: 5px;">
+                                    <a th:href="@{/certificate(studentId=${student.id})}" target="_blank" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem; background-color: #0284c7; color: white; text-decoration: none;" title="មើលវិញ្ញាបនបត្រ">🎓 វិញ្ញាបនបត្រ</a>
                                     <a th:href="@{/student/edit/{id}(id=${student.id})}" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem; background-color: var(--warning); color: white; text-decoration: none;">កែប្រែ</a>
                                     <form th:action="@{/student/delete/{id}(id=${student.id})}" method="post" style="display:inline; margin:0;">
                                         <button type="submit" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem; background-color: var(--danger); color: white; border: none; cursor: pointer;">លុប</button>

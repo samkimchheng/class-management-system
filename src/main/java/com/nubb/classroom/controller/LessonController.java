@@ -76,12 +76,15 @@ public class LessonController {
         Map<Long, Integer> progressMap = new HashMap<>();
         Map<Long, Boolean> completedMap = new HashMap<>();
         Map<Long, List<LessonTranscript>> transcriptsMap = new HashMap<>();
+        int completedLessonsCount = 0;
 
         for (Lesson l : lessons) {
             Optional<LessonProgress> lp = lessonProgressRepository.findByLessonIdAndUserKey(l.getId(), userKey);
             if (lp.isPresent()) {
                 progressMap.put(l.getId(), lp.get().getProgressPercentage());
-                completedMap.put(l.getId(), lp.get().isCompleted());
+                boolean done = lp.get().isCompleted();
+                completedMap.put(l.getId(), done);
+                if (done) completedLessonsCount++;
             } else {
                 progressMap.put(l.getId(), 0);
                 completedMap.put(l.getId(), false);
@@ -91,6 +94,9 @@ public class LessonController {
             transcriptsMap.put(l.getId(), transcripts);
         }
 
+        int totalLessonsCount = lessons.size();
+        boolean isAllCompleted = totalLessonsCount > 0 && completedLessonsCount >= totalLessonsCount;
+
         model.addAttribute("lessons", lessons);
         model.addAttribute("progressMap", progressMap);
         model.addAttribute("completedMap", completedMap);
@@ -98,6 +104,9 @@ public class LessonController {
         model.addAttribute("selectedClass", className);
         model.addAttribute("selectedSubject", subjectName);
         model.addAttribute("isStudent", student != null);
+        model.addAttribute("totalLessonsCount", totalLessonsCount);
+        model.addAttribute("completedLessonsCount", completedLessonsCount);
+        model.addAttribute("isAllCompleted", isAllCompleted);
 
         return "lessons";
     }
