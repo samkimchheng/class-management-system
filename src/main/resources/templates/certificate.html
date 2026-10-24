@@ -419,17 +419,22 @@
         .qr-section {
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: rgba(255,255,255,0.85);
-            padding: 4px 10px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
+            gap: 12px;
+            background: #ffffff;
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1.5px solid #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
 
         .qr-image {
-            width: 52px;
-            height: 52px;
-            border-radius: 4px;
+            width: 72px;
+            height: 72px;
+            border-radius: 2px;
+            background: #ffffff;
+            padding: 2px;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
 
         .serial-text {
@@ -623,7 +628,7 @@
             <!-- Right Signer Role -->
             <div class="c-group">
                 <label>✍️ តួនាទីហត្ថលេខាខាងស្តាំ៖</label>
-                <input type="text" id="inputRoleRight" class="c-input" th:value="${roleSignerRight}" placeholder="ឧ. គ្រូបង្រៀនទទួលបន្ទុក" oninput="updateLive()">
+                <input type="text" id="inputRoleRight" class="c-input" th:value="${roleSignerRight}" placeholder="ឧ. គ្រូទទួលបន្ទុកថ្នាក់" oninput="updateLive()">
             </div>
         </div>
 
@@ -722,7 +727,8 @@
                         </div>
                         
                         <div class="qr-section">
-                            <img id="certQrImage" th:src="${qrCodeUrl}" alt="QR Verification" class="qr-image">
+                            <img id="certQrImage" th:src="${qrCodeUrl}" alt="QR Verification" class="qr-image"
+                                 onerror="this.onerror=null; this.src='https://quickchart.io/qr?size=250&amp;margin=2&amp;text=' + encodeURIComponent('[[${verifyUrl}]]');">
                             <div class="serial-text">
                                 <b style="color: #0f172a;">លេខកូដសម្គាល់៖</b><br>
                                 <span th:text="${serialNumber}">CMS-2027-001</span><br>
@@ -736,7 +742,7 @@
                         <div class="footer-date">
                             <span id="dispProvinceDate" th:text="${province}">ខេត្តពោធិ៍សាត់</span>, <span id="dispIssueDate" th:text="${issueDateKhmer}">ថ្ងៃទី ២៤ ខែ តុលា ឆ្នាំ ២០២៦</span>
                         </div>
-                        <div class="footer-role" id="dispRoleRight" th:text="${roleSignerRight}">គ្រូបង្រៀនទទួលបន្ទុក</div>
+                        <div class="footer-role" id="dispRoleRight" th:text="${roleSignerRight}">គ្រូទទួលបន្ទុកថ្នាក់</div>
                         <div class="footer-name" id="dispTeacherName" th:text="${teacherName}">លោកគ្រូ សំ គឹមឆេង</div>
                     </div>
                 </div>
@@ -795,7 +801,7 @@
             if (dispProvinceBody) dispProvinceBody.innerText = provinceVal;
 
             // 4. Teacher Name
-            const teacherVal = document.getElementById('inputTeacherName').value.trim() || 'គ្រូបង្រៀនទទួលបន្ទុក';
+            const teacherVal = document.getElementById('inputTeacherName').value.trim() || 'គ្រូទទួលបន្ទុកថ្នាក់';
             const dispTeacherName = document.getElementById('dispTeacherName');
             if (dispTeacherName) dispTeacherName.innerText = teacherVal;
 
@@ -804,7 +810,7 @@
             const dispRoleLeft = document.getElementById('dispRoleLeft');
             if (dispRoleLeft) dispRoleLeft.innerText = roleLeftVal;
 
-            const roleRightVal = document.getElementById('inputRoleRight').value.trim() || 'គ្រូបង្រៀនទទួលបន្ទុក';
+            const roleRightVal = document.getElementById('inputRoleRight').value.trim() || 'គ្រូទទួលបន្ទុកថ្នាក់';
             const dispRoleRight = document.getElementById('dispRoleRight');
             if (dispRoleRight) dispRoleRight.innerText = roleRightVal;
 
@@ -814,7 +820,7 @@
             const fullVerifyUrl = `${baseVerifyUrl}?serial=${encodeURIComponent(serialVal)}&school=${encodeURIComponent(schoolVal)}&subject=${encodeURIComponent(subjectVal)}&province=${encodeURIComponent(provinceVal)}&teacher=${encodeURIComponent(teacherVal)}`;
             const qrImg = document.getElementById('certQrImage');
             if (qrImg) {
-                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(fullVerifyUrl)}`;
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=2&data=${encodeURIComponent(fullVerifyUrl)}`;
             }
 
             // Save preferences to localStorage
@@ -839,9 +845,9 @@
                 subjectName = document.getElementById('inputCustomSubject').value.trim() || 'គ្រប់មុខវិជ្ជា';
             }
             const province = document.getElementById('selectProvince').value;
-            const teacherName = document.getElementById('inputTeacherName').value.trim() || 'គ្រូបង្រៀនទទួលបន្ទុក';
+            const teacherName = document.getElementById('inputTeacherName').value.trim() || 'គ្រូទទួលបន្ទុកថ្នាក់';
             const roleSignerLeft = document.getElementById('inputRoleLeft').value.trim() || 'នាយកសាលា / គណៈគ្រប់គ្រង';
-            const roleSignerRight = document.getElementById('inputRoleRight').value.trim() || 'គ្រូបង្រៀនទទួលបន្ទុក';
+            const roleSignerRight = document.getElementById('inputRoleRight').value.trim() || 'គ្រូទទួលបន្ទុកថ្នាក់';
             const applyToWholeClass = document.getElementById('chkApplyWholeClass') ? document.getElementById('chkApplyWholeClass').checked : true;
 
             const formData = new FormData();
@@ -891,14 +897,18 @@
                 if (savedProvince) document.getElementById('selectProvince').value = savedProvince;
 
                 const savedTeacher = localStorage.getItem('cert_teacher');
-                if (savedTeacher && !savedTeacher.includes('គ្រូបង្រៀនទទួលបន្ទុក')) {
+                if (savedTeacher && !savedTeacher.includes('គ្រូបង្រៀនទទួលបន្ទុក') && !savedTeacher.includes('គ្រូទទួលបន្ទុកថ្នាក់')) {
                     document.getElementById('inputTeacherName').value = savedTeacher;
                 }
 
                 const savedRoleLeft = localStorage.getItem('cert_role_left');
                 if (savedRoleLeft) document.getElementById('inputRoleLeft').value = savedRoleLeft;
 
-                const savedRoleRight = localStorage.getItem('cert_role_right');
+                let savedRoleRight = localStorage.getItem('cert_role_right');
+                if (savedRoleRight === 'គ្រូបង្រៀនទទួលបន្ទុក') {
+                    savedRoleRight = 'គ្រូទទួលបន្ទុកថ្នាក់';
+                    localStorage.setItem('cert_role_right', savedRoleRight);
+                }
                 if (savedRoleRight) document.getElementById('inputRoleRight').value = savedRoleRight;
 
                 updateLive();
