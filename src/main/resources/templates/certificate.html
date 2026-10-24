@@ -760,7 +760,7 @@
                         </div>
                         
                         <div class="qr-section">
-                            <img th:src="${qrCodeUrl}" alt="QR Verification" class="qr-image">
+                            <img id="certQrImage" th:src="${qrCodeUrl}" alt="QR Verification" class="qr-image">
                             <div class="serial-text">
                                 <b style="color: #0f172a;">លេខកូដសម្គាល់៖</b><br>
                                 <span th:text="${serialNumber}">CMS-2027-001</span><br>
@@ -844,6 +844,15 @@
 
             const roleRightVal = document.getElementById('inputRoleRight').value.trim() || 'គ្រូបង្រៀនទទួលបន្ទុក';
             document.getElementById('dispRoleRight').innerText = roleRightVal;
+
+            // 6. Update QR Code URL dynamically to embed the custom school, subject, province, and teacher
+            const serialVal = "[[${serialNumber}]]" || 'CMS-2027-001';
+            const baseVerifyUrl = "https://class.mitpukae.com/certificate/verify";
+            const fullVerifyUrl = `${baseVerifyUrl}?serial=${encodeURIComponent(serialVal)}&school=${encodeURIComponent(schoolVal)}&subject=${encodeURIComponent(subjectVal)}&province=${encodeURIComponent(provinceVal)}&teacher=${encodeURIComponent(teacherVal)}`;
+            const qrImg = document.getElementById('certQrImage');
+            if (qrImg) {
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(fullVerifyUrl)}`;
+            }
 
             // Save preferences to localStorage
             try {

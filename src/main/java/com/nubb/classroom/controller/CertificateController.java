@@ -131,13 +131,18 @@ public class CertificateController {
             roleSignerRight = "គ្រូបង្រៀនទទួលបន្ទុក";
         }
 
-        // Generate Certificate Metadata
+        // Generate Certificate Metadata with dynamic school, subject, province, teacher
         LocalDate now = LocalDate.now();
         String serialNumber = "CMS-2027-" + String.format("%04d", student.getId()) + "-" + student.getStudentCode();
         String issueDateKhmer = toKhmerDate(now);
         String issueDateEn = now.getMonth().name() + " " + now.getDayOfMonth() + ", " + now.getYear();
 
-        String verifyUrl = "https://class.mitpukae.com/certificate/verify?serial=" + serialNumber;
+        String verifyUrl = "https://class.mitpukae.com/certificate/verify?serial=" + serialNumber
+                + "&school=" + URLEncoder.encode(schoolName, StandardCharsets.UTF_8)
+                + "&subject=" + URLEncoder.encode(subjectName, StandardCharsets.UTF_8)
+                + "&province=" + URLEncoder.encode(province, StandardCharsets.UTF_8)
+                + "&teacher=" + URLEncoder.encode(teacherName, StandardCharsets.UTF_8);
+
         String qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" 
                 + URLEncoder.encode(verifyUrl, StandardCharsets.UTF_8);
 
@@ -162,6 +167,10 @@ public class CertificateController {
     @GetMapping("/certificate/verify")
     public String verifyCertificate(
             @RequestParam(required = false) String serial,
+            @RequestParam(required = false) String school,
+            @RequestParam(required = false) String subject,
+            @RequestParam(required = false) String province,
+            @RequestParam(required = false) String teacher,
             Model model) {
 
         Student verifiedStudent = null;
@@ -181,9 +190,27 @@ public class CertificateController {
             } catch (Exception ignored) {}
         }
 
+        if (school == null || school.trim().isEmpty()) {
+            school = "គ្រឹះស្ថានសិក្សា / សាលារៀន";
+        }
+        if (subject == null || subject.trim().isEmpty()) {
+            subject = "គ្រប់មុខវិជ្ជា";
+        }
+        if (province == null || province.trim().isEmpty()) {
+            province = (verifiedStudent != null && verifiedStudent.getProvince() != null && !verifiedStudent.getProvince().isEmpty())
+                    ? verifiedStudent.getProvince() : "កម្ពុជា";
+        }
+        if (teacher == null || teacher.trim().isEmpty()) {
+            teacher = "គ្រូបង្រៀនទទួលបន្ទុក";
+        }
+
         model.addAttribute("serial", serial);
         model.addAttribute("verified", verifiedStudent != null);
         model.addAttribute("student", verifiedStudent);
+        model.addAttribute("school", school);
+        model.addAttribute("subject", subject);
+        model.addAttribute("province", province);
+        model.addAttribute("teacher", teacher);
         model.addAttribute("verifyDateKhmer", toKhmerDate(LocalDate.now()));
 
         return "certificate-verify";
