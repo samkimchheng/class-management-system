@@ -26,6 +26,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,7 @@ public class CertificateController {
     @GetMapping("/certificate")
     public String viewCertificate(
             @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) String className,
             @RequestParam(required = false) String schoolName,
             @RequestParam(required = false) String subjectName,
             @RequestParam(required = false) String province,
@@ -94,10 +96,55 @@ public class CertificateController {
             boolean isPreviewMode = false;
             if (student == null) {
                 isPreviewMode = true;
-                student = new Student("សុខ សាន្ត", "ប្រុស", "ថ្នាក់ទី១០ A", "123456");
+                String defaultClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ថ្នាក់ទី១០ A";
+                student = new Student("សុខ សាន្ត", "ប្រុស", defaultClass, "123456");
                 student.setId(1L);
-                student.setProvince("ខេត្តបាត់ដំបង");
+                student.setProvince("ខេត្តពោធិ៍សាត់");
+            } else if (className != null && !className.trim().isEmpty()) {
+                student.setClassName(className.trim());
             }
+
+            // Available Classes List (From ClassroomRepository, StudentRepository and Cambodian standards)
+            List<String> availableClasses = new ArrayList<>();
+            try {
+                List<Classroom> cList = (accountId != null) ? classroomRepository.findByAccountId(accountId) : classroomRepository.findAll();
+                if (cList != null) {
+                    for (Classroom c : cList) {
+                        if (c.getClassName() != null && !c.getClassName().trim().isEmpty() && !availableClasses.contains(c.getClassName().trim())) {
+                            availableClasses.add(c.getClassName().trim());
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            try {
+                List<Student> allSt = (accountId != null) ? studentRepository.findByAccountId(accountId) : studentRepository.findAll();
+                if (allSt != null) {
+                    for (Student s : allSt) {
+                        if (s.getClassName() != null && !s.getClassName().trim().isEmpty() && !availableClasses.contains(s.getClassName().trim())) {
+                            availableClasses.add(s.getClassName().trim());
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            String[] defaultCambodianClasses = {
+                "ថ្នាក់ទី១០ A", "ថ្នាក់ទី១០ B", "ថ្នាក់ទី១០ C",
+                "ថ្នាក់ទី១១ A", "ថ្នាក់ទី១១ B", "ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១១ សង្គម",
+                "ថ្នាក់ទី១២ A", "ថ្នាក់ទី១២ B", "ថ្នាក់ទី១២ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១២ សង្គម",
+                "ថ្នាក់ទី៧ A", "ថ្នាក់ទី៧ B", "ថ្នាក់ទី៨ A", "ថ្នាក់ទី៨ B", "ថ្នាក់ទី៩ A", "ថ្នាក់ទី៩ B",
+                "ថ្នាក់ទី១", "ថ្នាក់ទី២", "ថ្នាក់ទី៣", "ថ្នាក់ទី៤", "ថ្នាក់ទី៥", "ថ្នាក់ទី៦",
+                "ឆ្នាំទី១", "ឆ្នាំទី២", "ឆ្នាំទី៣", "ឆ្នាំទី៤"
+            };
+            for (String dc : defaultCambodianClasses) {
+                if (!availableClasses.contains(dc)) {
+                    availableClasses.add(dc);
+                }
+            }
+            if (student.getClassName() != null && !availableClasses.contains(student.getClassName())) {
+                availableClasses.add(0, student.getClassName());
+            }
+            model.addAttribute("availableClasses", availableClasses);
 
             // Verify lesson completion for the student safely
             List<Lesson> classLessons = (student.getClassName() != null && !student.getClassName().trim().isEmpty())
@@ -225,7 +272,8 @@ public class CertificateController {
                     + "&school=" + URLEncoder.encode(schoolName, StandardCharsets.UTF_8)
                     + "&subject=" + URLEncoder.encode(subjectName, StandardCharsets.UTF_8)
                     + "&province=" + URLEncoder.encode(province, StandardCharsets.UTF_8)
-                    + "&teacher=" + URLEncoder.encode(teacherName, StandardCharsets.UTF_8);
+                    + "&teacher=" + URLEncoder.encode(teacherName, StandardCharsets.UTF_8)
+                    + "&className=" + URLEncoder.encode(student.getClassName() != null ? student.getClassName() : "ថ្នាក់ទី១០ A", StandardCharsets.UTF_8);
             String qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=2&data=" 
                     + URLEncoder.encode(verifyUrl, StandardCharsets.UTF_8);
 
@@ -284,7 +332,11 @@ public class CertificateController {
     @PostMapping("/api/certificate/save")
     @ResponseBody
     public ResponseEntity<?> saveCertificate(
-            @RequestParam Long studentId,
+            @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) String className,
+            @RequestParam(required = false) String studentName,
+            @RequestParam(required = false) String studentCode,
+            @RequestParam(required = false) String gender,
             @RequestParam String schoolName,
             @RequestParam String subjectName,
             @RequestParam String province,
@@ -294,23 +346,54 @@ public class CertificateController {
             @RequestParam(required = false, defaultValue = "false") boolean applyToWholeClass) {
 
         try {
-            Optional<Student> stOpt = studentRepository.findById(studentId);
-            if (stOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Student not found"));
-            }
-
-            Student student = stOpt.get();
             LocalDate now = LocalDate.now();
             String issueDateKhmer = toKhmerDate(now);
             String issueDateEn = now.getMonth().name() + " " + now.getDayOfMonth() + ", " + now.getYear();
 
-            if (applyToWholeClass && student.getClassName() != null) {
-                List<Student> classStudents = studentRepository.findByClassName(student.getClassName());
-                for (Student s : classStudents) {
-                    saveOrUpdateRecord(s, schoolName, subjectName, province, teacherName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
+            Optional<Student> stOpt = (studentId != null) ? studentRepository.findById(studentId) : Optional.empty();
+            if (stOpt.isPresent()) {
+                Student student = stOpt.get();
+                if (className != null && !className.trim().isEmpty()) {
+                    student.setClassName(className.trim());
+                }
+                if (studentName != null && !studentName.trim().isEmpty()) {
+                    student.setName(studentName.trim());
+                }
+                if (studentCode != null && !studentCode.trim().isEmpty()) {
+                    student.setStudentCode(studentCode.trim());
+                }
+                if (gender != null && !gender.trim().isEmpty()) {
+                    student.setGender(gender.trim());
+                }
+                studentRepository.save(student);
+
+                if (applyToWholeClass && student.getClassName() != null) {
+                    List<Student> classStudents = studentRepository.findByClassName(student.getClassName());
+                    for (Student s : classStudents) {
+                        saveOrUpdateRecord(s, schoolName, subjectName, province, teacherName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
+                    }
+                } else {
+                    saveOrUpdateRecord(student, schoolName, subjectName, province, teacherName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
                 }
             } else {
-                saveOrUpdateRecord(student, schoolName, subjectName, province, teacherName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
+                // In preview mode or custom creation, save a class template record
+                String targetClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ថ្នាក់ទី១០ A";
+                String serial = "CMS-2027-0001-123456";
+                CertificateRecord record = certificateRecordRepository.findFirstBySerialNumberOrderByIdDesc(serial)
+                        .orElse(new CertificateRecord());
+                record.setStudentId(1L);
+                record.setClassName(targetClass);
+                record.setSerialNumber(serial);
+                record.setSchoolName(schoolName);
+                record.setSubjectName(subjectName);
+                record.setProvince(province);
+                record.setTeacherName(teacherName);
+                record.setRoleSignerLeft(roleSignerLeft != null && !roleSignerLeft.trim().isEmpty() ? roleSignerLeft.trim() : "នាយកសាលា / គណៈគ្រប់គ្រង");
+                record.setRoleSignerRight(roleSignerRight != null && !roleSignerRight.trim().isEmpty() ? roleSignerRight.trim() : "គ្រូទទួលបន្ទុកថ្នាក់");
+                record.setIssueDateKhmer(issueDateKhmer);
+                record.setIssueDateEn(issueDateEn);
+                record.setUpdatedAt(LocalDateTime.now());
+                certificateRecordRepository.save(record);
             }
 
             return ResponseEntity.ok(Map.of("success", true, "message", "បានរក្សាទុកព័ត៌មានវិញ្ញាបនបត្រដោយជោគជ័យ!"));
@@ -355,6 +438,9 @@ public class CertificateController {
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) String province,
             @RequestParam(required = false) String teacher,
+            @RequestParam(required = false, name = "class") String classParam,
+            @RequestParam(required = false) String className,
+            @RequestParam(required = false) String studentName,
             Model model) {
 
         Student verifiedStudent = null;
@@ -365,6 +451,10 @@ public class CertificateController {
                 serial = "CMS-2027-0001-123456";
             } else {
                 serial = serial.trim();
+            }
+
+            if (className == null || className.trim().isEmpty()) {
+                className = classParam;
             }
 
             // 1. Try finding CertificateRecord directly by serial
@@ -415,24 +505,41 @@ public class CertificateController {
                 foundRecord = certificateRecordRepository.findFirstByClassNameOrderByIdDesc(verifiedStudent.getClassName()).orElse(null);
             }
 
+            // Resolve final class name
+            String finalClass = "ថ្នាក់ទី១០ A";
+            if (className != null && !className.trim().isEmpty()) {
+                finalClass = className.trim();
+            } else if (foundRecord != null && foundRecord.getClassName() != null && !foundRecord.getClassName().trim().isEmpty()) {
+                finalClass = foundRecord.getClassName().trim();
+            } else if (verifiedStudent != null && verifiedStudent.getClassName() != null && !verifiedStudent.getClassName().trim().isEmpty()) {
+                finalClass = verifiedStudent.getClassName().trim();
+            }
+
             // 4. Ensure verifiedStudent is resolved for valid CMS serials or foundRecord
             if (verifiedStudent == null) {
                 if (foundRecord != null) {
                     verifiedStudent = new Student();
                     verifiedStudent.setId(foundRecord.getStudentId() != null ? foundRecord.getStudentId() : 1L);
-                    verifiedStudent.setName("សិស្សជ័យលាភី");
+                    verifiedStudent.setName((studentName != null && !studentName.trim().isEmpty()) ? studentName.trim() : "សិស្សជ័យលាភី");
                     verifiedStudent.setGender("ប្រុស");
                     verifiedStudent.setStudentCode(serial.contains("-") ? serial.substring(serial.lastIndexOf("-") + 1) : "123456");
-                    verifiedStudent.setClassName(foundRecord.getClassName() != null ? foundRecord.getClassName() : "ថ្នាក់ទី១០ A");
+                    verifiedStudent.setClassName(finalClass);
                     verifiedStudent.setProvince(foundRecord.getProvince() != null ? foundRecord.getProvince() : "ខេត្តពោធិ៍សាត់");
                 } else if (serial.startsWith("CMS-2027-") || serial.contains("123456") || serial.contains("0001") || "CMS-2027-001".equals(serial)) {
                     verifiedStudent = new Student();
                     verifiedStudent.setId(1L);
-                    verifiedStudent.setName("សុខ សាន្ត");
+                    verifiedStudent.setName((studentName != null && !studentName.trim().isEmpty()) ? studentName.trim() : "សុខ សាន្ត");
                     verifiedStudent.setGender("ប្រុស");
                     verifiedStudent.setStudentCode("123456");
-                    verifiedStudent.setClassName("ថ្នាក់ទី១០ A");
+                    verifiedStudent.setClassName(finalClass);
                     verifiedStudent.setProvince(province != null && !province.trim().isEmpty() ? province : "ខេត្តពោធិ៍សាត់");
+                }
+            } else {
+                if (className != null && !className.trim().isEmpty()) {
+                    verifiedStudent.setClassName(finalClass);
+                }
+                if (studentName != null && !studentName.trim().isEmpty()) {
+                    verifiedStudent.setName(studentName.trim());
                 }
             }
 
@@ -513,6 +620,7 @@ public class CertificateController {
             model.addAttribute("serial", serial);
             model.addAttribute("verified", verifiedStudent != null);
             model.addAttribute("student", verifiedStudent);
+            model.addAttribute("studentClass", finalClass);
             model.addAttribute("school", finalSchool);
             model.addAttribute("subject", finalSubject);
             model.addAttribute("province", finalProvince);
@@ -525,14 +633,17 @@ public class CertificateController {
             e.printStackTrace();
             model.addAttribute("serial", serial != null ? serial : "CMS-2027-0001-123456");
             model.addAttribute("verified", true);
+            String fbClass = (className != null && !className.trim().isEmpty()) ? className.trim() : (classParam != null && !classParam.trim().isEmpty() ? classParam.trim() : "ថ្នាក់ទី១០ A");
+            String fbName = (studentName != null && !studentName.trim().isEmpty()) ? studentName.trim() : "សុខ សាន្ត";
             Student fallbackStudent = new Student();
             fallbackStudent.setId(1L);
-            fallbackStudent.setName("សុខ សាន្ត");
+            fallbackStudent.setName(fbName);
             fallbackStudent.setGender("ប្រុស");
             fallbackStudent.setStudentCode("123456");
-            fallbackStudent.setClassName("ថ្នាក់ទី១០ A");
+            fallbackStudent.setClassName(fbClass);
             fallbackStudent.setProvince(province != null && !province.trim().isEmpty() ? province : "ខេត្តពោធិ៍សាត់");
             model.addAttribute("student", fallbackStudent);
+            model.addAttribute("studentClass", fbClass);
             model.addAttribute("school", school != null && !school.trim().isEmpty() ? school : "វិទ្យាល័យ / អនុវិទ្យាល័យ");
             model.addAttribute("subject", subject != null && !subject.trim().isEmpty() ? subject : "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", province != null && !province.trim().isEmpty() ? province : "ខេត្តពោធិ៍សាត់");

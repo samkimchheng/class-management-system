@@ -136,7 +136,7 @@
                 </tr>
                 <tr>
                     <td>ថ្នាក់រៀន៖</td>
-                    <td th:text="${student != null ? student.className : ''}">ថ្នាក់ទី១០ A</td>
+                    <td th:text="${studentClass != null ? studentClass : (student != null and student.className != null ? student.className : 'ថ្នាក់ទី១០ A')}">ថ្នាក់ទី១០ A</td>
                 </tr>
                 <tr>
                     <td>គ្រឹះស្ថានសិក្សា / សាលារៀន៖</td>
