@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា - NUBB 2027</title>
+    <title>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន ២០២៧</title>
     <!-- Khmer Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Battambang:wght@400;700&family=Moul&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -589,8 +589,8 @@
                     <button type="button" class="btn-action" style="padding: 6px 12px; font-size: 0.8rem; background: #fef3c7; color: #b45309;" onclick="setPresetSchool('អនុវិទ្យាល័យ ')">
                         + អនុវិទ្យាល័យ
                     </button>
-                    <button type="button" class="btn-action" style="padding: 6px 12px; font-size: 0.8rem; background: #f1f5f9; color: #334155;" onclick="setPresetSchool('សាកលវិទ្យាល័យជាតិបាត់ដំបង (NUBB)')">
-                        + NUBB
+                    <button type="button" class="btn-action" style="padding: 6px 12px; font-size: 0.8rem; background: #dcfce7; color: #15803d;" onclick="setPresetSchool('សាលាបឋមសិក្សា ')">
+                        + សាលាបឋមសិក្សា
                     </button>
                 </div>
             </div>
@@ -667,6 +667,16 @@
                 <input type="text" id="inputRoleRight" class="c-input" th:value="${roleSignerRight}" placeholder="ឧ. គ្រូបង្រៀនទទួលបន្ទុក" oninput="updateLive()">
             </div>
         </div>
+
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; color: #334155;">
+                <input type="checkbox" id="chkApplyWholeClass" checked style="width: 18px; height: 18px; cursor: pointer;">
+                <span>☑️ អនុវត្តព័ត៌មាននេះចំពោះសិស្សទាំងអស់ក្នុងថ្នាក់ <b th:text="${student.className}">10A</b></span>
+            </label>
+            <button type="button" class="btn-action" style="background: #10b981; color: white; padding: 10px 22px; font-weight: bold;" onclick="saveCertificateToServer()">
+                💾 រក្សាទុកព័ត៌មានក្នុងប្រព័ន្ធ (Save &amp; Update QR)
+            </button>
+        </div>
     </div>
 
     <!-- MAIN CERTIFICATE CANVAS -->
@@ -702,7 +712,7 @@
                 <div class="cert-header">
                     <p class="motto-khmer">ព្រះរាជាណាចក្រកម្ពុជា<br>ជាតិ សាសនា ព្រះមហាក្សត្រ</p>
                     <div class="motto-divider">✦ ✦ ✦</div>
-                    <h2 class="institution-title" id="dispSchoolName" th:text="${schoolName}">សាកលវិទ្យាល័យជាតិបាត់ដំបង</h2>
+                    <h2 class="institution-title" id="dispSchoolName" th:text="${schoolName}">វិទ្យាល័យ / អនុវិទ្យាល័យ</h2>
                     <div class="institution-en" id="dispSchoolEn">High School / Secondary School &bull; Class Management System 2027</div>
 
                     <div class="cert-title-box">
@@ -748,7 +758,7 @@
                                 <span style="font-size: 0.55rem; color: #991b1b; margin-top: 2px;">★ CMS 2027 ★</span>
                             </div>
                         </div>
-                        <div class="footer-name" id="dispSchoolSigner" th:text="${schoolName}">សាកលវិទ្យាល័យជាតិបាត់ដំបង</div>
+                        <div class="footer-name" id="dispSchoolSigner" th:text="${schoolName}">វិទ្យាល័យ / អនុវិទ្យាល័យ</div>
                     </div>
 
                     <!-- Center: Golden Seal Badge & Verification QR -->
@@ -771,7 +781,7 @@
 
                     <!-- Right: Professor / Course Coordinator -->
                     <div class="footer-col" style="position: relative;">
-                        <div class="footer-date" th:text="'Bat Dambang, ' + ${issueDateEn}">
+                        <div class="footer-date" th:text="${provinceEn} + ', ' + ${issueDateEn}">
                             Bat Dambang, October 24, 2027
                         </div>
                         <div class="footer-role" id="dispRoleRight" th:text="${roleSignerRight}">គ្រូបង្រៀនទទួលបន្ទុក</div>
@@ -816,7 +826,7 @@
 
         function updateLive() {
             // 1. School Name
-            const schoolVal = document.getElementById('inputSchoolName').value.trim() || 'សាលារៀន';
+            const schoolVal = document.getElementById('inputSchoolName').value.trim() || 'វិទ្យាល័យ / អនុវិទ្យាល័យ';
             document.getElementById('dispSchoolName').innerText = schoolVal;
             document.getElementById('dispSchoolBody').innerText = schoolVal;
             document.getElementById('dispSchoolSigner').innerText = schoolVal;
@@ -826,7 +836,7 @@
             const selectSub = document.getElementById('selectSubject');
             let subjectVal = selectSub.value;
             if (subjectVal === 'custom') {
-                subjectVal = document.getElementById('inputCustomSubject').value.trim() || 'មុខវិជ្ជា';
+                subjectVal = document.getElementById('inputCustomSubject').value.trim() || 'គ្រប់មុខវិជ្ជា';
             }
             document.getElementById('dispSubjectBody').innerText = subjectVal;
 
@@ -835,17 +845,17 @@
             document.getElementById('dispProvinceBody').innerText = provinceVal;
 
             // 4. Teacher Name
-            const teacherVal = document.getElementById('inputTeacherName').value.trim() || 'គ្រូបង្រៀន';
+            const teacherVal = document.getElementById('inputTeacherName').value.trim() || 'គ្រូបង្រៀនទទួលបន្ទុក';
             document.getElementById('dispTeacherName').innerText = teacherVal;
 
             // 5. Signer Roles
-            const roleLeftVal = document.getElementById('inputRoleLeft').value.trim() || 'នាយកសាលា';
+            const roleLeftVal = document.getElementById('inputRoleLeft').value.trim() || 'នាយកសាលា / គណៈគ្រប់គ្រង';
             document.getElementById('dispRoleLeft').innerText = roleLeftVal;
 
             const roleRightVal = document.getElementById('inputRoleRight').value.trim() || 'គ្រូបង្រៀនទទួលបន្ទុក';
             document.getElementById('dispRoleRight').innerText = roleRightVal;
 
-            // 6. Update QR Code URL dynamically to embed the custom school, subject, province, and teacher
+            // 6. Update QR Code URL pointing cleanly to verification system
             const serialVal = "[[${serialNumber}]]" || 'CMS-2027-001';
             const baseVerifyUrl = "https://class.mitpukae.com/certificate/verify";
             const fullVerifyUrl = `${baseVerifyUrl}?serial=${encodeURIComponent(serialVal)}&school=${encodeURIComponent(schoolVal)}&subject=${encodeURIComponent(subjectVal)}&province=${encodeURIComponent(provinceVal)}&teacher=${encodeURIComponent(teacherVal)}`;
@@ -856,7 +866,9 @@
 
             // Save preferences to localStorage
             try {
-                localStorage.setItem('cert_school', schoolVal);
+                if (!schoolVal.includes('សាកលវិទ្យាល័យ') && !schoolVal.includes('NUBB')) {
+                    localStorage.setItem('cert_school', schoolVal);
+                }
                 localStorage.setItem('cert_subject', subjectVal);
                 localStorage.setItem('cert_province', provinceVal);
                 localStorage.setItem('cert_teacher', teacherVal);
@@ -865,17 +877,70 @@
             } catch (e) {}
         }
 
+        async function saveCertificateToServer() {
+            const studentId = "[[${student.id}]]";
+            const schoolName = document.getElementById('inputSchoolName').value.trim() || 'វិទ្យាល័យ / អនុវិទ្យាល័យ';
+            const selectSub = document.getElementById('selectSubject');
+            let subjectName = selectSub.value;
+            if (subjectName === 'custom') {
+                subjectName = document.getElementById('inputCustomSubject').value.trim() || 'គ្រប់មុខវិជ្ជា';
+            }
+            const province = document.getElementById('selectProvince').value;
+            const teacherName = document.getElementById('inputTeacherName').value.trim() || 'គ្រូបង្រៀនទទួលបន្ទុក';
+            const roleSignerLeft = document.getElementById('inputRoleLeft').value.trim() || 'នាយកសាលា / គណៈគ្រប់គ្រង';
+            const roleSignerRight = document.getElementById('inputRoleRight').value.trim() || 'គ្រូបង្រៀនទទួលបន្ទុក';
+            const applyToWholeClass = document.getElementById('chkApplyWholeClass') ? document.getElementById('chkApplyWholeClass').checked : true;
+
+            const formData = new FormData();
+            formData.append('studentId', studentId);
+            formData.append('schoolName', schoolName);
+            formData.append('subjectName', subjectName);
+            formData.append('province', province);
+            formData.append('teacherName', teacherName);
+            formData.append('roleSignerLeft', roleSignerLeft);
+            formData.append('roleSignerRight', roleSignerRight);
+            formData.append('applyToWholeClass', applyToWholeClass);
+
+            try {
+                const res = await fetch('/api/certificate/save', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('✅ បានរក្សាទុកក្នុងប្រព័ន្ធជោគជ័យ!\nពេលនេះរាល់ពេលស្កេន QR Code នឹងបង្ហាញឈ្មោះ «' + schoolName + '» មុខវិជ្ជា «' + subjectName + '» និងខេត្ត «' + province + '» ដោយស្វ័យប្រវត្តិតែម្តង!');
+                } else {
+                    alert('មានបញ្ហាក្នុងការរក្សាទុក!');
+                }
+            } catch (e) {
+                alert('កំហុសក្នុងការតភ្ជាប់ប្រព័ន្ធ');
+            }
+        }
+
         // Restore preferences on page load if saved previously
         window.addEventListener('DOMContentLoaded', () => {
             try {
-                const savedSchool = localStorage.getItem('cert_school');
-                if (savedSchool) document.getElementById('inputSchoolName').value = savedSchool;
+                // Clear any legacy obsolete NUBB cached values from browser
+                let savedSchool = localStorage.getItem('cert_school');
+                if (savedSchool && (savedSchool.includes('សាកលវិទ្យាល័យ') || savedSchool.includes('NUBB'))) {
+                    localStorage.removeItem('cert_school');
+                    savedSchool = null;
+                }
+
+                const serverSchool = "[[${schoolName}]]";
+                if (serverSchool && serverSchool !== 'វិទ្យាល័យ / អនុវិទ្យាល័យ' && serverSchool.trim() !== '') {
+                    document.getElementById('inputSchoolName').value = serverSchool;
+                } else if (savedSchool) {
+                    document.getElementById('inputSchoolName').value = savedSchool;
+                }
 
                 const savedProvince = localStorage.getItem('cert_province');
                 if (savedProvince) document.getElementById('selectProvince').value = savedProvince;
 
                 const savedTeacher = localStorage.getItem('cert_teacher');
-                if (savedTeacher) document.getElementById('inputTeacherName').value = savedTeacher;
+                if (savedTeacher && !savedTeacher.includes('គ្រូបង្រៀនទទួលបន្ទុក')) {
+                    document.getElementById('inputTeacherName').value = savedTeacher;
+                }
 
                 const savedRoleLeft = localStorage.getItem('cert_role_left');
                 if (savedRoleLeft) document.getElementById('inputRoleLeft').value = savedRoleLeft;
@@ -884,6 +949,12 @@
                 if (savedRoleRight) document.getElementById('inputRoleRight').value = savedRoleRight;
 
                 updateLive();
+
+                const isTeacher = [[${isTeacher}]];
+                if (isTeacher) {
+                    // Open customizer panel by default for teacher convenience
+                    document.getElementById('customizerPanel').classList.add('active');
+                }
             } catch (e) {}
         });
 

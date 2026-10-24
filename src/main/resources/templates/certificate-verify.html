@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ផ្ទៀងផ្ទាត់វិញ្ញាបនបត្រ - NUBB 2027</title>
+    <title>ផ្ទៀងផ្ទាត់វិញ្ញាបនបត្រ - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន ២០២៧</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Moul&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -19,37 +19,52 @@
         }
         .verify-card {
             background: white;
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 600px;
+            border-radius: 18px;
+            padding: 35px 30px;
+            max-width: 620px;
             width: 100%;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.4);
             border: 2px solid #38bdf8;
             text-align: center;
+        }
+        .national-motto {
+            font-family: 'Moul', cursive;
+            color: #0b1d3a;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 5px;
         }
         .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 18px;
+            padding: 10px 22px;
             border-radius: 30px;
-            font-weight: bold;
-            font-size: 1rem;
-            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin: 15px 0 20px 0;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
         }
         .status-success {
             background: #dcfce7;
             color: #15803d;
-            border: 1px solid #86efac;
+            border: 1.5px solid #86efac;
         }
         .status-fail {
             background: #fee2e2;
             color: #b91c1c;
-            border: 1px solid #fca5a5;
+            border: 1.5px solid #fca5a5;
+        }
+        .institution-title {
+            margin: 0;
+            color: #0b1d3a;
+            font-family: 'Moul', cursive;
+            font-size: 1.35rem;
+            line-height: 1.5;
         }
         .table-info {
             width: 100%;
-            margin: 20px 0;
+            margin: 22px 0;
             border-collapse: collapse;
             text-align: left;
         }
@@ -61,7 +76,7 @@
         .table-info td:first-child {
             color: #64748b;
             font-weight: 500;
-            width: 38%;
+            width: 40%;
         }
         .table-info td:last-child {
             color: #0f172a;
@@ -69,13 +84,19 @@
         }
         .btn {
             display: inline-block;
-            margin-top: 15px;
-            padding: 10px 24px;
+            margin-top: 18px;
+            padding: 11px 26px;
             background: #0284c7;
             color: white;
             text-decoration: none;
             border-radius: 8px;
             font-weight: bold;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            background: #0369a1;
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -83,12 +104,18 @@
     <div class="verify-card">
         <!-- Verification Success -->
         <div th:if="${verified}">
+            <div class="national-motto">
+                ព្រះរាជាណាចក្រកម្ពុជា<br>
+                <span style="font-size: 0.9rem; font-weight: normal; font-family: 'Kantumruy Pro', sans-serif;">ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
+            </div>
+            <div style="color: #c59b27; font-size: 0.85rem; margin-bottom: 15px;">✦ ✦ ✦</div>
+
             <div class="status-badge status-success">
                 <span>✔ វិញ្ញាបនបត្រត្រឹមត្រូវ និងមានសុពលភាពផ្លូវការ</span>
             </div>
             
-            <h2 style="margin: 0; color: #0b1d3a; font-family: 'Moul', cursive; font-size: 1.35rem;" th:text="${school}">
-                សាលារៀន / គ្រឹះស្ថានសិក្សា
+            <h2 class="institution-title" th:text="${school}">
+                វិទ្យាល័យ / អនុវិទ្យាល័យ
             </h2>
             <p style="margin: 5px 0 20px 0; color: #64748b; font-size: 0.95rem;">
                 ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន ២០២៧ (Class Management System)
@@ -97,31 +124,31 @@
             <table class="table-info">
                 <tr>
                     <td>លេខកូដវិញ្ញាបនបត្រ៖</td>
-                    <td style="color: #0284c7; font-family: monospace; font-weight: bold;" th:text="${serial}">CMS-2027-001</td>
+                    <td style="color: #0284c7; font-family: monospace; font-weight: bold;" th:text="${serial}">CMS-2027-0001-123456</td>
                 </tr>
                 <tr>
                     <td>ឈ្មោះម្ចាស់វិញ្ញាបនបត្រ៖</td>
-                    <td style="font-size: 1.25rem; color: #0b1d3a; font-weight: bold;" th:text="${student.name}">សុខ សុភា</td>
+                    <td style="font-size: 1.25rem; color: #0b1d3a; font-weight: bold;" th:text="${student.name}">សុខ សាន្ត</td>
                 </tr>
                 <tr>
                     <td>ភេទ / អត្តលេខ៖</td>
-                    <td th:text="${student.gender} + ' / ' + ${student.studentCode}">ស្រី / STU-001</td>
+                    <td th:text="${student.gender} + ' / ' + ${student.studentCode}">ប្រុស / 123456</td>
                 </tr>
                 <tr>
                     <td>ថ្នាក់រៀន៖</td>
                     <td th:text="${student.className}">ថ្នាក់ទី១០ A</td>
                 </tr>
                 <tr>
-                    <td>គ្រឹះស្ថានសិក្សា / សាលា៖</td>
+                    <td>គ្រឹះស្ថានសិក្សា / សាលារៀន៖</td>
                     <td style="color: #0b1d3a; font-weight: bold;" th:text="${school}">វិទ្យាល័យ...</td>
                 </tr>
                 <tr>
                     <td>មុខវិជ្ជា (Subject)៖</td>
-                    <td style="color: #0284c7; font-weight: bold;" th:text="${subject}">គណិតវិទ្យា</td>
+                    <td style="color: #0284c7; font-weight: bold;" th:text="${subject}">គ្រប់មុខវិជ្ជា</td>
                 </tr>
                 <tr>
                     <td>រាជធានី-ខេត្ត៖</td>
-                    <td th:text="${province}">ខេត្ត...</td>
+                    <td th:text="${province}">ខេត្តបាត់ដំបង</td>
                 </tr>
                 <tr>
                     <td>គ្រូបង្រៀនទទួលបន្ទុក៖</td>
@@ -129,16 +156,16 @@
                 </tr>
                 <tr>
                     <td>ស្ថានភាពការសិក្សា៖</td>
-                    <td style="color: #15803d; font-weight: bold;">✔ បញ្ចប់ការសិក្សា ១០០% ដោយជោគជ័យ</td>
+                    <td style="color: #15803d; font-weight: bold;">✔️ បញ្ចប់ការសិក្សា ១០០% ដោយជោគជ័យ</td>
                 </tr>
                 <tr>
                     <td>កាលបរិច្ឆេទផ្ទៀងផ្ទាត់៖</td>
-                    <td th:text="${verifyDateKhmer}">ថ្ងៃទី ២៤ ខែ តុលា ឆ្នាំ ២០២៧</td>
+                    <td th:text="${verifyDateKhmer}">ថ្ងៃទី ២៤ ខែ តុលា ឆ្នាំ ២០២៦</td>
                 </tr>
             </table>
 
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; color: #64748b;">
-                🛡️ វិញ្ញាបនបត្រនេះត្រូវបានចេញ និងបញ្ជាក់ភាពត្រឹមត្រូវដោយស្វ័យប្រវត្តិតាមរយៈប្រព័ន្ធឌីជីថលសុវត្ថិភាព។
+            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; color: #64748b; line-height: 1.6;">
+                🛡️ <b>បញ្ជាក់៖</b> វិញ្ញាបនបត្រនេះត្រូវបានចុះបញ្ជី និងផ្ទៀងផ្ទាត់សុពលភាពផ្លូវការដោយស្វ័យប្រវត្តិតាមរយៈប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀនឌីជីថល (CMS-2027)។
             </div>
         </div>
 
@@ -149,7 +176,7 @@
             </div>
             <h3 style="color: #0f172a; margin-top: 10px;">រកមិនឃើញទិន្នន័យក្នុងប្រព័ន្ធ</h3>
             <p style="color: #64748b; line-height: 1.6;">
-                លេខកូដវិញ្ញាបនបត្រដែលអ្នកបានបញ្ចូលមិនត្រឹមត្រូវ ឬមិនទាន់ត្រូវបានចុះបញ្ជីក្នុងប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀនឡើយ។
+                លេខកូដវិញ្ញាបនបត្រដែលលោកអ្នកបានស្កេនមិនត្រឹមត្រូវ ឬមិនទាន់ត្រូវបានចុះបញ្ជីក្នុងប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀនឡើយ។
             </p>
         </div>
 
