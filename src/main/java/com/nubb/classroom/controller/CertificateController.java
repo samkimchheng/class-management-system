@@ -199,24 +199,26 @@ public class CertificateController {
                 }
             }
 
-            // Auto-save or update database record safely
-            try {
-                CertificateRecord record = existingRecord.orElse(new CertificateRecord());
-                record.setStudentId(student.getId());
-                record.setClassName(student.getClassName());
-                record.setSerialNumber(serialNumber);
-                record.setSchoolName(schoolName);
-                record.setSubjectName(subjectName);
-                record.setProvince(province);
-                record.setTeacherName(teacherName);
-                record.setRoleSignerLeft(roleSignerLeft);
-                record.setRoleSignerRight(roleSignerRight);
-                record.setIssueDateKhmer(issueDateKhmer);
-                record.setIssueDateEn(issueDateEn);
-                record.setUpdatedAt(LocalDateTime.now());
-                certificateRecordRepository.save(record);
-            } catch (Exception e) {
-                System.err.println("Warning: Could not auto-save certificate record: " + e.getMessage());
+            // Auto-save or update database record safely (skip in preview mode)
+            if (!isPreviewMode && student.getId() != null) {
+                try {
+                    CertificateRecord record = existingRecord.orElse(new CertificateRecord());
+                    record.setStudentId(student.getId());
+                    record.setClassName(student.getClassName());
+                    record.setSerialNumber(serialNumber);
+                    record.setSchoolName(schoolName);
+                    record.setSubjectName(subjectName);
+                    record.setProvince(province);
+                    record.setTeacherName(teacherName);
+                    record.setRoleSignerLeft(roleSignerLeft);
+                    record.setRoleSignerRight(roleSignerRight);
+                    record.setIssueDateKhmer(issueDateKhmer);
+                    record.setIssueDateEn(issueDateEn);
+                    record.setUpdatedAt(LocalDateTime.now());
+                    certificateRecordRepository.save(record);
+                } catch (Exception e) {
+                    System.err.println("Warning: Could not auto-save certificate record: " + e.getMessage());
+                }
             }
 
             String verifyUrl = "https://class.mitpukae.com/certificate/verify?serial=" + URLEncoder.encode(serialNumber, StandardCharsets.UTF_8)
@@ -253,7 +255,29 @@ public class CertificateController {
         } catch (Exception e) {
             System.err.println("Error in viewCertificate: " + e.getMessage());
             e.printStackTrace();
-            return "redirect:/lessons";
+            Student fallbackSt = new Student("សុខ សាន្ត", "ប្រុស", "ថ្នាក់ទី១០ A", "123456");
+            fallbackSt.setId(1L);
+            fallbackSt.setProvince("ខេត្តបាត់ដំបង");
+            model.addAttribute("student", fallbackSt);
+            model.addAttribute("serialNumber", "CMS-2027-0001-123456");
+            model.addAttribute("issueDateKhmer", toKhmerDate(LocalDate.now()));
+            model.addAttribute("issueDateEn", LocalDate.now().toString());
+            model.addAttribute("provinceEn", "Bat Dambang");
+            model.addAttribute("verifyUrl", "https://class.mitpukae.com/certificate/verify");
+            model.addAttribute("qrCodeUrl", "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://class.mitpukae.com/certificate/verify");
+            model.addAttribute("schoolName", "វិទ្យាល័យ / អនុវិទ្យាល័យ");
+            model.addAttribute("subjectName", "គ្រប់មុខវិជ្ជា");
+            model.addAttribute("province", "ខេត្តបាត់ដំបង");
+            model.addAttribute("teacherName", "លោកគ្រូ សំ គឹមឆេង");
+            model.addAttribute("roleSignerLeft", "នាយកសាលា / គណៈគ្រប់គ្រង");
+            model.addAttribute("roleSignerRight", "គ្រូបង្រៀនទទួលបន្ទុក");
+            model.addAttribute("isTeacher", false);
+            model.addAttribute("isPreviewMode", true);
+            model.addAttribute("isAllCompleted", true);
+            model.addAttribute("totalLessons", 0);
+            model.addAttribute("completedCount", 0);
+            model.addAttribute("percentage", 100);
+            return "certificate";
         }
     }
 
