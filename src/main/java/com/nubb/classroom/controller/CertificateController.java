@@ -48,10 +48,17 @@ public class CertificateController {
     @GetMapping("/certificate")
     public String viewCertificate(
             @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) String schoolName,
+            @RequestParam(required = false) String subjectName,
+            @RequestParam(required = false) String province,
+            @RequestParam(required = false) String teacherName,
+            @RequestParam(required = false) String roleSignerLeft,
+            @RequestParam(required = false) String roleSignerRight,
             Model model) {
 
         Student loggedInStudent = (Student) session.getAttribute("loggedInStudent");
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        String accountName = (String) session.getAttribute("ACCOUNT_NAME");
 
         Student student = null;
         boolean isTeacher = (accountId != null);
@@ -94,9 +101,39 @@ public class CertificateController {
             return "certificate-pending";
         }
 
+        // Fallbacks for dynamic school, subject, province, and teacher
+        if (schoolName == null || schoolName.trim().isEmpty()) {
+            schoolName = "សាកលវិទ្យាល័យជាតិបាត់ដំបង (NUBB)";
+        }
+        if (subjectName == null || subjectName.trim().isEmpty()) {
+            subjectName = "គ្រប់មុខវិជ្ជា";
+        }
+        if (province == null || province.trim().isEmpty()) {
+            if (student.getProvince() != null && !student.getProvince().trim().isEmpty()) {
+                province = student.getProvince().startsWith("ខេត្ត") || student.getProvince().startsWith("រាជធានី")
+                        ? student.getProvince()
+                        : "ខេត្ត" + student.getProvince();
+            } else {
+                province = "ខេត្តបាត់ដំបង";
+            }
+        }
+        if (teacherName == null || teacherName.trim().isEmpty()) {
+            if (accountName != null && !accountName.trim().isEmpty()) {
+                teacherName = "លោកគ្រូ " + accountName;
+            } else {
+                teacherName = "លោកគ្រូ សំ គឹមឆេង";
+            }
+        }
+        if (roleSignerLeft == null || roleSignerLeft.trim().isEmpty()) {
+            roleSignerLeft = "នាយកសាលា / គណៈគ្រប់គ្រង";
+        }
+        if (roleSignerRight == null || roleSignerRight.trim().isEmpty()) {
+            roleSignerRight = "គ្រូបង្រៀនទទួលបន្ទុក";
+        }
+
         // Generate Certificate Metadata
         LocalDate now = LocalDate.now();
-        String serialNumber = "NUBB-CMS-2027-" + String.format("%04d", student.getId()) + "-" + student.getStudentCode();
+        String serialNumber = "CMS-2027-" + String.format("%04d", student.getId()) + "-" + student.getStudentCode();
         String issueDateKhmer = toKhmerDate(now);
         String issueDateEn = now.getMonth().name() + " " + now.getDayOfMonth() + ", " + now.getYear();
 
@@ -112,8 +149,12 @@ public class CertificateController {
         model.addAttribute("qrCodeUrl", qrCodeUrl);
         model.addAttribute("totalLessons", totalLessons);
         model.addAttribute("isTeacher", isTeacher);
-        model.addAttribute("schoolName", "សាកលវិទ្យាល័យជាតិបាត់ដំបង (NUBB)");
-        model.addAttribute("teacherName", "លោកគ្រូ សំ គឹមឆេង");
+        model.addAttribute("schoolName", schoolName);
+        model.addAttribute("subjectName", subjectName);
+        model.addAttribute("province", province);
+        model.addAttribute("teacherName", teacherName);
+        model.addAttribute("roleSignerLeft", roleSignerLeft);
+        model.addAttribute("roleSignerRight", roleSignerRight);
 
         return "certificate";
     }
@@ -124,12 +165,18 @@ public class CertificateController {
             Model model) {
 
         Student verifiedStudent = null;
-        if (serial != null && serial.startsWith("NUBB-CMS-2027-")) {
+        if (serial != null) {
             try {
                 String[] parts = serial.split("-");
-                if (parts.length >= 4) {
-                    Long sId = Long.parseLong(parts[3]);
-                    verifiedStudent = studentRepository.findById(sId).orElse(null);
+                for (String p : parts) {
+                    try {
+                        Long sId = Long.parseLong(p);
+                        Optional<Student> opt = studentRepository.findById(sId);
+                        if (opt.isPresent()) {
+                            verifiedStudent = opt.get();
+                            break;
+                        }
+                    } catch (NumberFormatException ignored) {}
                 }
             } catch (Exception ignored) {}
         }
