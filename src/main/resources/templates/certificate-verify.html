@@ -128,15 +128,15 @@
                 </tr>
                 <tr>
                     <td>ឈ្មោះម្ចាស់វិញ្ញាបនបត្រ៖</td>
-                    <td style="font-size: 1.25rem; color: #0b1d3a; font-weight: bold;" th:text="${student.name}">សុខ សាន្ត</td>
+                    <td style="font-size: 1.25rem; color: #0b1d3a; font-weight: bold;" th:text="${student != null ? student.name : ''}">សុខ សាន្ត</td>
                 </tr>
                 <tr>
                     <td>ភេទ / អត្តលេខ៖</td>
-                    <td th:text="${student.gender} + ' / ' + ${student.studentCode}">ប្រុស / 123456</td>
+                    <td th:text="|${student != null and student.gender != null ? student.gender : ''} / ${student != null and student.studentCode != null ? student.studentCode : ''}|">ប្រុស / 123456</td>
                 </tr>
                 <tr>
                     <td>ថ្នាក់រៀន៖</td>
-                    <td th:text="${student.className}">ថ្នាក់ទី១០ A</td>
+                    <td th:text="${student != null ? student.className : ''}">ថ្នាក់ទី១០ A</td>
                 </tr>
                 <tr>
                     <td>គ្រឹះស្ថានសិក្សា / សាលារៀន៖</td>

@@ -102,7 +102,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         // Allow /lessons and /certificate for logged in students as well as teachers
-        if (path.startsWith("/lessons") || path.startsWith("/api/lessons") || path.startsWith("/certificate")) {
+        if (path.startsWith("/lessons") || path.startsWith("/api/lessons") || path.startsWith("/certificate") || path.startsWith("/api/certificate")) {
             if (session.getAttribute("ACCOUNT_ID") == null && session.getAttribute("loggedInStudent") == null) {
                 response.sendRedirect("/login");
                 return false;

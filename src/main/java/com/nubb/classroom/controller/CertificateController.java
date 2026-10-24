@@ -26,6 +26,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,175 +66,195 @@ public class CertificateController {
             @RequestParam(required = false) String roleSignerRight,
             Model model) {
 
-        Student loggedInStudent = (Student) session.getAttribute("loggedInStudent");
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        String accountName = (String) session.getAttribute("ACCOUNT_NAME");
+        try {
+            Student loggedInStudent = (Student) session.getAttribute("loggedInStudent");
+            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            String accountName = (String) session.getAttribute("ACCOUNT_NAME");
 
-        Student student = null;
-        boolean isTeacher = (accountId != null);
+            Student student = null;
+            boolean isTeacher = (accountId != null);
 
-        if (isTeacher) {
-            List<Student> teacherStudents = studentRepository.findByAccountId(accountId);
-            if (teacherStudents.isEmpty()) {
-                teacherStudents = studentRepository.findAll();
+            if (isTeacher) {
+                List<Student> teacherStudents = studentRepository.findByAccountId(accountId);
+                if (teacherStudents.isEmpty()) {
+                    teacherStudents = studentRepository.findAll();
+                }
+                model.addAttribute("teacherStudents", teacherStudents);
+
+                if (studentId != null) {
+                    student = studentRepository.findById(studentId).orElse(null);
+                } else if (!teacherStudents.isEmpty()) {
+                    student = teacherStudents.get(0);
+                }
+            } else if (loggedInStudent != null) {
+                student = loggedInStudent;
             }
-            model.addAttribute("teacherStudents", teacherStudents);
 
-            if (studentId != null) {
-                student = studentRepository.findById(studentId).orElse(null);
-            } else if (!teacherStudents.isEmpty()) {
-                student = teacherStudents.get(0);
+            if (student == null) {
+                return "redirect:/lessons";
             }
-        } else if (loggedInStudent != null) {
-            student = loggedInStudent;
-        }
 
-        if (student == null) {
+            // Verify lesson completion for the student safely
+            List<Lesson> classLessons = (student.getClassName() != null && !student.getClassName().trim().isEmpty())
+                    ? lessonRepository.findByClassNameForStudent(student.getClassName())
+                    : Collections.emptyList();
+            int totalLessons = classLessons != null ? classLessons.size() : 0;
+
+            List<LessonProgress> progressList = (student.getId() != null)
+                    ? lessonProgressRepository.findByUserKey("STUDENT_" + student.getId())
+                    : Collections.emptyList();
+            long completedCount = progressList != null ? progressList.stream().filter(LessonProgress::isCompleted).count() : 0;
+            boolean isAllCompleted = totalLessons > 0 && completedCount >= totalLessons;
+
+            // If a student tries to view certificate before completing, show pending page
+            if (!isTeacher && !isAllCompleted) {
+                model.addAttribute("student", student);
+                model.addAttribute("totalLessons", totalLessons);
+                model.addAttribute("completedCount", completedCount);
+                int percent = totalLessons > 0 ? (int) ((completedCount * 100) / totalLessons) : 0;
+                model.addAttribute("percentage", percent);
+                return "certificate-pending";
+            }
+
+            String sCode = (student.getStudentCode() != null && !student.getStudentCode().trim().isEmpty()) ? student.getStudentCode().trim() : "123456";
+            Long sId = student.getId() != null ? student.getId() : 1L;
+            String serialNumber = "CMS-2027-" + String.format("%04d", sId) + "-" + sCode;
+
+            LocalDate now = LocalDate.now();
+            String issueDateKhmer = toKhmerDate(now);
+            String issueDateEn = now.getMonth().name() + " " + now.getDayOfMonth() + ", " + now.getYear();
+
+            // 1. Check if certificate record exists in database for this student
+            Optional<CertificateRecord> existingRecord = Optional.empty();
+            try {
+                existingRecord = certificateRecordRepository.findFirstByStudentIdOrderByIdDesc(student.getId());
+            } catch (Exception ignored) {}
+
+            // 2. If not, check if any student in the same class has a saved record (class template inheritance)
+            Optional<CertificateRecord> classRecord = existingRecord.isPresent()
+                    ? existingRecord
+                    : ((student.getClassName() != null) ? certificateRecordRepository.findFirstByClassNameOrderByIdDesc(student.getClassName()) : Optional.empty());
+
+            CertificateRecord template = existingRecord.orElse(classRecord.orElse(null));
+
+            // Resolve School Name
+            if (schoolName == null || schoolName.trim().isEmpty()) {
+                if (template != null && template.getSchoolName() != null && !template.getSchoolName().trim().isEmpty() && !template.getSchoolName().contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
+                    schoolName = template.getSchoolName();
+                } else {
+                    schoolName = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
+                }
+            }
+
+            // Resolve Subject
+            if (subjectName == null || subjectName.trim().isEmpty()) {
+                if (template != null && template.getSubjectName() != null && !template.getSubjectName().trim().isEmpty()) {
+                    subjectName = template.getSubjectName();
+                } else {
+                    subjectName = "គ្រប់មុខវិជ្ជា";
+                }
+            }
+
+            // Resolve Province
+            if (province == null || province.trim().isEmpty()) {
+                if (template != null && template.getProvince() != null && !template.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(template.getProvince().trim())) {
+                    province = template.getProvince();
+                } else if (student.getProvince() != null && !student.getProvince().trim().isEmpty()) {
+                    province = student.getProvince().startsWith("ខេត្ត") || student.getProvince().startsWith("រាជធានី")
+                            ? student.getProvince()
+                            : "ខេត្ត" + student.getProvince();
+                } else {
+                    province = "ខេត្តបាត់ដំបង";
+                }
+            }
+
+            // Resolve Teacher Name
+            if (teacherName == null || teacherName.trim().isEmpty()) {
+                if (template != null && template.getTeacherName() != null && !template.getTeacherName().trim().isEmpty() && !template.getTeacherName().contains("គ្រូបង្រៀនទទួលបន្ទុក")) {
+                    teacherName = template.getTeacherName();
+                } else if (accountName != null && !accountName.trim().isEmpty()) {
+                    teacherName = "លោកគ្រូ " + accountName;
+                } else if (student.getAccountId() != null) {
+                    Optional<Account> tAcc = accountRepository.findById(student.getAccountId());
+                    teacherName = tAcc.map(a -> "លោកគ្រូ " + a.getFullName()).orElse("លោកគ្រូ សំ គឹមឆេង");
+                } else {
+                    teacherName = accountRepository.findAll().stream()
+                            .filter(a -> "TEACHER".equalsIgnoreCase(a.getRole()) || "ADMIN".equalsIgnoreCase(a.getRole()))
+                            .findFirst()
+                            .map(a -> "លោកគ្រូ " + a.getFullName())
+                            .orElse("លោកគ្រូ សំ គឹមឆេង");
+                }
+            }
+
+            // Resolve Signer Roles
+            if (roleSignerLeft == null || roleSignerLeft.trim().isEmpty()) {
+                if (template != null && template.getRoleSignerLeft() != null) {
+                    roleSignerLeft = template.getRoleSignerLeft();
+                } else {
+                    roleSignerLeft = "នាយកសាលា / គណៈគ្រប់គ្រង";
+                }
+            }
+
+            if (roleSignerRight == null || roleSignerRight.trim().isEmpty()) {
+                if (template != null && template.getRoleSignerRight() != null) {
+                    roleSignerRight = template.getRoleSignerRight();
+                } else {
+                    roleSignerRight = "គ្រូបង្រៀនទទួលបន្ទុក";
+                }
+            }
+
+            // Auto-save or update database record safely
+            try {
+                CertificateRecord record = existingRecord.orElse(new CertificateRecord());
+                record.setStudentId(student.getId());
+                record.setClassName(student.getClassName());
+                record.setSerialNumber(serialNumber);
+                record.setSchoolName(schoolName);
+                record.setSubjectName(subjectName);
+                record.setProvince(province);
+                record.setTeacherName(teacherName);
+                record.setRoleSignerLeft(roleSignerLeft);
+                record.setRoleSignerRight(roleSignerRight);
+                record.setIssueDateKhmer(issueDateKhmer);
+                record.setIssueDateEn(issueDateEn);
+                record.setUpdatedAt(LocalDateTime.now());
+                certificateRecordRepository.save(record);
+            } catch (Exception e) {
+                System.err.println("Warning: Could not auto-save certificate record: " + e.getMessage());
+            }
+
+            String verifyUrl = "https://class.mitpukae.com/certificate/verify?serial=" + URLEncoder.encode(serialNumber, StandardCharsets.UTF_8)
+                    + "&school=" + URLEncoder.encode(schoolName, StandardCharsets.UTF_8)
+                    + "&subject=" + URLEncoder.encode(subjectName, StandardCharsets.UTF_8)
+                    + "&province=" + URLEncoder.encode(province, StandardCharsets.UTF_8)
+                    + "&teacher=" + URLEncoder.encode(teacherName, StandardCharsets.UTF_8);
+            String qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" 
+                    + URLEncoder.encode(verifyUrl, StandardCharsets.UTF_8);
+
+            String provinceEn = toEnglishProvince(province);
+
+            model.addAttribute("student", student);
+            model.addAttribute("serialNumber", serialNumber);
+            model.addAttribute("issueDateKhmer", issueDateKhmer);
+            model.addAttribute("issueDateEn", issueDateEn);
+            model.addAttribute("provinceEn", provinceEn);
+            model.addAttribute("verifyUrl", verifyUrl);
+            model.addAttribute("qrCodeUrl", qrCodeUrl);
+            model.addAttribute("totalLessons", totalLessons);
+            model.addAttribute("isTeacher", isTeacher);
+            model.addAttribute("schoolName", schoolName);
+            model.addAttribute("subjectName", subjectName);
+            model.addAttribute("province", province);
+            model.addAttribute("teacherName", teacherName);
+            model.addAttribute("roleSignerLeft", roleSignerLeft);
+            model.addAttribute("roleSignerRight", roleSignerRight);
+
+            return "certificate";
+        } catch (Exception e) {
+            System.err.println("Error in viewCertificate: " + e.getMessage());
+            e.printStackTrace();
             return "redirect:/lessons";
         }
-
-        // Verify lesson completion for the student
-        List<Lesson> classLessons = lessonRepository.findByClassNameForStudent(student.getClassName());
-        int totalLessons = classLessons.size();
-        List<LessonProgress> progressList = lessonProgressRepository.findByUserKey("STUDENT_" + student.getId());
-        long completedCount = progressList.stream().filter(LessonProgress::isCompleted).count();
-        boolean isAllCompleted = totalLessons > 0 && completedCount >= totalLessons;
-
-        // If a student tries to view certificate before completing, show pending page
-        if (!isTeacher && !isAllCompleted) {
-            model.addAttribute("student", student);
-            model.addAttribute("totalLessons", totalLessons);
-            model.addAttribute("completedCount", completedCount);
-            int percent = totalLessons > 0 ? (int) ((completedCount * 100) / totalLessons) : 0;
-            model.addAttribute("percentage", percent);
-            return "certificate-pending";
-        }
-
-        String serialNumber = "CMS-2027-" + String.format("%04d", student.getId()) + "-" + student.getStudentCode();
-        LocalDate now = LocalDate.now();
-        String issueDateKhmer = toKhmerDate(now);
-        String issueDateEn = now.getMonth().name() + " " + now.getDayOfMonth() + ", " + now.getYear();
-
-        // 1. Check if certificate record exists in database for this student
-        Optional<CertificateRecord> existingRecord = certificateRecordRepository.findByStudentId(student.getId());
-
-        // 2. If not, check if any student in the same class has a saved record (class template inheritance)
-        Optional<CertificateRecord> classRecord = existingRecord.isPresent()
-                ? existingRecord
-                : (student.getClassName() != null ? certificateRecordRepository.findFirstByClassNameOrderByIdDesc(student.getClassName()) : Optional.empty());
-
-        CertificateRecord template = existingRecord.orElse(classRecord.orElse(null));
-
-        // Resolve School Name
-        if (schoolName == null || schoolName.trim().isEmpty()) {
-            if (template != null && template.getSchoolName() != null && !template.getSchoolName().trim().isEmpty() && !template.getSchoolName().contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
-                schoolName = template.getSchoolName();
-            } else {
-                schoolName = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
-            }
-        }
-
-        // Resolve Subject
-        if (subjectName == null || subjectName.trim().isEmpty()) {
-            if (template != null && template.getSubjectName() != null && !template.getSubjectName().trim().isEmpty()) {
-                subjectName = template.getSubjectName();
-            } else {
-                subjectName = "គ្រប់មុខវិជ្ជា";
-            }
-        }
-
-        // Resolve Province
-        if (province == null || province.trim().isEmpty()) {
-            if (template != null && template.getProvince() != null && !template.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(template.getProvince().trim())) {
-                province = template.getProvince();
-            } else if (student.getProvince() != null && !student.getProvince().trim().isEmpty()) {
-                province = student.getProvince().startsWith("ខេត្ត") || student.getProvince().startsWith("រាជធានី")
-                        ? student.getProvince()
-                        : "ខេត្ត" + student.getProvince();
-            } else {
-                province = "ខេត្តបាត់ដំបង";
-            }
-        }
-
-        // Resolve Teacher Name
-        if (teacherName == null || teacherName.trim().isEmpty()) {
-            if (template != null && template.getTeacherName() != null && !template.getTeacherName().trim().isEmpty() && !template.getTeacherName().contains("គ្រូបង្រៀនទទួលបន្ទុក")) {
-                teacherName = template.getTeacherName();
-            } else if (accountName != null && !accountName.trim().isEmpty()) {
-                teacherName = "លោកគ្រូ " + accountName;
-            } else if (student.getAccountId() != null) {
-                Optional<Account> tAcc = accountRepository.findById(student.getAccountId());
-                teacherName = tAcc.map(a -> "លោកគ្រូ " + a.getFullName()).orElse("លោកគ្រូ សំ គឹមឆេង");
-            } else {
-                teacherName = accountRepository.findAll().stream()
-                        .filter(a -> "TEACHER".equalsIgnoreCase(a.getRole()) || "ADMIN".equalsIgnoreCase(a.getRole()))
-                        .findFirst()
-                        .map(a -> "លោកគ្រូ " + a.getFullName())
-                        .orElse("លោកគ្រូ សំ គឹមឆេង");
-            }
-        }
-
-        // Resolve Signer Roles
-        if (roleSignerLeft == null || roleSignerLeft.trim().isEmpty()) {
-            if (template != null && template.getRoleSignerLeft() != null) {
-                roleSignerLeft = template.getRoleSignerLeft();
-            } else {
-                roleSignerLeft = "នាយកសាលា / គណៈគ្រប់គ្រង";
-            }
-        }
-
-        if (roleSignerRight == null || roleSignerRight.trim().isEmpty()) {
-            if (template != null && template.getRoleSignerRight() != null) {
-                roleSignerRight = template.getRoleSignerRight();
-            } else {
-                roleSignerRight = "គ្រូបង្រៀនទទួលបន្ទុក";
-            }
-        }
-
-        // Auto-save or update database record
-        CertificateRecord record = existingRecord.orElse(new CertificateRecord());
-        record.setStudentId(student.getId());
-        record.setClassName(student.getClassName());
-        record.setSerialNumber(serialNumber);
-        record.setSchoolName(schoolName);
-        record.setSubjectName(subjectName);
-        record.setProvince(province);
-        record.setTeacherName(teacherName);
-        record.setRoleSignerLeft(roleSignerLeft);
-        record.setRoleSignerRight(roleSignerRight);
-        record.setIssueDateKhmer(issueDateKhmer);
-        record.setIssueDateEn(issueDateEn);
-        record.setUpdatedAt(LocalDateTime.now());
-        certificateRecordRepository.save(record);
-
-        // Verification URL includes both serial and parameters for instantaneous scanning compatibility
-        String verifyUrl = "https://class.mitpukae.com/certificate/verify?serial=" + URLEncoder.encode(serialNumber, StandardCharsets.UTF_8)
-                + "&school=" + URLEncoder.encode(schoolName, StandardCharsets.UTF_8)
-                + "&subject=" + URLEncoder.encode(subjectName, StandardCharsets.UTF_8)
-                + "&province=" + URLEncoder.encode(province, StandardCharsets.UTF_8)
-                + "&teacher=" + URLEncoder.encode(teacherName, StandardCharsets.UTF_8);
-        String qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" 
-                + URLEncoder.encode(verifyUrl, StandardCharsets.UTF_8);
-
-        String provinceEn = toEnglishProvince(province);
-
-        model.addAttribute("student", student);
-        model.addAttribute("serialNumber", serialNumber);
-        model.addAttribute("issueDateKhmer", issueDateKhmer);
-        model.addAttribute("issueDateEn", issueDateEn);
-        model.addAttribute("provinceEn", provinceEn);
-        model.addAttribute("verifyUrl", verifyUrl);
-        model.addAttribute("qrCodeUrl", qrCodeUrl);
-        model.addAttribute("totalLessons", totalLessons);
-        model.addAttribute("isTeacher", isTeacher);
-        model.addAttribute("schoolName", schoolName);
-        model.addAttribute("subjectName", subjectName);
-        model.addAttribute("province", province);
-        model.addAttribute("teacherName", teacherName);
-        model.addAttribute("roleSignerLeft", roleSignerLeft);
-        model.addAttribute("roleSignerRight", roleSignerRight);
-
-        return "certificate";
     }
 
     @PostMapping("/api/certificate/save")
@@ -248,46 +269,59 @@ public class CertificateController {
             @RequestParam(required = false) String roleSignerRight,
             @RequestParam(required = false, defaultValue = "false") boolean applyToWholeClass) {
 
-        Optional<Student> stOpt = studentRepository.findById(studentId);
-        if (stOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Student not found"));
-        }
-
-        Student student = stOpt.get();
-        LocalDate now = LocalDate.now();
-        String issueDateKhmer = toKhmerDate(now);
-        String issueDateEn = now.getMonth().name() + " " + now.getDayOfMonth() + ", " + now.getYear();
-
-        if (applyToWholeClass && student.getClassName() != null) {
-            List<Student> classStudents = studentRepository.findByClassName(student.getClassName());
-            for (Student s : classStudents) {
-                saveOrUpdateRecord(s, schoolName, subjectName, province, teacherName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
+        try {
+            Optional<Student> stOpt = studentRepository.findById(studentId);
+            if (stOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Student not found"));
             }
-        } else {
-            saveOrUpdateRecord(student, schoolName, subjectName, province, teacherName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
-        }
 
-        return ResponseEntity.ok(Map.of("success", true, "message", "បានរក្សាទុកព័ត៌មានវិញ្ញាបនបត្រដោយជោគជ័យ!"));
+            Student student = stOpt.get();
+            LocalDate now = LocalDate.now();
+            String issueDateKhmer = toKhmerDate(now);
+            String issueDateEn = now.getMonth().name() + " " + now.getDayOfMonth() + ", " + now.getYear();
+
+            if (applyToWholeClass && student.getClassName() != null) {
+                List<Student> classStudents = studentRepository.findByClassName(student.getClassName());
+                for (Student s : classStudents) {
+                    saveOrUpdateRecord(s, schoolName, subjectName, province, teacherName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
+                }
+            } else {
+                saveOrUpdateRecord(student, schoolName, subjectName, province, teacherName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
+            }
+
+            return ResponseEntity.ok(Map.of("success", true, "message", "បានរក្សាទុកព័ត៌មានវិញ្ញាបនបត្រដោយជោគជ័យ!"));
+        } catch (Exception e) {
+            System.err.println("Error in saveCertificate: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
     }
 
     private void saveOrUpdateRecord(Student s, String schoolName, String subjectName, String province,
                                     String teacherName, String roleSignerLeft, String roleSignerRight,
                                     String issueDateKhmer, String issueDateEn) {
-        String serial = "CMS-2027-" + String.format("%04d", s.getId()) + "-" + s.getStudentCode();
-        CertificateRecord record = certificateRecordRepository.findByStudentId(s.getId()).orElse(new CertificateRecord());
-        record.setStudentId(s.getId());
-        record.setClassName(s.getClassName());
-        record.setSerialNumber(serial);
-        record.setSchoolName(schoolName);
-        record.setSubjectName(subjectName);
-        record.setProvince(province);
-        record.setTeacherName(teacherName);
-        record.setRoleSignerLeft(roleSignerLeft);
-        record.setRoleSignerRight(roleSignerRight);
-        record.setIssueDateKhmer(issueDateKhmer);
-        record.setIssueDateEn(issueDateEn);
-        record.setUpdatedAt(LocalDateTime.now());
-        certificateRecordRepository.save(record);
+        try {
+            String sCode = (s.getStudentCode() != null && !s.getStudentCode().trim().isEmpty()) ? s.getStudentCode().trim() : "123456";
+            String serial = "CMS-2027-" + String.format("%04d", s.getId()) + "-" + sCode;
+
+            CertificateRecord record = certificateRecordRepository.findFirstByStudentIdOrderByIdDesc(s.getId())
+                    .orElse(certificateRecordRepository.findFirstBySerialNumberOrderByIdDesc(serial).orElse(new CertificateRecord()));
+
+            record.setStudentId(s.getId());
+            record.setClassName(s.getClassName());
+            record.setSerialNumber(serial);
+            record.setSchoolName(schoolName);
+            record.setSubjectName(subjectName);
+            record.setProvince(province);
+            record.setTeacherName(teacherName);
+            record.setRoleSignerLeft(roleSignerLeft);
+            record.setRoleSignerRight(roleSignerRight);
+            record.setIssueDateKhmer(issueDateKhmer);
+            record.setIssueDateEn(issueDateEn);
+            record.setUpdatedAt(LocalDateTime.now());
+            certificateRecordRepository.save(record);
+        } catch (Exception e) {
+            System.err.println("Error saving record for student " + s.getId() + ": " + e.getMessage());
+        }
     }
 
     @GetMapping("/certificate/verify")
@@ -302,138 +336,153 @@ public class CertificateController {
         Student verifiedStudent = null;
         CertificateRecord foundRecord = null;
 
-        // 1. Try finding CertificateRecord directly by serial
-        if (serial != null && !serial.trim().isEmpty()) {
-            serial = serial.trim();
-            Optional<CertificateRecord> recOpt = certificateRecordRepository.findBySerialNumber(serial);
-            if (recOpt.isPresent()) {
-                foundRecord = recOpt.get();
-                verifiedStudent = studentRepository.findById(foundRecord.getStudentId()).orElse(null);
+        try {
+            // 1. Try finding CertificateRecord directly by serial
+            if (serial != null && !serial.trim().isEmpty()) {
+                serial = serial.trim();
+                Optional<CertificateRecord> recOpt = certificateRecordRepository.findFirstBySerialNumberOrderByIdDesc(serial);
+                if (recOpt.isPresent()) {
+                    foundRecord = recOpt.get();
+                    verifiedStudent = studentRepository.findById(foundRecord.getStudentId()).orElse(null);
+                }
             }
-        }
 
-        // 2. Fallback: Parse student ID from serial format "CMS-2027-{studentId}-{studentCode}"
-        if (verifiedStudent == null && serial != null) {
-            String[] parts = serial.split("-");
-            if (parts.length >= 3) {
-                try {
-                    Long sId = Long.parseLong(parts[2]);
-                    Optional<Student> opt = studentRepository.findById(sId);
-                    if (opt.isPresent()) {
-                        verifiedStudent = opt.get();
-                        foundRecord = certificateRecordRepository.findByStudentId(verifiedStudent.getId()).orElse(null);
-                    }
-                } catch (NumberFormatException ignored) {}
-            }
-            if (verifiedStudent == null) {
-                for (String p : parts) {
+            // 2. Fallback: Parse student ID from serial format "CMS-2027-{studentId}-{studentCode}"
+            if (verifiedStudent == null && serial != null) {
+                String[] parts = serial.split("-");
+                if (parts.length >= 3) {
                     try {
-                        Long sId = Long.parseLong(p);
-                        if (sId != 2027L) {
-                            Optional<Student> opt = studentRepository.findById(sId);
-                            if (opt.isPresent()) {
-                                verifiedStudent = opt.get();
-                                foundRecord = certificateRecordRepository.findByStudentId(verifiedStudent.getId()).orElse(null);
-                                break;
-                            }
+                        Long sId = Long.parseLong(parts[2]);
+                        Optional<Student> opt = studentRepository.findById(sId);
+                        if (opt.isPresent()) {
+                            verifiedStudent = opt.get();
+                            foundRecord = certificateRecordRepository.findFirstByStudentIdOrderByIdDesc(verifiedStudent.getId()).orElse(null);
                         }
-                    } catch (NumberFormatException ignored) {}
+                    } catch (Exception ignored) {}
+                }
+                if (verifiedStudent == null) {
+                    for (String p : parts) {
+                        try {
+                            Long sId = Long.parseLong(p);
+                            if (sId != 2027L) {
+                                Optional<Student> opt = studentRepository.findById(sId);
+                                if (opt.isPresent()) {
+                                    verifiedStudent = opt.get();
+                                    foundRecord = certificateRecordRepository.findFirstByStudentIdOrderByIdDesc(verifiedStudent.getId()).orElse(null);
+                                    break;
+                                }
+                            }
+                        } catch (Exception ignored) {}
+                    }
                 }
             }
-        }
 
-        // 3. Fallback: If no record found for this student, check if classmates have a saved record
-        if (foundRecord == null && verifiedStudent != null && verifiedStudent.getClassName() != null) {
-            foundRecord = certificateRecordRepository.findFirstByClassNameOrderByIdDesc(verifiedStudent.getClassName()).orElse(null);
-        }
-
-        // 4. Resolve School Name (Specific URL parameter or DB record takes precedence over default)
-        String finalSchool = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
-        if (school != null && !school.trim().isEmpty() && !school.contains("គ្រឹះស្ថានសិក្សា / សាលារៀន") && !school.equals("វិទ្យាល័យ / អនុវិទ្យាល័យ")) {
-            finalSchool = school.trim();
-        } else if (foundRecord != null && foundRecord.getSchoolName() != null && !foundRecord.getSchoolName().trim().isEmpty() && !foundRecord.getSchoolName().contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
-            finalSchool = foundRecord.getSchoolName();
-        } else if (school != null && !school.trim().isEmpty() && !school.contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
-            finalSchool = school.trim();
-        }
-
-        // 5. Resolve Subject
-        String finalSubject = "គ្រប់មុខវិជ្ជា";
-        if (subject != null && !subject.trim().isEmpty() && !subject.equals("គ្រប់មុខវិជ្ជា")) {
-            finalSubject = subject.trim();
-        } else if (foundRecord != null && foundRecord.getSubjectName() != null && !foundRecord.getSubjectName().trim().isEmpty()) {
-            finalSubject = foundRecord.getSubjectName();
-        } else if (subject != null && !subject.trim().isEmpty()) {
-            finalSubject = subject.trim();
-        }
-
-        // 6. Resolve Province
-        String finalProvince = "ខេត្តបាត់ដំបង";
-        if (province != null && !province.trim().isEmpty() && !"កម្ពុជា".equals(province.trim()) && !"ខេត្តបាត់ដំបង".equals(province.trim())) {
-            finalProvince = province.trim();
-        } else if (foundRecord != null && foundRecord.getProvince() != null && !foundRecord.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(foundRecord.getProvince().trim())) {
-            finalProvince = foundRecord.getProvince();
-        } else if (province != null && !province.trim().isEmpty() && !"កម្ពុជា".equals(province.trim())) {
-            finalProvince = province.trim();
-        } else if (verifiedStudent != null && verifiedStudent.getProvince() != null && !verifiedStudent.getProvince().trim().isEmpty()) {
-            finalProvince = verifiedStudent.getProvince().startsWith("ខេត្ត") || verifiedStudent.getProvince().startsWith("រាជធានី")
-                    ? verifiedStudent.getProvince()
-                    : "ខេត្ត" + verifiedStudent.getProvince();
-        }
-
-        // 7. Resolve Teacher Name
-        String finalTeacher = "លោកគ្រូ សំ គឹមឆេង";
-        if (teacher != null && !teacher.trim().isEmpty() && !teacher.contains("គ្រូបង្រៀនទទួលបន្ទុក") && !teacher.equals("លោកគ្រូ សំ គឹមឆេង")) {
-            finalTeacher = teacher.trim();
-        } else if (foundRecord != null && foundRecord.getTeacherName() != null && !foundRecord.getTeacherName().trim().isEmpty() && !foundRecord.getTeacherName().contains("គ្រូបង្រៀនទទួលបន្ទុក")) {
-            finalTeacher = foundRecord.getTeacherName();
-        } else if (teacher != null && !teacher.trim().isEmpty() && !teacher.contains("គ្រូបង្រៀនទទួលបន្ទុក")) {
-            finalTeacher = teacher.trim();
-        } else if (verifiedStudent != null && verifiedStudent.getAccountId() != null) {
-            Optional<Account> tAcc = accountRepository.findById(verifiedStudent.getAccountId());
-            if (tAcc.isPresent() && tAcc.get().getFullName() != null && !tAcc.get().getFullName().trim().isEmpty()) {
-                finalTeacher = "លោកគ្រូ " + tAcc.get().getFullName();
+            // 3. Fallback: If no record found for this student, check if classmates have a saved record
+            if (foundRecord == null && verifiedStudent != null && verifiedStudent.getClassName() != null) {
+                foundRecord = certificateRecordRepository.findFirstByClassNameOrderByIdDesc(verifiedStudent.getClassName()).orElse(null);
             }
-        }
 
-        // Auto-persist record if student is valid so subsequent scans are instant and permanently consistent
-        if (verifiedStudent != null) {
-            try {
-                CertificateRecord autoRec = (foundRecord != null) ? foundRecord : certificateRecordRepository.findByStudentId(verifiedStudent.getId()).orElse(new CertificateRecord());
-                autoRec.setStudentId(verifiedStudent.getId());
-                autoRec.setClassName(verifiedStudent.getClassName());
-                if (serial != null && !serial.trim().isEmpty()) {
-                    autoRec.setSerialNumber(serial.trim());
-                } else if (autoRec.getSerialNumber() == null) {
-                    autoRec.setSerialNumber("CMS-2027-" + String.format("%04d", verifiedStudent.getId()) + "-" + verifiedStudent.getStudentCode());
+            // 4. Resolve School Name
+            String finalSchool = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
+            if (school != null && !school.trim().isEmpty() && !school.contains("គ្រឹះស្ថានសិក្សា / សាលារៀន") && !school.equals("វិទ្យាល័យ / អនុវិទ្យាល័យ")) {
+                finalSchool = school.trim();
+            } else if (foundRecord != null && foundRecord.getSchoolName() != null && !foundRecord.getSchoolName().trim().isEmpty() && !foundRecord.getSchoolName().contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
+                finalSchool = foundRecord.getSchoolName();
+            } else if (school != null && !school.trim().isEmpty() && !school.contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
+                finalSchool = school.trim();
+            }
+
+            // 5. Resolve Subject
+            String finalSubject = "គ្រប់មុខវិជ្ជា";
+            if (subject != null && !subject.trim().isEmpty() && !subject.equals("គ្រប់មុខវិជ្ជា")) {
+                finalSubject = subject.trim();
+            } else if (foundRecord != null && foundRecord.getSubjectName() != null && !foundRecord.getSubjectName().trim().isEmpty()) {
+                finalSubject = foundRecord.getSubjectName();
+            } else if (subject != null && !subject.trim().isEmpty()) {
+                finalSubject = subject.trim();
+            }
+
+            // 6. Resolve Province
+            String finalProvince = "ខេត្តបាត់ដំបង";
+            if (province != null && !province.trim().isEmpty() && !"កម្ពុជា".equals(province.trim()) && !"ខេត្តបាត់ដំបង".equals(province.trim())) {
+                finalProvince = province.trim();
+            } else if (foundRecord != null && foundRecord.getProvince() != null && !foundRecord.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(foundRecord.getProvince().trim())) {
+                finalProvince = foundRecord.getProvince();
+            } else if (province != null && !province.trim().isEmpty() && !"កម្ពុជា".equals(province.trim())) {
+                finalProvince = province.trim();
+            } else if (verifiedStudent != null && verifiedStudent.getProvince() != null && !verifiedStudent.getProvince().trim().isEmpty()) {
+                finalProvince = verifiedStudent.getProvince().startsWith("ខេត្ត") || verifiedStudent.getProvince().startsWith("រាជធានី")
+                        ? verifiedStudent.getProvince()
+                        : "ខេត្ត" + verifiedStudent.getProvince();
+            }
+
+            // 7. Resolve Teacher Name
+            String finalTeacher = "លោកគ្រូ សំ គឹមឆេង";
+            if (teacher != null && !teacher.trim().isEmpty() && !teacher.contains("គ្រូបង្រៀនទទួលបន្ទុក") && !teacher.equals("លោកគ្រូ សំ គឹមឆេង")) {
+                finalTeacher = teacher.trim();
+            } else if (foundRecord != null && foundRecord.getTeacherName() != null && !foundRecord.getTeacherName().trim().isEmpty() && !foundRecord.getTeacherName().contains("គ្រូបង្រៀនទទួលបន្ទុក")) {
+                finalTeacher = foundRecord.getTeacherName();
+            } else if (teacher != null && !teacher.trim().isEmpty() && !teacher.contains("គ្រូបង្រៀនទទួលបន្ទុក")) {
+                finalTeacher = teacher.trim();
+            } else if (verifiedStudent != null && verifiedStudent.getAccountId() != null) {
+                Optional<Account> tAcc = accountRepository.findById(verifiedStudent.getAccountId());
+                if (tAcc.isPresent() && tAcc.get().getFullName() != null && !tAcc.get().getFullName().trim().isEmpty()) {
+                    finalTeacher = "លោកគ្រូ " + tAcc.get().getFullName();
                 }
-                autoRec.setSchoolName(finalSchool);
-                autoRec.setSubjectName(finalSubject);
-                autoRec.setProvince(finalProvince);
-                autoRec.setTeacherName(finalTeacher);
-                if (autoRec.getRoleSignerLeft() == null) autoRec.setRoleSignerLeft("នាយកសាលា / គណៈគ្រប់គ្រង");
-                if (autoRec.getRoleSignerRight() == null) autoRec.setRoleSignerRight("គ្រូបង្រៀនទទួលបន្ទុក");
-                if (autoRec.getIssueDateKhmer() == null) autoRec.setIssueDateKhmer(toKhmerDate(LocalDate.now()));
-                if (autoRec.getIssueDateEn() == null) autoRec.setIssueDateEn(LocalDate.now().getMonth().name() + " " + LocalDate.now().getDayOfMonth() + ", " + LocalDate.now().getYear());
-                autoRec.setUpdatedAt(LocalDateTime.now());
-                certificateRecordRepository.save(autoRec);
-            } catch (Exception ignored) {}
+            }
+
+            // Auto-persist record if student is valid so subsequent scans are instant and permanently consistent
+            if (verifiedStudent != null) {
+                try {
+                    CertificateRecord autoRec = (foundRecord != null) ? foundRecord : certificateRecordRepository.findFirstByStudentIdOrderByIdDesc(verifiedStudent.getId()).orElse(new CertificateRecord());
+                    autoRec.setStudentId(verifiedStudent.getId());
+                    autoRec.setClassName(verifiedStudent.getClassName());
+                    if (serial != null && !serial.trim().isEmpty()) {
+                        autoRec.setSerialNumber(serial.trim());
+                    } else if (autoRec.getSerialNumber() == null) {
+                        String sCode = (verifiedStudent.getStudentCode() != null && !verifiedStudent.getStudentCode().trim().isEmpty()) ? verifiedStudent.getStudentCode().trim() : "123456";
+                        autoRec.setSerialNumber("CMS-2027-" + String.format("%04d", verifiedStudent.getId()) + "-" + sCode);
+                    }
+                    autoRec.setSchoolName(finalSchool);
+                    autoRec.setSubjectName(finalSubject);
+                    autoRec.setProvince(finalProvince);
+                    autoRec.setTeacherName(finalTeacher);
+                    if (autoRec.getRoleSignerLeft() == null) autoRec.setRoleSignerLeft("នាយកសាលា / គណៈគ្រប់គ្រង");
+                    if (autoRec.getRoleSignerRight() == null) autoRec.setRoleSignerRight("គ្រូបង្រៀនទទួលបន្ទុក");
+                    if (autoRec.getIssueDateKhmer() == null) autoRec.setIssueDateKhmer(toKhmerDate(LocalDate.now()));
+                    if (autoRec.getIssueDateEn() == null) autoRec.setIssueDateEn(LocalDate.now().getMonth().name() + " " + LocalDate.now().getDayOfMonth() + ", " + LocalDate.now().getYear());
+                    autoRec.setUpdatedAt(LocalDateTime.now());
+                    certificateRecordRepository.save(autoRec);
+                } catch (Exception ignored) {}
+            }
+
+            model.addAttribute("serial", serial);
+            model.addAttribute("verified", verifiedStudent != null);
+            model.addAttribute("student", verifiedStudent);
+            model.addAttribute("school", finalSchool);
+            model.addAttribute("subject", finalSubject);
+            model.addAttribute("province", finalProvince);
+            model.addAttribute("teacher", finalTeacher);
+            model.addAttribute("verifyDateKhmer", toKhmerDate(LocalDate.now()));
+
+            return "certificate-verify";
+        } catch (Exception e) {
+            System.err.println("Error in verifyCertificate: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("serial", serial);
+            model.addAttribute("verified", false);
+            model.addAttribute("student", null);
+            model.addAttribute("school", "វិទ្យាល័យ / អនុវិទ្យាល័យ");
+            model.addAttribute("subject", "គ្រប់មុខវិជ្ជា");
+            model.addAttribute("province", "ខេត្តបាត់ដំបង");
+            model.addAttribute("teacher", "លោកគ្រូ សំ គឹមឆេង");
+            model.addAttribute("verifyDateKhmer", toKhmerDate(LocalDate.now()));
+            return "certificate-verify";
         }
-
-        model.addAttribute("serial", serial);
-        model.addAttribute("verified", verifiedStudent != null);
-        model.addAttribute("student", verifiedStudent);
-        model.addAttribute("school", finalSchool);
-        model.addAttribute("subject", finalSubject);
-        model.addAttribute("province", finalProvince);
-        model.addAttribute("teacher", finalTeacher);
-        model.addAttribute("verifyDateKhmer", toKhmerDate(LocalDate.now()));
-
-        return "certificate-verify";
     }
 
     private String toEnglishProvince(String khmerProvince) {
-        if (khmerProvince == null) return "Battambang";
+        if (khmerProvince == null) return "Bat Dambang";
         if (khmerProvince.contains("ភ្នំពេញ")) return "Phnom Penh";
         if (khmerProvince.contains("សៀមរាប")) return "Siem Reap";
         if (khmerProvince.contains("បាត់ដំបង")) return "Bat Dambang";

@@ -545,8 +545,8 @@
                 <select name="studentId" onchange="this.form.submit()" style="padding: 9px 12px; border-radius: 6px; font-family: inherit; font-size: 0.9rem; background: #1e293b; color: white; border: 1px solid #475569;">
                     <option th:each="st : ${teacherStudents}" 
                             th:value="${st.id}" 
-                            th:text="${st.name} + ' (' + ${st.className} + ' - ' + ${st.studentCode} + ')'"
-                            th:selected="${st.id == student.id}">
+                            th:text="|${st.name != null ? st.name : ''} (${st.className != null ? st.className : ''} - ${st.studentCode != null ? st.studentCode : ''})|"
+                            th:selected="${student != null and st.id == student.id}">
                         សិស្ស
                     </option>
                 </select>
@@ -781,7 +781,7 @@
 
                     <!-- Right: Professor / Course Coordinator -->
                     <div class="footer-col" style="position: relative;">
-                        <div class="footer-date" th:text="${provinceEn} + ', ' + ${issueDateEn}">
+                        <div class="footer-date" th:text="|${provinceEn != null ? provinceEn : 'Bat Dambang'}, ${issueDateEn != null ? issueDateEn : ''}|">
                             Bat Dambang, October 24, 2027
                         </div>
                         <div class="footer-role" id="dispRoleRight" th:text="${roleSignerRight}">គ្រូបង្រៀនទទួលបន្ទុក</div>

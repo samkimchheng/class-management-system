@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>មានបញ្ហាបច្ចេកទេស - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន ២០២៧</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #0f172a;
+            font-family: 'Kantumruy Pro', sans-serif;
+            color: #1e293b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .error-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 30px;
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 2px solid #38bdf8;
+        }
+        .error-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+        }
+        h2 {
+            margin: 0 0 10px 0;
+            color: #0f172a;
+            font-size: 1.4rem;
+        }
+        p {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin: 0 0 25px 0;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #0284c7;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0369a1;
+        }
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #334155;
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <div class="error-icon">⚠️</div>
+        <h2>មានបញ្ហាបច្ចេកទេសបន្តិចបន្តួច</h2>
+        <p>
+            ប្រព័ន្ធកំពុងធ្វើបច្ចុប្បន្នភាពទិន្នន័យ ឬមិនអាចស្វែងរកទំព័រដែលលោកអ្នកស្នើសុំបានឡើយ។ សូមព្យាយាមម្តងទៀត ឬត្រឡប់ទៅគេហទំព័រដើម។
+        </p>
+        <div class="btn-group">
+            <a href="/" class="btn btn-primary">&larr; ត្រឡប់ទៅទំព័រដើម</a>
+            <a href="/lessons" class="btn btn-secondary">📚 ទៅកាន់មេរៀន</a>
+            <a href="javascript:history.back()" class="btn btn-secondary">🔄 ថយក្រោយ</a>
+        </div>
+    </div>
+</body>
+</html>
