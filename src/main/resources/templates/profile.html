@@ -16,7 +16,7 @@
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             color: white;
             border-radius: 14px;
-            padding: 24px 28px;
+            padding: 22px 28px;
             margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
@@ -25,17 +25,6 @@
             gap: 20px;
             box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
             border-left: 5px solid #38bdf8;
-        }
-        .profile-avatar-circle {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            background: rgba(56, 189, 248, 0.2);
-            border: 2px solid #38bdf8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
         }
         .profile-form-card {
             background: white;
@@ -90,8 +79,8 @@
         </div>
         <ul class="nav-menu">
             <li class="nav-item"><a href="/" class="nav-link">ទំព័រដើម</a></li>
-            <li class="nav-item active"><a href="/profile" class="nav-link" style="color: #38bdf8;">📝 បំពេញព័ត៌មានផ្ទាល់ខ្លួន</a></li>
-            <li class="nav-item"><a href="/certificate" class="nav-link" style="color: #fbbf24;">🎓 វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</a></li>
+            <li class="nav-item active"><a href="/profile" class="nav-link">បំពេញព័ត៌មានផ្ទាល់ខ្លួន</a></li>
+            <li class="nav-item"><a href="/certificate" class="nav-link">វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</a></li>
             <li class="nav-item"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
             <li class="nav-item"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
             <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
@@ -114,7 +103,7 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="topbar">
-            <h3>📝 បំពេញព័ត៌មានផ្ទាល់ខ្លួន (Teacher Profile)</h3>
+            <h3>បំពេញព័ត៌មានផ្ទាល់ខ្លួន</h3>
             <div>
                 <span>អ្នកប្រើប្រាស់: <b id="headerTeacherName" th:text="${teacherAccount != null ? teacherAccount.fullName : (session.ACCOUNT_NAME != null ? session.ACCOUNT_NAME : 'គ្រូបង្រៀន')}">គ្រូបង្រៀន</b></span>
             </div>
@@ -122,30 +111,25 @@
 
         <div class="content" style="padding: 25px 30px;">
 
-            <!-- Hero Overview Banner -->
+            <!-- Overview Banner (Without avatar image) -->
             <div class="profile-hero-card">
-                <div style="display: flex; align-items: center; gap: 18px;">
-                    <div class="profile-avatar-circle">
-                        <span th:text="${teacherAccount != null and teacherAccount.gender == 'ស្រី' ? '👩‍🏫' : '👨‍🏫'}">👨‍🏫</span>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <h2 style="margin: 0; font-size: 1.45rem; color: white;" th:text="${teacherAccount != null and teacherAccount.fullName != null ? teacherAccount.fullName : 'ឈ្មោះគ្រូបង្រៀន'}">Administrator</h2>
+                        <span class="badge" style="background: #0284c7; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem;"
+                              th:text="${teacherAccount != null and teacherAccount.position != null ? teacherAccount.position : 'គ្រូទទួលបន្ទុកថ្នាក់'}">
+                            គ្រូទទួលបន្ទុកថ្នាក់
+                        </span>
                     </div>
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            <h2 style="margin: 0; font-size: 1.5rem; color: white;" th:text="${teacherAccount != null and teacherAccount.fullName != null ? teacherAccount.fullName : 'ឈ្មោះគ្រូបង្រៀន'}">Administrator</h2>
-                            <span class="badge" style="background: #0284c7; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem;"
-                                  th:text="${teacherAccount != null and teacherAccount.position != null ? teacherAccount.position : 'គ្រូទទួលបន្ទុកថ្នាក់'}">
-                                គ្រូទទួលបន្ទុកថ្នាក់
-                            </span>
-                        </div>
-                        <div style="margin-top: 6px; color: #94a3b8; font-size: 0.95rem; display: flex; gap: 15px; flex-wrap: wrap;">
-                            <span>🏫 <b th:text="${teacherAccount != null and teacherAccount.schoolName != null and !teacherAccount.schoolName.isEmpty() ? teacherAccount.schoolName : 'មិនទាន់កំណត់សាលា'}">វិទ្យាល័យ</b></span>
-                            <span>📚 <b th:text="${teacherAccount != null and teacherAccount.subject != null and !teacherAccount.subject.isEmpty() ? teacherAccount.subject : 'គ្រប់មុខវិជ្ជា'}">មុខវិជ្ជា</b></span>
-                            <span>📍 <b th:text="${teacherAccount != null and teacherAccount.province != null and !teacherAccount.province.isEmpty() ? teacherAccount.province : 'ខេត្តពោធិ៍សាត់'}">ខេត្ត</b></span>
-                        </div>
+                    <div style="margin-top: 8px; color: #94a3b8; font-size: 0.95rem; display: flex; gap: 18px; flex-wrap: wrap;">
+                        <span>សាលារៀន៖ <b th:text="${teacherAccount != null and teacherAccount.schoolName != null and !teacherAccount.schoolName.isEmpty() ? teacherAccount.schoolName : 'មិនទាន់កំណត់សាលា'}">វិទ្យាល័យ</b></span>
+                        <span>មុខវិជ្ជា៖ <b th:text="${teacherAccount != null and teacherAccount.subject != null and !teacherAccount.subject.isEmpty() ? teacherAccount.subject : 'គ្រប់មុខវិជ្ជា'}">មុខវិជ្ជា</b></span>
+                        <span>ខេត្ត៖ <b th:text="${teacherAccount != null and teacherAccount.province != null and !teacherAccount.province.isEmpty() ? teacherAccount.province : 'ខេត្តពោធិ៍សាត់'}">ខេត្ត</b></span>
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                     <a href="/certificate" class="btn" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; display: inline-flex; align-items: center; gap: 8px;">
-                        <span>🎓 ទៅកាន់វិញ្ញាបនបត្រ</span>
+                        <span>ទៅកាន់វិញ្ញាបនបត្រ</span>
                         <span>&rarr;</span>
                     </a>
                 </div>
@@ -153,13 +137,13 @@
 
             <!-- Flash Alert (Post-Redirect) -->
             <div th:if="${profileSuccess != null}" class="alert" style="background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; padding: 14px 20px; border-radius: 10px; margin-bottom: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 1.3rem;">✅</span>
+                <span>✅</span>
                 <span th:text="${profileSuccess}">បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!</span>
             </div>
 
             <!-- Live Alert Success (AJAX) -->
             <div id="profileLiveAlert" style="display: none; background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; padding: 14px 20px; border-radius: 10px; margin-bottom: 22px; font-weight: 600; align-items: center; gap: 10px;">
-                <span style="font-size: 1.3rem;">✅</span>
+                <span>✅</span>
                 <span id="profileLiveAlertMsg">បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនរបស់លោកគ្រូ-អ្នកគ្រូក្នុងប្រព័ន្ធដោយជោគជ័យ!</span>
             </div>
 
@@ -168,13 +152,13 @@
                 
                 <div style="border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div>
-                        <h3 style="margin: 0; color: #0b1d3a; font-size: 1.25rem;">✍️ បំពេញ និងកែសម្រួលព័ត៌មានផ្ទាល់ខ្លួន</h3>
+                        <h3 style="margin: 0; color: #0b1d3a; font-size: 1.25rem;">បំពេញ និងកែសម្រួលព័ត៌មានផ្ទាល់ខ្លួន</h3>
                         <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.9rem;">
                             រាល់ព័ត៌មានដែលបានបញ្ចូលនៅទីនេះ នឹងត្រូវប្រព័ន្ធទាញយកទៅបំពេញលើវិញ្ញាបនបត្របញ្ជាក់ការសិក្សា និងរបាយការណ៍ស្វ័យប្រវត្តិ។
                         </p>
                     </div>
                     <span class="badge badge-success" style="padding: 6px 14px; font-size: 0.85rem;">
-                        ✔ គណនីមានសុពលភាព
+                        គណនីមានសុពលភាព
                     </span>
                 </div>
 
@@ -186,7 +170,7 @@
                         <!-- 1. Full Name -->
                         <div class="c-field">
                             <label>
-                                👤 គោត្តនាម និងនាម (Full Name) <span style="color: red;">*</span>៖
+                                គោត្តនាម និងនាម (Full Name) <span style="color: red;">*</span>៖
                             </label>
                             <input type="text" name="fullName" id="profFullName" class="form-control" 
                                    th:value="${teacherAccount != null ? teacherAccount.fullName : (session.ACCOUNT_NAME != null ? session.ACCOUNT_NAME : '')}" 
@@ -196,7 +180,7 @@
                         <!-- 2. Gender -->
                         <div class="c-field">
                             <label>
-                                ⚧ ភេទ (Gender)៖
+                                ភេទ (Gender)៖
                             </label>
                             <select name="gender" id="profGender" class="form-control">
                                 <option value="ប្រុស" th:selected="${teacherAccount != null and teacherAccount.gender == 'ប្រុស'}">ប្រុស (លោកគ្រូ)</option>
@@ -207,7 +191,7 @@
                         <!-- 3. Position / Role -->
                         <div class="c-field">
                             <label>
-                                🎖️ តួនាទី / ភារកិច្ច (Position / Role)៖
+                                តួនាទី / ភារកិច្ច (Position / Role)៖
                             </label>
                             <input type="text" name="position" id="profPosition" class="form-control" 
                                    th:value="${teacherAccount != null ? teacherAccount.position : 'គ្រូទទួលបន្ទុកថ្នាក់'}" 
@@ -223,7 +207,7 @@
                         <!-- 4. School Name -->
                         <div class="c-field">
                             <label>
-                                🏫 គ្រឹះស្ថានសិក្សា / សាលារៀន (School Name)៖
+                                គ្រឹះស្ថានសិក្សា / សាលារៀន (School Name)៖
                             </label>
                             <input type="text" name="schoolName" id="profSchoolName" class="form-control" 
                                    th:value="${teacherAccount != null ? teacherAccount.schoolName : ''}" 
@@ -238,7 +222,7 @@
                         <!-- 5. Subject -->
                         <div class="c-field">
                             <label>
-                                📚 មុខវិជ្ជាឯកទេស / បង្រៀន (Specialized Subject)៖
+                                មុខវិជ្ជាឯកទេស / បង្រៀន (Specialized Subject)៖
                             </label>
                             <select name="subject" id="profSubject" class="form-control" onchange="toggleCustomSubject(this)" th:data-current-subject="${teacherAccount != null ? teacherAccount.subject : ''}">
                                 <option th:each="s : ${standardSubjects}" 
@@ -259,7 +243,7 @@
                         <!-- 6. Province -->
                         <div class="c-field">
                             <label>
-                                📍 រាជធានី-ខេត្ត (Province)៖
+                                រាជធានី-ខេត្ត (Province)៖
                             </label>
                             <select name="province" id="profProvince" class="form-control">
                                 <option th:each="p : ${provinces}" 
@@ -274,7 +258,7 @@
                         <!-- 7. Teaching Classes -->
                         <div class="c-field">
                             <label>
-                                📖 កម្រិតថ្នាក់បង្រៀន ឬ បន្ទុកថ្នាក់ (Classes / Grades)៖
+                                កម្រិតថ្នាក់បង្រៀន ឬ បន្ទុកថ្នាក់ (Classes / Grades)៖
                             </label>
                             <input type="text" name="teachingClasses" id="profTeachingClasses" class="form-control" 
                                    th:value="${teacherAccount != null ? teacherAccount.teachingClasses : ''}" 
@@ -290,7 +274,7 @@
                         <!-- 8. Phone -->
                         <div class="c-field">
                             <label>
-                                📞 លេខទូរស័ព្ទ (Phone Number)៖
+                                លេខទូរស័ព្ទ (Phone Number)៖
                             </label>
                             <input type="tel" name="phone" id="profPhone" class="form-control" 
                                    th:value="${teacherAccount != null ? teacherAccount.phone : ''}" 
@@ -300,7 +284,7 @@
                         <!-- 9. Telegram -->
                         <div class="c-field">
                             <label>
-                                ✈️ គណនី Telegram (Telegram Username)៖
+                                គណនី Telegram (Telegram Username)៖
                             </label>
                             <input type="text" name="telegram" id="profTelegram" class="form-control" 
                                    th:value="${teacherAccount != null ? teacherAccount.telegram : ''}" 
@@ -310,7 +294,7 @@
                         <!-- 10. Email -->
                         <div class="c-field">
                             <label>
-                                ✉️ អ៊ីមែល (Email Address)៖
+                                អ៊ីមែល (Email Address)៖
                             </label>
                             <input type="email" name="email" id="profEmail" class="form-control" 
                                    th:value="${teacherAccount != null ? teacherAccount.email : ''}" 
@@ -320,7 +304,7 @@
                         <!-- 11. Bio / Notes (Full width) -->
                         <div class="c-field" style="grid-column: 1 / -1;">
                             <label>
-                                📝 បទពិសោធន៍ / ចំណាំបន្ថែម (Bio &amp; Notes)៖
+                                បទពិសោធន៍ / ចំណាំបន្ថែម (Bio &amp; Notes)៖
                             </label>
                             <textarea name="bio" id="profBio" class="form-control" rows="3" 
                                       placeholder="ព័ត៌មានបន្ថែមពីប្រវត្តិ ឬការបង្រៀន (ប្រសិនបើមាន)..." 
@@ -333,10 +317,10 @@
                     <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                             <button type="submit" id="btnSaveProfile" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px 28px; font-weight: bold; font-size: 1rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);">
-                                💾 រក្សាទុកព័ត៌មានផ្ទាល់ខ្លួន (Save Profile)
+                                រក្សាទុកព័ត៌មានផ្ទាល់ខ្លួន (Save Profile)
                             </button>
                             <button type="reset" class="btn" style="background: #f1f5f9; color: #475569; padding: 12px 20px;">
-                                🔄 កំណត់ឡើងវិញ
+                                កំណត់ឡើងវិញ
                             </button>
                         </div>
 
@@ -345,7 +329,7 @@
                                 &larr; ត្រឡប់ទៅទំព័រដើម
                             </a>
                             <a href="/certificate" class="btn" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; padding: 12px 22px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                                <span>🎓 ចេញវិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span>
+                                <span>ចេញវិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span>
                                 <span>&rarr;</span>
                             </a>
                         </div>
@@ -419,7 +403,7 @@
                     const form = document.getElementById('teacherProfileForm');
                     const submitBtn = document.getElementById('btnSaveProfile');
                     const originalText = submitBtn.innerHTML;
-                    submitBtn.innerHTML = '⏳ កំពុងរក្សាទុក...';
+                    submitBtn.innerHTML = 'កំពុងរក្សាទុក...';
                     submitBtn.disabled = true;
 
                     const formData = new FormData(form);
