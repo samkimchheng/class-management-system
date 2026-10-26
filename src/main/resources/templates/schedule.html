@@ -19,6 +19,30 @@
             border-radius: 5px;
             font-weight: bold;
         }
+
+        /* Print styles for clean printing */
+        @media print {
+            .sidebar, .topbar, .sidebar-bottom, .no-print, #editScheduleBtn, #scheduleMsg {
+                display: none !important;
+            }
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            .content {
+                padding: 0 !important;
+            }
+            .table-container {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+            @page {
+                size: A4 landscape;
+                margin: 1cm;
+            }
+        }
     </style>
 </head>
 <body>
@@ -43,14 +67,13 @@
             <li class="nav-item active"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
             <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍</a></li>
             <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">✈️ ទាក់ទងខ្ញុំ (Telegram)</a></li>
-          </ul>
-          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
-              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
-                  
-            <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
-            <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
-              </ul>
-          </div>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
+            </ul>
+        </div>
     </div>
 
     <div class="main-content">
@@ -61,15 +84,15 @@
         <div class="content">
             <div class="table-container">
                 <div class="header-action">
-                    <div>
-                        <select id="classSelect" class="form-control" style="width: auto; display: inline-block;">
-
-                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
-                        </select>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="badge" style="background: rgba(67, 97, 238, 0.1); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid rgba(67, 97, 238, 0.25); display: inline-flex; align-items: center; gap: 8px;">
+                            📅 កាលវិភាគរួមប្រចាំសប្តាហ៍
+                        </span>
                     </div>
-                    <div>
-                        <span id="scheduleMsg" style="color: var(--success); font-weight: bold; margin-right: 15px; display: none;">ជោគជ័យ!</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="scheduleMsg" style="color: var(--success); font-weight: bold; margin-right: 10px; display: none;">ជោគជ័យ!</span>
                         <button id="editScheduleBtn" class="btn btn-primary">កែប្រែកាលវិភាគ</button>
+                        <button onclick="window.print()" class="btn btn-secondary no-print" style="display: inline-flex; align-items: center; gap: 6px;">🖨️ បោះពុម្ព</button>
                     </div>
                 </div>
                 
@@ -136,17 +159,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             const editBtn = document.getElementById('editScheduleBtn');
             const msg = document.getElementById('scheduleMsg');
-            const classSelect = document.getElementById('classSelect');
             let isEditing = false;
             
             // 1. Load existing data from API
             async function loadSchedule() {
-                if (isEditing) {
-                    toggleEditMode(); // turn off edit mode if switching class
-                }
-                const className = classSelect.value;
                 try {
-                    const res = await fetch(`/api/schedule/get?className=${encodeURIComponent(className)}`);
+                    const res = await fetch('/api/schedule/get');
                     if (res.ok) {
                         const data = await res.json();
                         const rows = document.querySelectorAll('.schedule-table tbody tr');
@@ -228,7 +246,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            className: classSelect.value,
+                            className: 'WEEKLY',
                             subjects: scheduleArray
                         })
                     }).then(res => {
@@ -249,7 +267,6 @@
             
             // 2. Handle button click
             editBtn.addEventListener('click', toggleEditMode);
-            classSelect.addEventListener('change', loadSchedule);
             
             // Initial load
             loadSchedule();
@@ -257,11 +274,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
