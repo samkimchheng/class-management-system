@@ -351,24 +351,27 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             }
 
             // Resolve Teacher Name
-            if (teacherName == null || teacherName.trim().isEmpty()) {
-                if (template != null && template.getTeacherName() != null && !template.getTeacherName().trim().isEmpty() && !template.getTeacherName().contains("គ្រូបង្រៀនទទួលបន្ទុក") && !template.getTeacherName().contains("គ្រូទទួលបន្ទុកថ្នាក់")) {
-                    teacherName = template.getTeacherName();
-                } else if (currentTeacherAcc != null && currentTeacherAcc.getFullName() != null && !currentTeacherAcc.getFullName().trim().isEmpty()) {
-                    String prefix = (currentTeacherAcc.getGender() != null && currentTeacherAcc.getGender().contains("ស្រី")) ? "អ្នកគ្រូ " : "លោកគ្រូ ";
-                    teacherName = prefix + currentTeacherAcc.getFullName().trim();
-                } else if (accountName != null && !accountName.trim().isEmpty()) {
-                    teacherName = "លោកគ្រូ " + accountName;
+            if (teacherName == null || teacherName.trim().isEmpty() || isGenericAdminOrInvalidTeacher(teacherName)) {
+                if (template != null && !isGenericAdminOrInvalidTeacher(template.getTeacherName())) {
+                    teacherName = template.getTeacherName().trim();
+                } else if (currentTeacherAcc != null && !isGenericAdminOrInvalidTeacher(currentTeacherAcc.getFullName())) {
+                    teacherName = cleanTeacherName(currentTeacherAcc.getFullName(), currentTeacherAcc.getGender());
+                } else if (accountName != null && !isGenericAdminOrInvalidTeacher(accountName)) {
+                    teacherName = cleanTeacherName(accountName, currentTeacherAcc != null ? currentTeacherAcc.getGender() : null);
                 } else if (student.getAccountId() != null) {
                     Optional<Account> tAcc = accountRepository.findById(student.getAccountId());
-                    teacherName = tAcc.map(a -> ((a.getGender() != null && a.getGender().contains("ស្រី")) ? "អ្នកគ្រូ " : "លោកគ្រូ ") + a.getFullName()).orElse("លោកគ្រូ សំ គឹមឆេង");
+                    teacherName = tAcc.filter(a -> !isGenericAdminOrInvalidTeacher(a.getFullName()))
+                            .map(a -> cleanTeacherName(a.getFullName(), a.getGender()))
+                            .orElse("លោកគ្រូ សំ គឹមឆេង");
                 } else {
                     teacherName = accountRepository.findAll().stream()
-                            .filter(a -> "TEACHER".equalsIgnoreCase(a.getRole()) || "ADMIN".equalsIgnoreCase(a.getRole()))
+                            .filter(a -> !isGenericAdminOrInvalidTeacher(a.getFullName()))
                             .findFirst()
-                            .map(a -> "លោកគ្រូ " + a.getFullName())
+                            .map(a -> cleanTeacherName(a.getFullName(), a.getGender()))
                             .orElse("លោកគ្រូ សំ គឹមឆេង");
                 }
+            } else {
+                teacherName = cleanTeacherName(teacherName, currentTeacherAcc != null ? currentTeacherAcc.getGender() : null);
             }
 
             // Resolve Signer Roles
@@ -731,16 +734,16 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
 
             // 8. Resolve Teacher Name
             String finalTeacher = "លោកគ្រូ សំ គឹមឆេង";
-            if (teacher != null && !teacher.trim().isEmpty() && !teacher.contains("គ្រូបង្រៀនទទួលបន្ទុក") && !teacher.contains("គ្រូទទួលបន្ទុកថ្នាក់") && !teacher.equals("លោកគ្រូ សំ គឹមឆេង")) {
-                finalTeacher = teacher.trim();
-            } else if (foundRecord != null && foundRecord.getTeacherName() != null && !foundRecord.getTeacherName().trim().isEmpty() && !foundRecord.getTeacherName().contains("គ្រូបង្រៀនទទួលបន្ទុក") && !foundRecord.getTeacherName().contains("គ្រូទទួលបន្ទុកថ្នាក់")) {
-                finalTeacher = foundRecord.getTeacherName();
-            } else if (teacher != null && !teacher.trim().isEmpty() && !teacher.contains("គ្រូបង្រៀនទទួលបន្ទុក") && !teacher.contains("គ្រូទទួលបន្ទុកថ្នាក់")) {
-                finalTeacher = teacher.trim();
+            if (teacher != null && !teacher.trim().isEmpty() && !isGenericAdminOrInvalidTeacher(teacher) && !teacher.equals("លោកគ្រូ សំ គឹមឆេង")) {
+                finalTeacher = cleanTeacherName(teacher, null);
+            } else if (foundRecord != null && foundRecord.getTeacherName() != null && !isGenericAdminOrInvalidTeacher(foundRecord.getTeacherName())) {
+                finalTeacher = cleanTeacherName(foundRecord.getTeacherName(), null);
+            } else if (teacher != null && !teacher.trim().isEmpty() && !isGenericAdminOrInvalidTeacher(teacher)) {
+                finalTeacher = cleanTeacherName(teacher, null);
             } else if (verifiedStudent != null && verifiedStudent.getAccountId() != null) {
                 Optional<Account> tAcc = accountRepository.findById(verifiedStudent.getAccountId());
-                if (tAcc.isPresent() && tAcc.get().getFullName() != null && !tAcc.get().getFullName().trim().isEmpty()) {
-                    finalTeacher = "លោកគ្រូ " + tAcc.get().getFullName();
+                if (tAcc.isPresent() && !isGenericAdminOrInvalidTeacher(tAcc.get().getFullName())) {
+                    finalTeacher = cleanTeacherName(tAcc.get().getFullName(), tAcc.get().getGender());
                 }
             }
 
@@ -859,5 +862,27 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             }
         }
         return sb.toString();
+    }
+
+    private boolean isGenericAdminOrInvalidTeacher(String name) {
+        if (name == null || name.trim().isEmpty()) return true;
+        String lower = name.trim().toLowerCase();
+        return lower.contains("admin")
+                || lower.contains("test teacher")
+                || lower.contains("user")
+                || name.contains("គ្រូបង្រៀនទទួលបន្ទុក")
+                || name.contains("គ្រូទទួលបន្ទុកថ្នាក់");
+    }
+
+    private String cleanTeacherName(String name, String gender) {
+        if (isGenericAdminOrInvalidTeacher(name)) {
+            return "លោកគ្រូ សំ គឹមឆេង";
+        }
+        String clean = name.trim();
+        if (clean.startsWith("លោកគ្រូ") || clean.startsWith("អ្នកគ្រូ") || clean.startsWith("គ្រូ")) {
+            return clean;
+        }
+        String prefix = (gender != null && gender.contains("ស្រី")) ? "អ្នកគ្រូ " : "លោកគ្រូ ";
+        return prefix + clean;
     }
 }

@@ -132,6 +132,15 @@ public class DataInitializer {
                  Statement stmt = conn.createStatement()) {
                 stmt.executeUpdate("UPDATE lessons SET class_name = 'គ្រប់ថ្នាក់' WHERE class_name = '១០A' OR class_name = '10A'");
             } catch (Exception ignored) {}
+
+            // 4. Update any default 'Administrator' or generic names to real teacher 'សំ គឹមឆេង'
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("UPDATE \"ACCOUNT\" SET full_name = 'សំ គឹមឆេង' WHERE full_name = 'Administrator' OR (username = 'admin' AND (full_name IS NULL OR full_name = '' OR full_name = 'Administrator'))");
+                stmt.executeUpdate("UPDATE account SET full_name = 'សំ គឹមឆេង' WHERE full_name = 'Administrator' OR (username = 'admin' AND (full_name IS NULL OR full_name = '' OR full_name = 'Administrator'))");
+                stmt.executeUpdate("UPDATE \"CERTIFICATE_RECORDS\" SET teacher_name = 'លោកគ្រូ សំ គឹមឆេង' WHERE teacher_name LIKE '%Administrator%' OR teacher_name LIKE '%admin%'");
+                stmt.executeUpdate("UPDATE certificate_records SET teacher_name = 'លោកគ្រូ សំ គឹមឆេង' WHERE teacher_name LIKE '%Administrator%' OR teacher_name LIKE '%admin%'");
+            } catch (Exception ignored) {}
         };
     }
 }

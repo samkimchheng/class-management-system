@@ -74,7 +74,7 @@
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
             <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
-                <span>សួស្តី, <b id="sidebarTeacherName" th:text="${teacherAccount != null ? teacherAccount.fullName : (session.ACCOUNT_NAME != null ? session.ACCOUNT_NAME : 'គ្រូបង្រៀន')}">Administrator</b></span>
+                <span>សួស្តី, <b id="sidebarTeacherName" th:text="${teacherAccount != null and teacherAccount.fullName != null and !teacherAccount.fullName.equalsIgnoreCase('Administrator') ? teacherAccount.fullName : (session.ACCOUNT_NAME != null and !session.ACCOUNT_NAME.equalsIgnoreCase('Administrator') ? session.ACCOUNT_NAME : 'សំ គឹមឆេង')}">សំ គឹមឆេង</b></span>
             </div>
         </div>
         <ul class="nav-menu">
@@ -115,7 +115,7 @@
             <div class="profile-hero-card">
                 <div>
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <h2 style="margin: 0; font-size: 1.45rem; color: white;" th:text="${teacherAccount != null and teacherAccount.fullName != null ? teacherAccount.fullName : 'ឈ្មោះគ្រូបង្រៀន'}">Administrator</h2>
+                        <h2 style="margin: 0; font-size: 1.45rem; color: white;" th:text="${teacherAccount != null and teacherAccount.fullName != null and !teacherAccount.fullName.equalsIgnoreCase('Administrator') ? teacherAccount.fullName : 'សំ គឹមឆេង'}">សំ គឹមឆេង</h2>
                         <span class="badge" style="background: #0284c7; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem;"
                               th:text="${teacherAccount != null and teacherAccount.position != null ? teacherAccount.position : 'គ្រូទទួលបន្ទុកថ្នាក់'}">
                             គ្រូទទួលបន្ទុកថ្នាក់
@@ -173,7 +173,7 @@
                                 គោត្តនាម និងនាម (Full Name) <span style="color: red;">*</span>៖
                             </label>
                             <input type="text" name="fullName" id="profFullName" class="form-control" 
-                                   th:value="${teacherAccount != null ? teacherAccount.fullName : (session.ACCOUNT_NAME != null ? session.ACCOUNT_NAME : '')}" 
+                                   th:value="${teacherAccount != null and teacherAccount.fullName != null and !teacherAccount.fullName.equalsIgnoreCase('Administrator') ? teacherAccount.fullName : (session.ACCOUNT_NAME != null and !session.ACCOUNT_NAME.equalsIgnoreCase('Administrator') ? session.ACCOUNT_NAME : 'សំ គឹមឆេង')}" 
                                    required placeholder="ឧ. សំ គឹមឆេង">
                         </div>
 
