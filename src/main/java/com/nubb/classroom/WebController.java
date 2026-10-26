@@ -164,6 +164,34 @@ public class WebController {
         }
     }
 
+    @GetMapping("/profile")
+    public String viewProfile(Model model) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return "redirect:/login";
+        }
+        Account teacherAccount = accountRepository.findById(accountId).orElse(null);
+        model.addAttribute("teacherAccount", teacherAccount);
+
+        String[] provinces = {
+            "ខេត្តបាត់ដំបង", "រាជធានីភ្នំពេញ", "ខេត្តសៀមរាប", "ខេត្តបន្ទាយមានជ័យ", "ខេត្តពោធិ៍សាត់",
+            "ខេត្តកំពង់ចាម", "ខេត្តកំពង់ធំ", "ខេត្តកំពង់ឆ្នាំង", "ខេត្តកំពង់ស្ពឺ", "ខេត្តកណ្តាល",
+            "ខេត្តតាកែវ", "ខេត្តកំពត", "ខេត្តកែប", "ខេត្តព្រះសីហនុ", "ខេត្តកោះកុង",
+            "ខេត្តព្រៃវែង", "ខេត្តស្វាយរៀង", "ខេត្តក្រចេះ", "ខេត្តស្ទឹងត្រែង", "ខេត្តរតនគិរី",
+            "ខេត្តមណ្ឌលគិរី", "ខេត្តព្រះវិហារ", "ខេត្តឧត្តរមានជ័យ", "ខេត្តប៉ៃលិន", "ខេត្តត្បូងឃ្មុំ"
+        };
+        model.addAttribute("provinces", provinces);
+
+        String[] standardSubjects = {
+            "គ្រប់មុខវិជ្ជា", "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", 
+            "ភាសាខ្មែរ", "ភាសាអង់គ្លេស", "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា", 
+            "សីលធម៌-ពលរដ្ឋវិជ្ជា", "ផែនដី និងបរិស្ថានវិទ្យា", "ព័ត៌មានវិទ្យា (ICT)", "កីឡា"
+        };
+        model.addAttribute("standardSubjects", standardSubjects);
+
+        return "profile";
+    }
+
     @PostMapping("/profile/save")
     public String saveProfile(
             @RequestParam("fullName") String fullName,
@@ -233,7 +261,7 @@ public class WebController {
             redirectAttributes.addFlashAttribute("profileSuccess", "✅ បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនរបស់លោកគ្រូ-អ្នកគ្រូដោយជោគជ័យ!");
         }
 
-        return "redirect:/#profileSection";
+        return "redirect:/profile";
     }
 
     @PostMapping("/api/profile/save")
