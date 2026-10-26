@@ -51,59 +51,6 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        /* Customizer Panel */
-        .customizer-panel {
-            width: 100%;
-            max-width: 1122px;
-            background: white;
-            border-radius: 12px;
-            padding: 20px 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-            border: 2px solid #38bdf8;
-            display: none; /* toggled via button */
-        }
-        .customizer-panel.active {
-            display: block;
-            animation: fadeIn 0.25s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .customizer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 15px;
-            margin-top: 12px;
-        }
-
-        .c-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .c-group label {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #1e293b;
-        }
-        .c-input {
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.95rem;
-            color: #0f172a;
-        }
-        .c-input:focus {
-            outline: none;
-            border-color: #0284c7;
-            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
-        }
-
         .btn-action {
             display: inline-flex;
             align-items: center;
@@ -118,13 +65,6 @@
             transition: all 0.2s ease;
             font-family: inherit;
         }
-
-        .btn-customize {
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
-        }
-        .btn-customize:hover { background: #6366f1; transform: translateY(-1px); }
 
         .btn-print {
             background: linear-gradient(135deg, #0284c7, #0369a1);
@@ -496,24 +436,44 @@
         </div>
 
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <!-- Teacher Student Switcher Dropdown (if logged in as Teacher/Admin) -->
-            <form th:if="${isTeacher}" action="/certificate" method="get" style="margin: 0;">
-                <select name="studentId" onchange="this.form.submit()" style="padding: 9px 12px; border-radius: 6px; font-family: inherit; font-size: 0.9rem; background: #1e293b; color: white; border: 1px solid #475569;">
-                    <option th:each="st : ${teacherStudents}" 
-                            th:value="${st.id}" 
-                            th:text="|${st.name != null ? st.name : ''} (${st.className != null ? st.className : ''} - ${st.studentCode != null ? st.studentCode : ''})|"
-                            th:selected="${student != null and st.id == student.id}">
-                        សិស្ស
-                    </option>
-                </select>
+            <!-- Classroom & Student Selectors -->
+            <form id="certFilterForm" action="/certificate" method="get" style="display: inline-flex; align-items: center; gap: 8px; margin: 0; flex-wrap: wrap;">
+                <!-- 1. Classroom Selector -->
+                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
+                    <label for="selectClassFilter" style="color: #cbd5e1; font-size: 0.88rem; font-weight: 500; margin: 0; white-space: nowrap;">
+                        ថ្នាក់រៀន៖
+                    </label>
+                    <select id="selectClassFilter" name="className" onchange="document.getElementById('selectStudentFilter').value=''; this.form.submit();"
+                            style="padding: 7px 12px; border-radius: 6px; font-family: inherit; font-size: 0.9rem; background: #1e293b; color: white; border: 1px solid #475569; outline: none; cursor: pointer;">
+                        <option value="">-- គ្រប់ថ្នាក់រៀនទាំងអស់ --</option>
+                        <option th:each="cls : ${teacherClasses}"
+                                th:value="${cls}"
+                                th:text="${cls}"
+                                th:selected="${selectedClassName == cls}">
+                            ថ្នាក់ទី១០ A
+                        </option>
+                    </select>
+                </div>
+
+                <!-- 2. Student Selector -->
+                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
+                    <label for="selectStudentFilter" style="color: #cbd5e1; font-size: 0.88rem; font-weight: 500; margin: 0; white-space: nowrap;">
+                        សិស្ស៖
+                    </label>
+                    <select id="selectStudentFilter" name="studentId" onchange="this.form.submit();"
+                            style="padding: 7px 12px; border-radius: 6px; font-family: inherit; font-size: 0.9rem; background: #1e293b; color: white; border: 1px solid #475569; outline: none; cursor: pointer; max-width: 280px;">
+                        <option th:if="${teacherStudents == null or teacherStudents.isEmpty()}" value="">-- គ្មានសិស្សក្នុងថ្នាក់នេះ --</option>
+                        <option th:each="st : ${teacherStudents}"
+                                th:value="${st.id}"
+                                th:text="|${st.name != null ? st.name : ''} (${st.className != null ? st.className : ''} - ${st.studentCode != null ? st.studentCode : ''})|"
+                                th:selected="${student != null and st.id == student.id}">
+                            សិស្ស
+                        </option>
+                    </select>
+                </div>
             </form>
 
-            <!-- Toggle Customizer Button -->
-            <button class="btn-action btn-customize" onclick="toggleCustomizer()">
-                កែប្រែព័ត៌មាន (ថ្នាក់ សាលា មុខវិជ្ជា ខេត្ត គ្រូ)
-            </button>
-
-            <button class="btn-action btn-print" onclick="window.print()">
+<button class="btn-action btn-print" onclick="window.print()">
                 🖨️ បោះពុម្ព / Save as PDF
             </button>
             <button class="btn-action btn-download" onclick="downloadCertificateAsImage()">
@@ -524,177 +484,13 @@
 
     <!-- Preview Mode Notice -->
     <div th:if="${isPreviewMode}" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; padding: 12px 20px; border-radius: 10px; margin-bottom: 15px; width: 100%; max-width: 1122px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);" class="no-print">
-        <span>💡 <b>ទម្រង់គំរូវិញ្ញាបនបត្របញ្ជាក់ការសិក្សាស្តង់ដារ (Sample Preview Mode)</b> — លោកគ្រូ-អ្នកគ្រូអាចកែសម្រួលឈ្មោះសាលា មុខវិជ្ជា និងខេត្តក្នុងផ្ទាំងខាងក្រោមបានភ្លាមៗ!</span>
+        <span>💡 <b>ទម្រង់គំរូវិញ្ញាបនបត្របញ្ជាក់ការសិក្សាស្តង់ដារ (Sample Preview Mode)</b> — លោកគ្រូ-អ្នកគ្រូអាចចូលទៅកាន់ផ្ទាំង «បំពេញព័ត៌មានផ្ទាល់ខ្លួន» ដើម្បីកែសម្រួលព័ត៌មាន ឬជ្រើសរើសថ្នាក់រៀន និងសិស្សនៅខាងលើ!</span>
         <a href="/login" class="btn-action" style="background: #fbbf24; color: #0f172a; padding: 6px 16px; font-weight: bold; font-size: 0.9rem;">🔑 ចូលប្រើប្រាស់គណនី (Login)</a>
     </div>
 
     <!-- Student Lessons Pending Notice -->
     <div th:if="${!isAllCompleted and !isTeacher and !isPreviewMode}" style="background: #fef3c7; color: #92400e; padding: 12px 20px; border-radius: 10px; margin-bottom: 15px; border: 1.5px solid #fcd34d; font-weight: 500; text-align: center; width: 100%; max-width: 1122px;" class="no-print">
         ⚠️ <b>ទម្រង់គំរូវិញ្ញាបនបត្រ៖</b> ប្អូនបានរៀនបញ្ចប់ <b th:text="${completedCount}">0</b>/<b th:text="${totalLessons}">10</b> មេរៀន (<b th:text="${percentage}">0</b>%)។ សូមបន្តរៀនឱ្យបាន <b>១០០%</b> ដើម្បីទទួលបាន និងទាញយកវិញ្ញាបនបត្រផ្លូវការ!
-    </div>
-
-    <!-- CUSTOMIZER PANEL (.no-print) -->
-    <div class="customizer-panel no-print" id="customizerPanel">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
-            <h3 style="margin: 0; color: #0b1d3a; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
-                <span>⚙️ កែសម្រួលព័ត៌មានវិញ្ញាបនបត្រ (Live Certificate Customizer)</span>
-            </h3>
-            <span style="font-size: 0.85rem; color: #10b981; font-weight: bold;">✔ រាល់ការផ្លាស់ប្តូរនឹងបង្ហាញលើវិញ្ញាបនបត្រភ្លាមៗ</span>
-        </div>
-
-        <div class="customizer-grid">
-            <!-- School / High School Name -->
-            <div class="c-group" style="grid-column: span 2;">
-                <label>🏫 ឈ្មោះគ្រឹះស្ថានសិក្សា / សាលារៀន (អនុវិទ្យាល័យ / វិទ្យាល័យ / សាកលវិទ្យាល័យ)៖</label>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <input type="text" id="inputSchoolName" class="c-input" style="flex: 1; min-width: 250px;" 
-                           th:value="${schoolName}" placeholder="ឧ. វិទ្យាល័យ ព្រះមុនីវង្ស ឬ អនុវិទ្យាល័យ វត្តគរ..." oninput="updateLive()">
-                    <!-- Quick Presets -->
-                    <button type="button" class="btn-action" style="padding: 6px 12px; font-size: 0.8rem; background: #e0f2fe; color: #0284c7;" onclick="setPresetSchool('វិទ្យាល័យ ')">
-                        + វិទ្យាល័យ
-                    </button>
-                    <button type="button" class="btn-action" style="padding: 6px 12px; font-size: 0.8rem; background: #fef3c7; color: #b45309;" onclick="setPresetSchool('អនុវិទ្យាល័យ ')">
-                        + អនុវិទ្យាល័យ
-                    </button>
-                    <button type="button" class="btn-action" style="padding: 6px 12px; font-size: 0.8rem; background: #dcfce7; color: #15803d;" onclick="setPresetSchool('សាលាបឋមសិក្សា ')">
-                        + សាលាបឋមសិក្សា
-                    </button>
-                </div>
-            </div>
-
-            <!-- Class / Grade Level -->
-            <div class="c-group" style="grid-column: span 2;">
-                <label>📖 កម្រិតថ្នាក់ / ថ្នាក់រៀន (Class / Grade Level)៖</label>
-                <!-- Quick Grade Presets -->
-                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px;">
-                    <button type="button" class="btn-action" style="padding: 5px 10px; font-size: 0.8rem; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;" onclick="setPresetClass('ថ្នាក់ទី៧ A')">+ ថ្នាក់ទី៧</button>
-                    <button type="button" class="btn-action" style="padding: 5px 10px; font-size: 0.8rem; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;" onclick="setPresetClass('ថ្នាក់ទី៨ A')">+ ថ្នាក់ទី៨</button>
-                    <button type="button" class="btn-action" style="padding: 5px 10px; font-size: 0.8rem; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;" onclick="setPresetClass('ថ្នាក់ទី៩ A')">+ ថ្នាក់ទី៩</button>
-                    <button type="button" class="btn-action" style="padding: 5px 10px; font-size: 0.8rem; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;" onclick="setPresetClass('ថ្នាក់ទី១០ A')">+ ថ្នាក់ទី១០</button>
-                    <button type="button" class="btn-action" style="padding: 5px 10px; font-size: 0.8rem; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;" onclick="setPresetClass('ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ')">+ ថ្នាក់ទី១១</button>
-                    <button type="button" class="btn-action" style="padding: 5px 10px; font-size: 0.8rem; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;" onclick="setPresetClass('ថ្នាក់ទី១២ វិទ្យាសាស្ត្រ')">+ ថ្នាក់ទី១២</button>
-                    <button type="button" class="btn-action" style="padding: 5px 10px; font-size: 0.8rem; background: #fefce8; color: #ca8a04; border: 1px solid #fef08a;" onclick="setPresetClass('ថ្នាក់ទី៦')">+ បឋមសិក្សា</button>
-                    <button type="button" class="btn-action" style="padding: 5px 10px; font-size: 0.8rem; background: #faf5ff; color: #9333ea; border: 1px solid #e9d5ff;" onclick="setPresetClass('ឆ្នាំទី១')">+ មហាវិទ្យាល័យ</button>
-                </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <select id="selectClass" class="c-input" style="flex: 1; min-width: 220px;" onchange="onClassSelectChange(this)">
-                        <option th:each="c : ${availableClasses}" 
-                                th:value="${c}" 
-                                th:text="${c}" 
-                                th:selected="${student != null and c == student.className}">
-                            ថ្នាក់ទី១០ A
-                        </option>
-                        <option value="custom">-- វាយបញ្ចូលឈ្មោះថ្នាក់ផ្សេងទៀត (Custom Class) --</option>
-                    </select>
-                    <input type="text" id="inputCustomClass" class="c-input" style="flex: 1; min-width: 220px; display: none;" 
-                           th:value="${student != null ? student.className : 'ថ្នាក់ទី១០ A'}" 
-                           placeholder="វាយបញ្ចូលឈ្មោះថ្នាក់ (ឧ. ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ, ថ្នាក់ទី១០ B, ឆ្នាំទី២...)" oninput="updateLive()">
-                </div>
-            </div>
-
-            <!-- Student Name & Meta Details -->
-            <div class="c-group">
-                <label>👤 ឈ្មោះម្ចាស់វិញ្ញាបនបត្រ (Student Name)៖</label>
-                <input type="text" id="inputStudentName" class="c-input" 
-                       th:value="${student != null ? student.name : 'សុខ សាន្ត'}" 
-                       placeholder="ឈ្មោះសិស្ស..." oninput="updateLive()">
-            </div>
-
-            <div class="c-group">
-                <label>⚧ ភេទ និងអត្តលេខ (Gender & ID)៖</label>
-                <div style="display: flex; gap: 8px;">
-                    <select id="selectStudentGender" class="c-input" style="width: 110px;" onchange="updateLive()">
-                        <option value="ប្រុស" th:selected="${student != null and student.gender == 'ប្រុស'}">ប្រុស</option>
-                        <option value="ស្រី" th:selected="${student != null and student.gender == 'ស្រី'}">ស្រី</option>
-                    </select>
-                    <input type="text" id="inputStudentCode" class="c-input" style="flex: 1;" 
-                           th:value="${student != null ? student.studentCode : '123456'}" 
-                           placeholder="អត្តលេខសិស្ស..." oninput="updateLive()">
-                </div>
-            </div>
-
-            <!-- Subject -->
-            <div class="c-group">
-                <label>📚 មុខវិជ្ជា (Subject)៖</label>
-                <select id="selectSubject" class="c-input" onchange="onSubjectSelectChange(this)">
-                    <option value="គ្រប់មុខវិជ្ជា" th:selected="${subjectName == 'គ្រប់មុខវិជ្ជា'}">គ្រប់មុខវិជ្ជា (All Subjects)</option>
-                    <option value="គណិតវិទ្យា" th:selected="${subjectName == 'គណិតវិទ្យា'}">គណិតវិទ្យា</option>
-                    <option value="រូបវិទ្យា" th:selected="${subjectName == 'រូបវិទ្យា'}">រូបវិទ្យា</option>
-                    <option value="គីមីវិទ្យា" th:selected="${subjectName == 'គីមីវិទ្យា'}">គីមីវិទ្យា</option>
-                    <option value="ជីវវិទ្យា" th:selected="${subjectName == 'ជីវវិទ្យា'}">ជីវវិទ្យា</option>
-                    <option value="ភាសាខ្មែរ" th:selected="${subjectName == 'ភាសាខ្មែរ'}">ភាសាខ្មែរ</option>
-                    <option value="ភាសាអង់គ្លេស" th:selected="${subjectName == 'ភាសាអង់គ្លេស'}">ភាសាអង់គ្លេស</option>
-                    <option value="ប្រវត្តិវិទ្យា" th:selected="${subjectName == 'ប្រវត្តិវិទ្យា'}">ប្រវត្តិវិទ្យា</option>
-                    <option value="ភូមិវិទ្យា" th:selected="${subjectName == 'ភូមិវិទ្យា'}">ភូមិវិទ្យា</option>
-                    <option value="សីលធម៌-ពលរដ្ឋវិជ្ជា" th:selected="${subjectName == 'សីលធម៌-ពលរដ្ឋវិជ្ជា'}">សីលធម៌-ពលរដ្ឋវិជ្ជា</option>
-                    <option value="ផែនដី និងបរិស្ថានវិទ្យា" th:selected="${subjectName == 'ផែនដី និងបរិស្ថានវិទ្យា'}">ផែនដី និងបរិស្ថានវិទ្យា</option>
-                    <option value="ព័ត៌មានវិទ្យា (ICT)" th:selected="${subjectName == 'ព័ត៌មានវិទ្យា (ICT)'}">ព័ត៌មានវិទ្យា (ICT)</option>
-                    <option value="កីឡា" th:selected="${subjectName == 'កីឡា'}">កីឡា</option>
-                    <option value="custom">-- វាយបញ្ចូលមុខវិជ្ជាផ្សេងទៀត --</option>
-                </select>
-                <input type="text" id="inputCustomSubject" class="c-input" style="display: none; margin-top: 5px;" placeholder="វាយបញ្ចូលមុខវិជ្ជា..." oninput="updateLive()">
-            </div>
-
-            <!-- Province (All 25 Provinces) -->
-            <div class="c-group">
-                <label>📍 រាជធានី-ខេត្ត (Province)៖</label>
-                <select id="selectProvince" class="c-input" onchange="updateLive()">
-                    <option value="ខេត្តបាត់ដំបង" th:selected="${province == 'ខេត្តបាត់ដំបង' or province == 'បាត់ដំបង'}">ខេត្តបាត់ដំបង</option>
-                    <option value="រាជធានីភ្នំពេញ" th:selected="${province == 'រាជធានីភ្នំពេញ' or province == 'ភ្នំពេញ'}">រាជធានីភ្នំពេញ</option>
-                    <option value="ខេត្តសៀមរាប" th:selected="${province == 'ខេត្តសៀមរាប' or province == 'សៀមរាប'}">ខេត្តសៀមរាប</option>
-                    <option value="ខេត្តបន្ទាយមានជ័យ" th:selected="${province == 'ខេត្តបន្ទាយមានជ័យ' or province == 'បន្ទាយមានជ័យ'}">ខេត្តបន្ទាយមានជ័យ</option>
-                    <option value="ខេត្តពោធិ៍សាត់" th:selected="${province == 'ខេត្តពោធិ៍សាត់' or province == 'ពោធិ៍សាត់'}">ខេត្តពោធិ៍សាត់</option>
-                    <option value="ខេត្តកំពង់ចាម" th:selected="${province == 'ខេត្តកំពង់ចាម' or province == 'កំពង់ចាម'}">ខេត្តកំពង់ចាម</option>
-                    <option value="ខេត្តកំពង់ធំ" th:selected="${province == 'ខេត្តកំពង់ធំ' or province == 'កំពង់ធំ'}">ខេត្តកំពង់ធំ</option>
-                    <option value="ខេត្តកំពង់ឆ្នាំង" th:selected="${province == 'ខេត្តកំពង់ឆ្នាំង' or province == 'កំពង់ឆ្នាំង'}">ខេត្តកំពង់ឆ្នាំង</option>
-                    <option value="ខេត្តកំពង់ស្ពឺ" th:selected="${province == 'ខេត្តកំពង់ស្ពឺ' or province == 'កំពង់ស្ពឺ'}">ខេត្តកំពង់ស្ពឺ</option>
-                    <option value="ខេត្តកណ្តាល" th:selected="${province == 'ខេត្តកណ្តាល' or province == 'កណ្តាល'}">ខេត្តកណ្តាល</option>
-                    <option value="ខេត្តតាកែវ" th:selected="${province == 'ខេត្តតាកែវ' or province == 'តាកែវ'}">ខេត្តតាកែវ</option>
-                    <option value="ខេត្តកំពត" th:selected="${province == 'ខេត្តកំពត' or province == 'កំពត'}">ខេត្តកំពត</option>
-                    <option value="ខេត្តកែប" th:selected="${province == 'ខេត្តកែប' or province == 'កែប'}">ខេត្តកែប</option>
-                    <option value="ខេត្តព្រះសីហនុ" th:selected="${province == 'ខេត្តព្រះសីហនុ' or province == 'ព្រះសីហនុ'}">ខេត្តព្រះសីហនុ</option>
-                    <option value="ខេត្តកោះកុង" th:selected="${province == 'ខេត្តកោះកុង' or province == 'កោះកុង'}">ខេត្តកោះកុង</option>
-                    <option value="ខេត្តព្រៃវែង" th:selected="${province == 'ខេត្តព្រៃវែង' or province == 'ព្រៃវែង'}">ខេត្តព្រៃវែង</option>
-                    <option value="ខេត្តស្វាយរៀង" th:selected="${province == 'ខេត្តស្វាយរៀង' or province == 'ស្វាយរៀង'}">ខេត្តស្វាយរៀង</option>
-                    <option value="ខេត្តក្រចេះ" th:selected="${province == 'ខេត្តក្រចេះ' or province == 'ក្រចេះ'}">ខេត្តក្រចេះ</option>
-                    <option value="ខេត្តស្ទឹងត្រែង" th:selected="${province == 'ខេត្តស្ទឹងត្រែង' or province == 'ស្ទឹងត្រែង'}">ខេត្តស្ទឹងត្រែង</option>
-                    <option value="ខេត្តរតនគិរី" th:selected="${province == 'ខេត្តរតនគិរី' or province == 'រតនគិរី'}">ខេត្តរតនគិរី</option>
-                    <option value="ខេត្តមណ្ឌលគិរី" th:selected="${province == 'ខេត្តមណ្ឌលគិរី' or province == 'មណ្ឌលគិរី'}">ខេត្តមណ្ឌលគិរី</option>
-                    <option value="ខេត្តព្រះវិហារ" th:selected="${province == 'ខេត្តព្រះវិហារ' or province == 'ព្រះវិហារ'}">ខេត្តព្រះវិហារ</option>
-                    <option value="ខេត្តឧត្តរមានជ័យ" th:selected="${province == 'ខេត្តឧត្តរមានជ័យ' or province == 'ឧត្តរមានជ័យ'}">ខេត្តឧត្តរមានជ័យ</option>
-                    <option value="ខេត្តប៉ៃលិន" th:selected="${province == 'ខេត្តប៉ៃលិន' or province == 'ប៉ៃលិន'}">ខេត្តប៉ៃលិន</option>
-                    <option value="ខេត្តត្បូងឃ្មុំ" th:selected="${province == 'ខេត្តត្បូងឃ្មុំ' or province == 'ត្បូងឃ្មុំ'}">ខេត្តត្បូងឃ្មុំ</option>
-                </select>
-            </div>
-
-            <!-- Teacher Name -->
-            <div class="c-group">
-                <label>👨‍🏫 ឈ្មោះគ្រូបង្រៀន (Teacher Name)៖</label>
-                <input type="text" id="inputTeacherName" class="c-input" th:value="${teacherName}" placeholder="ឧ. លោកគ្រូ សំ គឹមឆេង" oninput="updateLive()">
-            </div>
-
-            <!-- Left Signer Role -->
-            <div class="c-group">
-                <label>🏛️ តួនាទីហត្ថលេខាខាងឆ្វេង៖</label>
-                <input type="text" id="inputRoleLeft" class="c-input" th:value="${roleSignerLeft}" placeholder="ឧ. នាយកវិទ្យាល័យ ឬ នាយកអនុវិទ្យាល័យ" oninput="updateLive()">
-            </div>
-
-            <!-- Right Signer Role -->
-            <div class="c-group">
-                <label>✍️ តួនាទីហត្ថលេខាខាងស្តាំ៖</label>
-                <input type="text" id="inputRoleRight" class="c-input" th:value="${roleSignerRight}" placeholder="ឧ. គ្រូទទួលបន្ទុកថ្នាក់" oninput="updateLive()">
-            </div>
-        </div>
-
-        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; color: #334155;">
-                <input type="checkbox" id="chkApplyWholeClass" checked style="width: 18px; height: 18px; cursor: pointer;">
-                <span>☑️ អនុវត្តព័ត៌មាននេះចំពោះសិស្សទាំងអស់ក្នុងថ្នាក់ <b id="dispClassNameLabel" th:text="${student.className}">10A</b></span>
-            </label>
-            <button type="button" class="btn-action" style="background: #10b981; color: white; padding: 10px 22px; font-weight: bold;" onclick="saveCertificateToServer()">
-                💾 រក្សាទុកព័ត៌មានក្នុងប្រព័ន្ធ (Save &amp; Update QR)
-            </button>
-        </div>
     </div>
 
     <!-- MAIN CERTIFICATE CANVAS -->
@@ -805,284 +601,21 @@
         </div>
     </div>
 
-    <!-- Live Customizer & Download Script -->
+    <!-- Certificate Download & Init Script -->
     <script>
-        function toggleCustomizer() {
-            const panel = document.getElementById('customizerPanel');
-            panel.classList.toggle('active');
-        }
-
-        function setPresetSchool(prefix) {
-            const input = document.getElementById('inputSchoolName');
-            input.value = prefix;
-            input.focus();
-            updateLive();
-        }
-
-        function setPresetClass(cName) {
-            const sel = document.getElementById('selectClass');
-            const customIn = document.getElementById('inputCustomClass');
-            let matched = false;
-            for (let i = 0; i < sel.options.length; i++) {
-                if (sel.options[i].value === cName) {
-                    sel.selectedIndex = i;
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) {
-                sel.value = 'custom';
-                customIn.style.display = 'block';
-                customIn.value = cName;
-            } else {
-                customIn.style.display = 'none';
-                customIn.value = cName;
-            }
-            updateLive();
-        }
-
-        function onClassSelectChange(select) {
-            const customInput = document.getElementById('inputCustomClass');
-            if (select.value === 'custom') {
-                customInput.style.display = 'block';
-                customInput.focus();
-            } else {
-                customInput.style.display = 'none';
-                customInput.value = select.value;
-            }
-            updateLive();
-        }
-
-        function onSubjectSelectChange(select) {
-            const customInput = document.getElementById('inputCustomSubject');
-            if (select.value === 'custom') {
-                customInput.style.display = 'block';
-                customInput.focus();
-            } else {
-                customInput.style.display = 'none';
-            }
-            updateLive();
-        }
-
-        function updateLive() {
-            // 1. School Name
-            const schoolVal = document.getElementById('inputSchoolName').value.trim() || 'វិទ្យាល័យ / អនុវិទ្យាល័យ';
-            const dispSchoolName = document.getElementById('dispSchoolName');
-            if (dispSchoolName) dispSchoolName.innerText = schoolVal;
-            const dispSchoolBody = document.getElementById('dispSchoolBody');
-            if (dispSchoolBody) dispSchoolBody.innerText = schoolVal;
-
-            // 2. Class Name
-            const selectCls = document.getElementById('selectClass');
-            let classVal = selectCls ? selectCls.value : 'ថ្នាក់ទី១០ A';
-            if (classVal === 'custom') {
-                const customCls = document.getElementById('inputCustomClass');
-                classVal = (customCls && customCls.value.trim()) ? customCls.value.trim() : 'ថ្នាក់ទី១០ A';
-            }
-            const dispClassName = document.getElementById('dispClassName');
-            if (dispClassName) dispClassName.innerText = classVal;
-            const dispClassNameBody = document.getElementById('dispClassNameBody');
-            if (dispClassNameBody) dispClassNameBody.innerText = classVal;
-            const dispClassNameLabel = document.getElementById('dispClassNameLabel');
-            if (dispClassNameLabel) dispClassNameLabel.innerText = classVal;
-
-            // 3. Student Details
-            const studentNameInput = document.getElementById('inputStudentName');
-            const studentNameVal = (studentNameInput && studentNameInput.value.trim()) ? studentNameInput.value.trim() : 'សុខ សាន្ត';
-            const dispStudentName = document.getElementById('dispStudentName');
-            if (dispStudentName) dispStudentName.innerText = studentNameVal;
-
-            const genderSelect = document.getElementById('selectStudentGender');
-            const genderVal = genderSelect ? genderSelect.value : 'ប្រុស';
-            const dispStudentGender = document.getElementById('dispStudentGender');
-            if (dispStudentGender) dispStudentGender.innerText = genderVal;
-
-            const studentCodeInput = document.getElementById('inputStudentCode');
-            const studentCodeVal = (studentCodeInput && studentCodeInput.value.trim()) ? studentCodeInput.value.trim() : '123456';
-            const dispStudentCode = document.getElementById('dispStudentCode');
-            if (dispStudentCode) dispStudentCode.innerText = studentCodeVal;
-
-            // 4. Subject
-            const selectSub = document.getElementById('selectSubject');
-            let subjectVal = selectSub ? selectSub.value : 'គ្រប់មុខវិជ្ជា';
-            if (subjectVal === 'custom') {
-                const customSub = document.getElementById('inputCustomSubject');
-                subjectVal = (customSub && customSub.value.trim()) ? customSub.value.trim() : 'គ្រប់មុខវិជ្ជា';
-            }
-            const dispSubjectBody = document.getElementById('dispSubjectBody');
-            if (dispSubjectBody) dispSubjectBody.innerText = subjectVal;
-
-            // 5. Province (Updates right footer date)
-            const provinceVal = document.getElementById('selectProvince').value;
-            const dispProvinceDate = document.getElementById('dispProvinceDate');
-            if (dispProvinceDate) dispProvinceDate.innerText = provinceVal;
-            const dispProvinceBody = document.getElementById('dispProvinceBody');
-            if (dispProvinceBody) dispProvinceBody.innerText = provinceVal;
-
-            // 6. Teacher Name
-            const teacherVal = document.getElementById('inputTeacherName').value.trim() || 'លោកគ្រូ សំ គឹមឆេង';
-            const dispTeacherName = document.getElementById('dispTeacherName');
-            if (dispTeacherName) dispTeacherName.innerText = teacherVal;
-
-            // 7. Signer Roles
-            const roleLeftVal = document.getElementById('inputRoleLeft').value.trim() || 'នាយកសាលា / គណៈគ្រប់គ្រង';
-            const dispRoleLeft = document.getElementById('dispRoleLeft');
-            if (dispRoleLeft) dispRoleLeft.innerText = roleLeftVal;
-
-            const roleRightVal = document.getElementById('inputRoleRight').value.trim() || 'គ្រូទទួលបន្ទុកថ្នាក់';
-            const dispRoleRight = document.getElementById('dispRoleRight');
-            if (dispRoleRight) dispRoleRight.innerText = roleRightVal;
-
-            // 8. Update QR Code URL pointing cleanly to verification system
-            const serialVal = "[[${serialNumber}]]" || 'CMS-2027-001';
-            const baseVerifyUrl = "https://class.mitpukae.com/certificate/verify";
-            const fullVerifyUrl = `${baseVerifyUrl}?serial=${encodeURIComponent(serialVal)}&className=${encodeURIComponent(classVal)}&studentName=${encodeURIComponent(studentNameVal)}&school=${encodeURIComponent(schoolVal)}&subject=${encodeURIComponent(subjectVal)}&province=${encodeURIComponent(provinceVal)}&teacher=${encodeURIComponent(teacherVal)}`;
-            const qrImg = document.getElementById('certQrImage');
-            if (qrImg) {
-                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=2&data=${encodeURIComponent(fullVerifyUrl)}`;
-            }
-
-            // Save preferences to localStorage
-            try {
-                if (!schoolVal.includes('សាកលវិទ្យាល័យ') && !schoolVal.includes('NUBB')) {
-                    localStorage.setItem('cert_school', schoolVal);
-                }
-                localStorage.setItem('cert_class', classVal);
-                localStorage.setItem('cert_student_name', studentNameVal);
-                localStorage.setItem('cert_student_gender', genderVal);
-                localStorage.setItem('cert_student_code', studentCodeVal);
-                localStorage.setItem('cert_subject', subjectVal);
-                localStorage.setItem('cert_province', provinceVal);
-                localStorage.setItem('cert_teacher', teacherVal);
-                localStorage.setItem('cert_role_left', roleLeftVal);
-                localStorage.setItem('cert_role_right', roleRightVal);
-            } catch (e) {}
-        }
-
-        async function saveCertificateToServer() {
-            const studentId = "[[${student.id}]]";
-            const schoolName = document.getElementById('inputSchoolName').value.trim() || 'វិទ្យាល័យ / អនុវិទ្យាល័យ';
-            
-            const selectCls = document.getElementById('selectClass');
-            let className = selectCls ? selectCls.value : 'ថ្នាក់ទី១០ A';
-            if (className === 'custom') {
-                const customCls = document.getElementById('inputCustomClass');
-                className = (customCls && customCls.value.trim()) ? customCls.value.trim() : 'ថ្នាក់ទី១០ A';
-            }
-
-            const studentName = document.getElementById('inputStudentName').value.trim() || 'សុខ សាន្ត';
-            const gender = document.getElementById('selectStudentGender').value;
-            const studentCode = document.getElementById('inputStudentCode').value.trim() || '123456';
-
-            const selectSub = document.getElementById('selectSubject');
-            let subjectName = selectSub ? selectSub.value : 'គ្រប់មុខវិជ្ជា';
-            if (subjectName === 'custom') {
-                subjectName = document.getElementById('inputCustomSubject').value.trim() || 'គ្រប់មុខវិជ្ជា';
-            }
-            const province = document.getElementById('selectProvince').value;
-            const teacherName = document.getElementById('inputTeacherName').value.trim() || 'លោកគ្រូ សំ គឹមឆេង';
-            const roleSignerLeft = document.getElementById('inputRoleLeft').value.trim() || 'នាយកសាលា / គណៈគ្រប់គ្រង';
-            const roleSignerRight = document.getElementById('inputRoleRight').value.trim() || 'គ្រូទទួលបន្ទុកថ្នាក់';
-            const applyToWholeClass = document.getElementById('chkApplyWholeClass') ? document.getElementById('chkApplyWholeClass').checked : true;
-
-            const formData = new FormData();
-            formData.append('studentId', studentId);
-            formData.append('className', className);
-            formData.append('studentName', studentName);
-            formData.append('gender', gender);
-            formData.append('studentCode', studentCode);
-            formData.append('schoolName', schoolName);
-            formData.append('subjectName', subjectName);
-            formData.append('province', province);
-            formData.append('teacherName', teacherName);
-            formData.append('roleSignerLeft', roleSignerLeft);
-            formData.append('roleSignerRight', roleSignerRight);
-            formData.append('applyToWholeClass', applyToWholeClass);
-
-            try {
-                const res = await fetch('/api/certificate/save', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                if (data.success) {
-                    alert('✅ បានរក្សាទុកក្នុងប្រព័ន្ធជោគជ័យ!\nពេលនេះរាល់ពេលស្កេន QR Code នឹងបង្ហាញថ្នាក់ «' + className + '» សាលា «' + schoolName + '» មុខវិជ្ជា «' + subjectName + '» និងខេត្ត «' + province + '» ដោយស្វ័យប្រវត្តិតែម្តង!');
-                } else {
-                    alert('មានបញ្ហាក្នុងការរក្សាទុក!');
-                }
-            } catch (e) {
-                alert('កំហុសក្នុងការតភ្ជាប់ប្រព័ន្ធ');
-            }
-        }
-
-        // Restore preferences on page load if saved previously
         window.addEventListener('DOMContentLoaded', () => {
             try {
-                // Clear any legacy obsolete NUBB cached values from browser
-                let savedSchool = localStorage.getItem('cert_school');
-                if (savedSchool && (savedSchool.includes('សាកលវិទ្យាល័យ') || savedSchool.includes('NUBB'))) {
-                    localStorage.removeItem('cert_school');
-                    savedSchool = null;
-                }
-
-                const serverSchool = "[[${schoolName}]]";
-                if (serverSchool && serverSchool !== 'វិទ្យាល័យ / អនុវិទ្យាល័យ' && serverSchool.trim() !== '') {
-                    document.getElementById('inputSchoolName').value = serverSchool;
-                } else if (savedSchool) {
-                    document.getElementById('inputSchoolName').value = savedSchool;
-                }
-
-                // Restore saved class if available
-                const savedClass = localStorage.getItem('cert_class');
-                if (savedClass) {
-                    setPresetClass(savedClass);
-                }
-
-                // Restore saved student name & info if in preview mode
-                const isPreview = [[${isPreviewMode}]];
-                if (isPreview) {
-                    const savedStName = localStorage.getItem('cert_student_name');
-                    if (savedStName) document.getElementById('inputStudentName').value = savedStName;
-
-                    const savedGender = localStorage.getItem('cert_student_gender');
-                    if (savedGender) document.getElementById('selectStudentGender').value = savedGender;
-
-                    const savedCode = localStorage.getItem('cert_student_code');
-                    if (savedCode) document.getElementById('inputStudentCode').value = savedCode;
-                }
-
-                const savedProvince = localStorage.getItem('cert_province');
-                if (savedProvince) document.getElementById('selectProvince').value = savedProvince;
-
-                const savedTeacher = localStorage.getItem('cert_teacher');
-                if (savedTeacher && !savedTeacher.includes('គ្រូបង្រៀនទទួលបន្ទុក') && !savedTeacher.includes('គ្រូទទួលបន្ទុកថ្នាក់')) {
-                    document.getElementById('inputTeacherName').value = savedTeacher;
-                }
-
-                const savedRoleLeft = localStorage.getItem('cert_role_left');
-                if (savedRoleLeft) document.getElementById('inputRoleLeft').value = savedRoleLeft;
-
-                let savedRoleRight = localStorage.getItem('cert_role_right');
-                if (savedRoleRight === 'គ្រូបង្រៀនទទួលបន្ទុក') {
-                    savedRoleRight = 'គ្រូទទួលបន្ទុកថ្នាក់';
-                    localStorage.setItem('cert_role_right', savedRoleRight);
-                }
-                if (savedRoleRight) document.getElementById('inputRoleRight').value = savedRoleRight;
-
-                updateLive();
-
-                const isTeacher = [[${isTeacher}]];
-                if (isTeacher) {
-                    // Open customizer panel by default for teacher convenience
-                    document.getElementById('customizerPanel').classList.add('active');
-                }
+                // Clear any legacy customizer override keys from localStorage
+                ['cert_school', 'cert_class', 'cert_student_name', 'cert_student_gender',
+                 'cert_student_code', 'cert_subject', 'cert_province', 'cert_teacher',
+                 'cert_role_left', 'cert_role_right'].forEach(k => localStorage.removeItem(k));
             } catch (e) {}
         });
 
         function downloadCertificateAsImage() {
             const certNode = document.getElementById('certificateNode');
             const studentName = "[[${student.name}]]" || "Student";
-            
+
             // Show loading state
             const btn = document.querySelector('.btn-download');
             const originalText = btn.innerHTML;

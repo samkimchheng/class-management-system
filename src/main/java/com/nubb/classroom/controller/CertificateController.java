@@ -73,80 +73,118 @@ public class CertificateController {
             Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
             String accountName = (String) session.getAttribute("ACCOUNT_NAME");
 
-            Student student = null;
             boolean isTeacher = (accountId != null);
 
-            if (isTeacher) {
-                List<Student> teacherStudents = studentRepository.findByAccountId(accountId);
-                if (teacherStudents.isEmpty()) {
+            // 1. Collect distinct classrooms taught by this teacher (or all available classrooms)
+            List<String> teacherClasses = new ArrayList<>();
+            if (accountId != null) {
+                List<Classroom> cList = classroomRepository.findByAccountId(accountId);
+                if (cList != null) {
+                    for (Classroom c : cList) {
+                        if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
+                            String cName = c.getClassName().trim();
+                            if (!teacherClasses.contains(cName)) {
+                                teacherClasses.add(cName);
+                            }
+                        }
+                    }
+                }
+                List<Student> sList = studentRepository.findByAccountId(accountId);
+                if (sList != null) {
+                    for (Student s : sList) {
+                        if (s.getClassName() != null && !s.getClassName().trim().isEmpty()) {
+                            String sClass = s.getClassName().trim();
+                            if (!teacherClasses.contains(sClass)) {
+                                teacherClasses.add(sClass);
+                            }
+                        }
+                    }
+                }
+            }
+            if (teacherClasses.isEmpty()) {
+                List<Classroom> allC = classroomRepository.findAll();
+                if (allC != null) {
+                    for (Classroom c : allC) {
+                        if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
+                            String cName = c.getClassName().trim();
+                            if (!teacherClasses.contains(cName)) {
+                                teacherClasses.add(cName);
+                            }
+                        }
+                    }
+                }
+                List<Student> allS = studentRepository.findAll();
+                if (allS != null) {
+                    for (Student s : allS) {
+                        if (s.getClassName() != null && !s.getClassName().trim().isEmpty()) {
+                            String sClass = s.getClassName().trim();
+                            if (!teacherClasses.contains(sClass)) {
+                                teacherClasses.add(sClass);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. Filter students based on selected className (if provided)
+            String filterClass = (className != null && !className.trim().isEmpty() && !className.equalsIgnoreCase("ALL"))
+                    ? className.trim()
+                    : null;
+
+            List<Student> teacherStudents;
+            if (accountId != null) {
+                if (filterClass != null) {
+                    teacherStudents = studentRepository.findByClassNameAndAccountId(filterClass, accountId);
+                    if (teacherStudents.isEmpty()) {
+                        teacherStudents = studentRepository.findByClassName(filterClass);
+                    }
+                } else {
+                    teacherStudents = studentRepository.findByAccountId(accountId);
+                    if (teacherStudents.isEmpty()) {
+                        teacherStudents = studentRepository.findAll();
+                    }
+                }
+            } else {
+                if (filterClass != null) {
+                    teacherStudents = studentRepository.findByClassName(filterClass);
+                } else {
                     teacherStudents = studentRepository.findAll();
                 }
-                model.addAttribute("teacherStudents", teacherStudents);
+            }
 
-                if (studentId != null) {
-                    student = studentRepository.findById(studentId).orElse(null);
-                } else if (!teacherStudents.isEmpty()) {
-                    student = teacherStudents.get(0);
-                }
-            } else if (loggedInStudent != null) {
+            // 3. Determine target student
+            Student student = null;
+            if (studentId != null) {
+                student = studentRepository.findById(studentId).orElse(null);
+            }
+
+            if (student == null && !teacherStudents.isEmpty()) {
+                student = teacherStudents.get(0);
+            }
+
+            if (student == null && loggedInStudent != null) {
                 student = loggedInStudent;
             }
 
-            // If no student session (e.g. guest, or template preview), create a sample student for display
             boolean isPreviewMode = false;
             if (student == null) {
                 isPreviewMode = true;
-                String defaultClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ថ្នាក់ទី១០ A";
+                String defaultClass = (filterClass != null) ? filterClass : (!teacherClasses.isEmpty() ? teacherClasses.get(0) : "ថ្នាក់ទី១០ A");
                 student = new Student("សុខ សាន្ត", "ប្រុស", defaultClass, "123456");
                 student.setId(1L);
                 student.setProvince("ខេត្តពោធិ៍សាត់");
-            } else if (className != null && !className.trim().isEmpty()) {
-                student.setClassName(className.trim());
             }
 
-            // Available Classes List (From ClassroomRepository, StudentRepository and Cambodian standards)
-            List<String> availableClasses = new ArrayList<>();
-            try {
-                List<Classroom> cList = (accountId != null) ? classroomRepository.findByAccountId(accountId) : classroomRepository.findAll();
-                if (cList != null) {
-                    for (Classroom c : cList) {
-                        if (c.getClassName() != null && !c.getClassName().trim().isEmpty() && !availableClasses.contains(c.getClassName().trim())) {
-                            availableClasses.add(c.getClassName().trim());
-                        }
-                    }
-                }
-            } catch (Exception ignored) {}
+            String selectedClassName = (filterClass != null)
+                    ? filterClass
+                    : (student.getClassName() != null ? student.getClassName().trim() : "");
 
-            try {
-                List<Student> allSt = (accountId != null) ? studentRepository.findByAccountId(accountId) : studentRepository.findAll();
-                if (allSt != null) {
-                    for (Student s : allSt) {
-                        if (s.getClassName() != null && !s.getClassName().trim().isEmpty() && !availableClasses.contains(s.getClassName().trim())) {
-                            availableClasses.add(s.getClassName().trim());
-                        }
-                    }
-                }
-            } catch (Exception ignored) {}
+            model.addAttribute("teacherClasses", teacherClasses);
+            model.addAttribute("teacherStudents", teacherStudents);
+            model.addAttribute("selectedClassName", selectedClassName);
+            model.addAttribute("availableClasses", teacherClasses);
 
-            String[] defaultCambodianClasses = {
-                "ថ្នាក់ទី១០ A", "ថ្នាក់ទី១០ B", "ថ្នាក់ទី១០ C",
-                "ថ្នាក់ទី១១ A", "ថ្នាក់ទី១១ B", "ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១១ សង្គម",
-                "ថ្នាក់ទី១២ A", "ថ្នាក់ទី១២ B", "ថ្នាក់ទី១២ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១២ សង្គម",
-                "ថ្នាក់ទី៧ A", "ថ្នាក់ទី៧ B", "ថ្នាក់ទី៨ A", "ថ្នាក់ទី៨ B", "ថ្នាក់ទី៩ A", "ថ្នាក់ទី៩ B",
-                "ថ្នាក់ទី១", "ថ្នាក់ទី២", "ថ្នាក់ទី៣", "ថ្នាក់ទី៤", "ថ្នាក់ទី៥", "ថ្នាក់ទី៦",
-                "ឆ្នាំទី១", "ឆ្នាំទី២", "ឆ្នាំទី៣", "ឆ្នាំទី៤"
-            };
-            for (String dc : defaultCambodianClasses) {
-                if (!availableClasses.contains(dc)) {
-                    availableClasses.add(dc);
-                }
-            }
-            if (student.getClassName() != null && !availableClasses.contains(student.getClassName())) {
-                availableClasses.add(0, student.getClassName());
-            }
-            model.addAttribute("availableClasses", availableClasses);
-
-            // Verify lesson completion for the student safely
+// Verify lesson completion for the student safely
             List<Lesson> classLessons = (student.getClassName() != null && !student.getClassName().trim().isEmpty())
                     ? lessonRepository.findByClassNameForStudent(student.getClassName())
                     : Collections.emptyList();
@@ -335,6 +373,9 @@ public class CertificateController {
             model.addAttribute("teacherName", "លោកគ្រូ សំ គឹមឆេង");
             model.addAttribute("roleSignerLeft", "នាយកសាលា / គណៈគ្រប់គ្រង");
             model.addAttribute("roleSignerRight", "គ្រូទទួលបន្ទុកថ្នាក់");
+            model.addAttribute("teacherClasses", Collections.emptyList());
+            model.addAttribute("teacherStudents", Collections.emptyList());
+            model.addAttribute("selectedClassName", "");
             model.addAttribute("isTeacher", false);
             model.addAttribute("isPreviewMode", true);
             model.addAttribute("isAllCompleted", true);
