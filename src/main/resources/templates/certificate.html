@@ -97,6 +97,12 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .certificate-wrapper ::selection {
+            background: transparent;
         }
 
         /* Outer Navy & Gold Dual Borders */
@@ -196,18 +202,19 @@
             display: inline-block;
             position: relative;
             margin: 4px 0 8px 0;
+            background: transparent !important;
         }
 
         .cert-main-title {
             font-family: 'Moul', 'Kantumruy Pro', cursive;
             font-size: 2.15rem;
-            color: #854d0e;
-            background: linear-gradient(135deg, #9a3412, #b45309, #d97706);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #b45309;
+            background: transparent !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: #b45309 !important;
             margin: 0;
             letter-spacing: 1px;
-            filter: drop-shadow(0 2px 4px rgba(180, 83, 9, 0.2));
+            text-shadow: 0 1px 2px rgba(180, 83, 9, 0.2);
         }
 
         .cert-sub-title {
@@ -648,7 +655,7 @@
                     </div>
 
                     <div class="cert-statement">
-                        ដើម្បីបញ្ជាក់ថា បានបញ្ចប់ការសិក្សាមុខវិជ្ជា <b style="color: #0284c7;" id="dispSubjectBody" th:text="${subjectName}">គ្រប់មុខវិជ្ជា</b> ក្នុងកម្រិត <b id="dispClassNameBody" th:text="${gradeLevel != null ? gradeLevel : (student.className != null ? student.className : 'ថ្នាក់ទី១០')}">ថ្នាក់ទី១០</b> នៃ <b style="color: #0b1d3a;" id="dispSchoolBody" th:text="${schoolName}">វិទ្យាល័យ ...</b> ដោយជោគជ័យពេញលេញ <b>១០០%</b> ស្របតាមកម្មវិធីសិក្សា បទដ្ឋានគរុកោសល្យ និងការវាយតម្លៃលទ្ធផលសិក្សាយ៉ាងត្រឹមត្រូវ។
+                        ដើម្បីបញ្ជាក់ថា បានបញ្ចប់ការសិក្សាមុខវិជ្ជា <b style="color: #0b1d3a;" id="dispSubjectBody" th:text="${subjectName}">គ្រប់មុខវិជ្ជា</b> ក្នុងកម្រិត <b style="color: #0b1d3a;" id="dispClassNameBody" th:text="${gradeLevel != null ? gradeLevel : (student.className != null ? student.className : 'ថ្នាក់ទី១០')}">ថ្នាក់ទី១០</b> នៃ <b style="color: #0b1d3a;" id="dispSchoolBody" th:text="${schoolName}">វិទ្យាល័យ ...</b> ដោយជោគជ័យពេញលេញ <b style="color: #b45309;">១០០%</b> ស្របតាមកម្មវិធីសិក្សា បទដ្ឋានគរុកោសល្យ និងការវាយតម្លៃលទ្ធផលសិក្សាយ៉ាងត្រឹមត្រូវ។
                     </div>
                     <div class="cert-statement-en" id="dispStatementEn">
                         For successfully completing 100% of the curriculum lessons with outstanding diligence and academic dedication.
@@ -723,6 +730,15 @@
                 alert('⚠️ មិនអនុញ្ញាតិឱ្យទាញយកទេ! ប្អូនត្រូវរៀនបញ្ចប់មេរៀនឱ្យបាន ១០០% ជាមុនសិន ទើបអាចទាញយកវិញ្ញាបនបត្របាន!');
                 return;
             }
+
+            // Clear any active text selection or focus so no highlight artifacts are captured
+            if (window.getSelection) {
+                window.getSelection().removeAllRanges();
+            }
+            if (document.activeElement && document.activeElement.blur) {
+                document.activeElement.blur();
+            }
+
             const certNode = document.getElementById('certificateNode');
             const studentName = "[[${student.name}]]" || "Student";
 
