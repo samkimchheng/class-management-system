@@ -296,8 +296,20 @@ public class CertificateController {
                     ? lessonProgressRepository.findByUserKey("STUDENT_" + student.getId())
                     : Collections.emptyList();
             long completedCount = progressList != null ? progressList.stream().filter(LessonProgress::isCompleted).count() : 0;
-            boolean isAllCompleted = (totalLessons == 0 || completedCount >= totalLessons);
-            int percent = totalLessons > 0 ? (int) ((completedCount * 100) / totalLessons) : 100;
+            boolean isAllCompleted;
+            int percent;
+            if (totalLessons > 0) {
+                isAllCompleted = (completedCount >= totalLessons);
+                percent = (int) ((completedCount * 100) / totalLessons);
+            } else {
+                if (isStudent) {
+                    isAllCompleted = false;
+                    percent = 0;
+                } else {
+                    isAllCompleted = true;
+                    percent = 100;
+                }
+            }
 
             String sCode = (student.getStudentCode() != null && !student.getStudentCode().trim().isEmpty()) ? student.getStudentCode().trim() : "123456";
             Long sId = student.getId() != null ? student.getId() : 1L;
