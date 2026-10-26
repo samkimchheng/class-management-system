@@ -141,6 +141,15 @@ public class DataInitializer {
                 stmt.executeUpdate("UPDATE \"CERTIFICATE_RECORDS\" SET teacher_name = 'លោកគ្រូ សំ គឹមឆេង' WHERE teacher_name LIKE '%Administrator%' OR teacher_name LIKE '%admin%'");
                 stmt.executeUpdate("UPDATE certificate_records SET teacher_name = 'លោកគ្រូ សំ គឹមឆេង' WHERE teacher_name LIKE '%Administrator%' OR teacher_name LIKE '%admin%'");
             } catch (Exception ignored) {}
+
+            // 5. Ensure any existing students or classrooms without account_id are assigned to account 1
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("UPDATE \"STUDENTS\" SET account_id = 1 WHERE account_id IS NULL");
+                stmt.executeUpdate("UPDATE students SET account_id = 1 WHERE account_id IS NULL");
+                stmt.executeUpdate("UPDATE \"CLASSROOM\" SET account_id = 1 WHERE account_id IS NULL");
+                stmt.executeUpdate("UPDATE classroom SET account_id = 1 WHERE account_id IS NULL");
+            } catch (Exception ignored) {}
         };
     }
 }

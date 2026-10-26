@@ -12,6 +12,8 @@ import com.nubb.classroom.repository.ClassroomRepository;
 import com.nubb.classroom.repository.LessonProgressRepository;
 import com.nubb.classroom.repository.LessonRepository;
 import com.nubb.classroom.repository.StudentRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +58,9 @@ public class CertificateController {
     @Autowired
     private HttpSession session;
 
+    @Autowired
+    private HttpServletRequest request;
+
     @GetMapping("/certificate")
     public String viewCertificate(
             @RequestParam(required = false) Long studentId,
@@ -69,10 +74,30 @@ public class CertificateController {
             Model model) {
 
         try {
-            Student loggedInStudent = (Student) session.getAttribute("loggedInStudent");
             Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
             String accountName = (String) session.getAttribute("ACCOUNT_NAME");
 
+            // Auto-restore teacher account from persistent cookie if session missing
+            if (accountId == null && request != null && request.getCookies() != null) {
+                for (Cookie c : request.getCookies()) {
+                    if ("REMEMBER_ACCOUNT_ID".equals(c.getName()) && c.getValue() != null && !c.getValue().isEmpty()) {
+                        try {
+                            Long cId = Long.parseLong(c.getValue());
+                            Optional<Account> accOpt = accountRepository.findById(cId);
+                            if (accOpt.isPresent() && !Boolean.FALSE.equals(accOpt.get().getActive())) {
+                                accountId = cId;
+                                accountName = accOpt.get().getFullName();
+                                session.setAttribute("ACCOUNT_ID", accountId);
+                                session.setAttribute("ACCOUNT_ROLE", accOpt.get().getRole());
+                                session.setAttribute("ACCOUNT_NAME", accountName);
+                            }
+                        } catch (Exception ignored) {}
+                        break;
+                    }
+                }
+            }
+
+            Student loggedInStudent = (Student) session.getAttribute("loggedInStudent");
             boolean isTeacher = (accountId != null);
             Account currentTeacherAcc = (accountId != null) ? accountRepository.findById(accountId).orElse(null) : null;
 
@@ -132,9 +157,10 @@ public class CertificateController {
                 teacherSubjects.add(0, "គ្រប់មុខវិជ្ជា");
             }
 
-            // 1. Collect distinct classrooms taught by this teacher (or all available classrooms)
+            // 1. Collect distinct classrooms belonging to this teacher (from classrooms & students tables)
             List<String> teacherClasses = new ArrayList<>();
             if (accountId != null) {
+                // Classrooms created directly by the teacher in "បញ្ជីថ្នាក់រៀនខ្ញុំ" (/classrooms)
                 List<Classroom> cList = classroomRepository.findByAccountId(accountId);
                 if (cList != null) {
                     for (Classroom c : cList) {
@@ -146,6 +172,7 @@ public class CertificateController {
                         }
                     }
                 }
+                // Classrooms of students entered by the teacher in "បញ្ជីឈ្មោះសិស្ស" (/students)
                 List<Student> sList = studentRepository.findByAccountId(accountId);
                 if (sList != null) {
                     for (Student s : sList) {
@@ -157,16 +184,14 @@ public class CertificateController {
                         }
                     }
                 }
-            }
-            if (teacherClasses.isEmpty()) {
+            } else {
+                // Public / Guest preview: only classes existing in database
                 List<Classroom> allC = classroomRepository.findAll();
                 if (allC != null) {
                     for (Classroom c : allC) {
                         if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
                             String cName = c.getClassName().trim();
-                            if (!teacherClasses.contains(cName)) {
-                                teacherClasses.add(cName);
-                            }
+                            if (!teacherClasses.contains(cName)) teacherClasses.add(cName);
                         }
                     }
                 }
@@ -175,38 +200,31 @@ public class CertificateController {
                     for (Student s : allS) {
                         if (s.getClassName() != null && !s.getClassName().trim().isEmpty()) {
                             String sClass = s.getClassName().trim();
-                            if (!teacherClasses.contains(sClass)) {
-                                teacherClasses.add(sClass);
-                            }
+                            if (!teacherClasses.contains(sClass)) teacherClasses.add(sClass);
                         }
                     }
                 }
             }
 
-            // 2. Filter students based on selected className (if provided)
-            if (teacherClasses.isEmpty()) {
-    String[] stdClasses = {"ថ្នាក់ទី១០ A", "ថ្នាក់ទី១០ B", "ថ្នាក់ទី១០ C", "ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១១ សង្គម", "ថ្នាក់ទី១២ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១២ សង្គម", "ថ្នាក់ទី៧ A", "ថ្នាក់ទី៨ A", "ថ្នាក់ទី៩ A"};
-    for (String sc : stdClasses) {
-        if (!teacherClasses.contains(sc)) teacherClasses.add(sc);
-    }
-}
-
-String filterClass = (className != null && !className.trim().isEmpty() && !className.equalsIgnoreCase("ALL"))
+            // 2. Filter students based on selected className
+            String filterClass = (className != null && !className.trim().isEmpty() && !className.equalsIgnoreCase("ALL"))
                     ? className.trim()
                     : null;
 
-            List<Student> teacherStudents;
+            List<Student> teacherStudents = new ArrayList<>();
             if (accountId != null) {
                 if (filterClass != null) {
                     teacherStudents = studentRepository.findByClassNameAndAccountId(filterClass, accountId);
                     if (teacherStudents.isEmpty()) {
-                        teacherStudents = studentRepository.findByClassName(filterClass);
+                        List<Student> allMy = studentRepository.findByAccountId(accountId);
+                        for (Student s : allMy) {
+                            if (s.getClassName() != null && s.getClassName().trim().equalsIgnoreCase(filterClass.trim())) {
+                                teacherStudents.add(s);
+                            }
+                        }
                     }
                 } else {
                     teacherStudents = studentRepository.findByAccountId(accountId);
-                    if (teacherStudents.isEmpty()) {
-                        teacherStudents = studentRepository.findAll();
-                    }
                 }
             } else {
                 if (filterClass != null) {
@@ -219,18 +237,17 @@ String filterClass = (className != null && !className.trim().isEmpty() && !class
             if (teacherStudents == null) {
                 teacherStudents = new ArrayList<>();
             }
-            if (teacherStudents.isEmpty()) {
-                String targetClass = (filterClass != null) ? filterClass : (!teacherClasses.isEmpty() ? teacherClasses.get(0) : "ថ្នាក់ទី១០ A");
-                Student previewSt = new Student("សុខ សាន្ត", "ប្រុស", targetClass, "123456");
-                previewSt.setId(1L);
-                previewSt.setProvince("ខេត្តពោធិ៍សាត់");
-                teacherStudents.add(previewSt);
-            }
 
             // 3. Determine target student
             Student student = null;
             if (studentId != null) {
-                student = studentRepository.findById(studentId).orElse(null);
+                Optional<Student> opt = studentRepository.findById(studentId);
+                if (opt.isPresent()) {
+                    Student found = opt.get();
+                    if (accountId == null || found.getAccountId() == null || found.getAccountId().equals(accountId)) {
+                        student = found;
+                    }
+                }
             }
 
             if (student == null && !teacherStudents.isEmpty()) {
@@ -241,22 +258,23 @@ String filterClass = (className != null && !className.trim().isEmpty() && !class
                 student = loggedInStudent;
             }
 
-            boolean isPreviewMode = false;
+            boolean isPreviewMode = (student == null);
             if (student == null) {
-                isPreviewMode = true;
-                String defaultClass = (filterClass != null) ? filterClass : (!teacherClasses.isEmpty() ? teacherClasses.get(0) : "ថ្នាក់ទី១០ A");
-                student = new Student("សុខ សាន្ត", "ប្រុស", defaultClass, "123456");
-                student.setId(1L);
-                student.setProvince("ខេត្តពោធិ៍សាត់");
+                String defaultClass = (filterClass != null)
+                        ? filterClass
+                        : (!teacherClasses.isEmpty() ? teacherClasses.get(0) : "គ្មានថ្នាក់រៀន");
+                student = new Student("មិនទាន់មានសិស្ស", "ប្រុស", defaultClass, "---");
+                student.setId(0L);
+                student.setProvince(currentTeacherAcc != null && currentTeacherAcc.getProvince() != null ? currentTeacherAcc.getProvince() : "ខេត្តពោធិ៍សាត់");
             }
 
-            if (student.getClassName() != null && !teacherClasses.contains(student.getClassName().trim())) {
+            if (student.getId() != null && student.getId() > 0 && student.getClassName() != null && !student.getClassName().trim().isEmpty() && !teacherClasses.contains(student.getClassName().trim())) {
                 teacherClasses.add(0, student.getClassName().trim());
             }
 
             String selectedClassName = (filterClass != null)
                     ? filterClass
-                    : (student.getClassName() != null ? student.getClassName().trim() : "");
+                    : "";
 
             model.addAttribute("teacherSubjects", teacherSubjects);
             model.addAttribute("selectedSubjectName", subjectName);

@@ -463,7 +463,8 @@
                     </label>
                     <select id="selectClassFilter" name="className" onchange="document.getElementById('selectStudentFilter').value=''; this.form.submit();"
                             style="padding: 7px 12px; border-radius: 6px; font-family: inherit; font-size: 0.9rem; background: #1e293b; color: white; border: 1px solid #475569; outline: none; cursor: pointer;">
-                        <option value="">-- គ្រប់ថ្នាក់រៀនទាំងអស់ --</option>
+                        <option value="" th:selected="${selectedClassName == null or selectedClassName == ''}">-- គ្រប់ថ្នាក់រៀនទាំងអស់ --</option>
+                        <option th:if="${teacherClasses == null or teacherClasses.isEmpty()}" value="" disabled>-- មិនទាន់មានថ្នាក់រៀន --</option>
                         <option th:each="cls : ${teacherClasses}"
                                 th:value="${cls}"
                                 th:text="${cls}"
@@ -503,10 +504,11 @@
         </div>
     </div>
 
-<!-- Preview Mode Notice -->
+    <!-- Preview Mode Notice -->
     <div th:if="${isPreviewMode}" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; padding: 12px 20px; border-radius: 10px; margin-bottom: 15px; width: 100%; max-width: 1122px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);" class="no-print">
-        <span>💡 <b>ទម្រង់គំរូវិញ្ញាបនបត្របញ្ជាក់ការសិក្សាស្តង់ដារ (Sample Preview Mode)</b> — លោកគ្រូ-អ្នកគ្រូអាចចូលទៅកាន់ផ្ទាំង «បំពេញព័ត៌មានផ្ទាល់ខ្លួន» ដើម្បីកែសម្រួលព័ត៌មាន ឬជ្រើសរើសថ្នាក់រៀន និងសិស្សនៅខាងលើ!</span>
-        <a href="/login" class="btn-action" style="background: #fbbf24; color: #0f172a; padding: 6px 16px; font-weight: bold; font-size: 0.9rem;">🔑 ចូលប្រើប្រាស់គណនី (Login)</a>
+        <span th:if="${isTeacher}">💡 <b>មិនទាន់មានទិន្នន័យសិស្សក្នុងថ្នាក់នេះ៖</b> លោកគ្រូ-អ្នកគ្រូអាចចូលទៅកាន់ផ្ទាំង <a href="/classrooms" style="color: #fef08a; text-decoration: underline; font-weight: bold;">«បញ្ជីថ្នាក់រៀនខ្ញុំ»</a> ឬ <a href="/students" style="color: #fef08a; text-decoration: underline; font-weight: bold;">«បញ្ជីឈ្មោះសិស្ស»</a> ដើម្បីបន្ថែមទិន្នន័យជាក់ស្តែង!</span>
+        <span th:unless="${isTeacher}">💡 <b>ទម្រង់គំរូវិញ្ញាបនបត្របញ្ជាក់ការសិក្សាស្តង់ដារ (Sample Preview Mode)</b> — លោកគ្រូ-អ្នកគ្រូអាចចូលប្រើប្រាស់គណនី ដើម្បីជ្រើសរើសថ្នាក់រៀន និងសិស្សជាក់ស្តែងដែលបានបញ្ចូល!</span>
+        <a th:unless="${isTeacher}" href="/login" class="btn-action" style="background: #fbbf24; color: #0f172a; padding: 6px 16px; font-weight: bold; font-size: 0.9rem;">🔑 ចូលប្រើប្រាស់គណនី (Login)</a>
     </div>
 
     <!-- Student Lessons Pending Notice -->
