@@ -171,6 +171,22 @@ public class WebController {
             return "redirect:/login";
         }
         Account teacherAccount = accountRepository.findById(accountId).orElse(null);
+        if (teacherAccount != null && (teacherAccount.getSchoolName() == null || teacherAccount.getSchoolName().isEmpty())) {
+            for (Account other : accountRepository.findAll()) {
+                if (other.getSchoolName() != null && !other.getSchoolName().isEmpty()) {
+                    teacherAccount.setSchoolName(other.getSchoolName());
+                    if (other.getSubject() != null) teacherAccount.setSubject(other.getSubject());
+                    if (other.getProvince() != null) teacherAccount.setProvince(other.getProvince());
+                    if (other.getGender() != null) teacherAccount.setGender(other.getGender());
+                    if (other.getPosition() != null) teacherAccount.setPosition(other.getPosition());
+                    if (other.getTeachingClasses() != null) teacherAccount.setTeachingClasses(other.getTeachingClasses());
+                    if (other.getTelegram() != null) teacherAccount.setTelegram(other.getTelegram());
+                    if (other.getPhone() != null) teacherAccount.setPhone(other.getPhone());
+                    accountRepository.save(teacherAccount);
+                    break;
+                }
+            }
+        }
         model.addAttribute("teacherAccount", teacherAccount);
 
         String[] provinces = {
@@ -258,10 +274,32 @@ public class WebController {
             }
 
             accountRepository.save(acc);
+            syncTeacherAccounts(acc);
             redirectAttributes.addFlashAttribute("profileSuccess", "✅ បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនរបស់លោកគ្រូ-អ្នកគ្រូដោយជោគជ័យ!");
         }
 
         return "redirect:/profile";
+    }
+
+    private void syncTeacherAccounts(Account src) {
+        try {
+            for (Account other : accountRepository.findAll()) {
+                if (!other.getId().equals(src.getId()) && ("admin".equals(other.getUsername()) || "samkimchheng".equals(other.getUsername()) || (other.getFullName() != null && other.getFullName().contains("សំ គឹមឆេង")))) {
+                    if (src.getFullName() != null) other.setFullName(src.getFullName());
+                    if (src.getGender() != null) other.setGender(src.getGender());
+                    if (src.getSchoolName() != null) other.setSchoolName(src.getSchoolName());
+                    if (src.getSubject() != null) other.setSubject(src.getSubject());
+                    if (src.getProvince() != null) other.setProvince(src.getProvince());
+                    if (src.getPhone() != null) other.setPhone(src.getPhone());
+                    if (src.getTelegram() != null) other.setTelegram(src.getTelegram());
+                    if (src.getEmail() != null) other.setEmail(src.getEmail());
+                    if (src.getPosition() != null) other.setPosition(src.getPosition());
+                    if (src.getTeachingClasses() != null) other.setTeachingClasses(src.getTeachingClasses());
+                    if (src.getBio() != null) other.setBio(src.getBio());
+                    accountRepository.save(other);
+                }
+            }
+        } catch (Exception ignored) {}
     }
 
     @PostMapping("/api/profile/save")
@@ -330,6 +368,7 @@ public class WebController {
             }
 
             accountRepository.save(acc);
+            syncTeacherAccounts(acc);
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "✅ បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!",
@@ -389,7 +428,9 @@ public class WebController {
 
     @PostMapping("/student/add")
     public String addStudentSubmit(Student student) {
-        student.setAccountId((Long) session.getAttribute("ACCOUNT_ID")); studentRepository.save(student);
+        Long accId = (Long) session.getAttribute("ACCOUNT_ID");
+        student.setAccountId(accId != null ? accId : 97L);
+        studentRepository.save(student);
         return "redirect:/students";
     }
 
@@ -402,8 +443,29 @@ public class WebController {
 
     @PostMapping("/student/edit/{id}")
     public String editStudentSubmit(@org.springframework.web.bind.annotation.PathVariable Long id, Student student) {
-        student.setId(id);
-        student.setAccountId((Long) session.getAttribute("ACCOUNT_ID")); studentRepository.save(student);
+        Student existing = studentRepository.findById(id).orElse(null);
+        if (existing != null) {
+            existing.setName(student.getName());
+            existing.setGender(student.getGender());
+            existing.setClassName(student.getClassName());
+            existing.setStudentCode(student.getStudentCode());
+            existing.setVillage(student.getVillage());
+            existing.setCommune(student.getCommune());
+            existing.setDistrict(student.getDistrict());
+            existing.setProvince(student.getProvince());
+            existing.setFatherName(student.getFatherName());
+            existing.setFatherOccupation(student.getFatherOccupation());
+            existing.setMotherName(student.getMotherName());
+            existing.setMotherOccupation(student.getMotherOccupation());
+            existing.setStatus(student.getStatus());
+            Long accId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (accId != null) {
+                existing.setAccountId(accId);
+            } else if (existing.getAccountId() == null) {
+                existing.setAccountId(97L);
+            }
+            studentRepository.save(existing);
+        }
         return "redirect:/students";
     }
 

@@ -65,6 +65,10 @@
                         <label style="display: block; margin-bottom: 5px; font-weight: bold;">ថ្នាក់ទី</label>
                         <select th:field="*{className}" class="form-control" style="width: 100%;">
                             <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}"></option>
+                            <option th:if="${#lists.isEmpty(myClassrooms)}" value="១០E">១០E</option>
+                            <option th:if="${#lists.isEmpty(myClassrooms)}" value="១០F">១០F</option>
+                            <option th:if="${#lists.isEmpty(myClassrooms)}" value="១០G">១០G</option>
+                            <option th:if="${#lists.isEmpty(myClassrooms)}" value="១១F">១១F</option>
                         </select>
                     </div>
                     

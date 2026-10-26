@@ -142,13 +142,55 @@ public class DataInitializer {
                 stmt.executeUpdate("UPDATE certificate_records SET teacher_name = 'លោកគ្រូ សំ គឹមឆេង' WHERE teacher_name LIKE '%Administrator%' OR teacher_name LIKE '%admin%'");
             } catch (Exception ignored) {}
 
-            // 5. Ensure any existing students or classrooms without account_id are assigned to account 1
+            // 5. Ensure any existing students or classrooms are assigned to account 97 (samkimchheng) & 1
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
-                stmt.executeUpdate("UPDATE \"STUDENTS\" SET account_id = 1 WHERE account_id IS NULL");
-                stmt.executeUpdate("UPDATE students SET account_id = 1 WHERE account_id IS NULL");
-                stmt.executeUpdate("UPDATE \"CLASSROOM\" SET account_id = 1 WHERE account_id IS NULL");
-                stmt.executeUpdate("UPDATE classroom SET account_id = 1 WHERE account_id IS NULL");
+                stmt.executeUpdate("UPDATE \"STUDENTS\" SET account_id = 97 WHERE account_id IS NULL OR account_id = 1");
+                stmt.executeUpdate("UPDATE students SET account_id = 97 WHERE account_id IS NULL OR account_id = 1");
+                stmt.executeUpdate("UPDATE \"CLASSROOM\" SET account_id = 97 WHERE account_id IS NULL OR account_id = 1");
+                stmt.executeUpdate("UPDATE classroom SET account_id = 97 WHERE account_id IS NULL OR account_id = 1");
+            } catch (Exception ignored) {}
+
+            // 6. Ensure default classrooms (១០E, ១០F, ១០G, ១១F) exist
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                String[] classes = {"១០E", "១០F", "១០G", "១១F"};
+                for (String cls : classes) {
+                    try {
+                        stmt.execute("INSERT INTO classroom (account_id, class_name) " +
+                                "SELECT 97, '" + cls + "' " +
+                                "WHERE NOT EXISTS (SELECT 1 FROM classroom WHERE class_name = '" + cls + "')");
+                    } catch (Exception ignored) {}
+                }
+            } catch (Exception ignored) {}
+
+            // 7. Ensure student 'តានិន' (1003) in class '១០E' exists
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                try {
+                    stmt.execute("INSERT INTO students (name, gender, class_name, student_code, province, status, account_id) " +
+                            "SELECT 'តានិន', 'ប្រុស', '១០E', '1003', 'ខេត្តពោធិ៍សាត់', 'កំពុងសិក្សា', 97 " +
+                            "WHERE NOT EXISTS (SELECT 1 FROM students WHERE student_code = '1003' OR name = 'តានិន')");
+                } catch (Exception ignored) {}
+            } catch (Exception ignored) {}
+
+            // 8. Ensure Teacher Profile for 'សំ គឹមឆេង' is fully initialized on both account 97 and account 1
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                String[] profileUpdates = {
+                    "UPDATE account SET full_name = 'សំ គឹមឆេង' WHERE username IN ('samkimchheng', 'admin')",
+                    "UPDATE account SET gender = 'ប្រុស' WHERE (gender IS NULL OR gender = '') AND username IN ('samkimchheng', 'admin')",
+                    "UPDATE account SET school_name = 'វិទ្យាល័យ / អនុវិទ្យាល័យ' WHERE (school_name IS NULL OR school_name = '') AND username IN ('samkimchheng', 'admin')",
+                    "UPDATE account SET subject = 'គ្រប់មុខវិជ្ជា' WHERE (subject IS NULL OR subject = '') AND username IN ('samkimchheng', 'admin')",
+                    "UPDATE account SET province = 'ខេត្តពោធិ៍សាត់' WHERE (province IS NULL OR province = '') AND username IN ('samkimchheng', 'admin')",
+                    "UPDATE account SET position = 'គ្រូទទួលបន្ទុកថ្នាក់' WHERE (position IS NULL OR position = '') AND username IN ('samkimchheng', 'admin')",
+                    "UPDATE account SET teaching_classes = '១០E, ១០F, ១០G, ១១F' WHERE (teaching_classes IS NULL OR teaching_classes = '') AND username IN ('samkimchheng', 'admin')",
+                    "UPDATE account SET telegram = '@Kimchheng12' WHERE (telegram IS NULL OR telegram = '') AND username IN ('samkimchheng', 'admin')"
+                };
+                for (String sql : profileUpdates) {
+                    try { stmt.executeUpdate(sql); } catch (Exception ignored) {}
+                    try { stmt.executeUpdate(sql.replace("account", "\"ACCOUNT\"")); } catch (Exception ignored) {}
+                }
             } catch (Exception ignored) {}
         };
     }
