@@ -411,44 +411,48 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 }
             }
 
-            // Auto-save or update database record safely (skip in preview mode)
-            if (!isPreviewMode && student.getId() != null) {
-                try {
-                    CertificateRecord record = existingRecord.orElse(new CertificateRecord());
+            // Always auto-save or update database record safely for the serialNumber so QR scanning is immediate and accurate
+            try {
+                CertificateRecord record = existingRecord.orElse(
+                        certificateRecordRepository.findFirstBySerialNumberOrderByIdDesc(serialNumber).orElse(new CertificateRecord())
+                );
+                if (student.getId() != null && student.getId() > 0) {
                     record.setStudentId(student.getId());
-                    record.setClassName(student.getClassName());
-                    record.setSerialNumber(serialNumber);
-                    record.setSchoolName(schoolName);
-                    record.setSubjectName(subjectName);
-                    record.setProvince(province);
-                    record.setTeacherName(teacherName);
-                    record.setRoleSignerLeft(roleSignerLeft);
-                    record.setRoleSignerRight(roleSignerRight);
-                    record.setIssueDateKhmer(issueDateKhmer);
-                    record.setIssueDateEn(issueDateEn);
-                    record.setUpdatedAt(LocalDateTime.now());
-                    certificateRecordRepository.save(record);
-                } catch (Exception e) {
-                    System.err.println("Warning: Could not auto-save certificate record: " + e.getMessage());
+                } else if (record.getStudentId() == null) {
+                    record.setStudentId(1L);
                 }
+                record.setClassName(student.getClassName());
+                record.setSerialNumber(serialNumber);
+                record.setSchoolName(schoolName);
+                record.setSubjectName(subjectName);
+                record.setProvince(province);
+                record.setTeacherName(teacherName);
+                record.setRoleSignerLeft(roleSignerLeft);
+                record.setRoleSignerRight(roleSignerRight);
+                record.setIssueDateKhmer(issueDateKhmer);
+                record.setIssueDateEn(issueDateEn);
+                record.setUpdatedAt(LocalDateTime.now());
+                certificateRecordRepository.save(record);
+            } catch (Exception e) {
+                System.err.println("Warning: Could not auto-save certificate record: " + e.getMessage());
             }
 
-            String verifyUrl = "https://class.mitpukae.com/certificate/verify?serial=" + URLEncoder.encode(serialNumber, StandardCharsets.UTF_8)
-                    + "&school=" + URLEncoder.encode(schoolName, StandardCharsets.UTF_8)
-                    + "&subject=" + URLEncoder.encode(subjectName, StandardCharsets.UTF_8)
-                    + "&province=" + URLEncoder.encode(province, StandardCharsets.UTF_8)
-                    + "&teacher=" + URLEncoder.encode(teacherName, StandardCharsets.UTF_8)
-                    + "&className=" + URLEncoder.encode(student.getClassName() != null ? student.getClassName() : "ថ្នាក់ទី១០ A", StandardCharsets.UTF_8);
-            String qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=2&data=" 
+            // Short, concise verification link that generates a crisp, low-density QR code readable by any mobile camera
+            String verifyUrl = "https://class.mitpukae.com/certificate/verify?serial=" + URLEncoder.encode(serialNumber, StandardCharsets.UTF_8);
+            String qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=1&data=" 
                     + URLEncoder.encode(verifyUrl, StandardCharsets.UTF_8);
 
             String provinceEn = toEnglishProvince(province);
+            String gradeLevel = extractGradeLevel(student.getClassName());
+            String schoolEn = resolveSchoolEn(schoolName);
 
             model.addAttribute("student", student);
             model.addAttribute("serialNumber", serialNumber);
             model.addAttribute("issueDateKhmer", issueDateKhmer);
             model.addAttribute("issueDateEn", issueDateEn);
             model.addAttribute("provinceEn", provinceEn);
+            model.addAttribute("gradeLevel", gradeLevel);
+            model.addAttribute("schoolEn", schoolEn);
             model.addAttribute("verifyUrl", verifyUrl);
             model.addAttribute("qrCodeUrl", qrCodeUrl);
             model.addAttribute("totalLessons", totalLessons);
@@ -476,9 +480,12 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("serialNumber", "CMS-2027-0001-123456");
             model.addAttribute("issueDateKhmer", toKhmerDate(LocalDate.now()));
             model.addAttribute("issueDateEn", LocalDate.now().toString());
-            model.addAttribute("provinceEn", "Pousat");
-            model.addAttribute("verifyUrl", "https://class.mitpukae.com/certificate/verify");
-            model.addAttribute("qrCodeUrl", "https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=2&data=https://class.mitpukae.com/certificate/verify");
+            model.addAttribute("provinceEn", "Pursat");
+            model.addAttribute("gradeLevel", "ថ្នាក់ទី១០");
+            model.addAttribute("schoolEn", "High School / Secondary School • Class Management System 2027");
+            String fbVerifyUrl = "https://class.mitpukae.com/certificate/verify?serial=CMS-2027-0001-123456";
+            model.addAttribute("verifyUrl", fbVerifyUrl);
+            model.addAttribute("qrCodeUrl", "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=1&data=" + URLEncoder.encode(fbVerifyUrl, StandardCharsets.UTF_8));
             model.addAttribute("schoolName", "វិទ្យាល័យ / អនុវិទ្យាល័យ");
             model.addAttribute("subjectName", "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", "ខេត្តពោធិ៍សាត់");
@@ -790,11 +797,16 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 } catch (Exception ignored) {}
             }
 
+            String gradeLevel = extractGradeLevel(finalClass);
+            String schoolEn = resolveSchoolEn(finalSchool);
+
             model.addAttribute("serial", serial);
             model.addAttribute("verified", verifiedStudent != null);
             model.addAttribute("student", verifiedStudent);
             model.addAttribute("studentClass", finalClass);
+            model.addAttribute("gradeLevel", gradeLevel);
             model.addAttribute("school", finalSchool);
+            model.addAttribute("schoolEn", schoolEn);
             model.addAttribute("subject", finalSubject);
             model.addAttribute("province", finalProvince);
             model.addAttribute("teacher", finalTeacher);
@@ -817,7 +829,10 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             fallbackStudent.setProvince(province != null && !province.trim().isEmpty() ? province : "ខេត្តពោធិ៍សាត់");
             model.addAttribute("student", fallbackStudent);
             model.addAttribute("studentClass", fbClass);
-            model.addAttribute("school", school != null && !school.trim().isEmpty() ? school : "វិទ្យាល័យ / អនុវិទ្យាល័យ");
+            model.addAttribute("gradeLevel", extractGradeLevel(fbClass));
+            String fbSchool = school != null && !school.trim().isEmpty() ? school : "វិទ្យាល័យ / អនុវិទ្យាល័យ";
+            model.addAttribute("school", fbSchool);
+            model.addAttribute("schoolEn", resolveSchoolEn(fbSchool));
             model.addAttribute("subject", subject != null && !subject.trim().isEmpty() ? subject : "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", province != null && !province.trim().isEmpty() ? province : "ខេត្តពោធិ៍សាត់");
             model.addAttribute("teacher", teacher != null && !teacher.trim().isEmpty() ? teacher : "លោកគ្រូ សំ គឹមឆេង");
@@ -902,5 +917,86 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
         }
         String prefix = (gender != null && gender.contains("ស្រី")) ? "អ្នកគ្រូ " : "លោកគ្រូ ";
         return prefix + clean;
+    }
+
+    public static String extractGradeLevel(String className) {
+        if (className == null || className.trim().isEmpty()) {
+            return "ថ្នាក់ទី១០";
+        }
+        String s = className.trim();
+        if (s.contains("គ្មាន") || s.contains("មិនទាន់")) {
+            return "ថ្នាក់ទី១០";
+        }
+
+        // 1. Double-digit grades (12, 11, 10)
+        if (s.contains("១២") || s.contains("12") || s.contains("ថ្នាក់ទី១២")) {
+            return "ថ្នាក់ទី១២";
+        }
+        if (s.contains("១១") || s.contains("11") || s.contains("ថ្នាក់ទី១១")) {
+            return "ថ្នាក់ទី១១";
+        }
+        if (s.contains("១០") || s.contains("10") || s.contains("ថ្នាក់ទី១០")) {
+            return "ថ្នាក់ទី១០";
+        }
+
+        // 2. Single-digit grades (9 down to 7)
+        if (s.contains("ថ្នាក់ទី៩") || s.contains("ថ្នាក់ទី 9") || s.contains("៩") || s.matches(".*\\b9[A-Za-zក-អ]?\\b.*")) {
+            return "ថ្នាក់ទី៩";
+        }
+        if (s.contains("ថ្នាក់ទី៨") || s.contains("ថ្នាក់ទី 8") || s.contains("៨") || s.matches(".*\\b8[A-Za-zក-អ]?\\b.*")) {
+            return "ថ្នាក់ទី៨";
+        }
+        if (s.contains("ថ្នាក់ទី៧") || s.contains("ថ្នាក់ទី 7") || s.contains("៧") || s.matches(".*\\b7[A-Za-zក-អ]?\\b.*")) {
+            return "ថ្នាក់ទី៧";
+        }
+
+        // 3. Primary grades (6 down to 1)
+        if (s.contains("ថ្នាក់ទី៦") || s.contains("ថ្នាក់ទី 6") || s.contains("៦") || s.matches(".*\\b6[A-Za-zក-អ]?\\b.*")) {
+            return "ថ្នាក់ទី៦";
+        }
+        if (s.contains("ថ្នាក់ទី៥") || s.contains("ថ្នាក់ទី 5") || s.contains("៥") || s.matches(".*\\b5[A-Za-zក-អ]?\\b.*")) {
+            return "ថ្នាក់ទី៥";
+        }
+        if (s.contains("ថ្នាក់ទី៤") || s.contains("ថ្នាក់ទី 4") || s.contains("៤") || s.matches(".*\\b4[A-Za-zក-អ]?\\b.*")) {
+            return "ថ្នាក់ទី៤";
+        }
+        if (s.contains("ថ្នាក់ទី៣") || s.contains("ថ្នាក់ទី 3") || s.contains("៣") || s.matches(".*\\b3[A-Za-zក-អ]?\\b.*")) {
+            return "ថ្នាក់ទី៣";
+        }
+        if (s.contains("ថ្នាក់ទី២") || s.contains("ថ្នាក់ទី 2") || s.contains("២") || s.matches(".*\\b2[A-Za-zក-អ]?\\b.*")) {
+            return "ថ្នាក់ទី២";
+        }
+        if (s.contains("ថ្នាក់ទី១") || s.contains("ថ្នាក់ទី 1") || s.contains("១") || s.matches(".*\\b1[A-Za-zក-អ]?\\b.*")) {
+            return "ថ្នាក់ទី១";
+        }
+
+        // If it starts with ថ្នាក់ទី, return the first word
+        if (s.startsWith("ថ្នាក់ទី")) {
+            String[] parts = s.split("\\s+");
+            if (parts.length >= 1) {
+                return parts[0];
+            }
+        }
+
+        return "ថ្នាក់ទី១០";
+    }
+
+    public static String resolveSchoolEn(String schoolName) {
+        if (schoolName == null || schoolName.trim().isEmpty() || schoolName.contains("វិទ្យាល័យ / អនុវិទ្យាល័យ")) {
+            return "High School / Secondary School • Class Management System 2027";
+        }
+        String s = schoolName.trim();
+        if (s.contains("អនុវិទ្យាល័យ")) {
+            return "Secondary School • Class Management System 2027";
+        } else if (s.contains("វិទ្យាល័យ")) {
+            return "High School • Class Management System 2027";
+        } else if (s.contains("បឋមសិក្សា")) {
+            return "Primary School • Class Management System 2027";
+        } else if (s.toLowerCase().contains("high school")) {
+            return "High School • Class Management System 2027";
+        } else if (s.toLowerCase().contains("secondary school")) {
+            return "Secondary School • Class Management System 2027";
+        }
+        return "High School / Secondary School • Class Management System 2027";
     }
 }

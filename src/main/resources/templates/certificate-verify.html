@@ -117,7 +117,7 @@
             <h2 class="institution-title" th:text="${school}">
                 វិទ្យាល័យ / អនុវិទ្យាល័យ
             </h2>
-            <p style="margin: 5px 0 20px 0; color: #64748b; font-size: 0.95rem;">
+            <p style="margin: 5px 0 20px 0; color: #64748b; font-size: 0.95rem;" th:text="${schoolEn != null ? schoolEn : 'Class Management System 2027'}">
                 ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន ២០២៧ (Class Management System)
             </p>
 
@@ -137,6 +137,10 @@
                 <tr>
                     <td>ថ្នាក់រៀន៖</td>
                     <td th:text="${studentClass != null ? studentClass : (student != null and student.className != null ? student.className : 'ថ្នាក់ទី១០ A')}">ថ្នាក់ទី១០ A</td>
+                </tr>
+                <tr>
+                    <td>កម្រិតសិក្សា៖</td>
+                    <td style="color: #0284c7; font-weight: bold;" th:text="${gradeLevel != null ? gradeLevel : 'ថ្នាក់ទី១០'}">ថ្នាក់ទី១០</td>
                 </tr>
                 <tr>
                     <td>គ្រឹះស្ថានសិក្សា / សាលារៀន៖</td>

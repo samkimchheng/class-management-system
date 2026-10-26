@@ -366,13 +366,14 @@
         }
 
         .qr-image {
-            width: 72px;
-            height: 72px;
-            border-radius: 2px;
+            width: 82px;
+            height: 82px;
+            border-radius: 4px;
             background: #ffffff;
             padding: 2px;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
+            display: block;
         }
 
         .serial-text {
@@ -550,7 +551,7 @@
                     <p class="motto-khmer">ព្រះរាជាណាចក្រកម្ពុជា<br>ជាតិ សាសនា ព្រះមហាក្សត្រ</p>
                     <div class="motto-divider">✦ ✦ ✦</div>
                     <h2 class="institution-title" id="dispSchoolName" th:text="${schoolName}">វិទ្យាល័យ / អនុវិទ្យាល័យ</h2>
-                    <div class="institution-en" id="dispSchoolEn">High School / Secondary School &bull; Class Management System 2027</div>
+                    <div class="institution-en" id="dispSchoolEn" th:text="${schoolEn != null ? schoolEn : 'High School / Secondary School • Class Management System 2027'}">High School / Secondary School &bull; Class Management System 2027</div>
 
                     <div class="cert-title-box">
                         <h1 class="cert-main-title">វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</h1>
@@ -573,7 +574,7 @@
                     </div>
 
                     <div class="cert-statement">
-                        ដើម្បីបញ្ជាក់ថា បានបញ្ចប់ការសិក្សាមុខវិជ្ជា <b style="color: #0284c7;" id="dispSubjectBody" th:text="${subjectName}">គ្រប់មុខវិជ្ជា</b> ក្នុងកម្រិត <b id="dispClassNameBody" th:text="${student.className}">ថ្នាក់ទី១០ A</b> នៃ <b style="color: #0b1d3a;" id="dispSchoolBody" th:text="${schoolName}">វិទ្យាល័យ ...</b> ដោយជោគជ័យពេញលេញ <b>១០០%</b> ស្របតាមកម្មវិធីសិក្សា បទដ្ឋានគរុកោសល្យ និងការវាយតម្លៃលទ្ធផលសិក្សាយ៉ាងត្រឹមត្រូវ។
+                        ដើម្បីបញ្ជាក់ថា បានបញ្ចប់ការសិក្សាមុខវិជ្ជា <b style="color: #0284c7;" id="dispSubjectBody" th:text="${subjectName}">គ្រប់មុខវិជ្ជា</b> ក្នុងកម្រិត <b id="dispClassNameBody" th:text="${gradeLevel != null ? gradeLevel : (student.className != null ? student.className : 'ថ្នាក់ទី១០')}">ថ្នាក់ទី១០</b> នៃ <b style="color: #0b1d3a;" id="dispSchoolBody" th:text="${schoolName}">វិទ្យាល័យ ...</b> ដោយជោគជ័យពេញលេញ <b>១០០%</b> ស្របតាមកម្មវិធីសិក្សា បទដ្ឋានគរុកោសល្យ និងការវាយតម្លៃលទ្ធផលសិក្សាយ៉ាងត្រឹមត្រូវ។
                     </div>
                     <div class="cert-statement-en" id="dispStatementEn">
                         For successfully completing 100% of the curriculum lessons with outstanding diligence and academic dedication.
@@ -600,8 +601,8 @@
                         </div>
                         
                         <div class="qr-section">
-                            <img id="certQrImage" th:src="${qrCodeUrl}" alt="QR Verification" class="qr-image"
-                                 onerror="this.onerror=null; this.src='https://quickchart.io/qr?size=250&amp;margin=2&amp;text=' + encodeURIComponent('[[${verifyUrl}]]');">
+                            <img id="certQrImage" th:src="${qrCodeUrl}" alt="QR Verification" class="qr-image" crossorigin="anonymous"
+                                 onerror="this.onerror=null; this.src='https://api.qrserver.com/v1/create-qr-code/?size=300x300&amp;margin=1&amp;data=' + encodeURIComponent('[[${verifyUrl}]]');">
                             <div class="serial-text">
                                 <b style="color: #0f172a;">លេខកូដសម្គាល់៖</b><br>
                                 <span th:text="${serialNumber}">CMS-2027-001</span><br>
