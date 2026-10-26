@@ -97,9 +97,9 @@
                     <tbody>
                         <tr th:each="attendance, iterStat : ${recentAbsents}">
                             <td th:text="${iterStat.count}">១</td>
-                            <td th:text="${attendance.student.name}">ឈ្មោះសិស្ស</td>
-                            <td th:text="${attendance.student.gender}">ភេទ</td>
-                            <td th:text="${attendance.student.className}">ថ្នាក់</td>
+                            <td th:text="${attendance.student != null ? attendance.student.name : 'សិស្ស'}">ឈ្មោះសិស្ស</td>
+                            <td th:text="${attendance.student != null ? attendance.student.gender : ''}">ភេទ</td>
+                            <td th:text="${attendance.student != null ? attendance.student.className : ''}">ថ្នាក់</td>
                             <td th:text="${#temporals.format(attendance.date, 'dd-MM-yyyy')}">កាលបរិច្ឆេទ</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(recentAbsents)}">
@@ -209,20 +209,19 @@
                             <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
                                 📚 មុខវិជ្ជាឯកទេស / បង្រៀន (Specialized Subject)៖
                             </label>
-                            <select name="subject" id="profSubject" class="form-control" onchange="toggleCustomSubject(this)">
+                            <select name="subject" id="profSubject" class="form-control" onchange="toggleCustomSubject(this)" th:data-current-subject="${teacherAccount != null ? teacherAccount.subject : ''}">
                                 <option th:each="s : ${standardSubjects}" 
                                         th:value="${s}" 
                                         th:text="${s}"
                                         th:selected="${teacherAccount != null and teacherAccount.subject == s}">
                                     គណិតវិទ្យា
                                 </option>
-                                <option value="custom" th:selected="${teacherAccount != null and teacherAccount.subject != null and !#arrays.contains(standardSubjects, teacherAccount.subject)}">
+                                <option value="custom">
                                     -- វាយបញ្ចូលមុខវិជ្ជាផ្សេងទៀត (Custom) --
                                 </option>
                             </select>
                             <input type="text" name="customSubject" id="profCustomSubject" class="form-control" 
-                                   th:style="${teacherAccount != null and teacherAccount.subject != null and !#arrays.contains(standardSubjects, teacherAccount.subject) ? 'display: block; margin-top: 6px;' : 'display: none; margin-top: 6px;'}"
-                                   th:value="${teacherAccount != null and teacherAccount.subject != null and !#arrays.contains(standardSubjects, teacherAccount.subject) ? teacherAccount.subject : ''}"
+                                   style="display: none; margin-top: 6px;"
                                    placeholder="វាយបញ្ចូលឈ្មោះមុខវិជ្ជា...">
                         </div>
 
@@ -324,6 +323,31 @@
 
             <!-- Profile Interactive Scripts -->
             <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const sel = document.getElementById('profSubject');
+                    if (sel && sel.dataset.currentSubject) {
+                        const currSubject = sel.dataset.currentSubject.trim();
+                        if (currSubject !== '') {
+                            let matched = false;
+                            for (let i = 0; i < sel.options.length; i++) {
+                                if (sel.options[i].value === currSubject) {
+                                    sel.selectedIndex = i;
+                                    matched = true;
+                                    break;
+                                }
+                            }
+                            if (!matched) {
+                                sel.value = 'custom';
+                                const customIn = document.getElementById('profCustomSubject');
+                                if (customIn) {
+                                    customIn.style.display = 'block';
+                                    customIn.value = currSubject;
+                                }
+                            }
+                        }
+                    }
+                });
+
                 function toggleCustomSubject(select) {
                     const customIn = document.getElementById('profCustomSubject');
                     if (select.value === 'custom') {

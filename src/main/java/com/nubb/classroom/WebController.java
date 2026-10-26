@@ -63,50 +63,6 @@ public class WebController {
     }
     @GetMapping("/")
     public String index(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
-        java.time.LocalDate today = java.time.LocalDate.now();
-        long totalStudents;
-        long totalFemale = 0;
-        long presentToday;
-        long presentFemale = 0;
-        long absentToday;
-        long absentFemale = 0;
-        List<com.nubb.classroom.model.Attendance> recentAbsents;
-
-        if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            List<Student> students = studentRepository.findByClassNameAndAccountId(className, (Long) session.getAttribute("ACCOUNT_ID"));
-            totalStudents = students.size();
-            totalFemale = students.stream().filter(s -> "ស្រី".equals(s.getGender())).count();
-            
-            List<com.nubb.classroom.model.Attendance> pres = attendanceRepository.findByDateAndPresentTrueAndStudentClassName(today, className);
-            presentToday = pres.size();
-            presentFemale = pres.stream().filter(a -> "ស្រី".equals(a.getStudent().getGender())).count();
-            
-            List<com.nubb.classroom.model.Attendance> abs = attendanceRepository.findByDateAndPresentFalseAndStudentClassName(today, className);
-            absentToday = abs.size();
-            absentFemale = abs.stream().filter(a -> "ស្រី".equals(a.getStudent().getGender())).count();
-            recentAbsents = abs;
-        } else {
-            List<Student> students = studentRepository.findByAccountId((Long) session.getAttribute("ACCOUNT_ID"));
-            totalStudents = students.size();
-            totalFemale = students.stream().filter(s -> "ស្រី".equals(s.getGender())).count();
-            
-            List<com.nubb.classroom.model.Attendance> pres = attendanceRepository.findByDateAndPresentTrue(today);
-            presentToday = pres.size();
-            presentFemale = pres.stream().filter(a -> "ស្រី".equals(a.getStudent().getGender())).count();
-            
-            List<com.nubb.classroom.model.Attendance> abs = attendanceRepository.findByDateAndPresentFalse(today);
-            absentToday = abs.size();
-            absentFemale = abs.stream().filter(a -> "ស្រី".equals(a.getStudent().getGender())).count();
-            recentAbsents = abs;
-        }
-
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        Account teacherAccount = null;
-        if (accountId != null) {
-            teacherAccount = accountRepository.findById(accountId).orElse(null);
-        }
-        model.addAttribute("teacherAccount", teacherAccount);
-
         String[] provinces = {
             "ខេត្តបាត់ដំបង", "រាជធានីភ្នំពេញ", "ខេត្តសៀមរាប", "ខេត្តបន្ទាយមានជ័យ", "ខេត្តពោធិ៍សាត់",
             "ខេត្តកំពង់ចាម", "ខេត្តកំពង់ធំ", "ខេត្តកំពង់ឆ្នាំង", "ខេត្តកំពង់ស្ពឺ", "ខេត្តកណ្តាល",
@@ -123,15 +79,89 @@ public class WebController {
         };
         model.addAttribute("standardSubjects", standardSubjects);
 
-        model.addAttribute("totalStudents", totalStudents);
-        model.addAttribute("totalFemale", totalFemale);
-        model.addAttribute("presentToday", presentToday);
-        model.addAttribute("presentFemale", presentFemale);
-        model.addAttribute("absentToday", absentToday);
-        model.addAttribute("absentFemale", absentFemale);
-        model.addAttribute("recentAbsents", recentAbsents);
-        model.addAttribute("selectedClass", className);
-        return "index";
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        Account teacherAccount = null;
+        if (accountId != null) {
+            try {
+                teacherAccount = accountRepository.findById(accountId).orElse(null);
+            } catch (Exception ignored) {}
+        }
+        model.addAttribute("teacherAccount", teacherAccount);
+
+        try {
+            java.time.LocalDate today = java.time.LocalDate.now();
+            long totalStudents = 0;
+            long totalFemale = 0;
+            long presentToday = 0;
+            long presentFemale = 0;
+            long absentToday = 0;
+            long absentFemale = 0;
+            List<com.nubb.classroom.model.Attendance> recentAbsents = new java.util.ArrayList<>();
+
+
+            if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
+                List<Student> students = (accountId != null) ? studentRepository.findByClassNameAndAccountId(className, accountId) : studentRepository.findAll();
+                if (students != null) {
+                    totalStudents = students.size();
+                    totalFemale = students.stream().filter(s -> s != null && "ស្រី".equals(s.getGender())).count();
+                }
+                
+                List<com.nubb.classroom.model.Attendance> pres = attendanceRepository.findByDateAndPresentTrueAndStudentClassName(today, className);
+                if (pres != null) {
+                    presentToday = pres.size();
+                    presentFemale = pres.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
+                }
+                
+                List<com.nubb.classroom.model.Attendance> abs = attendanceRepository.findByDateAndPresentFalseAndStudentClassName(today, className);
+                if (abs != null) {
+                    absentToday = abs.size();
+                    absentFemale = abs.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
+                    recentAbsents = abs;
+                }
+            } else {
+                List<Student> students = (accountId != null) ? studentRepository.findByAccountId(accountId) : studentRepository.findAll();
+                if (students != null) {
+                    totalStudents = students.size();
+                    totalFemale = students.stream().filter(s -> s != null && "ស្រី".equals(s.getGender())).count();
+                }
+                
+                List<com.nubb.classroom.model.Attendance> pres = attendanceRepository.findByDateAndPresentTrue(today);
+                if (pres != null) {
+                    presentToday = pres.size();
+                    presentFemale = pres.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
+                }
+                
+                List<com.nubb.classroom.model.Attendance> abs = attendanceRepository.findByDateAndPresentFalse(today);
+                if (abs != null) {
+                    absentToday = abs.size();
+                    absentFemale = abs.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
+                    recentAbsents = abs;
+                }
+            }
+
+
+            model.addAttribute("totalStudents", totalStudents);
+            model.addAttribute("totalFemale", totalFemale);
+            model.addAttribute("presentToday", presentToday);
+            model.addAttribute("presentFemale", presentFemale);
+            model.addAttribute("absentToday", absentToday);
+            model.addAttribute("absentFemale", absentFemale);
+            model.addAttribute("recentAbsents", recentAbsents);
+            model.addAttribute("selectedClass", className);
+            return "index";
+        } catch (Exception e) {
+            System.err.println("Error in index dashboard: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("totalStudents", 0);
+            model.addAttribute("totalFemale", 0);
+            model.addAttribute("presentToday", 0);
+            model.addAttribute("presentFemale", 0);
+            model.addAttribute("absentToday", 0);
+            model.addAttribute("absentFemale", 0);
+            model.addAttribute("recentAbsents", new java.util.ArrayList<>());
+            model.addAttribute("selectedClass", className);
+            return "index";
+        }
     }
 
     @PostMapping("/profile/save")
