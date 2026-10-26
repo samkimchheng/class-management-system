@@ -436,9 +436,25 @@
         </div>
 
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <!-- Classroom & Student Selectors -->
+            <!-- Subject, Classroom & Student Selectors -->
             <form id="certFilterForm" action="/certificate" method="get" style="display: inline-flex; align-items: center; gap: 8px; margin: 0; flex-wrap: wrap;">
-                <!-- 1. Classroom Selector -->
+                <!-- 1. Subject Selector (at the left of Classroom) -->
+                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
+                    <label for="selectSubjectFilter" style="color: #cbd5e1; font-size: 0.88rem; font-weight: 500; margin: 0; white-space: nowrap;">
+                        មុខវិជ្ជា៖
+                    </label>
+                    <select id="selectSubjectFilter" name="subjectName" onchange="this.form.submit();"
+                            style="padding: 7px 12px; border-radius: 6px; font-family: inherit; font-size: 0.9rem; background: #1e293b; color: white; border: 1px solid #475569; outline: none; cursor: pointer;">
+                        <option th:each="sb : ${teacherSubjects}"
+                                th:value="${sb}"
+                                th:text="${sb}"
+                                th:selected="${selectedSubjectName == sb or subjectName == sb}">
+                            គ្រប់មុខវិជ្ជា
+                        </option>
+                    </select>
+                </div>
+
+                <!-- 2. Classroom Selector -->
                 <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
                     <label for="selectClassFilter" style="color: #cbd5e1; font-size: 0.88rem; font-weight: 500; margin: 0; white-space: nowrap;">
                         ថ្នាក់រៀន៖
@@ -455,7 +471,7 @@
                     </select>
                 </div>
 
-                <!-- 2. Student Selector -->
+                <!-- 3. Student Selector -->
                 <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
                     <label for="selectStudentFilter" style="color: #cbd5e1; font-size: 0.88rem; font-weight: 500; margin: 0; white-space: nowrap;">
                         សិស្ស៖

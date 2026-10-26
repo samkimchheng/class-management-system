@@ -74,6 +74,63 @@ public class CertificateController {
             String accountName = (String) session.getAttribute("ACCOUNT_NAME");
 
             boolean isTeacher = (accountId != null);
+            Account currentTeacherAcc = (accountId != null) ? accountRepository.findById(accountId).orElse(null) : null;
+
+            // 0. Collect distinct subjects taught by this teacher (or standard subjects)
+            List<String> teacherSubjects = new ArrayList<>();
+            if (currentTeacherAcc != null && currentTeacherAcc.getSubject() != null && !currentTeacherAcc.getSubject().trim().isEmpty()) {
+                String subField = currentTeacherAcc.getSubject().trim();
+                String[] parts = subField.split("[,;、/]+");
+                for (String p : parts) {
+                    String clean = p.trim();
+                    if (!clean.isEmpty() && !teacherSubjects.contains(clean)) {
+                        teacherSubjects.add(clean);
+                    }
+                }
+                if (!teacherSubjects.contains(subField)) {
+                    teacherSubjects.add(0, subField);
+                }
+            }
+
+            if (accountId != null) {
+                try {
+                    List<Lesson> lList = lessonRepository.findByAccountId(accountId);
+                    if (lList != null) {
+                        for (Lesson l : lList) {
+                            if (l.getSubjectName() != null && !l.getSubjectName().trim().isEmpty()) {
+                                String lSub = l.getSubjectName().trim();
+                                if (!teacherSubjects.contains(lSub)) {
+                                    teacherSubjects.add(lSub);
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            String[] stdSubjects = {
+                "គ្រប់មុខវិជ្ជា",
+                "គណិតវិទ្យា",
+                "រូបវិទ្យា",
+                "គីមីវិទ្យា",
+                "ជីវវិទ្យា",
+                "ភាសាខ្មែរ",
+                "ភាសាអង់គ្លេស",
+                "ប្រវត្តិវិទ្យា",
+                "ភូមិវិទ្យា",
+                "សីលធម៌-ពលរដ្ឋវិជ្ជា",
+                "ផែនដី និងបរិស្ថានវិទ្យា",
+                "ព័ត៌មានវិទ្យា (ICT)",
+                "កីឡា"
+            };
+            for (String ss : stdSubjects) {
+                if (!teacherSubjects.contains(ss)) {
+                    teacherSubjects.add(ss);
+                }
+            }
+            if (!teacherSubjects.contains("គ្រប់មុខវិជ្ជា")) {
+                teacherSubjects.add(0, "គ្រប់មុខវិជ្ជា");
+            }
 
             // 1. Collect distinct classrooms taught by this teacher (or all available classrooms)
             List<String> teacherClasses = new ArrayList<>();
@@ -201,6 +258,8 @@ String filterClass = (className != null && !className.trim().isEmpty() && !class
                     ? filterClass
                     : (student.getClassName() != null ? student.getClassName().trim() : "");
 
+            model.addAttribute("teacherSubjects", teacherSubjects);
+            model.addAttribute("selectedSubjectName", subjectName);
             model.addAttribute("teacherClasses", teacherClasses);
             model.addAttribute("teacherStudents", teacherStudents);
             model.addAttribute("selectedClassName", selectedClassName);
@@ -243,7 +302,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
 
             CertificateRecord template = existingRecord.orElse(classRecord.orElse(null));
 
-            Account currentTeacherAcc = (accountId != null) ? accountRepository.findById(accountId).orElse(null) : null;
+            // currentTeacherAcc already resolved above
             if (currentTeacherAcc == null && student.getAccountId() != null) {
                 currentTeacherAcc = accountRepository.findById(student.getAccountId()).orElse(null);
             }
@@ -259,15 +318,21 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 }
             }
 
-            // Resolve Subject
+            // Resolve Subject (Priority: Selected Query Param -> Profile -> Template -> Default)
             if (subjectName == null || subjectName.trim().isEmpty()) {
-                if (template != null && template.getSubjectName() != null && !template.getSubjectName().trim().isEmpty()) {
-                    subjectName = template.getSubjectName();
-                } else if (currentTeacherAcc != null && currentTeacherAcc.getSubject() != null && !currentTeacherAcc.getSubject().trim().isEmpty()) {
+                if (currentTeacherAcc != null && currentTeacherAcc.getSubject() != null && !currentTeacherAcc.getSubject().trim().isEmpty()) {
                     subjectName = currentTeacherAcc.getSubject().trim();
+                } else if (template != null && template.getSubjectName() != null && !template.getSubjectName().trim().isEmpty()) {
+                    subjectName = template.getSubjectName();
                 } else {
                     subjectName = "គ្រប់មុខវិជ្ជា";
                 }
+            } else {
+                subjectName = subjectName.trim();
+            }
+
+            if (!teacherSubjects.contains(subjectName)) {
+                teacherSubjects.add(0, subjectName);
             }
 
             // Resolve Province
@@ -373,6 +438,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("isTeacher", isTeacher);
             model.addAttribute("schoolName", schoolName);
             model.addAttribute("subjectName", subjectName);
+            model.addAttribute("selectedSubjectName", subjectName);
             model.addAttribute("province", province);
             model.addAttribute("teacherName", teacherName);
             model.addAttribute("roleSignerLeft", roleSignerLeft);
@@ -399,6 +465,9 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("roleSignerLeft", "នាយកសាលា / គណៈគ្រប់គ្រង");
             model.addAttribute("roleSignerRight", "គ្រូទទួលបន្ទុកថ្នាក់");
             List<String> fbClasses = new ArrayList<>(List.of("ថ្នាក់ទី១០ A", "ថ្នាក់ទី១០ B", "ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១២ វិទ្យាសាស្ត្រ"));
+            List<String> fbSubjects = new ArrayList<>(List.of("គ្រប់មុខវិជ្ជា", "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", "ភាសាខ្មែរ", "ភាសាអង់គ្លេស"));
+            model.addAttribute("teacherSubjects", fbSubjects);
+            model.addAttribute("selectedSubjectName", "គ្រប់មុខវិជ្ជា");
             model.addAttribute("teacherClasses", fbClasses);
             model.addAttribute("teacherStudents", List.of(fallbackSt));
             model.addAttribute("selectedClassName", "ថ្នាក់ទី១០ A");
