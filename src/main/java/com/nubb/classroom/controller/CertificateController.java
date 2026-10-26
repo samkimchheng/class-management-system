@@ -127,7 +127,14 @@ public class CertificateController {
             }
 
             // 2. Filter students based on selected className (if provided)
-            String filterClass = (className != null && !className.trim().isEmpty() && !className.equalsIgnoreCase("ALL"))
+            if (teacherClasses.isEmpty()) {
+    String[] stdClasses = {"ថ្នាក់ទី១០ A", "ថ្នាក់ទី១០ B", "ថ្នាក់ទី១០ C", "ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១១ សង្គម", "ថ្នាក់ទី១២ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១២ សង្គម", "ថ្នាក់ទី៧ A", "ថ្នាក់ទី៨ A", "ថ្នាក់ទី៩ A"};
+    for (String sc : stdClasses) {
+        if (!teacherClasses.contains(sc)) teacherClasses.add(sc);
+    }
+}
+
+String filterClass = (className != null && !className.trim().isEmpty() && !className.equalsIgnoreCase("ALL"))
                     ? className.trim()
                     : null;
 
@@ -152,6 +159,17 @@ public class CertificateController {
                 }
             }
 
+            if (teacherStudents == null) {
+                teacherStudents = new ArrayList<>();
+            }
+            if (teacherStudents.isEmpty()) {
+                String targetClass = (filterClass != null) ? filterClass : (!teacherClasses.isEmpty() ? teacherClasses.get(0) : "ថ្នាក់ទី១០ A");
+                Student previewSt = new Student("សុខ សាន្ត", "ប្រុស", targetClass, "123456");
+                previewSt.setId(1L);
+                previewSt.setProvince("ខេត្តពោធិ៍សាត់");
+                teacherStudents.add(previewSt);
+            }
+
             // 3. Determine target student
             Student student = null;
             if (studentId != null) {
@@ -173,6 +191,10 @@ public class CertificateController {
                 student = new Student("សុខ សាន្ត", "ប្រុស", defaultClass, "123456");
                 student.setId(1L);
                 student.setProvince("ខេត្តពោធិ៍សាត់");
+            }
+
+            if (student.getClassName() != null && !teacherClasses.contains(student.getClassName().trim())) {
+                teacherClasses.add(0, student.getClassName().trim());
             }
 
             String selectedClassName = (filterClass != null)
@@ -212,9 +234,12 @@ public class CertificateController {
             } catch (Exception ignored) {}
 
             // 2. If not, check if any student in the same class has a saved record (class template inheritance)
-            Optional<CertificateRecord> classRecord = existingRecord.isPresent()
-                    ? existingRecord
-                    : ((student.getClassName() != null) ? certificateRecordRepository.findFirstByClassNameOrderByIdDesc(student.getClassName()) : Optional.empty());
+            Optional<CertificateRecord> classRecord = existingRecord;
+if (classRecord.isEmpty() && student.getClassName() != null) {
+    try {
+        classRecord = certificateRecordRepository.findFirstByClassNameOrderByIdDesc(student.getClassName());
+    } catch (Exception ignored) {}
+}
 
             CertificateRecord template = existingRecord.orElse(classRecord.orElse(null));
 
@@ -359,12 +384,12 @@ public class CertificateController {
             e.printStackTrace();
             Student fallbackSt = new Student("សុខ សាន្ត", "ប្រុស", "ថ្នាក់ទី១០ A", "123456");
             fallbackSt.setId(1L);
-            fallbackSt.setProvince("ខេត្តបាត់ដំបង");
+            fallbackSt.setProvince("ខេត្តពោធិ៍សាត់");
             model.addAttribute("student", fallbackSt);
             model.addAttribute("serialNumber", "CMS-2027-0001-123456");
             model.addAttribute("issueDateKhmer", toKhmerDate(LocalDate.now()));
             model.addAttribute("issueDateEn", LocalDate.now().toString());
-            model.addAttribute("provinceEn", "Bat Dambang");
+            model.addAttribute("provinceEn", "Pousat");
             model.addAttribute("verifyUrl", "https://class.mitpukae.com/certificate/verify");
             model.addAttribute("qrCodeUrl", "https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=2&data=https://class.mitpukae.com/certificate/verify");
             model.addAttribute("schoolName", "វិទ្យាល័យ / អនុវិទ្យាល័យ");
@@ -373,11 +398,12 @@ public class CertificateController {
             model.addAttribute("teacherName", "លោកគ្រូ សំ គឹមឆេង");
             model.addAttribute("roleSignerLeft", "នាយកសាលា / គណៈគ្រប់គ្រង");
             model.addAttribute("roleSignerRight", "គ្រូទទួលបន្ទុកថ្នាក់");
-            model.addAttribute("teacherClasses", Collections.emptyList());
-            model.addAttribute("teacherStudents", Collections.emptyList());
-            model.addAttribute("selectedClassName", "");
-            model.addAttribute("isTeacher", false);
-            model.addAttribute("isPreviewMode", true);
+            List<String> fbClasses = new ArrayList<>(List.of("ថ្នាក់ទី១០ A", "ថ្នាក់ទី១០ B", "ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១២ វិទ្យាសាស្ត្រ"));
+            model.addAttribute("teacherClasses", fbClasses);
+            model.addAttribute("teacherStudents", List.of(fallbackSt));
+            model.addAttribute("selectedClassName", "ថ្នាក់ទី១០ A");
+            model.addAttribute("isTeacher", session.getAttribute("ACCOUNT_ID") != null);
+            model.addAttribute("isPreviewMode", false);
             model.addAttribute("isAllCompleted", true);
             model.addAttribute("totalLessons", 0);
             model.addAttribute("completedCount", 0);
