@@ -38,14 +38,12 @@
             width: 100%;
             max-width: 1122px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 12px;
             margin-bottom: 15px;
             background: rgba(30, 41, 59, 0.95);
             backdrop-filter: blur(8px);
-            padding: 12px 20px;
+            padding: 14px 20px;
             border-radius: 12px;
             border: 1px solid #334155;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
@@ -420,22 +418,26 @@
 
     <!-- Top Toolbar (.no-print) -->
     <div class="toolbar no-print">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <a href="/" class="btn-action btn-back">
-                &larr; ទំព័រដើម
-            </a>
-            <a href="/profile" class="btn-action btn-back">
-                បំពេញព័ត៌មានផ្ទាល់ខ្លួន
-            </a>
-            <a href="/lessons" class="btn-action btn-back">
-                មេរៀន
-            </a>
-            <div style="color: white; font-size: 1.05rem; font-weight: bold; margin-left: 5px;">
+        <!-- Row 1: Navigation Links & Page Title -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <a href="/" class="btn-action btn-back">
+                    &larr; ទំព័រដើម
+                </a>
+                <a href="/profile" class="btn-action btn-back">
+                    បំពេញព័ត៌មានផ្ទាល់ខ្លួន
+                </a>
+                <a href="/lessons" class="btn-action btn-back">
+                    មេរៀន
+                </a>
+            </div>
+            <div style="color: white; font-size: 1.05rem; font-weight: bold;">
                 វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា
             </div>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <!-- Row 2: Filter Selectors (Left) & Action Buttons Aligned Together on the Same Row (Right) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%;">
             <!-- Subject, Classroom & Student Selectors -->
             <form id="certFilterForm" action="/certificate" method="get" style="display: inline-flex; align-items: center; gap: 8px; margin: 0; flex-wrap: wrap;">
                 <!-- 1. Subject Selector (at the left of Classroom) -->
@@ -477,7 +479,7 @@
                         សិស្ស៖
                     </label>
                     <select id="selectStudentFilter" name="studentId" onchange="this.form.submit();"
-                            style="padding: 7px 12px; border-radius: 6px; font-family: inherit; font-size: 0.9rem; background: #1e293b; color: white; border: 1px solid #475569; outline: none; cursor: pointer; max-width: 280px;">
+                            style="padding: 7px 12px; border-radius: 6px; font-family: inherit; font-size: 0.9rem; background: #1e293b; color: white; border: 1px solid #475569; outline: none; cursor: pointer; max-width: 260px;">
                         <option th:if="${teacherStudents == null or teacherStudents.isEmpty()}" value="">-- គ្មានសិស្សក្នុងថ្នាក់នេះ --</option>
                         <option th:each="st : ${teacherStudents}"
                                 th:value="${st.id}"
@@ -489,16 +491,19 @@
                 </div>
             </form>
 
-<button class="btn-action btn-print" onclick="window.print()">
-                🖨️ បោះពុម្ព / Save as PDF
-            </button>
-            <button class="btn-action btn-download" onclick="downloadCertificateAsImage()">
-                📥 ទាញយកជារូបភាព (PNG)
-            </button>
+            <!-- Action Buttons: Print & Download Aligned Together on the Same Row -->
+            <div style="display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                <button class="btn-action btn-print" onclick="window.print()">
+                    🖨️ បោះពុម្ព / Save as PDF
+                </button>
+                <button class="btn-action btn-download" onclick="downloadCertificateAsImage()">
+                    📥 ទាញយកជារូបភាព (PNG)
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Preview Mode Notice -->
+<!-- Preview Mode Notice -->
     <div th:if="${isPreviewMode}" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; padding: 12px 20px; border-radius: 10px; margin-bottom: 15px; width: 100%; max-width: 1122px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);" class="no-print">
         <span>💡 <b>ទម្រង់គំរូវិញ្ញាបនបត្របញ្ជាក់ការសិក្សាស្តង់ដារ (Sample Preview Mode)</b> — លោកគ្រូ-អ្នកគ្រូអាចចូលទៅកាន់ផ្ទាំង «បំពេញព័ត៌មានផ្ទាល់ខ្លួន» ដើម្បីកែសម្រួលព័ត៌មាន ឬជ្រើសរើសថ្នាក់រៀន និងសិស្សនៅខាងលើ!</span>
         <a href="/login" class="btn-action" style="background: #fbbf24; color: #0f172a; padding: 6px 16px; font-weight: bold; font-size: 0.9rem;">🔑 ចូលប្រើប្រាស់គណនី (Login)</a>
