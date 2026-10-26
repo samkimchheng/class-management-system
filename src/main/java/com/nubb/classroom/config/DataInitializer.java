@@ -1,6 +1,12 @@
 package com.nubb.classroom.config;
 
+import com.nubb.classroom.model.Score;
+import com.nubb.classroom.model.ScoreRule;
+import com.nubb.classroom.model.Student;
 import com.nubb.classroom.repository.AccountRepository;
+import com.nubb.classroom.repository.ScoreRepository;
+import com.nubb.classroom.repository.ScoreRuleRepository;
+import com.nubb.classroom.repository.StudentRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,12 +16,17 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.List;
 
 @Configuration
 public class DataInitializer {
 
     @Bean
-    public CommandLineRunner initData(AccountRepository accountRepository, DataSource dataSource) {
+    public CommandLineRunner initData(AccountRepository accountRepository,
+                                     StudentRepository studentRepository,
+                                     ScoreRepository scoreRepository,
+                                     ScoreRuleRepository scoreRuleRepository,
+                                     DataSource dataSource) {
         return args -> {
             // 1. Schema migration: Ensure active and profile columns exist in account table
             try (Connection conn = dataSource.getConnection();
@@ -39,7 +50,6 @@ public class DataInitializer {
                         "\"ISSUE_DATE_EN\" VARCHAR(255), " +
                         "\"UPDATED_AT\" TIMESTAMP)";
                 try { stmt.execute(createCertTable); } catch (Exception ignored) {}
-
 
                 String[] profileCols = {
                     "GENDER VARCHAR(255)",
@@ -164,15 +174,23 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
-            // 7. Ensure student 'តានិន' (1003) in class '១០E' exists
-            try (Connection conn = dataSource.getConnection();
-                 Statement stmt = conn.createStatement()) {
-                try {
-                    stmt.execute("INSERT INTO students (name, gender, class_name, student_code, province, status, account_id) " +
-                            "SELECT 'តានិន', 'ប្រុស', '១០E', '1003', 'ខេត្តពោធិ៍សាត់', 'កំពុងសិក្សា', 97 " +
-                            "WHERE NOT EXISTS (SELECT 1 FROM students WHERE student_code = '1003' OR name = 'តានិន')");
-                } catch (Exception ignored) {}
-            } catch (Exception ignored) {}
+            // 7. Ensure students exist (including តានិន and classmates in ១០E)
+            String[][] initialStudents = {
+                {"តានិន", "ប្រុស", "១០E", "1003"},
+                {"សុខ ពិសី", "ស្រី", "១០E", "1004"},
+                {"ហេង វ៉ាន់ដា", "ប្រុស", "១០E", "1005"},
+                {"ចាន់ ស្រីនីន", "ស្រី", "១០E", "1006"},
+                {"ម៉ៅ វិបុល", "ប្រុស", "១០E", "1007"}
+            };
+            for (String[] stData : initialStudents) {
+                if (studentRepository.findByStudentCode(stData[3]).isEmpty()) {
+                    Student s = new Student(stData[0], stData[1], stData[2], stData[3]);
+                    s.setProvince("ខេត្តពោធិ៍សាត់");
+                    s.setStatus("កំពុងសិក្សា");
+                    s.setAccountId(97L);
+                    studentRepository.save(s);
+                }
+            }
 
             // 8. Ensure Teacher Profile for 'សំ គឹមឆេង' is fully initialized on both account 97 and account 1
             try (Connection conn = dataSource.getConnection();
@@ -190,6 +208,65 @@ public class DataInitializer {
                 for (String sql : profileUpdates) {
                     try { stmt.executeUpdate(sql); } catch (Exception ignored) {}
                     try { stmt.executeUpdate(sql.replace("account", "\"ACCOUNT\"")); } catch (Exception ignored) {}
+                }
+            } catch (Exception ignored) {}
+
+            // 9. Ensure default Score Rules exist for subjects (Max 60 / 20 / 20 = 100)
+            String[] standardSubjects = {"គណិតវិទ្យា", "ភាសាខ្មែរ", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា", "ភាសាអង់គ្លេស"};
+            for (String subj : standardSubjects) {
+                if (scoreRuleRepository.findByClassNameAndSubjectName("ថ្នាក់រៀនទាំងអស់", subj).isEmpty()) {
+                    ScoreRule rule = new ScoreRule();
+                    rule.setAccountId(97L);
+                    rule.setClassName("ថ្នាក់រៀនទាំងអស់");
+                    rule.setSubjectName(subj);
+                    rule.setMaxMonthlyScore(60);
+                    rule.setMaxAttendanceScore(20);
+                    rule.setMaxAssignmentScore(20);
+                    scoreRuleRepository.save(rule);
+                }
+            }
+
+            // 10. Ensure Baseline Scores exist for "តេស្តដើមឆ្នាំ"
+            try {
+                if (scoreRepository.findByMonth("តេស្តដើមឆ្នាំ").size() <= 1) {
+                    List<Student> allSt = studentRepository.findAll();
+                    String[] testSubjects = {"គណិតវិទ្យា", "ភាសាខ្មែរ", "រូបវិទ្យា"};
+                    for (Student s : allSt) {
+                        if (s.getId() == null) continue;
+                        double baseScore = 75.0;
+                        if ("1003".equals(s.getStudentCode()) || "តានិន".equals(s.getName())) baseScore = 90.0;
+                        else if ("1004".equals(s.getStudentCode())) baseScore = 94.0;
+                        else if ("1005".equals(s.getStudentCode())) baseScore = 78.0;
+                        else if ("1006".equals(s.getStudentCode())) baseScore = 65.0;
+                        else if ("1007".equals(s.getStudentCode())) baseScore = 46.0;
+                        else if ("123456".equals(s.getStudentCode())) baseScore = 82.0;
+                        else if ("654321".equals(s.getStudentCode())) baseScore = 91.0;
+                        else if ("111111".equals(s.getStudentCode())) baseScore = 68.0;
+                        else if ("222222".equals(s.getStudentCode())) baseScore = 87.0;
+                        else if ("333333".equals(s.getStudentCode())) baseScore = 55.0;
+
+                        int i = 0;
+                        for (String subj : testSubjects) {
+                            double offset = (i == 0 ? 0 : (i == 1 ? 2.0 : -3.0));
+                            double totalVal = Math.min(100.0, Math.max(30.0, baseScore + offset));
+                            double monthly = Math.round(totalVal * 0.6);
+                            double attendance = Math.round(totalVal * 0.2);
+                            double assignment = totalVal - monthly - attendance;
+
+                            Score sc = new Score();
+                            sc.setStudentId(s.getId());
+                            sc.setMonth("តេស្តដើមឆ្នាំ");
+                            sc.setClassName(s.getClassName());
+                            sc.setSubjectName(subj);
+                            sc.setMonthlyScore(monthly);
+                            sc.setAttendanceScore(attendance);
+                            sc.setAssignmentScore(assignment);
+                            sc.setTotal(totalVal);
+                            sc.setAccountId(97L);
+                            scoreRepository.save(sc);
+                            i++;
+                        }
+                    }
                 }
             } catch (Exception ignored) {}
         };

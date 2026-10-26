@@ -2,22 +2,36 @@ package com.nubb.classroom.repository;
 
 import com.nubb.classroom.model.Score;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
 public interface ScoreRepository extends JpaRepository<Score, Long> {
-    List<Score> findByMonthAndClassNameAndSubjectNameAndAccountId(String month, String className, String subjectName, Long accountId);
-    Optional<Score> findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(Long studentId, String month, String className, String subjectName, Long accountId);
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.className = :className AND s.subjectName = :subjectName AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    List<Score> findByMonthAndClassNameAndSubjectNameAndAccountId(@Param("month") String month, @Param("className") String className, @Param("subjectName") String subjectName, @Param("accountId") Long accountId);
+
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.className = :className AND s.subjectName = :subjectName AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    Optional<Score> findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(@Param("studentId") Long studentId, @Param("month") String month, @Param("className") String className, @Param("subjectName") String subjectName, @Param("accountId") Long accountId);
+
     List<Score> findByMonth(String month);
     List<Score> findByClassName(String className);
-    java.util.List<com.nubb.classroom.model.Score> findByMonthAndAccountId(String month, Long accountId);
-    java.util.Optional<com.nubb.classroom.model.Score> findByStudentIdAndMonthAndAccountId(Long studentId, String month, Long accountId);
-    java.util.List<com.nubb.classroom.model.Score> findByAccountId(Long accountId);
-    List<Score> findByMonthAndClassNameAndAccountId(String month, String className, Long accountId);
-    List<Score> findByStudentIdAndMonthAndClassNameAndAccountId(Long studentId, String month, String className, Long accountId);
+
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    List<Score> findByMonthAndAccountId(@Param("month") String month, @Param("accountId") Long accountId);
+
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    Optional<Score> findByStudentIdAndMonthAndAccountId(@Param("studentId") Long studentId, @Param("month") String month, @Param("accountId") Long accountId);
+
+    @Query("SELECT s FROM Score s WHERE (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    List<Score> findByAccountId(@Param("accountId") Long accountId);
+
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.className = :className AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    List<Score> findByMonthAndClassNameAndAccountId(@Param("month") String month, @Param("className") String className, @Param("accountId") Long accountId);
+
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.className = :className AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    List<Score> findByStudentIdAndMonthAndClassNameAndAccountId(@Param("studentId") Long studentId, @Param("month") String month, @Param("className") String className, @Param("accountId") Long accountId);
+
     @org.springframework.transaction.annotation.Transactional
     void deleteByStudentId(Long studentId);
 }
-
-
-
