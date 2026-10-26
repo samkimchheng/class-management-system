@@ -98,7 +98,8 @@ public class CertificateController {
             }
 
             Student loggedInStudent = (Student) session.getAttribute("loggedInStudent");
-            boolean isTeacher = (accountId != null);
+            boolean isStudent = (loggedInStudent != null);
+            boolean isTeacher = (accountId != null && !isStudent);
             Account currentTeacherAcc = (accountId != null) ? accountRepository.findById(accountId).orElse(null) : null;
 
             // 0. Collect distinct subjects taught by this teacher (or standard subjects)
@@ -240,7 +241,9 @@ public class CertificateController {
 
             // 3. Determine target student
             Student student = null;
-            if (studentId != null) {
+            if (loggedInStudent != null) {
+                student = loggedInStudent;
+            } else if (studentId != null) {
                 Optional<Student> opt = studentRepository.findById(studentId);
                 if (opt.isPresent()) {
                     Student found = opt.get();
@@ -461,6 +464,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("isAllCompleted", isAllCompleted);
             model.addAttribute("isPreviewMode", isPreviewMode);
             model.addAttribute("isTeacher", isTeacher);
+            model.addAttribute("isStudent", isStudent);
             model.addAttribute("schoolName", schoolName);
             model.addAttribute("subjectName", subjectName);
             model.addAttribute("selectedSubjectName", subjectName);
@@ -499,7 +503,10 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("teacherClasses", fbClasses);
             model.addAttribute("teacherStudents", List.of(fallbackSt));
             model.addAttribute("selectedClassName", "ថ្នាក់ទី១០ A");
-            model.addAttribute("isTeacher", session.getAttribute("ACCOUNT_ID") != null);
+            boolean fbStudent = (session.getAttribute("loggedInStudent") != null);
+            boolean fbTeacher = (session.getAttribute("ACCOUNT_ID") != null && !fbStudent);
+            model.addAttribute("isTeacher", fbTeacher);
+            model.addAttribute("isStudent", fbStudent);
             model.addAttribute("isPreviewMode", false);
             model.addAttribute("isAllCompleted", true);
             model.addAttribute("totalLessons", 0);

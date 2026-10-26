@@ -161,16 +161,26 @@
             margin-bottom: 15px;
             position: relative;
         }
+        /* Student Layout - Full width and centered without teacher sidebar */
+        body.is-student .sidebar {
+            display: none !important;
+        }
+        body.is-student .main-content {
+            margin-left: 0 !important;
+            width: 100% !important;
+            max-width: 1100px;
+            margin: 0 auto !important;
+            padding: 20px 15px;
+        }
     </style>
 </head>
-<body>
-    <!-- Sidebar -->
-    <div class="sidebar">
+<body th:classappend="${isStudent ? 'is-student' : ''}">
+    <!-- Sidebar for Teacher ONLY (Hidden for students) -->
+    <div class="sidebar" th:if="${!isStudent}">
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
             <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
                 <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
-                <span th:if="${session.loggedInStudent != null}">សួស្តី, <b th:text="${session.loggedInStudent.name}">សិស្ស</b></span>
             </div>
         </div>
         <ul class="nav-menu">
@@ -187,30 +197,53 @@
             <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
             <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/report" class="nav-link">របាយការណ៍</a></li>
             <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">✈️ ទាក់ទងខ្ញុំ (Telegram)</a></li>
-            <li class="nav-item" th:if="${session.loggedInStudent != null}"><a href="/test/take" class="nav-link">ផ្ទាំងប្រឡងសិស្ស 📝</a></li>
         </ul>
         <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
             <ul class="nav-menu" style="overflow-y: visible; flex: none;">
                 <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
                 <li class="nav-item" th:if="${session.ACCOUNT_ID != null}"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
-                <li class="nav-item" th:if="${session.loggedInStudent != null}"><a href="/test/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Student Logout) 🚪</a></li>
             </ul>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="topbar">
+        <!-- Teacher Topbar -->
+        <div class="topbar" th:if="${!isStudent}">
             <h3>មើលមេរៀន (Study Lessons)</h3>
             <div>
-                <span th:if="${isStudent}">អ្នកប្រើប្រាស់: សិស្សសាលា</span>
-                <span th:if="${!isStudent}">អ្នកប្រើប្រាស់: គ្រូបង្រៀន</span>
+                <span>អ្នកប្រើប្រាស់: គ្រូបង្រៀន</span>
             </div>
         </div>
 
-        <div class="content">
-            <!-- Action Header & Filter -->
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+        <!-- Student Clean Header (No គ្រប់គ្រងថ្នាក់រៀន) -->
+        <div th:if="${isStudent}" style="background: white; padding: 18px 24px; border-radius: 12px; box-shadow: var(--shadow-md); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; border: 1px solid var(--border);">
+            <div>
+                <h2 style="margin: 0; color: var(--dark); font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">
+                    📚 មើលមេរៀន (Study Lessons)
+                </h2>
+                <div style="margin-top: 6px; color: #64748b; font-size: 0.95rem;">
+                    សួស្តី, <b style="color: var(--primary);" th:text="${session.loggedInStudent != null ? session.loggedInStudent.name : 'សិស្ស'}">ឈ្មោះសិស្ស</b> 
+                    • ថ្នាក់៖ <b style="color: #0284c7;" th:text="${session.loggedInStudent != null ? session.loggedInStudent.className : ''}">10A</b>
+                    • អត្តលេខ៖ <b th:text="${session.loggedInStudent != null ? session.loggedInStudent.studentCode : ''}">STU-001</b>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <a href="/test/take" class="btn" style="background: #e0f2fe; color: #0284c7; text-decoration: none; font-weight: bold; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+                    📝 ផ្ទាំងប្រឡងសិស្ស
+                </a>
+                <a href="/certificate" class="btn" style="background: #fef3c7; color: #b45309; text-decoration: none; font-weight: bold; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+                    🎓 វិញ្ញាបនបត្រ
+                </a>
+                <a href="/test/logout" class="btn" style="background: #fee2e2; color: #b91c1c; text-decoration: none; font-weight: bold; padding: 8px 16px; border-radius: 8px;">
+                    ចាកចេញ 🚪
+                </a>
+            </div>
+        </div>
+
+        <div class="content" style="padding: 0;">
+            <!-- Action Header & Filter (Teachers ONLY: Students do NOT see class and subject dropdown buttons) -->
+            <div th:if="${!isStudent}" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
                 <form id="filterForm" action="/lessons" method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
                     <select name="className" class="form-control" style="width: auto;" onchange="document.getElementById('filterForm').submit()">
                         <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">-- ថ្នាក់រៀនទាំងអស់ --</option>
@@ -233,7 +266,7 @@
                     </select>
                 </form>
 
-                <div th:if="${!isStudent}" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <a href="/certificate" class="btn" style="background: #0f172a; color: white; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; border: 1px solid #334155;">
                         <span>🎓 មើលទម្រង់វិញ្ញាបនបត្រ</span>
                     </a>
