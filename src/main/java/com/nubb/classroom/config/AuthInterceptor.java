@@ -51,7 +51,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                                 session.setAttribute("ACCOUNT_ROLE", acc.getRole());
                                 session.setAttribute("ACCOUNT_NAME", acc.getFullName());
                             }
-                        } catch (NumberFormatException ignored) {}
+                        } catch (Exception ignored) {}
                         break;
                     }
                 }
@@ -70,7 +70,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                             if (studentOpt.isPresent()) {
                                 session.setAttribute("loggedInStudent", studentOpt.get());
                             }
-                        } catch (NumberFormatException ignored) {}
+                        } catch (Exception ignored) {}
                         break;
                     }
                 }
@@ -118,16 +118,18 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         // Verify account is still active (not disabled by admin)
-        Optional<Account> currentAccOpt = accountRepository.findById(accountId);
-        if (currentAccOpt.isPresent() && Boolean.FALSE.equals(currentAccOpt.get().getActive())) {
-            session.invalidate();
-            Cookie clr = new Cookie("REMEMBER_ACCOUNT_ID", "");
-            clr.setMaxAge(0);
-            clr.setPath("/");
-            response.addCookie(clr);
-            response.sendRedirect("/login?disabled=true");
-            return false;
-        }
+        try {
+            Optional<Account> currentAccOpt = accountRepository.findById(accountId);
+            if (currentAccOpt.isPresent() && Boolean.FALSE.equals(currentAccOpt.get().getActive())) {
+                session.invalidate();
+                Cookie clr = new Cookie("REMEMBER_ACCOUNT_ID", "");
+                clr.setMaxAge(0);
+                clr.setPath("/");
+                response.addCookie(clr);
+                response.sendRedirect("/login?disabled=true");
+                return false;
+            }
+        } catch (Exception ignored) {}
         
         return true;
     }

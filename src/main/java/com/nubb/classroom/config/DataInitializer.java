@@ -17,13 +17,30 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initData(AccountRepository accountRepository, DataSource dataSource) {
         return args -> {
-            // 1. Schema migration: Ensure active column exists in account table
+            // 1. Schema migration: Ensure active and profile columns exist in account table
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
                 stmt.execute("ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS \"ACTIVE\" BOOLEAN DEFAULT TRUE");
                 stmt.execute("ALTER TABLE IF EXISTS account ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE");
                 stmt.execute("UPDATE account SET active = TRUE WHERE active IS NULL");
                 stmt.execute("ALTER TABLE IF EXISTS exam ALTER COLUMN class_name SET DATA TYPE VARCHAR(1000)");
+
+                String[] profileCols = {
+                    "GENDER VARCHAR(255)",
+                    "SCHOOL_NAME VARCHAR(255)",
+                    "SUBJECT VARCHAR(255)",
+                    "PROVINCE VARCHAR(255)",
+                    "PHONE VARCHAR(255)",
+                    "TELEGRAM VARCHAR(255)",
+                    "EMAIL VARCHAR(255)",
+                    "POSITION VARCHAR(255)",
+                    "TEACHING_CLASSES VARCHAR(255)",
+                    "BIO VARCHAR(1000)"
+                };
+                for (String col : profileCols) {
+                    try { stmt.execute("ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS " + col); } catch (Exception ignored) {}
+                    try { stmt.execute("ALTER TABLE IF EXISTS account ADD COLUMN IF NOT EXISTS " + col); } catch (Exception ignored) {}
+                }
             } catch (Exception e) {
                 System.err.println(">>> [DataInitializer] Schema migration notice: " + e.getMessage());
             }
@@ -53,6 +70,26 @@ public class DataInitializer {
                     populator.setIgnoreFailedDrops(true);
                     populator.execute(dataSource);
                     System.out.println(">>> [DataInitializer] Full database successfully restored!");
+                    try (Connection conn = dataSource.getConnection();
+                         Statement stmt = conn.createStatement()) {
+                        String[] profileCols = {
+                            "ACTIVE BOOLEAN DEFAULT TRUE",
+                            "GENDER VARCHAR(255)",
+                            "SCHOOL_NAME VARCHAR(255)",
+                            "SUBJECT VARCHAR(255)",
+                            "PROVINCE VARCHAR(255)",
+                            "PHONE VARCHAR(255)",
+                            "TELEGRAM VARCHAR(255)",
+                            "EMAIL VARCHAR(255)",
+                            "POSITION VARCHAR(255)",
+                            "TEACHING_CLASSES VARCHAR(255)",
+                            "BIO VARCHAR(1000)"
+                        };
+                        for (String col : profileCols) {
+                            try { stmt.execute("ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS " + col); } catch (Exception ignored) {}
+                            try { stmt.execute("ALTER TABLE IF EXISTS account ADD COLUMN IF NOT EXISTS " + col); } catch (Exception ignored) {}
+                        }
+                    } catch (Exception ignored) {}
                 } catch (Exception e) {
                     System.err.println(">>> [DataInitializer] Error restoring database: " + e.getMessage());
                 }
