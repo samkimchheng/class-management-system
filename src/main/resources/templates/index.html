@@ -14,11 +14,13 @@
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
             <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
-                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b id="sidebarTeacherName" th:text="${teacherAccount != null ? teacherAccount.fullName : session.ACCOUNT_NAME}">គ្រូ</b></span>
             </div>
         </div>
         <ul class="nav-menu">
             <li class="nav-item active"><a href="/" class="nav-link">ទំព័រដើម</a></li>
+            <li class="nav-item"><a href="#profileSection" class="nav-link" style="color: #38bdf8;">📝 បំពេញព័ត៌មានផ្ទាល់ខ្លួន</a></li>
+            <li class="nav-item"><a href="/certificate" class="nav-link" style="color: #fbbf24;">🎓 វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</a></li>
             <li class="nav-item"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
             <li class="nav-item"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
             <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
@@ -44,7 +46,7 @@
         <div class="topbar">
             <h3>ទំព័រដើម (Dashboard)</h3>
             <div>
-                <span>អ្នកប្រើប្រាស់: គ្រូបង្រៀន</span>
+                <span>អ្នកប្រើប្រាស់: <b id="headerTeacherName" th:text="${teacherAccount != null ? teacherAccount.fullName : (session.ACCOUNT_NAME != null ? session.ACCOUNT_NAME : 'គ្រូបង្រៀន')}">គ្រូបង្រៀន</b></span>
             </div>
         </div>
 
@@ -106,6 +108,299 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- ========================================== -->
+            <!-- ផ្ទាំង បំពេញព័ត៌មានផ្ទាល់ខ្លួន (TEACHER PROFILE) -->
+            <!-- ========================================== -->
+            <div class="card" id="profileSection" style="margin-top: 35px; background: white; border-radius: 14px; padding: 30px; box-shadow: var(--shadow-md); border: 2px solid #38bdf8; scroll-margin-top: 80px;">
+                
+                <!-- Section Header -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 18px; margin-bottom: 25px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.8rem;">👨‍🏫</span>
+                            <h2 style="margin: 0; color: #0b1d3a; font-size: 1.45rem; font-weight: 700;">បំពេញព័ត៌មានផ្ទាល់ខ្លួន</h2>
+                        </div>
+                        <p style="margin: 6px 0 0 0; color: #64748b; font-size: 0.95rem;">
+                            សូមបំពេញព័ត៌មានផ្ទាល់ខ្លួនរបស់លោកគ្រូ-អ្នកគ្រូ ដើម្បីឱ្យប្រព័ន្ធកត់ត្រា និងទាញយកទៅប្រើប្រាស់ក្នុងរបាយការណ៍ ព្រមទាំងវិញ្ញាបនបត្របញ្ជាក់ការសិក្សាដោយស្វ័យប្រវត្តិ។
+                        </p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <span class="badge" style="background: #e0f2fe; color: #0369a1; font-size: 0.9rem; padding: 8px 14px; border: 1px solid #bae6fd;">
+                            👤 គណនី៖ <b th:text="${teacherAccount != null ? teacherAccount.username : 'Teacher'}">គ្រូ</b>
+                        </span>
+                        <span class="badge badge-success" style="padding: 8px 14px; font-size: 0.9rem;">
+                            ✔ កំពុងដំណើរការ (Active)
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Flash Alert Success (Post-Redirect) -->
+                <div th:if="${profileSuccess != null}" class="alert" style="background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; padding: 14px 20px; border-radius: 10px; margin-bottom: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.2rem;">✅</span>
+                    <span th:text="${profileSuccess}">បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!</span>
+                </div>
+
+                <!-- Live Alert Success (AJAX) -->
+                <div id="profileLiveAlert" style="display: none; background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; padding: 14px 20px; border-radius: 10px; margin-bottom: 22px; font-weight: 600; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.2rem;">✅</span>
+                    <span id="profileLiveAlertMsg">បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនរបស់លោកគ្រូ-អ្នកគ្រូក្នុងប្រព័ន្ធដោយជោគជ័យ!</span>
+                </div>
+
+                <!-- Profile Form -->
+                <form id="teacherProfileForm" action="/profile/save" method="post" onsubmit="return handleProfileSubmit(event)">
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 20px;">
+                        
+                        <!-- 1. Full Name -->
+                        <div class="c-field" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                👤 គោត្តនាម និងនាម (Full Name) <span style="color: red;">*</span>៖
+                            </label>
+                            <input type="text" name="fullName" id="profFullName" class="form-control" 
+                                   th:value="${teacherAccount != null ? teacherAccount.fullName : session.ACCOUNT_NAME}" 
+                                   required placeholder="ឧ. លោកគ្រូ សំ គឹមឆេង">
+                        </div>
+
+                        <!-- 2. Gender -->
+                        <div class="c-field" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                ⚧ ភេទ (Gender)៖
+                            </label>
+                            <select name="gender" id="profGender" class="form-control">
+                                <option value="ប្រុស" th:selected="${teacherAccount != null and teacherAccount.gender == 'ប្រុស'}">ប្រុស (Male)</option>
+                                <option value="ស្រី" th:selected="${teacherAccount != null and teacherAccount.gender == 'ស្រី'}">ស្រី (Female)</option>
+                            </select>
+                        </div>
+
+                        <!-- 3. Position / Role -->
+                        <div class="c-field" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                ✍️ តួនាទី / ភារកិច្ច (Position / Title)៖
+                            </label>
+                            <input type="text" name="position" id="profPosition" class="form-control" 
+                                   th:value="${teacherAccount != null and teacherAccount.position != null ? teacherAccount.position : 'គ្រូទទួលបន្ទុកថ្នាក់'}" 
+                                   placeholder="ឧ. គ្រូទទួលបន្ទុកថ្នាក់">
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;">
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #f1f5f9; color: #334155;" onclick="setPresetPosition('គ្រូទទួលបន្ទុកថ្នាក់')">+ គ្រូទទួលបន្ទុកថ្នាក់</button>
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #f1f5f9; color: #334155;" onclick="setPresetPosition('គ្រូបង្រៀនមុខវិជ្ជា')">+ គ្រូបង្រៀនមុខវិជ្ជា</button>
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #f1f5f9; color: #334155;" onclick="setPresetPosition('ប្រធានក្រុមបច្ចេកទេស')">+ ប្រធានក្រុមបច្ចេកទេស</button>
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #f1f5f9; color: #334155;" onclick="setPresetPosition('នាយកសាលា / គណៈគ្រប់គ្រង')">+ គណៈគ្រប់គ្រង</button>
+                            </div>
+                        </div>
+
+                        <!-- 4. School Name -->
+                        <div class="c-field" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                🏫 ឈ្មោះគ្រឹះស្ថានសិក្សា / សាលារៀន (School Name)៖
+                            </label>
+                            <input type="text" name="schoolName" id="profSchoolName" class="form-control" 
+                                   th:value="${teacherAccount != null ? teacherAccount.schoolName : ''}" 
+                                   placeholder="ឧ. វិទ្យាល័យ ហ៊ុនសែន... ឬ អនុវិទ្យាល័យ...">
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;">
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #e0f2fe; color: #0369a1;" onclick="setPresetSchoolPrefix('វិទ្យាល័យ ')">+ វិទ្យាល័យ</button>
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #fef3c7; color: #b45309;" onclick="setPresetSchoolPrefix('អនុវិទ្យាល័យ ')">+ អនុវិទ្យាល័យ</button>
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #dcfce7; color: #15803d;" onclick="setPresetSchoolPrefix('សាលាបឋមសិក្សា ')">+ សាលាបឋមសិក្សា</button>
+                            </div>
+                        </div>
+
+                        <!-- 5. Subject -->
+                        <div class="c-field" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                📚 មុខវិជ្ជាឯកទេស / បង្រៀន (Specialized Subject)៖
+                            </label>
+                            <select name="subject" id="profSubject" class="form-control" onchange="toggleCustomSubject(this)">
+                                <option th:each="s : ${standardSubjects}" 
+                                        th:value="${s}" 
+                                        th:text="${s}"
+                                        th:selected="${teacherAccount != null and teacherAccount.subject == s}">
+                                    គណិតវិទ្យា
+                                </option>
+                                <option value="custom" th:selected="${teacherAccount != null and teacherAccount.subject != null and !#arrays.contains(standardSubjects, teacherAccount.subject)}">
+                                    -- វាយបញ្ចូលមុខវិជ្ជាផ្សេងទៀត (Custom) --
+                                </option>
+                            </select>
+                            <input type="text" name="customSubject" id="profCustomSubject" class="form-control" 
+                                   th:style="${teacherAccount != null and teacherAccount.subject != null and !#arrays.contains(standardSubjects, teacherAccount.subject) ? 'display: block; margin-top: 6px;' : 'display: none; margin-top: 6px;'}"
+                                   th:value="${teacherAccount != null and teacherAccount.subject != null and !#arrays.contains(standardSubjects, teacherAccount.subject) ? teacherAccount.subject : ''}"
+                                   placeholder="វាយបញ្ចូលឈ្មោះមុខវិជ្ជា...">
+                        </div>
+
+                        <!-- 6. Province -->
+                        <div class="c-field" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                📍 រាជធានី-ខេត្ត (Province)៖
+                            </label>
+                            <select name="province" id="profProvince" class="form-control">
+                                <option th:each="p : ${provinces}" 
+                                        th:value="${p}" 
+                                        th:text="${p}"
+                                        th:selected="${(teacherAccount != null and teacherAccount.province == p) or (teacherAccount == null and p == 'ខេត្តពោធិ៍សាត់') or (teacherAccount != null and teacherAccount.province == null and p == 'ខេត្តពោធិ៍សាត់')}">
+                                    ខេត្តពោធិ៍សាត់
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- 7. Teaching Classes -->
+                        <div class="c-field" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                📖 កម្រិតថ្នាក់បង្រៀន ឬ បន្ទុកថ្នាក់ (Classes / Grades)៖
+                            </label>
+                            <input type="text" name="teachingClasses" id="profTeachingClasses" class="form-control" 
+                                   th:value="${teacherAccount != null ? teacherAccount.teachingClasses : ''}" 
+                                   placeholder="ឧ. ថ្នាក់ទី១០ A, ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ...">
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;">
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #eff6ff; color: #2563eb;" onclick="appendPresetClass('ថ្នាក់ទី១០ A')">+ ថ្នាក់ទី១០</button>
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #eff6ff; color: #2563eb;" onclick="appendPresetClass('ថ្នាក់ទី១១')">+ ថ្នាក់ទី១១</button>
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #eff6ff; color: #2563eb;" onclick="appendPresetClass('ថ្នាក់ទី១២')">+ ថ្នាក់ទី១២</button>
+                                <button type="button" class="btn" style="padding: 3px 8px; font-size: 0.78rem; background: #f0fdf4; color: #16a34a;" onclick="appendPresetClass('អនុវិទ្យាល័យ (ថ្នាក់ទី៧-៩)')">+ អនុវិទ្យាល័យ</button>
+                            </div>
+                        </div>
+
+                        <!-- 8. Phone -->
+                        <div class="c-field" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                📞 លេខទូរស័ព្ទ (Phone Number)៖
+                            </label>
+                            <input type="tel" name="phone" id="profPhone" class="form-control" 
+                                   th:value="${teacherAccount != null ? teacherAccount.phone : ''}" 
+                                   placeholder="ឧ. 012 345 678 / 098 765 432">
+                        </div>
+
+                        <!-- 9. Telegram -->
+                        <div class="c-field" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                ✈️ គណនី Telegram (Telegram Username)៖
+                            </label>
+                            <input type="text" name="telegram" id="profTelegram" class="form-control" 
+                                   th:value="${teacherAccount != null ? teacherAccount.telegram : ''}" 
+                                   placeholder="ឧ. @Kimchheng12 ឬ 012 345 678">
+                        </div>
+
+                        <!-- 10. Email -->
+                        <div class="c-field" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                ✉️ អ៊ីមែល (Email Address)៖
+                            </label>
+                            <input type="email" name="email" id="profEmail" class="form-control" 
+                                   th:value="${teacherAccount != null ? teacherAccount.email : ''}" 
+                                   placeholder="ឧ. teacher@gmail.com">
+                        </div>
+
+                        <!-- 11. Bio / Notes (Full width) -->
+                        <div class="c-field" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-weight: bold; color: #1e293b; font-size: 0.95rem;">
+                                📝 បទពិសោធន៍ / ចំណាំបន្ថែម (Bio &amp; Notes)៖
+                            </label>
+                            <textarea name="bio" id="profBio" class="form-control" rows="3" 
+                                      placeholder="ព័ត៌មានបន្ថែមពីប្រវត្តិ ឬការបង្រៀន (ប្រសិនបើមាន)..." 
+                                      th:text="${teacherAccount != null ? teacherAccount.bio : ''}"></textarea>
+                        </div>
+
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <button type="submit" id="btnSaveProfile" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px 28px; font-weight: bold; font-size: 1rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);">
+                                💾 រក្សាទុកព័ត៌មានផ្ទាល់ខ្លួន (Save Profile)
+                            </button>
+                            <button type="reset" class="btn" style="background: #f1f5f9; color: #475569; padding: 12px 20px;">
+                                🔄 កំណត់ឡើងវិញ
+                            </button>
+                        </div>
+
+                        <div>
+                            <a href="/certificate" class="btn" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; padding: 12px 22px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                                <span>🎓 ចេញវិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span>
+                                <span>&rarr;</span>
+                            </a>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- Profile Interactive Scripts -->
+            <script>
+                function toggleCustomSubject(select) {
+                    const customIn = document.getElementById('profCustomSubject');
+                    if (select.value === 'custom') {
+                        customIn.style.display = 'block';
+                        customIn.focus();
+                    } else {
+                        customIn.style.display = 'none';
+                    }
+                }
+
+                function setPresetPosition(pos) {
+                    const input = document.getElementById('profPosition');
+                    input.value = pos;
+                    input.focus();
+                }
+
+                function setPresetSchoolPrefix(prefix) {
+                    const input = document.getElementById('profSchoolName');
+                    input.value = prefix;
+                    input.focus();
+                }
+
+                function appendPresetClass(cls) {
+                    const input = document.getElementById('profTeachingClasses');
+                    if (!input.value || input.value.trim() === '') {
+                        input.value = cls;
+                    } else if (!input.value.includes(cls)) {
+                        input.value += ', ' + cls;
+                    }
+                    input.focus();
+                }
+
+                async function handleProfileSubmit(event) {
+                    event.preventDefault();
+                    const form = document.getElementById('teacherProfileForm');
+                    const submitBtn = document.getElementById('btnSaveProfile');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '⏳ កំពុងរក្សាទុក...';
+                    submitBtn.disabled = true;
+
+                    const formData = new FormData(form);
+
+                    try {
+                        const response = await fetch('/api/profile/save', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            const alertBox = document.getElementById('profileLiveAlert');
+                            const alertMsg = document.getElementById('profileLiveAlertMsg');
+                            if (alertMsg && data.message) alertMsg.innerText = data.message;
+                            alertBox.style.display = 'flex';
+                            alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                            if (data.fullName) {
+                                const sName = document.getElementById('sidebarTeacherName');
+                                if (sName) sName.innerText = data.fullName;
+                                const hName = document.getElementById('headerTeacherName');
+                                if (hName) hName.innerText = data.fullName;
+                            }
+
+                            setTimeout(() => {
+                                alertBox.style.display = 'none';
+                            }, 5000);
+                        } else {
+                            alert('កំហុស៖ ' + (data.message || 'មិនអាចរក្សាទុកបាន'));
+                        }
+                    } catch (err) {
+                        form.submit();
+                    } finally {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                    return false;
+                }
+            </script>
         </div>
     </div>
 </body>

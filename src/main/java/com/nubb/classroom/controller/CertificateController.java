@@ -180,10 +180,17 @@ public class CertificateController {
 
             CertificateRecord template = existingRecord.orElse(classRecord.orElse(null));
 
+            Account currentTeacherAcc = (accountId != null) ? accountRepository.findById(accountId).orElse(null) : null;
+            if (currentTeacherAcc == null && student.getAccountId() != null) {
+                currentTeacherAcc = accountRepository.findById(student.getAccountId()).orElse(null);
+            }
+
             // Resolve School Name
             if (schoolName == null || schoolName.trim().isEmpty()) {
                 if (template != null && template.getSchoolName() != null && !template.getSchoolName().trim().isEmpty() && !template.getSchoolName().contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
                     schoolName = template.getSchoolName();
+                } else if (currentTeacherAcc != null && currentTeacherAcc.getSchoolName() != null && !currentTeacherAcc.getSchoolName().trim().isEmpty()) {
+                    schoolName = currentTeacherAcc.getSchoolName().trim();
                 } else {
                     schoolName = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
                 }
@@ -193,6 +200,8 @@ public class CertificateController {
             if (subjectName == null || subjectName.trim().isEmpty()) {
                 if (template != null && template.getSubjectName() != null && !template.getSubjectName().trim().isEmpty()) {
                     subjectName = template.getSubjectName();
+                } else if (currentTeacherAcc != null && currentTeacherAcc.getSubject() != null && !currentTeacherAcc.getSubject().trim().isEmpty()) {
+                    subjectName = currentTeacherAcc.getSubject().trim();
                 } else {
                     subjectName = "គ្រប់មុខវិជ្ជា";
                 }
@@ -202,12 +211,14 @@ public class CertificateController {
             if (province == null || province.trim().isEmpty()) {
                 if (template != null && template.getProvince() != null && !template.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(template.getProvince().trim())) {
                     province = template.getProvince();
+                } else if (currentTeacherAcc != null && currentTeacherAcc.getProvince() != null && !currentTeacherAcc.getProvince().trim().isEmpty()) {
+                    province = currentTeacherAcc.getProvince().trim();
                 } else if (student.getProvince() != null && !student.getProvince().trim().isEmpty()) {
                     province = student.getProvince().startsWith("ខេត្ត") || student.getProvince().startsWith("រាជធានី")
                             ? student.getProvince()
                             : "ខេត្ត" + student.getProvince();
                 } else {
-                    province = "ខេត្តបាត់ដំបង";
+                    province = "ខេត្តពោធិ៍សាត់";
                 }
             }
 
@@ -215,11 +226,14 @@ public class CertificateController {
             if (teacherName == null || teacherName.trim().isEmpty()) {
                 if (template != null && template.getTeacherName() != null && !template.getTeacherName().trim().isEmpty() && !template.getTeacherName().contains("គ្រូបង្រៀនទទួលបន្ទុក") && !template.getTeacherName().contains("គ្រូទទួលបន្ទុកថ្នាក់")) {
                     teacherName = template.getTeacherName();
+                } else if (currentTeacherAcc != null && currentTeacherAcc.getFullName() != null && !currentTeacherAcc.getFullName().trim().isEmpty()) {
+                    String prefix = (currentTeacherAcc.getGender() != null && currentTeacherAcc.getGender().contains("ស្រី")) ? "អ្នកគ្រូ " : "លោកគ្រូ ";
+                    teacherName = prefix + currentTeacherAcc.getFullName().trim();
                 } else if (accountName != null && !accountName.trim().isEmpty()) {
                     teacherName = "លោកគ្រូ " + accountName;
                 } else if (student.getAccountId() != null) {
                     Optional<Account> tAcc = accountRepository.findById(student.getAccountId());
-                    teacherName = tAcc.map(a -> "លោកគ្រូ " + a.getFullName()).orElse("លោកគ្រូ សំ គឹមឆេង");
+                    teacherName = tAcc.map(a -> ((a.getGender() != null && a.getGender().contains("ស្រី")) ? "អ្នកគ្រូ " : "លោកគ្រូ ") + a.getFullName()).orElse("លោកគ្រូ សំ គឹមឆេង");
                 } else {
                     teacherName = accountRepository.findAll().stream()
                             .filter(a -> "TEACHER".equalsIgnoreCase(a.getRole()) || "ADMIN".equalsIgnoreCase(a.getRole()))
@@ -241,6 +255,8 @@ public class CertificateController {
             if (roleSignerRight == null || roleSignerRight.trim().isEmpty()) {
                 if (template != null && template.getRoleSignerRight() != null) {
                     roleSignerRight = template.getRoleSignerRight();
+                } else if (currentTeacherAcc != null && currentTeacherAcc.getPosition() != null && !currentTeacherAcc.getPosition().trim().isEmpty()) {
+                    roleSignerRight = currentTeacherAcc.getPosition().trim();
                 } else {
                     roleSignerRight = "គ្រូទទួលបន្ទុកថ្នាក់";
                 }

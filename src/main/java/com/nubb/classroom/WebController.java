@@ -1,21 +1,31 @@
 package com.nubb.classroom;
 
+import com.nubb.classroom.model.Account;
 import com.nubb.classroom.model.Classroom;
-import com.nubb.classroom.repository.ClassroomRepository;
-import org.springframework.web.bind.annotation.ModelAttribute;
-
 import com.nubb.classroom.model.Student;
+import com.nubb.classroom.repository.AccountRepository;
+import com.nubb.classroom.repository.ClassroomRepository;
 import com.nubb.classroom.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Controller
 public class WebController {
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     @ModelAttribute("myClassrooms")
     public List<Classroom> getMyClassrooms(jakarta.servlet.http.HttpSession session) {
@@ -90,6 +100,29 @@ public class WebController {
             recentAbsents = abs;
         }
 
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        Account teacherAccount = null;
+        if (accountId != null) {
+            teacherAccount = accountRepository.findById(accountId).orElse(null);
+        }
+        model.addAttribute("teacherAccount", teacherAccount);
+
+        String[] provinces = {
+            "ខេត្តបាត់ដំបង", "រាជធានីភ្នំពេញ", "ខេត្តសៀមរាប", "ខេត្តបន្ទាយមានជ័យ", "ខេត្តពោធិ៍សាត់",
+            "ខេត្តកំពង់ចាម", "ខេត្តកំពង់ធំ", "ខេត្តកំពង់ឆ្នាំង", "ខេត្តកំពង់ស្ពឺ", "ខេត្តកណ្តាល",
+            "ខេត្តតាកែវ", "ខេត្តកំពត", "ខេត្តកែប", "ខេត្តព្រះសីហនុ", "ខេត្តកោះកុង",
+            "ខេត្តព្រៃវែង", "ខេត្តស្វាយរៀង", "ខេត្តក្រចេះ", "ខេត្តស្ទឹងត្រែង", "ខេត្តរតនគិរី",
+            "ខេត្តមណ្ឌលគិរី", "ខេត្តព្រះវិហារ", "ខេត្តឧត្តរមានជ័យ", "ខេត្តប៉ៃលិន", "ខេត្តត្បូងឃ្មុំ"
+        };
+        model.addAttribute("provinces", provinces);
+
+        String[] standardSubjects = {
+            "គ្រប់មុខវិជ្ជា", "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", 
+            "ភាសាខ្មែរ", "ភាសាអង់គ្លេស", "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា", 
+            "សីលធម៌-ពលរដ្ឋវិជ្ជា", "ផែនដី និងបរិស្ថានវិទ្យា", "ព័ត៌មានវិទ្យា (ICT)", "កីឡា"
+        };
+        model.addAttribute("standardSubjects", standardSubjects);
+
         model.addAttribute("totalStudents", totalStudents);
         model.addAttribute("totalFemale", totalFemale);
         model.addAttribute("presentToday", presentToday);
@@ -99,6 +132,154 @@ public class WebController {
         model.addAttribute("recentAbsents", recentAbsents);
         model.addAttribute("selectedClass", className);
         return "index";
+    }
+
+    @PostMapping("/profile/save")
+    public String saveProfile(
+            @RequestParam("fullName") String fullName,
+            @RequestParam(value = "gender", required = false) String gender,
+            @RequestParam(value = "schoolName", required = false) String schoolName,
+            @RequestParam(value = "subject", required = false) String subject,
+            @RequestParam(value = "customSubject", required = false) String customSubject,
+            @RequestParam(value = "province", required = false) String province,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "telegram", required = false) String telegram,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "position", required = false) String position,
+            @RequestParam(value = "teachingClasses", required = false) String teachingClasses,
+            @RequestParam(value = "bio", required = false) String bio,
+            RedirectAttributes redirectAttributes) {
+
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return "redirect:/login";
+        }
+
+        Optional<Account> accOpt = accountRepository.findById(accountId);
+        if (accOpt.isPresent()) {
+            Account acc = accOpt.get();
+            if (fullName != null && !fullName.trim().isEmpty()) {
+                acc.setFullName(fullName.trim());
+                session.setAttribute("ACCOUNT_NAME", acc.getFullName());
+            }
+            if (gender != null && !gender.trim().isEmpty()) {
+                acc.setGender(gender.trim());
+            }
+            if (schoolName != null) {
+                acc.setSchoolName(schoolName.trim());
+            }
+
+            String finalSubject = subject;
+            if ("custom".equals(subject) && customSubject != null && !customSubject.trim().isEmpty()) {
+                finalSubject = customSubject.trim();
+            }
+            if (finalSubject != null) {
+                acc.setSubject(finalSubject.trim());
+            }
+
+            if (province != null) {
+                acc.setProvince(province.trim());
+            }
+            if (phone != null) {
+                acc.setPhone(phone.trim());
+            }
+            if (telegram != null) {
+                acc.setTelegram(telegram.trim());
+            }
+            if (email != null) {
+                acc.setEmail(email.trim());
+            }
+            if (position != null) {
+                acc.setPosition(position.trim());
+            }
+            if (teachingClasses != null) {
+                acc.setTeachingClasses(teachingClasses.trim());
+            }
+            if (bio != null) {
+                acc.setBio(bio.trim());
+            }
+
+            accountRepository.save(acc);
+            redirectAttributes.addFlashAttribute("profileSuccess", "✅ បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនរបស់លោកគ្រូ-អ្នកគ្រូដោយជោគជ័យ!");
+        }
+
+        return "redirect:/#profileSection";
+    }
+
+    @PostMapping("/api/profile/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> apiSaveProfile(
+            @RequestParam("fullName") String fullName,
+            @RequestParam(value = "gender", required = false) String gender,
+            @RequestParam(value = "schoolName", required = false) String schoolName,
+            @RequestParam(value = "subject", required = false) String subject,
+            @RequestParam(value = "customSubject", required = false) String customSubject,
+            @RequestParam(value = "province", required = false) String province,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "telegram", required = false) String telegram,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "position", required = false) String position,
+            @RequestParam(value = "teachingClasses", required = false) String teachingClasses,
+            @RequestParam(value = "bio", required = false) String bio) {
+
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់គណនីជាមុនសិន!"));
+        }
+
+        Optional<Account> accOpt = accountRepository.findById(accountId);
+        if (accOpt.isPresent()) {
+            Account acc = accOpt.get();
+            if (fullName != null && !fullName.trim().isEmpty()) {
+                acc.setFullName(fullName.trim());
+                session.setAttribute("ACCOUNT_NAME", acc.getFullName());
+            }
+            if (gender != null && !gender.trim().isEmpty()) {
+                acc.setGender(gender.trim());
+            }
+            if (schoolName != null) {
+                acc.setSchoolName(schoolName.trim());
+            }
+
+            String finalSubject = subject;
+            if ("custom".equals(subject) && customSubject != null && !customSubject.trim().isEmpty()) {
+                finalSubject = customSubject.trim();
+            }
+            if (finalSubject != null) {
+                acc.setSubject(finalSubject.trim());
+            }
+
+            if (province != null) {
+                acc.setProvince(province.trim());
+            }
+            if (phone != null) {
+                acc.setPhone(phone.trim());
+            }
+            if (telegram != null) {
+                acc.setTelegram(telegram.trim());
+            }
+            if (email != null) {
+                acc.setEmail(email.trim());
+            }
+            if (position != null) {
+                acc.setPosition(position.trim());
+            }
+            if (teachingClasses != null) {
+                acc.setTeachingClasses(teachingClasses.trim());
+            }
+            if (bio != null) {
+                acc.setBio(bio.trim());
+            }
+
+            accountRepository.save(acc);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "✅ បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!",
+                "fullName", acc.getFullName() != null ? acc.getFullName() : ""
+            ));
+        }
+
+        return ResponseEntity.badRequest().body(Map.of("success", false, "message", "រកមិនឃើញគណនីគ្រូបង្រៀន!"));
     }
 
     @GetMapping("/attendance")

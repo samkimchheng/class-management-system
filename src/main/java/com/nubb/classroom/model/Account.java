@@ -17,6 +17,19 @@ public class Account {
     private String fullName;
     private Boolean active = true;
 
+    // Personal & Professional Information (Teacher Profile)
+    private String gender;            // ភេទ (ប្រុស / ស្រី)
+    private String schoolName;        // ឈ្មោះគ្រឹះស្ថានសិក្សា / សាលារៀន
+    private String subject;           // មុខវិជ្ជាឯកទេស / បង្រៀន
+    private String province;          // រាជធានី-ខេត្ត
+    private String phone;             // លេខទូរស័ព្ទ
+    private String telegram;          // គណនី Telegram
+    private String email;             // អ៊ីមែល
+    private String position;          // តួនាទី / ភារកិច្ច (ឧ. គ្រូទទួលបន្ទុកថ្នាក់)
+    private String teachingClasses;   // កម្រិតថ្នាក់បង្រៀន
+    @jakarta.persistence.Column(length = 1000)
+    private String bio;               // បទពិសោធន៍ / ចំណាំ
+
     public Account() {}
 
     public Account(String username, String password, String role, String fullName) {
@@ -54,4 +67,34 @@ public class Account {
     public Boolean getActive() { return active != null ? active : true; }
     public void setActive(Boolean active) { this.active = active; }
     public boolean isActive() { return active != null && active; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public String getSchoolName() { return schoolName; }
+    public void setSchoolName(String schoolName) { this.schoolName = schoolName; }
+
+    public String getSubject() { return subject; }
+    public void setSubject(String subject) { this.subject = subject; }
+
+    public String getProvince() { return province; }
+    public void setProvince(String province) { this.province = province; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getTelegram() { return telegram; }
+    public void setTelegram(String telegram) { this.telegram = telegram; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPosition() { return position; }
+    public void setPosition(String position) { this.position = position; }
+
+    public String getTeachingClasses() { return teachingClasses; }
+    public void setTeachingClasses(String teachingClasses) { this.teachingClasses = teachingClasses; }
+
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
 }
