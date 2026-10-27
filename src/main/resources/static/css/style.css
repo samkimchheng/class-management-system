@@ -220,20 +220,30 @@ table {
 }
 
 th, td {
-    padding: 16px 15px;
+    padding: 14px 12px;
     text-align: left;
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
 }
 
 th {
-    background-color: #f8fafc;
-    color: var(--text-muted);
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-    border-top: 1px solid var(--border);
+    background-color: #e2e8f0;
+    color: #0f172a;
+    font-weight: 800;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    letter-spacing: 0.2px;
+    border-top: 1px solid #cbd5e1;
+    border-bottom: 2px solid #94a3b8;
+}
+
+thead th {
+    background-color: #e2e8f0;
+    color: #0f172a;
+    font-weight: 800;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    border-bottom: 2px solid #94a3b8;
 }
 
 tbody tr {

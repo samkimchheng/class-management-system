@@ -15,12 +15,17 @@
         thead th {
             position: sticky;
             top: 0;
-            background-color: #f8fafc;
+            background-color: #e2e8f0;
+            color: #0f172a;
+            font-size: 1.02rem;
+            font-weight: 800;
             z-index: 2; /* Keep above scrolling rows */
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
         }
         /* Top-Left Corner cells (both sticky vertically and horizontally) */
         thead .sticky-col {
+            background-color: #e2e8f0;
+            color: #0f172a;
             z-index: 4; /* Keep above standard headers and standard sticky columns */
         }
         /* Body sticky columns */
@@ -213,45 +218,45 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background-color: #0f172a; color: white;">
-                            <th rowspan="2" style="width: 50px; text-align: center; padding: 8px;">ល.រ</th>
-                            <th rowspan="2" style="min-width: 170px; padding: 8px; text-align: left;">ឈ្មោះសិស្ស</th>
-                            <th rowspan="2" style="width: 60px; text-align: center; padding: 8px;">ភេទ</th>
-                            <th rowspan="2" style="min-width: 80px; text-align: center; padding: 8px;">ថ្នាក់រៀន</th>
+                            <th rowspan="2" style="width: 50px; text-align: center; padding: 10px 8px; font-size: 1.05rem; font-weight: 800;">ល.រ</th>
+                            <th rowspan="2" style="min-width: 170px; padding: 10px 8px; text-align: left; font-size: 1.05rem; font-weight: 800;">ឈ្មោះសិស្ស</th>
+                            <th rowspan="2" style="width: 60px; text-align: center; padding: 10px 8px; font-size: 1.05rem; font-weight: 800;">ភេទ</th>
+                            <th rowspan="2" style="min-width: 80px; text-align: center; padding: 10px 8px; font-size: 1.05rem; font-weight: 800;">ថ្នាក់រៀន</th>
                             
                             <!-- Months for Semester 1 -->
-                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែវិច្ឆិកា ២០២៦">វិច្ឆិកា</th>
-                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែធ្នូ ២០២៦">ធ្នូ</th>
-                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែមករា ២០២៧">មករា</th>
-                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែកុម្ភៈ ២០២៧">កុម្ភៈ</th>
-                            <th th:if="${isYearly or isSemester1}" colspan="2" style="text-align: center; padding: 6px; background: #1e3a8a; color: #93c5fd; font-weight: bold;">សរុបឆមាស១</th>
+                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 8px 6px; font-size: 1.02rem; font-weight: 800;" title="ខែវិច្ឆិកា ២០២៦">វិច្ឆិកា</th>
+                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 8px 6px; font-size: 1.02rem; font-weight: 800;" title="ខែធ្នូ ២០២៦">ធ្នូ</th>
+                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 8px 6px; font-size: 1.02rem; font-weight: 800;" title="ខែមករា ២០២៧">មករា</th>
+                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 8px 6px; font-size: 1.02rem; font-weight: 800;" title="ខែកុម្ភៈ ២០២៧">កុម្ភៈ</th>
+                            <th th:if="${isYearly or isSemester1}" colspan="2" style="text-align: center; padding: 8px 6px; background: #1e3a8a; color: #ffffff; font-weight: 800; font-size: 1.02rem;">សរុបឆមាស១</th>
                             
                             <!-- Months for Semester 2 -->
-                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែមីនា ២០២៧">មីនា</th>
-                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែមេសា ២០២៧">មេសា</th>
-                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែឧសភា ២០២៧">ឧសភា</th>
-                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែមិថុនា ២០២៧">មិថុនា</th>
-                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែកក្កដា ២០២៧">កក្កដា</th>
-                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែសីហា ២០២៧">សីហា</th>
-                            <th th:if="${isYearly or isSemester2}" colspan="2" style="text-align: center; padding: 6px; background: #1e3a8a; color: #93c5fd; font-weight: bold;">សរុបឆមាស២</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 8px 6px; font-size: 1.02rem; font-weight: 800;" title="ខែមីនា ២០២៧">មីនា</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 8px 6px; font-size: 1.02rem; font-weight: 800;" title="ខែមេសា ២០២៧">មេសា</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 8px 6px; font-size: 1.02rem; font-weight: 800;" title="ខែឧសភា ២០២៧">ឧសភា</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 8px 6px; font-size: 1.02rem; font-weight: 800;" title="ខែមិថុនា ២០២៧">មិថុនា</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 8px 6px; font-size: 1.02rem; font-weight: 800;" title="ខែកក្កដា ២០២៧">កក្កដា</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 8px 6px; font-size: 1.02rem; font-weight: 800;" title="ខែសីហា ២០២៧">សីហា</th>
+                            <th th:if="${isYearly or isSemester2}" colspan="2" style="text-align: center; padding: 8px 6px; background: #1e3a8a; color: #ffffff; font-weight: 800; font-size: 1.02rem;">សរុបឆមាស២</th>
                             
                             <!-- Total Annual Absences column (3 sub-columns: ច្បាប់, គ្មានច្បាប់, សរុប) -->
-                            <th th:if="${isYearly}" colspan="3" style="text-align: center; padding: 8px; background: #991b1b; color: white; font-weight: bold; font-size: 0.95rem;">
+                            <th th:if="${isYearly}" colspan="3" style="text-align: center; padding: 10px 8px; background: #991b1b; color: white; font-weight: 800; font-size: 1.05rem;">
                                 អវត្តមានសរុបប្រចាំឆ្នាំ
                             </th>
                         </tr>
                         <tr style="background-color: #1e293b; color: white;">
                             <!-- Sub-headers for Sem 1 -->
-                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 60px; padding: 5px; background: #fef3c7; color: #92400e; font-size: 0.78rem; font-weight: bold;">ច្បាប់</th>
-                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 75px; padding: 5px; background: #fee2e2; color: #991b1b; font-size: 0.78rem; font-weight: bold;">គ្មានច្បាប់</th>
+                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 60px; padding: 7px; background: #fef3c7; color: #78350f; font-size: 0.98rem; font-weight: 800;">ច្បាប់</th>
+                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 75px; padding: 7px; background: #fee2e2; color: #7f1d1d; font-size: 0.98rem; font-weight: 800;">គ្មានច្បាប់</th>
 
                             <!-- Sub-headers for Sem 2 -->
-                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 60px; padding: 5px; background: #fef3c7; color: #92400e; font-size: 0.78rem; font-weight: bold;">ច្បាប់</th>
-                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 75px; padding: 5px; background: #fee2e2; color: #991b1b; font-size: 0.78rem; font-weight: bold;">គ្មានច្បាប់</th>
+                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 60px; padding: 7px; background: #fef3c7; color: #78350f; font-size: 0.98rem; font-weight: 800;">ច្បាប់</th>
+                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 75px; padding: 7px; background: #fee2e2; color: #7f1d1d; font-size: 0.98rem; font-weight: 800;">គ្មានច្បាប់</th>
 
                             <!-- Sub-headers for Annual Total -->
-                            <th th:if="${isYearly}" style="text-align: center; min-width: 70px; padding: 5px; background: #fef3c7; color: #92400e; font-size: 0.82rem; font-weight: bold;">ច្បាប់</th>
-                            <th th:if="${isYearly}" style="text-align: center; min-width: 85px; padding: 5px; background: #fee2e2; color: #991b1b; font-size: 0.82rem; font-weight: bold;">គ្មានច្បាប់</th>
-                            <th th:if="${isYearly}" style="text-align: center; min-width: 70px; padding: 5px; background: #e0e7ff; color: #3730a3; font-size: 0.82rem; font-weight: 800;">សរុប</th>
+                            <th th:if="${isYearly}" style="text-align: center; min-width: 70px; padding: 7px; background: #fef3c7; color: #78350f; font-size: 0.98rem; font-weight: 800;">ច្បាប់</th>
+                            <th th:if="${isYearly}" style="text-align: center; min-width: 85px; padding: 7px; background: #fee2e2; color: #7f1d1d; font-size: 0.98rem; font-weight: 800;">គ្មានច្បាប់</th>
+                            <th th:if="${isYearly}" style="text-align: center; min-width: 70px; padding: 7px; background: #e0e7ff; color: #1e1b4b; font-size: 0.98rem; font-weight: 800;">សរុប</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -343,17 +348,17 @@
                 <div th:if="${!isYearly and !isSemester1 and !isSemester2}" class="attendance-table-wrapper" style="overflow: auto; max-height: 65vh; border: 1px solid var(--border); border-radius: 8px;">
                 <table>
                     <thead>
-                        <tr>
-                            <th class="sticky-col" style="width: 50px; min-width: 50px; max-width: 50px; left: 0px; white-space: nowrap; text-align: center;">ល.រ</th>
-                            <th class="sticky-col" style="width: 180px; min-width: 180px; max-width: 180px; left: 50px; white-space: nowrap;">ឈ្មោះសិស្ស</th>
-                            <th class="sticky-col last-sticky" style="width: 70px; min-width: 70px; max-width: 70px; left: 230px; white-space: nowrap; text-align: center;">ភេទ</th>
+                        <tr style="border-bottom: 2px solid #94a3b8;">
+                            <th class="sticky-col" style="width: 50px; min-width: 50px; max-width: 50px; left: 0px; white-space: nowrap; text-align: center; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">ល.រ</th>
+                            <th class="sticky-col" style="width: 180px; min-width: 180px; max-width: 180px; left: 50px; white-space: nowrap; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">ឈ្មោះសិស្ស</th>
+                            <th class="sticky-col last-sticky" style="width: 70px; min-width: 70px; max-width: 70px; left: 230px; white-space: nowrap; text-align: center; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">ភេទ</th>
                             <!-- Days 1 to 31 -->
-                            <th th:each="i : ${#numbers.sequence(1, 31)}" th:text="${i}" th:attr="data-day=${i}" class="day-cell" style="min-width: 65px; text-align: center; padding: 6px 2px;">1</th>
+                            <th th:each="i : ${#numbers.sequence(1, 31)}" th:text="${i}" th:attr="data-day=${i}" class="day-cell" style="min-width: 65px; text-align: center; padding: 8px 2px; font-size: 1.02rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">1</th>
                             
                             <!-- Totals divided into ច្បាប់ / គ្មានច្បាប់ / សរុប -->
-                            <th style="min-width: 75px; text-align: center; background: #fef3c7; color: #92400e; font-size: 0.85rem;" title="សរុបអវត្តមានមានច្បាប់">🟡 ច្បាប់</th>
-                            <th style="min-width: 85px; text-align: center; background: #fee2e2; color: #991b1b; font-size: 0.85rem;" title="សរុបអវត្តមានគ្មានច្បាប់">🔴 គ្មានច្បាប់</th>
-                            <th style="min-width: 75px; text-align: center; background: #f1f5f9; color: #0f172a; font-size: 0.85rem; font-weight: 800;" title="អវត្តមានសរុប">សរុប</th>
+                            <th style="min-width: 75px; text-align: center; background: #fef3c7; color: #78350f; font-size: 0.98rem; font-weight: 800;" title="សរុបអវត្តមានមានច្បាប់">🟡 ច្បាប់</th>
+                            <th style="min-width: 85px; text-align: center; background: #fee2e2; color: #7f1d1d; font-size: 0.98rem; font-weight: 800;" title="សរុបអវត្តមានគ្មានច្បាប់">🔴 គ្មានច្បាប់</th>
+                            <th style="min-width: 75px; text-align: center; background: #e2e8f0; color: #0f172a; font-size: 0.98rem; font-weight: 800;" title="អវត្តមានសរុប">សរុប</th>
                         </tr>
                     </thead>
                     <tbody>

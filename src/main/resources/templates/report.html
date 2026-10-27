@@ -24,9 +24,13 @@
             position: sticky;
             top: 0;
             z-index: 10;
-            background-color: var(--light);
-            border-bottom: 2px solid #ddd;
-            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+            background-color: #e2e8f0;
+            color: #0f172a;
+            font-size: 1.05rem;
+            font-weight: 800;
+            border-bottom: 2px solid #94a3b8;
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.12);
+            padding: 14px 10px;
         }
         .scrollable-table-wrapper th, .scrollable-table-wrapper td {
             border-bottom: 1px solid #ddd;
@@ -133,7 +137,7 @@
                 
                 <div class="scrollable-table-wrapper">
                     <table>
-                        <thead style="background-color: var(--light);">
+                        <thead style="background-color: #e2e8f0;">
                             <!-- Columns for Specific Subject -->
                             <tr th:if="${!isAllSubjects}">
                                 <th style="text-align: center; width: 50px;">ល.រ</th>
@@ -146,8 +150,8 @@
                                 <th style="text-align: center; white-space: nowrap;">ពិន្ទុសរុប</th>
                                 <th style="text-align: center;">និទ្ទេស</th>
                                 <th style="text-align: center; white-space: nowrap;">ចំណាត់ថ្នាក់</th>
-                                <th style="text-align: center; color: var(--success);">វត្តមាន</th>
-                                <th style="text-align: center; color: var(--danger);">អវត្តមាន</th>
+                                <th style="text-align: center; color: #065f46; font-weight: 800;">វត្តមាន</th>
+                                <th style="text-align: center; color: #991b1b; font-weight: 800;">អវត្តមាន</th>
                             </tr>
                             <!-- Columns for All Subjects -->
                             <tr th:if="${isAllSubjects}">
@@ -159,8 +163,8 @@
                                 <th style="text-align: center; white-space: nowrap;">មធ្យមភាគ</th>
                                 <th style="text-align: center;">និទ្ទេស</th>
                                 <th style="text-align: center; white-space: nowrap;">ចំណាត់ថ្នាក់</th>
-                                <th style="text-align: center; color: var(--success);">វត្តមាន</th>
-                                <th style="text-align: center; color: var(--danger);">អវត្តមាន</th>
+                                <th style="text-align: center; color: #065f46; font-weight: 800;">វត្តមាន</th>
+                                <th style="text-align: center; color: #991b1b; font-weight: 800;">អវត្តមាន</th>
                                 <th style="text-align: left; min-width: 250px;">ពិន្ទុតតាមមុខវិជ្ជា</th>
                             </tr>
                         </thead>
