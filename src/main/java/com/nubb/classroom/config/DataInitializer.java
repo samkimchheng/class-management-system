@@ -288,6 +288,16 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
+            // 7b. Clean up telegram and teaching classes for other teachers' accounts so they don't inherit Sam Kimchheng's info
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("UPDATE account SET telegram = NULL WHERE username NOT IN ('samkimchheng', 'admin') AND (telegram = '@Kimchheng12' OR telegram LIKE '%Kimchheng12%')");
+                try { stmt.executeUpdate("UPDATE \"ACCOUNT\" SET telegram = NULL WHERE username NOT IN ('samkimchheng', 'admin') AND (telegram = '@Kimchheng12' OR telegram LIKE '%Kimchheng12%')"); } catch (Exception ignored) {}
+
+                stmt.executeUpdate("UPDATE account SET teaching_classes = NULL WHERE username NOT IN ('samkimchheng', 'admin') AND teaching_classes = '១០E, ១០F, ១០G, ១១F'");
+                try { stmt.executeUpdate("UPDATE \"ACCOUNT\" SET teaching_classes = NULL WHERE username NOT IN ('samkimchheng', 'admin') AND teaching_classes = '១០E, ១០F, ១០G, ១១F'"); } catch (Exception ignored) {}
+            } catch (Exception ignored) {}
+
             // 8. Ensure Teacher Profile for 'សំ គឹមឆេង' is fully initialized on both account 97 and account 1
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {

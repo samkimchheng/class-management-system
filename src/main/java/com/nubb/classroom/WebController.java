@@ -388,36 +388,31 @@ public class WebController {
             return "redirect:/login";
         }
         Account teacherAccount = accountRepository.findById(accountId).orElse(null);
-        if (teacherAccount != null && (teacherAccount.getSchoolName() == null || teacherAccount.getSchoolName().isEmpty())) {
-            for (Account other : accountRepository.findAll()) {
-                if (other.getSchoolName() != null && !other.getSchoolName().isEmpty()) {
-                    teacherAccount.setSchoolName(other.getSchoolName());
-                    if (other.getSubject() != null) teacherAccount.setSubject(other.getSubject());
-                    if (other.getProvince() != null) teacherAccount.setProvince(other.getProvince());
-                    if (other.getGender() != null) teacherAccount.setGender(other.getGender());
-                    if (other.getPosition() != null) teacherAccount.setPosition(other.getPosition());
-                    if (other.getTeachingClasses() != null) teacherAccount.setTeachingClasses(other.getTeachingClasses());
-                    if (other.getTelegram() != null) teacherAccount.setTelegram(other.getTelegram());
-                    if (other.getPhone() != null) teacherAccount.setPhone(other.getPhone());
-                    if (other.getPrincipalName() != null) teacherAccount.setPrincipalName(other.getPrincipalName());
-                    accountRepository.save(teacherAccount);
-                    break;
+        if (teacherAccount != null) {
+            boolean changed = false;
+            if (teacherAccount.getSchoolName() == null || teacherAccount.getSchoolName().isEmpty() || teacherAccount.getSchoolName().contains("វិទ្យាល័យ / អនុវិទ្យាល័យ")) {
+                teacherAccount.setSchoolName("វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត");
+                changed = true;
+            }
+            if (teacherAccount.getProvince() == null || teacherAccount.getProvince().isEmpty()) {
+                teacherAccount.setProvince("ខេត្តពោធិ៍សាត់");
+                changed = true;
+            }
+            if (teacherAccount.getPrincipalName() == null || teacherAccount.getPrincipalName().isEmpty() || teacherAccount.getPrincipalName().contains("គឹម ហ៊ាង")) {
+                teacherAccount.setPrincipalName("លី ប៊ុនថេង");
+                changed = true;
+            }
+            // Clear telegram for other teacher accounts if it was erroneously copied from Sam Kimchheng
+            String uname = teacherAccount.getUsername();
+            if (uname != null && !uname.equals("samkimchheng") && !uname.equals("admin")) {
+                if (teacherAccount.getTelegram() != null && teacherAccount.getTelegram().contains("Kimchheng12")) {
+                    teacherAccount.setTelegram(null);
+                    changed = true;
                 }
             }
-        }
-        if (teacherAccount != null && (teacherAccount.getPrincipalName() == null || teacherAccount.getPrincipalName().isEmpty() || teacherAccount.getPrincipalName().contains("គឹម ហ៊ាង"))) {
-            String foundName = null;
-            for (Account other : accountRepository.findAll()) {
-                if (other.getPrincipalName() != null && !other.getPrincipalName().isEmpty() && !other.getPrincipalName().contains("គឹម ហ៊ាង")) {
-                    foundName = other.getPrincipalName();
-                    break;
-                }
+            if (changed) {
+                try { accountRepository.save(teacherAccount); } catch (Exception ignored) {}
             }
-            if (foundName == null || foundName.trim().isEmpty()) {
-                foundName = "លី ប៊ុនថេង";
-            }
-            teacherAccount.setPrincipalName(foundName);
-            try { accountRepository.save(teacherAccount); } catch (Exception ignored) {}
         }
         if (teacherAccount != null && (teacherAccount.getProvince() == null || teacherAccount.getProvince().trim().isEmpty())) {
             teacherAccount.setProvince("ខេត្តពោធិ៍សាត់");
