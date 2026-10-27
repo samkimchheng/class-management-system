@@ -31,6 +31,10 @@ public class Account {
     private String bio;               // បទពិសោធន៍ / ចំណាំ
     @jakarta.persistence.Column(columnDefinition = "TEXT")
     private String signature;         // ហត្ថលេខាគ្រូ (Base64 data URI or image URL)
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
+    private String principalSignature; // ហត្ថលេខានាយក (Base64 data URI or image URL)
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
+    private String schoolStamp;        // ត្រាសាលា (Base64 data URI or image URL)
 
     public Account() {}
 
@@ -102,4 +106,10 @@ public class Account {
 
     public String getSignature() { return signature; }
     public void setSignature(String signature) { this.signature = signature; }
+
+    public String getPrincipalSignature() { return principalSignature; }
+    public void setPrincipalSignature(String principalSignature) { this.principalSignature = principalSignature; }
+
+    public String getSchoolStamp() { return schoolStamp; }
+    public void setSchoolStamp(String schoolStamp) { this.schoolStamp = schoolStamp; }
 }

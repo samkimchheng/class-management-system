@@ -65,7 +65,9 @@ public class DataInitializer {
                     "POSITION VARCHAR(255)",
                     "TEACHING_CLASSES VARCHAR(255)",
                     "BIO VARCHAR(1000)",
-                    "SIGNATURE TEXT"
+                    "SIGNATURE TEXT",
+                    "PRINCIPAL_SIGNATURE TEXT",
+                    "SCHOOL_STAMP TEXT"
                 };
                 for (String col : profileCols) {
                     try { stmt.execute("ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS " + col); } catch (Exception ignored) {}
@@ -73,6 +75,10 @@ public class DataInitializer {
                 }
                 try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS SIGNATURE TEXT"); } catch (Exception ignored) {}
                 try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS signature TEXT"); } catch (Exception ignored) {}
+                try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS PRINCIPAL_SIGNATURE TEXT"); } catch (Exception ignored) {}
+                try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS principal_signature TEXT"); } catch (Exception ignored) {}
+                try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS SCHOOL_STAMP TEXT"); } catch (Exception ignored) {}
+                try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS school_stamp TEXT"); } catch (Exception ignored) {}
             } catch (Exception e) {
                 System.err.println(">>> [DataInitializer] Schema migration notice: " + e.getMessage());
             }
@@ -132,7 +138,9 @@ public class DataInitializer {
                             "POSITION VARCHAR(255)",
                             "TEACHING_CLASSES VARCHAR(255)",
                             "BIO VARCHAR(1000)",
-                            "SIGNATURE TEXT"
+                            "SIGNATURE TEXT",
+                            "PRINCIPAL_SIGNATURE TEXT",
+                            "SCHOOL_STAMP TEXT"
                         };
                         for (String col : profileCols) {
                             try { stmt.execute("ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS " + col); } catch (Exception ignored) {}
@@ -140,6 +148,10 @@ public class DataInitializer {
                         }
                         try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS SIGNATURE TEXT"); } catch (Exception ignored) {}
                         try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS signature TEXT"); } catch (Exception ignored) {}
+                        try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS PRINCIPAL_SIGNATURE TEXT"); } catch (Exception ignored) {}
+                        try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS principal_signature TEXT"); } catch (Exception ignored) {}
+                        try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS SCHOOL_STAMP TEXT"); } catch (Exception ignored) {}
+                        try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS school_stamp TEXT"); } catch (Exception ignored) {}
                     } catch (Exception ignored) {}
                 } catch (Exception e) {
                     System.err.println(">>> [DataInitializer] Error restoring database: " + e.getMessage());

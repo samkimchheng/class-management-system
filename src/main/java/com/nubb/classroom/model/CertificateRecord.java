@@ -41,6 +41,12 @@ public class CertificateRecord {
     @Column(columnDefinition = "TEXT")
     private String signature;
 
+    @Column(columnDefinition = "TEXT")
+    private String principalSignature;
+
+    @Column(columnDefinition = "TEXT")
+    private String schoolStamp;
+
     private String issueDateKhmer;
     private String issueDateEn;
 
@@ -99,6 +105,12 @@ public class CertificateRecord {
 
     public String getSignature() { return signature; }
     public void setSignature(String signature) { this.signature = signature; }
+
+    public String getPrincipalSignature() { return principalSignature; }
+    public void setPrincipalSignature(String principalSignature) { this.principalSignature = principalSignature; }
+
+    public String getSchoolStamp() { return schoolStamp; }
+    public void setSchoolStamp(String schoolStamp) { this.schoolStamp = schoolStamp; }
 
     public String getIssueDateKhmer() { return issueDateKhmer; }
     public void setIssueDateKhmer(String issueDateKhmer) { this.issueDateKhmer = issueDateKhmer; }

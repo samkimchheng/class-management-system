@@ -460,6 +460,42 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 }
             }
 
+            // Resolve Principal Signature
+            String principalSignature = null;
+            if (currentTeacherAcc != null && currentTeacherAcc.getPrincipalSignature() != null && !currentTeacherAcc.getPrincipalSignature().trim().isEmpty()) {
+                principalSignature = currentTeacherAcc.getPrincipalSignature().trim();
+            } else if (template != null && template.getPrincipalSignature() != null && !template.getPrincipalSignature().trim().isEmpty()) {
+                principalSignature = template.getPrincipalSignature().trim();
+            } else {
+                Optional<Account> tAcc = accountRepository.findById(97L);
+                if (tAcc.isPresent() && tAcc.get().getPrincipalSignature() != null && !tAcc.get().getPrincipalSignature().trim().isEmpty()) {
+                    principalSignature = tAcc.get().getPrincipalSignature().trim();
+                } else {
+                    Optional<Account> aAcc = accountRepository.findById(1L);
+                    if (aAcc.isPresent() && aAcc.get().getPrincipalSignature() != null && !aAcc.get().getPrincipalSignature().trim().isEmpty()) {
+                        principalSignature = aAcc.get().getPrincipalSignature().trim();
+                    }
+                }
+            }
+
+            // Resolve School Stamp
+            String schoolStamp = null;
+            if (currentTeacherAcc != null && currentTeacherAcc.getSchoolStamp() != null && !currentTeacherAcc.getSchoolStamp().trim().isEmpty()) {
+                schoolStamp = currentTeacherAcc.getSchoolStamp().trim();
+            } else if (template != null && template.getSchoolStamp() != null && !template.getSchoolStamp().trim().isEmpty()) {
+                schoolStamp = template.getSchoolStamp().trim();
+            } else {
+                Optional<Account> tAcc = accountRepository.findById(97L);
+                if (tAcc.isPresent() && tAcc.get().getSchoolStamp() != null && !tAcc.get().getSchoolStamp().trim().isEmpty()) {
+                    schoolStamp = tAcc.get().getSchoolStamp().trim();
+                } else {
+                    Optional<Account> aAcc = accountRepository.findById(1L);
+                    if (aAcc.isPresent() && aAcc.get().getSchoolStamp() != null && !aAcc.get().getSchoolStamp().trim().isEmpty()) {
+                        schoolStamp = aAcc.get().getSchoolStamp().trim();
+                    }
+                }
+            }
+
             // Always auto-save or update database record safely for the serialNumber so QR scanning is immediate and accurate
             try {
                 CertificateRecord record = existingRecord.orElse(
@@ -478,6 +514,12 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 record.setTeacherName(teacherName);
                 if (teacherSignature != null && !teacherSignature.trim().isEmpty()) {
                     record.setSignature(teacherSignature);
+                }
+                if (principalSignature != null && !principalSignature.trim().isEmpty()) {
+                    record.setPrincipalSignature(principalSignature);
+                }
+                if (schoolStamp != null && !schoolStamp.trim().isEmpty()) {
+                    record.setSchoolStamp(schoolStamp);
                 }
                 record.setRoleSignerLeft(roleSignerLeft);
                 record.setRoleSignerRight(roleSignerRight);
@@ -520,6 +562,8 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("province", province);
             model.addAttribute("teacherName", teacherName);
             model.addAttribute("teacherSignature", teacherSignature);
+            model.addAttribute("principalSignature", principalSignature);
+            model.addAttribute("schoolStamp", schoolStamp);
             model.addAttribute("roleSignerLeft", roleSignerLeft);
             model.addAttribute("roleSignerRight", roleSignerRight);
 
@@ -545,6 +589,8 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("province", "ខេត្តពោធិ៍សាត់");
             model.addAttribute("teacherName", "លោកគ្រូ សំ គឹមឆេង");
             model.addAttribute("teacherSignature", loadDefaultSignature());
+            model.addAttribute("principalSignature", null);
+            model.addAttribute("schoolStamp", null);
             model.addAttribute("roleSignerLeft", "នាយកសាលា / គណៈគ្រប់គ្រង");
             model.addAttribute("roleSignerRight", "គ្រូទទួលបន្ទុកថ្នាក់");
             List<String> fbClasses = new ArrayList<>(List.of("ថ្នាក់ទី១០ A", "ថ្នាក់ទី១០ B", "ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១២ វិទ្យាសាស្ត្រ"));
@@ -869,6 +915,8 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("province", finalProvince);
             model.addAttribute("teacher", finalTeacher);
             model.addAttribute("teacherSignature", foundRecord != null ? foundRecord.getSignature() : null);
+            model.addAttribute("principalSignature", foundRecord != null ? foundRecord.getPrincipalSignature() : null);
+            model.addAttribute("schoolStamp", foundRecord != null ? foundRecord.getSchoolStamp() : null);
             model.addAttribute("verifyDateKhmer", toKhmerDate(LocalDate.now()));
 
             return "certificate-verify";
@@ -895,6 +943,9 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("subject", subject != null && !subject.trim().isEmpty() ? subject : "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", province != null && !province.trim().isEmpty() ? province : "ខេត្តពោធិ៍សាត់");
             model.addAttribute("teacher", teacher != null && !teacher.trim().isEmpty() ? teacher : "លោកគ្រូ សំ គឹមឆេង");
+            model.addAttribute("teacherSignature", null);
+            model.addAttribute("principalSignature", null);
+            model.addAttribute("schoolStamp", null);
             model.addAttribute("verifyDateKhmer", toKhmerDate(LocalDate.now()));
             return "certificate-verify";
         }
@@ -1063,7 +1114,8 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
     @ResponseBody
     public ResponseEntity<?> uploadSignature(
             @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "signatureBase64", required = false) String signatureBase64) {
+            @RequestParam(value = "signatureBase64", required = false) String signatureBase64,
+            @RequestParam(value = "type", required = false, defaultValue = "teacher") String type) {
         try {
             Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
             if (accountId == null) {
@@ -1088,24 +1140,59 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             }
 
             final String finalUri = dataUri;
-            accountRepository.findById(accountId).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
-            if (accountId != 97L) {
-                accountRepository.findById(97L).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
-            }
-            if (accountId != 1L) {
-                accountRepository.findById(1L).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
-            }
+            final String sigType = (type != null) ? type.toLowerCase().trim() : "teacher";
 
-            try {
-                List<CertificateRecord> certs = certificateRecordRepository.findAll();
-                for (CertificateRecord c : certs) {
-                    c.setSignature(finalUri);
-                    c.setUpdatedAt(LocalDateTime.now());
-                    certificateRecordRepository.save(c);
+            if ("principal".equals(sigType)) {
+                accountRepository.findById(accountId).ifPresent(a -> { a.setPrincipalSignature(finalUri); accountRepository.save(a); });
+                if (accountId != 97L) {
+                    accountRepository.findById(97L).ifPresent(a -> { a.setPrincipalSignature(finalUri); accountRepository.save(a); });
                 }
-            } catch (Exception ignored) {}
+                if (accountId != 1L) {
+                    accountRepository.findById(1L).ifPresent(a -> { a.setPrincipalSignature(finalUri); accountRepository.save(a); });
+                }
+                try {
+                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
+                    for (CertificateRecord c : certs) {
+                        c.setPrincipalSignature(finalUri);
+                        c.setUpdatedAt(LocalDateTime.now());
+                        certificateRecordRepository.save(c);
+                    }
+                } catch (Exception ignored) {}
+            } else if ("stamp".equals(sigType)) {
+                accountRepository.findById(accountId).ifPresent(a -> { a.setSchoolStamp(finalUri); accountRepository.save(a); });
+                if (accountId != 97L) {
+                    accountRepository.findById(97L).ifPresent(a -> { a.setSchoolStamp(finalUri); accountRepository.save(a); });
+                }
+                if (accountId != 1L) {
+                    accountRepository.findById(1L).ifPresent(a -> { a.setSchoolStamp(finalUri); accountRepository.save(a); });
+                }
+                try {
+                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
+                    for (CertificateRecord c : certs) {
+                        c.setSchoolStamp(finalUri);
+                        c.setUpdatedAt(LocalDateTime.now());
+                        certificateRecordRepository.save(c);
+                    }
+                } catch (Exception ignored) {}
+            } else {
+                accountRepository.findById(accountId).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
+                if (accountId != 97L) {
+                    accountRepository.findById(97L).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
+                }
+                if (accountId != 1L) {
+                    accountRepository.findById(1L).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
+                }
+                try {
+                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
+                    for (CertificateRecord c : certs) {
+                        c.setSignature(finalUri);
+                        c.setUpdatedAt(LocalDateTime.now());
+                        certificateRecordRepository.save(c);
+                    }
+                } catch (Exception ignored) {}
+            }
 
-            return ResponseEntity.ok(Map.of("success", true, "signature", finalUri));
+            return ResponseEntity.ok(Map.of("success", true, "type", sigType, "signature", finalUri));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("success", false, "error", e.getMessage()));
@@ -1114,24 +1201,49 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
 
     @DeleteMapping("/api/certificate/signature")
     @ResponseBody
-    public ResponseEntity<?> removeSignature() {
+    public ResponseEntity<?> removeSignature(
+            @RequestParam(value = "type", required = false, defaultValue = "teacher") String type) {
         try {
             Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
             if (accountId == null) accountId = 97L;
+            final String sigType = (type != null) ? type.toLowerCase().trim() : "teacher";
 
-            accountRepository.findById(accountId).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
-            accountRepository.findById(97L).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
-            accountRepository.findById(1L).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
+            if ("principal".equals(sigType)) {
+                accountRepository.findById(accountId).ifPresent(a -> { a.setPrincipalSignature(null); accountRepository.save(a); });
+                accountRepository.findById(97L).ifPresent(a -> { a.setPrincipalSignature(null); accountRepository.save(a); });
+                accountRepository.findById(1L).ifPresent(a -> { a.setPrincipalSignature(null); accountRepository.save(a); });
+                try {
+                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
+                    for (CertificateRecord c : certs) {
+                        c.setPrincipalSignature(null);
+                        certificateRecordRepository.save(c);
+                    }
+                } catch (Exception ignored) {}
+            } else if ("stamp".equals(sigType)) {
+                accountRepository.findById(accountId).ifPresent(a -> { a.setSchoolStamp(null); accountRepository.save(a); });
+                accountRepository.findById(97L).ifPresent(a -> { a.setSchoolStamp(null); accountRepository.save(a); });
+                accountRepository.findById(1L).ifPresent(a -> { a.setSchoolStamp(null); accountRepository.save(a); });
+                try {
+                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
+                    for (CertificateRecord c : certs) {
+                        c.setSchoolStamp(null);
+                        certificateRecordRepository.save(c);
+                    }
+                } catch (Exception ignored) {}
+            } else {
+                accountRepository.findById(accountId).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
+                accountRepository.findById(97L).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
+                accountRepository.findById(1L).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
+                try {
+                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
+                    for (CertificateRecord c : certs) {
+                        c.setSignature(null);
+                        certificateRecordRepository.save(c);
+                    }
+                } catch (Exception ignored) {}
+            }
 
-            try {
-                List<CertificateRecord> certs = certificateRecordRepository.findAll();
-                for (CertificateRecord c : certs) {
-                    c.setSignature(null);
-                    certificateRecordRepository.save(c);
-                }
-            } catch (Exception ignored) {}
-
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(Map.of("success", true, "type", sigType));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("success", false, "error", e.getMessage()));

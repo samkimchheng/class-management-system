@@ -163,6 +163,15 @@
                         </div>
                     </td>
                 </tr>
+                <tr th:if="${(principalSignature != null and !#strings.isEmpty(principalSignature)) or (schoolStamp != null and !#strings.isEmpty(schoolStamp))}">
+                    <td>នាយកសាលា / ត្រាផ្លូវការ៖</td>
+                    <td>
+                        <div style="position: relative; display: inline-block; min-height: 50px;">
+                            <img th:if="${schoolStamp != null and !#strings.isEmpty(schoolStamp)}" th:src="${schoolStamp}" alt="ត្រាសាលា" style="position: absolute; left: -10px; top: -10px; width: 70px; height: 70px; object-fit: contain; opacity: 0.9; mix-blend-mode: multiply;" />
+                            <img th:if="${principalSignature != null and !#strings.isEmpty(principalSignature)}" th:src="${principalSignature}" alt="ហត្ថលេខានាយក" style="max-height: 55px; max-width: 170px; object-fit: contain; position: relative; z-index: 2;" />
+                        </div>
+                    </td>
+                </tr>
                 <tr>
                     <td>ស្ថានភាពការសិក្សា៖</td>
                     <td style="color: #15803d; font-weight: bold;">✔️ បញ្ចប់ការសិក្សា ១០០% ដោយជោគជ័យ</td>

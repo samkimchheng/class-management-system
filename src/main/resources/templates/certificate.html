@@ -537,15 +537,39 @@
 
             <!-- Action Buttons for Teacher: Always active -->
             <div style="display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap;">
-                <input type="file" id="sigFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this)">
-                <button type="button" class="btn-action" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: 1px solid #38bdf8;" onclick="document.getElementById('sigFileInput').click()" title="បញ្ចូលហត្ថលេខាគ្រូជាឯកសារ .png">
-                    ✍️ បញ្ចូលហត្ថលេខា (.png)
+                <!-- 1. Teacher Signature -->
+                <input type="file" id="teacherSigFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this, 'teacher')">
+                <button type="button" class="btn-action" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: 1px solid #38bdf8;" onclick="document.getElementById('teacherSigFileInput').click()" title="បញ្ចូលហត្ថលេខាគ្រូជាឯកសារ .png">
+                    ✍️ បញ្ចូលហត្ថលេខាគ្រូ (.png)
                 </button>
-                <button type="button" id="btnRemoveSig" class="btn-action"
+                <button type="button" id="btnRemoveTeacherSig" class="btn-action"
                         th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'display: inline-flex; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);' : 'display: none; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);'"
-                        onclick="removeSignature()" title="លុបហត្ថលេខាចេញ">
+                        onclick="removeSignature('teacher')" title="លុបហត្ថលេខាគ្រូចេញ">
                     ❌ លុប
                 </button>
+
+                <!-- 2. Principal Signature -->
+                <input type="file" id="principalSigFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this, 'principal')">
+                <button type="button" class="btn-action" style="background: linear-gradient(135deg, #4f46e5, #4338ca); color: white; border: 1px solid #818cf8;" onclick="document.getElementById('principalSigFileInput').click()" title="បញ្ចូលហត្ថលេខានាយកជាឯកសារ .png">
+                    ✍️ បញ្ចូលហត្ថលេខានាយក (.png)
+                </button>
+                <button type="button" id="btnRemovePrincipalSig" class="btn-action"
+                        th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'display: inline-flex; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);' : 'display: none; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);'"
+                        onclick="removeSignature('principal')" title="លុបហត្ថលេខានាយកចេញ">
+                    ❌ លុប
+                </button>
+
+                <!-- 3. School Stamp -->
+                <input type="file" id="stampFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this, 'stamp')">
+                <button type="button" class="btn-action" style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border: 1px solid #f87171;" onclick="document.getElementById('stampFileInput').click()" title="បញ្ចូលត្រាសាលាជាឯកសារ .png">
+                    🔴 បញ្ចូលត្រាសាលា (.png)
+                </button>
+                <button type="button" id="btnRemoveStamp" class="btn-action"
+                        th:style="${schoolStamp != null and !#strings.isEmpty(schoolStamp)} ? 'display: inline-flex; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);' : 'display: none; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);'"
+                        onclick="removeSignature('stamp')" title="លុបត្រាសាលាចេញ">
+                    ❌ លុប
+                </button>
+
                 <button class="btn-action btn-print" onclick="window.print()">
                     🖨️ បោះពុម្ព / Save as PDF
                 </button>
@@ -697,7 +721,27 @@
                             បានឃើញ និងឯកភាព
                         </div>
                         <div class="footer-role" id="dispRoleLeft" th:text="${roleSignerLeft}">នាយកសាលា / គណៈគ្រប់គ្រង</div>
-                        <div class="signature-slot" style="pointer-events: none;"></div>
+                        <div class="signature-slot" id="sigSlotLeft"
+                             th:title="${isTeacher} ? 'ចុចត្រង់នេះដើម្បីបញ្ចូល ឬផ្លាស់ប្តូរហត្ថលេខានាយក (.png)' : ''"
+                             th:style="${isTeacher} ? 'cursor: pointer;' : ''"
+                             th:onclick="${isTeacher} ? 'document.getElementById(\'principalSigFileInput\').click()' : ''">
+                            
+                            <!-- School Stamp Overlay (Official Red Seal) -->
+                            <div id="schoolStampContainer" style="position: absolute; left: 15px; top: -15px; pointer-events: none; z-index: 5;">
+                                <img id="schoolStampImg" th:src="${schoolStamp}" alt="ត្រាសាលា"
+                                     th:style="${schoolStamp != null and !#strings.isEmpty(schoolStamp)} ? 'width: 105px; height: 105px; object-fit: contain; display: block; opacity: 0.92; mix-blend-mode: multiply; transform: rotate(-3deg);' : 'display: none;'"
+                                     crossorigin="anonymous" />
+                            </div>
+
+                            <!-- Principal Signature -->
+                            <img id="principalSignatureImg" th:src="${principalSignature}" alt="ហត្ថលេខានាយកសាលា" class="signature-preview-img"
+                                 th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'max-height: 72px; max-width: 235px; object-fit: contain; display: block; position: relative; z-index: 2;' : 'display: none;'"
+                                 crossorigin="anonymous" />
+                            <span id="principalSigPlaceholderHint" class="no-print" th:if="${isTeacher}"
+                                  th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'display: none;' : 'display: inline-block; font-size: 0.72rem; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 2px 8px; border-radius: 4px; position: relative; z-index: 2;'">
+                                ✍️ ចុចបញ្ចូលហត្ថលេខានាយក (.png)
+                            </span>
+                        </div>
                         <div style="border-top: 1px dashed #cbd5e1; height: 26px;"></div>
                     </div>
 
@@ -727,15 +771,15 @@
                         </div>
                         <div class="footer-role" id="dispRoleRight" th:text="${roleSignerRight}">គ្រូទទួលបន្ទុកថ្នាក់</div>
                         <div class="signature-slot" id="sigSlotRight"
-                             th:title="${isTeacher} ? 'ចុចត្រង់នេះដើម្បីបញ្ចូល ឬផ្លាស់ប្តូរហត្ថលេខា (.png)' : ''"
+                             th:title="${isTeacher} ? 'ចុចត្រង់នេះដើម្បីបញ្ចូល ឬផ្លាស់ប្តូរហត្ថលេខាគ្រូ (.png)' : ''"
                              th:style="${isTeacher} ? 'cursor: pointer;' : ''"
-                             th:onclick="${isTeacher} ? 'document.getElementById(\'sigFileInput\').click()' : ''">
+                             th:onclick="${isTeacher} ? 'document.getElementById(\'teacherSigFileInput\').click()' : ''">
                             <img id="teacherSignatureImg" th:src="${teacherSignature}" alt="ហត្ថលេខាគ្រូទទួលបន្ទុកថ្នាក់" class="signature-preview-img"
                                  th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'max-height: 72px; max-width: 235px; object-fit: contain; display: block;' : 'display: none;'"
                                  crossorigin="anonymous" />
                             <span id="sigPlaceholderHint" class="no-print" th:if="${isTeacher}"
                                   th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'display: none;' : 'display: inline-block; font-size: 0.72rem; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 2px 8px; border-radius: 4px;'">
-                                ✍️ ចុចបញ្ចូលហត្ថលេខា (.png)
+                                ✍️ ចុចបញ្ចូលហត្ថលេខាគ្រូ (.png)
                             </span>
                         </div>
                         <div class="footer-name" id="dispTeacherName" th:text="${teacherName}">លោកគ្រូ សំ គឹមឆេង</div>
@@ -756,10 +800,10 @@
                  'cert_role_left', 'cert_role_right'].forEach(k => localStorage.removeItem(k));
 
                 // Two-way sync: Keep server & localStorage in perfect sync across all computers
+                // 1. Teacher Signature
                 const sigImg = document.getElementById('teacherSignatureImg');
                 const currentSrc = sigImg ? sigImg.getAttribute('src') : null;
                 const cachedSig = localStorage.getItem('teacher_signature');
-
                 if (currentSrc && currentSrc.trim() !== '') {
                     try { localStorage.setItem('teacher_signature', currentSrc); } catch (e) {}
                 } else if (cachedSig && cachedSig.startsWith('data:image/')) {
@@ -769,26 +813,65 @@
                     }
                     const hint = document.getElementById('sigPlaceholderHint');
                     if (hint) hint.style.display = 'none';
-                    const btnRemove = document.getElementById('btnRemoveSig');
+                    const btnRemove = document.getElementById('btnRemoveTeacherSig');
                     if (btnRemove) btnRemove.style.display = 'inline-flex';
 
-                    // Sync back to server database
-                    const formData = new FormData();
-                    formData.append('signatureBase64', cachedSig);
-                    fetch('/api/certificate/signature', {
-                        method: 'POST',
-                        body: formData
-                    }).catch(err => {});
+                    const fd = new FormData();
+                    fd.append('type', 'teacher');
+                    fd.append('signatureBase64', cachedSig);
+                    fetch('/api/certificate/signature', { method: 'POST', body: fd }).catch(err => {});
+                }
+
+                // 2. Principal Signature
+                const pSigImg = document.getElementById('principalSignatureImg');
+                const currentPSrc = pSigImg ? pSigImg.getAttribute('src') : null;
+                const cachedPSig = localStorage.getItem('principal_signature');
+                if (currentPSrc && currentPSrc.trim() !== '') {
+                    try { localStorage.setItem('principal_signature', currentPSrc); } catch (e) {}
+                } else if (cachedPSig && cachedPSig.startsWith('data:image/')) {
+                    if (pSigImg) {
+                        pSigImg.src = cachedPSig;
+                        pSigImg.style.display = 'block';
+                    }
+                    const pHint = document.getElementById('principalSigPlaceholderHint');
+                    if (pHint) pHint.style.display = 'none';
+                    const btnRemoveP = document.getElementById('btnRemovePrincipalSig');
+                    if (btnRemoveP) btnRemoveP.style.display = 'inline-flex';
+
+                    const fd = new FormData();
+                    fd.append('type', 'principal');
+                    fd.append('signatureBase64', cachedPSig);
+                    fetch('/api/certificate/signature', { method: 'POST', body: fd }).catch(err => {});
+                }
+
+                // 3. School Stamp
+                const stampImg = document.getElementById('schoolStampImg');
+                const currentStampSrc = stampImg ? stampImg.getAttribute('src') : null;
+                const cachedStamp = localStorage.getItem('school_stamp');
+                if (currentStampSrc && currentStampSrc.trim() !== '') {
+                    try { localStorage.setItem('school_stamp', currentStampSrc); } catch (e) {}
+                } else if (cachedStamp && cachedStamp.startsWith('data:image/')) {
+                    if (stampImg) {
+                        stampImg.src = cachedStamp;
+                        stampImg.style.display = 'block';
+                    }
+                    const btnRemoveS = document.getElementById('btnRemoveStamp');
+                    if (btnRemoveS) btnRemoveS.style.display = 'inline-flex';
+
+                    const fd = new FormData();
+                    fd.append('type', 'stamp');
+                    fd.append('signatureBase64', cachedStamp);
+                    fetch('/api/certificate/signature', { method: 'POST', body: fd }).catch(err => {});
                 }
             } catch (e) {}
         });
 
-        function uploadSignature(input) {
+        function uploadSignature(input, type = 'teacher') {
             if (!input.files || !input.files[0]) return;
             const file = input.files[0];
 
             if (!file.type.match(/image\/(png|jpeg|jpg|webp)/i) && !file.name.match(/\.(png|jpe?g|webp)$/i)) {
-                alert('សូមជ្រើសរើសឯកសាររូបភាពហត្ថលេខាជាទម្រង់ .png (ឬ .jpg, .webp)');
+                alert('សូមជ្រើសរើសឯកសាររូបភាពជាទម្រង់ .png (ឬ .jpg, .webp)');
                 return;
             }
 
@@ -796,23 +879,42 @@
             reader.onload = function(e) {
                 const base64Data = e.target.result;
 
-                // Update UI immediately
-                const sigImg = document.getElementById('teacherSignatureImg');
-                if (sigImg) {
-                    sigImg.src = base64Data;
-                    sigImg.style.display = 'block';
+                if (type === 'principal') {
+                    const pSigImg = document.getElementById('principalSignatureImg');
+                    if (pSigImg) {
+                        pSigImg.src = base64Data;
+                        pSigImg.style.display = 'block';
+                    }
+                    const pHint = document.getElementById('principalSigPlaceholderHint');
+                    if (pHint) pHint.style.display = 'none';
+                    const btnRemove = document.getElementById('btnRemovePrincipalSig');
+                    if (btnRemove) btnRemove.style.display = 'inline-flex';
+                    try { localStorage.setItem('principal_signature', base64Data); } catch (err) {}
+                } else if (type === 'stamp') {
+                    const stampImg = document.getElementById('schoolStampImg');
+                    if (stampImg) {
+                        stampImg.src = base64Data;
+                        stampImg.style.display = 'block';
+                    }
+                    const btnRemove = document.getElementById('btnRemoveStamp');
+                    if (btnRemove) btnRemove.style.display = 'inline-flex';
+                    try { localStorage.setItem('school_stamp', base64Data); } catch (err) {}
+                } else {
+                    const sigImg = document.getElementById('teacherSignatureImg');
+                    if (sigImg) {
+                        sigImg.src = base64Data;
+                        sigImg.style.display = 'block';
+                    }
+                    const hint = document.getElementById('sigPlaceholderHint');
+                    if (hint) hint.style.display = 'none';
+                    const btnRemove = document.getElementById('btnRemoveTeacherSig');
+                    if (btnRemove) btnRemove.style.display = 'inline-flex';
+                    try { localStorage.setItem('teacher_signature', base64Data); } catch (err) {}
                 }
 
-                const hint = document.getElementById('sigPlaceholderHint');
-                if (hint) hint.style.display = 'none';
-
-                const btnRemove = document.getElementById('btnRemoveSig');
-                if (btnRemove) btnRemove.style.display = 'inline-flex';
-
-                try { localStorage.setItem('teacher_signature', base64Data); } catch (err) {}
-
-                // Upload to server to persist in DB
+                // Upload to server to persist in DB across computers
                 const formData = new FormData();
+                formData.append('type', type);
                 formData.append('file', file);
                 formData.append('signatureBase64', base64Data);
 
@@ -822,38 +924,64 @@
                 }).then(res => res.json())
                   .then(data => {
                       if (data.success) {
-                          console.log('Signature saved successfully to server');
+                          console.log(type + ' saved successfully to server');
                       }
                   }).catch(err => {
-                      console.warn('Error saving signature to server:', err);
+                      console.warn('Error saving ' + type + ' to server:', err);
                   });
             };
             reader.readAsDataURL(file);
         }
 
-        function removeSignature() {
-            if (!confirm('តើលោកគ្រូពិតជាចង់លុបហត្ថលេខានេះចេញមែនទេ?')) return;
+        function removeSignature(type = 'teacher') {
+            let confirmMsg = 'តើលោកគ្រូពិតជាចង់លុបហត្ថលេខាគ្រូចេញមែនទេ?';
+            if (type === 'principal') confirmMsg = 'តើលោកគ្រូពិតជាចង់លុបហត្ថលេខានាយកចេញមែនទេ?';
+            if (type === 'stamp') confirmMsg = 'តើលោកគ្រូពិតជាចង់លុបត្រាសាលាចេញមែនទេ?';
 
-            const sigImg = document.getElementById('teacherSignatureImg');
-            if (sigImg) {
-                sigImg.src = '';
-                sigImg.style.display = 'none';
+            if (!confirm(confirmMsg)) return;
+
+            if (type === 'principal') {
+                const pSigImg = document.getElementById('principalSignatureImg');
+                if (pSigImg) {
+                    pSigImg.src = '';
+                    pSigImg.style.display = 'none';
+                }
+                const pHint = document.getElementById('principalSigPlaceholderHint');
+                if (pHint) pHint.style.display = 'inline-block';
+                const btnRemove = document.getElementById('btnRemovePrincipalSig');
+                if (btnRemove) btnRemove.style.display = 'none';
+                const fileInput = document.getElementById('principalSigFileInput');
+                if (fileInput) fileInput.value = '';
+                try { localStorage.removeItem('principal_signature'); } catch (err) {}
+            } else if (type === 'stamp') {
+                const stampImg = document.getElementById('schoolStampImg');
+                if (stampImg) {
+                    stampImg.src = '';
+                    stampImg.style.display = 'none';
+                }
+                const btnRemove = document.getElementById('btnRemoveStamp');
+                if (btnRemove) btnRemove.style.display = 'none';
+                const fileInput = document.getElementById('stampFileInput');
+                if (fileInput) fileInput.value = '';
+                try { localStorage.removeItem('school_stamp'); } catch (err) {}
+            } else {
+                const sigImg = document.getElementById('teacherSignatureImg');
+                if (sigImg) {
+                    sigImg.src = '';
+                    sigImg.style.display = 'none';
+                }
+                const hint = document.getElementById('sigPlaceholderHint');
+                if (hint) hint.style.display = 'inline-block';
+                const btnRemove = document.getElementById('btnRemoveTeacherSig');
+                if (btnRemove) btnRemove.style.display = 'none';
+                const fileInput = document.getElementById('teacherSigFileInput');
+                if (fileInput) fileInput.value = '';
+                try { localStorage.removeItem('teacher_signature'); } catch (err) {}
             }
 
-            const hint = document.getElementById('sigPlaceholderHint');
-            if (hint) hint.style.display = 'inline-block';
-
-            const btnRemove = document.getElementById('btnRemoveSig');
-            if (btnRemove) btnRemove.style.display = 'none';
-
-            const fileInput = document.getElementById('sigFileInput');
-            if (fileInput) fileInput.value = '';
-
-            try { localStorage.removeItem('teacher_signature'); } catch (err) {}
-
-            fetch('/api/certificate/signature', {
+            fetch('/api/certificate/signature?type=' + encodeURIComponent(type), {
                 method: 'DELETE'
-            }).catch(err => console.warn('Error deleting signature from server:', err));
+            }).catch(err => console.warn('Error deleting ' + type + ' from server:', err));
         }
 
         const isLockedForStudent = [[${!isTeacher and !isAllCompleted and percentage < 100}]];
@@ -881,10 +1009,14 @@
             const certNode = document.getElementById('certificateNode');
             const studentName = "[[${student.name}]]" || "Student";
 
-            // Temporarily hide the placeholder hint so it's not captured
+            // Temporarily hide placeholder hints so they are not captured
             const hint = document.getElementById('sigPlaceholderHint');
             const origHintDisplay = hint ? hint.style.display : '';
             if (hint) hint.style.display = 'none';
+
+            const pHint = document.getElementById('principalSigPlaceholderHint');
+            const origPHintDisplay = pHint ? pHint.style.display : '';
+            if (pHint) pHint.style.display = 'none';
 
             // Show loading state
             const btn = document.querySelector('.btn-download');
@@ -898,6 +1030,7 @@
                 backgroundColor: '#fffdf9'
             }).then(canvas => {
                 if (hint) hint.style.display = origHintDisplay;
+                if (pHint) pHint.style.display = origPHintDisplay;
 
                 const link = document.createElement('a');
                 link.download = 'វិញ្ញាបនបត្រ_' + studentName.replace(/\s+/g, '_') + '_2027.png';
@@ -908,6 +1041,7 @@
                 btn.disabled = false;
             }).catch(err => {
                 if (hint) hint.style.display = origHintDisplay;
+                if (pHint) pHint.style.display = origPHintDisplay;
 
                 alert('មានបញ្ហាក្នុងការទាញយកជារូបភាព សូមសាកល្បងចុច Print រួច Save as PDF!');
                 btn.innerHTML = originalText;
