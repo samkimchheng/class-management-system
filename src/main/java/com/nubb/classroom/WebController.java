@@ -51,6 +51,8 @@ public class WebController {
     private com.nubb.classroom.repository.ScoreRepository scoreRepository;
     @org.springframework.beans.factory.annotation.Autowired
     private com.nubb.classroom.repository.ScoreRuleRepository scoreRuleRepository;
+    @Autowired
+    private com.nubb.classroom.repository.CertificateRecordRepository certificateRecordRepository;
 
     @GetMapping("/debug/accounts")
     @org.springframework.web.bind.annotation.ResponseBody
@@ -321,6 +323,22 @@ public class WebController {
                     if (src.getBio() != null) other.setBio(src.getBio());
                     if (src.getPrincipalName() != null) other.setPrincipalName(src.getPrincipalName());
                     accountRepository.save(other);
+                }
+            }
+            if (src.getSchoolName() != null && !com.nubb.classroom.controller.CertificateController.isPlaceholderSchool(src.getSchoolName())) {
+                String newSchool = src.getSchoolName().trim();
+                List<com.nubb.classroom.model.CertificateRecord> certs = certificateRecordRepository.findAll();
+                for (com.nubb.classroom.model.CertificateRecord cr : certs) {
+                    cr.setSchoolName(newSchool);
+                    certificateRecordRepository.save(cr);
+                }
+            }
+            if (src.getPrincipalName() != null && !src.getPrincipalName().trim().isEmpty() && !src.getPrincipalName().contains("គឹម ហ៊ាង")) {
+                String newPrincipal = src.getPrincipalName().trim();
+                List<com.nubb.classroom.model.CertificateRecord> certs = certificateRecordRepository.findAll();
+                for (com.nubb.classroom.model.CertificateRecord cr : certs) {
+                    cr.setPrincipalName(newPrincipal);
+                    certificateRecordRepository.save(cr);
                 }
             }
         } catch (Exception ignored) {}

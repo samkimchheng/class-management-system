@@ -17,6 +17,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
@@ -86,6 +87,22 @@ public class DataInitializer {
                 try { stmt.execute("UPDATE \"ACCOUNT\" SET PRINCIPAL_NAME = 'លី ប៊ុនថេង' WHERE PRINCIPAL_NAME IS NULL OR PRINCIPAL_NAME = '' OR PRINCIPAL_NAME LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
                 try { stmt.execute("UPDATE certificate_records SET principal_name = 'លី ប៊ុនថេង' WHERE principal_name IS NULL OR principal_name = '' OR principal_name LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
                 try { stmt.execute("UPDATE \"CERTIFICATE_RECORDS\" SET PRINCIPAL_NAME = 'លី ប៊ុនថេង' WHERE PRINCIPAL_NAME IS NULL OR PRINCIPAL_NAME = '' OR PRINCIPAL_NAME LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
+                try {
+                    String activeSchool = null;
+                    try (ResultSet rs = stmt.executeQuery("SELECT school_name FROM account WHERE school_name IS NOT NULL AND school_name != '' AND school_name NOT LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%' AND school_name NOT LIKE '%គ្រឹះស្ថានសិក្សា%' LIMIT 1")) {
+                        if (rs.next()) activeSchool = rs.getString(1);
+                    } catch (Exception ignored) {}
+                    if (activeSchool == null) {
+                        try (ResultSet rs = stmt.executeQuery("SELECT SCHOOL_NAME FROM \"ACCOUNT\" WHERE SCHOOL_NAME IS NOT NULL AND SCHOOL_NAME != '' AND SCHOOL_NAME NOT LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%' AND SCHOOL_NAME NOT LIKE '%គ្រឹះស្ថានសិក្សា%' LIMIT 1")) {
+                            if (rs.next()) activeSchool = rs.getString(1);
+                        } catch (Exception ignored) {}
+                    }
+                    if (activeSchool != null && !activeSchool.trim().isEmpty()) {
+                        String clean = activeSchool.trim().replace("'", "''");
+                        stmt.execute("UPDATE certificate_records SET school_name = '" + clean + "' WHERE school_name IS NULL OR school_name = '' OR school_name LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%' OR school_name LIKE '%វិទ្យាល័យ/អនុវិទ្យាល័យ%' OR school_name LIKE '%គ្រឹះស្ថានសិក្សា%'");
+                        stmt.execute("UPDATE \"CERTIFICATE_RECORDS\" SET SCHOOL_NAME = '" + clean + "' WHERE SCHOOL_NAME IS NULL OR SCHOOL_NAME = '' OR SCHOOL_NAME LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%' OR SCHOOL_NAME LIKE '%វិទ្យាល័យ/អនុវិទ្យាល័យ%' OR SCHOOL_NAME LIKE '%គ្រឹះស្ថានសិក្សា%'");
+                    }
+                } catch (Exception ignored) {}
             } catch (Exception e) {
                 System.err.println(">>> [DataInitializer] Schema migration notice: " + e.getMessage());
             }
@@ -189,6 +206,22 @@ public class DataInitializer {
                 stmt.executeUpdate("UPDATE certificate_records SET teacher_name = TRIM(REPLACE(REPLACE(teacher_name, 'លោកគ្រូ', ''), 'អ្នកគ្រូ', '')) WHERE teacher_name LIKE '%លោកគ្រូ%' OR teacher_name LIKE '%អ្នកគ្រូ%'");
                 stmt.executeUpdate("UPDATE account SET province = 'ខេត្តពោធិ៍សាត់' WHERE province IS NULL OR province = ''");
                 stmt.executeUpdate("UPDATE \"ACCOUNT\" SET PROVINCE = 'ខេត្តពោធិ៍សាត់' WHERE PROVINCE IS NULL OR PROVINCE = ''");
+                try {
+                    String activeSchool = null;
+                    try (ResultSet rs = stmt.executeQuery("SELECT school_name FROM account WHERE school_name IS NOT NULL AND school_name != '' AND school_name NOT LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%' AND school_name NOT LIKE '%គ្រឹះស្ថានសិក្សា%' LIMIT 1")) {
+                        if (rs.next()) activeSchool = rs.getString(1);
+                    } catch (Exception ignored) {}
+                    if (activeSchool == null) {
+                        try (ResultSet rs = stmt.executeQuery("SELECT SCHOOL_NAME FROM \"ACCOUNT\" WHERE SCHOOL_NAME IS NOT NULL AND SCHOOL_NAME != '' AND SCHOOL_NAME NOT LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%' AND SCHOOL_NAME NOT LIKE '%គ្រឹះស្ថានសិក្សា%' LIMIT 1")) {
+                            if (rs.next()) activeSchool = rs.getString(1);
+                        } catch (Exception ignored) {}
+                    }
+                    if (activeSchool != null && !activeSchool.trim().isEmpty()) {
+                        String clean = activeSchool.trim().replace("'", "''");
+                        stmt.executeUpdate("UPDATE certificate_records SET school_name = '" + clean + "' WHERE school_name IS NULL OR school_name = '' OR school_name LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%' OR school_name LIKE '%វិទ្យាល័យ/អនុវិទ្យាល័យ%' OR school_name LIKE '%គ្រឹះស្ថានសិក្សា%'");
+                        stmt.executeUpdate("UPDATE \"CERTIFICATE_RECORDS\" SET SCHOOL_NAME = '" + clean + "' WHERE SCHOOL_NAME IS NULL OR SCHOOL_NAME = '' OR SCHOOL_NAME LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%' OR SCHOOL_NAME LIKE '%វិទ្យាល័យ/អនុវិទ្យាល័យ%' OR SCHOOL_NAME LIKE '%គ្រឹះស្ថានសិក្សា%'");
+                    }
+                } catch (Exception ignored) {}
             } catch (Exception ignored) {}
 
             // 5. Ensure any existing students or classrooms are assigned to account 97 (samkimchheng) & 1

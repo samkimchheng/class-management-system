@@ -344,13 +344,38 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             if (currentTeacherAcc == null && student.getAccountId() != null) {
                 currentTeacherAcc = accountRepository.findById(student.getAccountId()).orElse(null);
             }
+            if (currentTeacherAcc == null) {
+                currentTeacherAcc = accountRepository.findById(97L).orElse(null);
+            }
+            if (currentTeacherAcc == null) {
+                currentTeacherAcc = accountRepository.findAll().stream()
+                        .filter(a -> !isGenericAdminOrInvalidTeacher(a.getFullName()))
+                        .findFirst()
+                        .orElse(null);
+            }
 
-            // Resolve School Name
-            if (schoolName == null || schoolName.trim().isEmpty()) {
-                if (template != null && template.getSchoolName() != null && !template.getSchoolName().trim().isEmpty() && !template.getSchoolName().contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
-                    schoolName = template.getSchoolName();
-                } else if (currentTeacherAcc != null && currentTeacherAcc.getSchoolName() != null && !currentTeacherAcc.getSchoolName().trim().isEmpty()) {
-                    schoolName = currentTeacherAcc.getSchoolName().trim();
+            // Resolve School Name (Priority: Explicit Non-Placeholder Param -> Current Teacher Profile -> Account 97 / Other Accounts -> Saved Record / Template -> Default)
+            if (schoolName != null && !isPlaceholderSchool(schoolName)) {
+                schoolName = schoolName.trim();
+            } else if (currentTeacherAcc != null && !isPlaceholderSchool(currentTeacherAcc.getSchoolName())) {
+                schoolName = currentTeacherAcc.getSchoolName().trim();
+            } else {
+                String foundSchool = null;
+                Optional<Account> tAcc = accountRepository.findById(97L);
+                if (tAcc.isPresent() && !isPlaceholderSchool(tAcc.get().getSchoolName())) {
+                    foundSchool = tAcc.get().getSchoolName().trim();
+                } else {
+                    for (Account other : accountRepository.findAll()) {
+                        if (!isPlaceholderSchool(other.getSchoolName())) {
+                            foundSchool = other.getSchoolName().trim();
+                            break;
+                        }
+                    }
+                }
+                if (foundSchool != null) {
+                    schoolName = foundSchool;
+                } else if (template != null && !isPlaceholderSchool(template.getSchoolName())) {
+                    schoolName = template.getSchoolName().trim();
                 } else {
                     schoolName = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
                 }
@@ -373,19 +398,19 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 teacherSubjects.add(0, subjectName);
             }
 
-            // Resolve Province
-            if (province == null || province.trim().isEmpty()) {
-                if (template != null && template.getProvince() != null && !template.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(template.getProvince().trim())) {
-                    province = template.getProvince();
-                } else if (currentTeacherAcc != null && currentTeacherAcc.getProvince() != null && !currentTeacherAcc.getProvince().trim().isEmpty()) {
-                    province = currentTeacherAcc.getProvince().trim();
-                } else if (student.getProvince() != null && !student.getProvince().trim().isEmpty()) {
-                    province = student.getProvince().startsWith("ខេត្ត") || student.getProvince().startsWith("រាជធានី")
-                            ? student.getProvince()
-                            : "ខេត្ត" + student.getProvince();
-                } else {
-                    province = "ខេត្តពោធិ៍សាត់";
-                }
+            // Resolve Province (Priority: Selected Query Param -> Teacher Profile -> Student Province -> Template -> Default)
+            if (province != null && !province.trim().isEmpty() && !"កម្ពុជា".equals(province.trim())) {
+                province = province.trim();
+            } else if (currentTeacherAcc != null && currentTeacherAcc.getProvince() != null && !currentTeacherAcc.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(currentTeacherAcc.getProvince().trim())) {
+                province = currentTeacherAcc.getProvince().trim();
+            } else if (student.getProvince() != null && !student.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(student.getProvince().trim())) {
+                province = student.getProvince().startsWith("ខេត្ត") || student.getProvince().startsWith("រាជធានី")
+                        ? student.getProvince()
+                        : "ខេត្ត" + student.getProvince();
+            } else if (template != null && template.getProvince() != null && !template.getProvince().trim().isEmpty() && !"កម្ពុជា".equals(template.getProvince().trim())) {
+                province = template.getProvince().trim();
+            } else {
+                province = "ខេត្តពោធិ៍សាត់";
             }
 
             // Resolve Teacher Name
@@ -611,11 +636,27 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("issueDateEn", LocalDate.now().toString());
             model.addAttribute("provinceEn", "Pursat");
             model.addAttribute("gradeLevel", "ថ្នាក់ទី១០");
-            model.addAttribute("schoolEn", "High School / Secondary School • Class Management System 2027");
-            String fbVerifyUrl = "https://class.mitpukae.com/certificate/verify?serial=CMS-2027-0001-123456";
-            model.addAttribute("verifyUrl", fbVerifyUrl);
-            model.addAttribute("qrCodeUrl", "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=1&data=" + URLEncoder.encode(fbVerifyUrl, StandardCharsets.UTF_8));
-            model.addAttribute("schoolName", "វិទ្យាល័យ / អនុវិទ្យាល័យ");
+            Account fbTeacherAcc = null;
+            try {
+                Long accId = (Long) session.getAttribute("ACCOUNT_ID");
+                if (accId != null) fbTeacherAcc = accountRepository.findById(accId).orElse(null);
+            } catch (Exception ignored) {}
+            String fbSchool = null;
+            if (fbTeacherAcc != null && !isPlaceholderSchool(fbTeacherAcc.getSchoolName())) {
+                fbSchool = fbTeacherAcc.getSchoolName().trim();
+            } else {
+                for (Account other : accountRepository.findAll()) {
+                    if (!isPlaceholderSchool(other.getSchoolName())) {
+                        fbSchool = other.getSchoolName().trim();
+                        break;
+                    }
+                }
+            }
+            if (fbSchool == null) {
+                fbSchool = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
+            }
+            model.addAttribute("schoolName", fbSchool);
+            model.addAttribute("schoolEn", resolveSchoolEn(fbSchool));
             model.addAttribute("subjectName", "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", "ខេត្តពោធិ៍សាត់");
             model.addAttribute("teacherName", "សំ គឹមឆេង");
@@ -666,6 +707,21 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             LocalDate now = LocalDate.now();
             String issueDateKhmer = toKhmerDate(now);
             String issueDateEn = now.getMonth().name() + " " + now.getDayOfMonth() + ", " + now.getYear();
+
+            if (isPlaceholderSchool(schoolName)) {
+                Long accId = (Long) session.getAttribute("ACCOUNT_ID");
+                Account tAcc = (accId != null) ? accountRepository.findById(accId).orElse(null) : accountRepository.findById(97L).orElse(null);
+                if (tAcc != null && !isPlaceholderSchool(tAcc.getSchoolName())) {
+                    schoolName = tAcc.getSchoolName().trim();
+                } else {
+                    for (Account other : accountRepository.findAll()) {
+                        if (!isPlaceholderSchool(other.getSchoolName())) {
+                            schoolName = other.getSchoolName().trim();
+                            break;
+                        }
+                    }
+                }
+            }
 
             Optional<Student> stOpt = (studentId != null) ? studentRepository.findById(studentId) : Optional.empty();
             if (stOpt.isPresent()) {
@@ -867,13 +923,36 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             }
 
             // 5. Resolve School Name
-            String finalSchool = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
-            if (school != null && !school.trim().isEmpty() && !school.contains("គ្រឹះស្ថានសិក្សា / សាលារៀន") && !school.equals("វិទ្យាល័យ / អនុវិទ្យាល័យ")) {
+            String finalSchool = null;
+            if (school != null && !isPlaceholderSchool(school)) {
                 finalSchool = school.trim();
-            } else if (foundRecord != null && foundRecord.getSchoolName() != null && !foundRecord.getSchoolName().trim().isEmpty() && !foundRecord.getSchoolName().contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
-                finalSchool = foundRecord.getSchoolName();
-            } else if (school != null && !school.trim().isEmpty() && !school.contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")) {
-                finalSchool = school.trim();
+            } else if (foundRecord != null && !isPlaceholderSchool(foundRecord.getSchoolName())) {
+                finalSchool = foundRecord.getSchoolName().trim();
+            } else {
+                Account acc = null;
+                if (verifiedStudent != null && verifiedStudent.getAccountId() != null) {
+                    acc = accountRepository.findById(verifiedStudent.getAccountId()).orElse(null);
+                }
+                if (acc == null) {
+                    acc = accountRepository.findById(97L).orElse(null);
+                }
+                if (acc != null && !isPlaceholderSchool(acc.getSchoolName())) {
+                    finalSchool = acc.getSchoolName().trim();
+                } else {
+                    for (Account other : accountRepository.findAll()) {
+                        if (!isPlaceholderSchool(other.getSchoolName())) {
+                            finalSchool = other.getSchoolName().trim();
+                            break;
+                        }
+                    }
+                }
+            }
+            if (finalSchool == null || isPlaceholderSchool(finalSchool)) {
+                finalSchool = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
+            }
+            if (foundRecord != null && isPlaceholderSchool(foundRecord.getSchoolName()) && !isPlaceholderSchool(finalSchool)) {
+                foundRecord.setSchoolName(finalSchool);
+                try { certificateRecordRepository.save(foundRecord); } catch (Exception ignored) {}
             }
 
             // 6. Resolve Subject
@@ -1157,8 +1236,19 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
         return "ថ្នាក់ទី១០";
     }
 
+    public static boolean isPlaceholderSchool(String s) {
+        if (s == null) return true;
+        String trimmed = s.trim();
+        return trimmed.isEmpty()
+                || trimmed.contains("វិទ្យាល័យ / អនុវិទ្យាល័យ")
+                || trimmed.contains("វិទ្យាល័យ/អនុវិទ្យាល័យ")
+                || trimmed.contains("គ្រឹះស្ថានសិក្សា / សាលារៀន")
+                || trimmed.contains("គ្រឹះស្ថានសិក្សា/សាលារៀន")
+                || trimmed.contains("មិនទាន់កំណត់សាលា");
+    }
+
     public static String resolveSchoolEn(String schoolName) {
-        if (schoolName == null || schoolName.trim().isEmpty() || schoolName.contains("វិទ្យាល័យ / អនុវិទ្យាល័យ")) {
+        if (isPlaceholderSchool(schoolName)) {
             return "High School / Secondary School • Class Management System 2027";
         }
         String s = schoolName.trim();
