@@ -21,6 +21,9 @@ private Long studentId;
     private double assignmentScore;
     
     private double total;
+    @Column(name = "academic_year", length = 50)
+    private String academicYear;
+
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -54,6 +57,7 @@ private Long studentId;
     public Long getAccountId() { return accountId; }
     public void setAccountId(Long accountId) { this.accountId = accountId; }
 
+
+    public String getAcademicYear() { return academicYear; }
+    public void setAcademicYear(String academicYear) { this.academicYear = academicYear; }
 }
-
-

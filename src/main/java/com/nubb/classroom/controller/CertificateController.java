@@ -164,10 +164,17 @@ public class CertificateController {
             }
 
             // 1. Collect distinct classrooms belonging to this teacher (from classrooms & students tables)
+            String currentAcademicYear = (String) session.getAttribute("CURRENT_ACADEMIC_YEAR");
+            if (currentAcademicYear == null || currentAcademicYear.trim().isEmpty()) {
+                currentAcademicYear = "២០២៦-២០២៧";
+            }
+            model.addAttribute("currentAcademicYear", currentAcademicYear);
+            model.addAttribute("availableAcademicYears", java.util.List.of("២០២៤-២០២៥", "២០២៥-២០២៦", "២០២៦-២០២៧", "២០២៧-២០២៨", "២០២៨-២០២៩", "២០២៩-២០៣០"));
+
             List<String> teacherClasses = new ArrayList<>();
             if (accountId != null) {
                 // Classrooms created directly by the teacher in "បញ្ជីថ្នាក់រៀនខ្ញុំ" (/classrooms)
-                List<Classroom> cList = classroomRepository.findByAccountId(accountId);
+                List<Classroom> cList = classroomRepository.findByAccountIdAndAcademicYear(accountId, currentAcademicYear);
                 if (cList != null) {
                     for (Classroom c : cList) {
                         if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
@@ -179,7 +186,7 @@ public class CertificateController {
                     }
                 }
                 // Classrooms of students entered by the teacher in "បញ្ជីឈ្មោះសិស្ស" (/students)
-                List<Student> sList = studentRepository.findByAccountId(accountId);
+                List<Student> sList = studentRepository.findByAccountIdAndAcademicYear(accountId, currentAcademicYear);
                 if (sList != null) {
                     for (Student s : sList) {
                         if (s.getClassName() != null && !s.getClassName().trim().isEmpty()) {

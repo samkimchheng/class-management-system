@@ -18,4 +18,10 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     @Query("SELECT s FROM Student s WHERE s.className = :className AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
     List<Student> findByClassNameAndAccountId(@Param("className") String className, @Param("accountId") Long accountId);
+
+    @Query("SELECT s FROM Student s WHERE (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    List<Student> findByAccountIdAndAcademicYear(@Param("accountId") Long accountId, @Param("academicYear") String academicYear);
+
+    @Query("SELECT s FROM Student s WHERE s.className = :className AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    List<Student> findByClassNameAndAccountIdAndAcademicYear(@Param("className") String className, @Param("accountId") Long accountId, @Param("academicYear") String academicYear);
 }

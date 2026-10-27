@@ -95,6 +95,33 @@ public class DataInitializer {
                 try { stmt.execute("ALTER TABLE IF EXISTS \"ATTENDANCE\" ADD COLUMN IF NOT EXISTS \"ABSENCE_TYPE\" VARCHAR(50)"); } catch (Exception ignored) {}
                 try { stmt.execute("UPDATE attendance SET absence_type = 'UNEXCUSED' WHERE absence_type IS NULL AND present = FALSE"); } catch (Exception ignored) {}
                 try { stmt.execute("UPDATE \"ATTENDANCE\" SET \"ABSENCE_TYPE\" = 'UNEXCUSED' WHERE \"ABSENCE_TYPE\" IS NULL AND \"PRESENT\" = FALSE"); } catch (Exception ignored) {}
+                // Academic Year Schema Migrations
+                String[] yearCols = {
+                    "ALTER TABLE IF EXISTS students ADD COLUMN IF NOT EXISTS academic_year VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+                    "ALTER TABLE IF EXISTS \"STUDENTS\" ADD COLUMN IF NOT EXISTS \"ACADEMIC_YEAR\" VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+                    "ALTER TABLE IF EXISTS classroom ADD COLUMN IF NOT EXISTS academic_year VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+                    "ALTER TABLE IF EXISTS \"CLASSROOM\" ADD COLUMN IF NOT EXISTS \"ACADEMIC_YEAR\" VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+                    "ALTER TABLE IF EXISTS score ADD COLUMN IF NOT EXISTS academic_year VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+                    "ALTER TABLE IF EXISTS \"SCORE\" ADD COLUMN IF NOT EXISTS \"ACADEMIC_YEAR\" VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+                    "ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS academic_year VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+                    "ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS \"ACADEMIC_YEAR\" VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+                    "ALTER TABLE IF EXISTS account ADD COLUMN IF NOT EXISTS current_academic_year VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+                    "ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS \"CURRENT_ACADEMIC_YEAR\" VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+                    "UPDATE students SET academic_year = '២០២៦-២០២៧' WHERE academic_year IS NULL OR academic_year = ''",
+                    "UPDATE \"STUDENTS\" SET \"ACADEMIC_YEAR\" = '២០២៦-២០២៧' WHERE \"ACADEMIC_YEAR\" IS NULL OR \"ACADEMIC_YEAR\" = ''",
+                    "UPDATE classroom SET academic_year = '២០២៦-២០២៧' WHERE academic_year IS NULL OR academic_year = ''",
+                    "UPDATE \"CLASSROOM\" SET \"ACADEMIC_YEAR\" = '២០២៦-២០២៧' WHERE \"ACADEMIC_YEAR\" IS NULL OR \"ACADEMIC_YEAR\" = ''",
+                    "UPDATE score SET academic_year = '២០២៦-២០២៧' WHERE academic_year IS NULL OR academic_year = ''",
+                    "UPDATE \"SCORE\" SET \"ACADEMIC_YEAR\" = '២០២៦-២០២៧' WHERE \"ACADEMIC_YEAR\" IS NULL OR \"ACADEMIC_YEAR\" = ''",
+                    "UPDATE certificate_records SET academic_year = '២០២៦-២០២៧' WHERE academic_year IS NULL OR academic_year = ''",
+                    "UPDATE \"CERTIFICATE_RECORDS\" SET \"ACADEMIC_YEAR\" = '២០២៦-២០២៧' WHERE \"ACADEMIC_YEAR\" IS NULL OR \"ACADEMIC_YEAR\" = ''",
+                    "UPDATE account SET current_academic_year = '២០២៦-២០២៧' WHERE current_academic_year IS NULL OR current_academic_year = ''",
+                    "UPDATE \"ACCOUNT\" SET \"CURRENT_ACADEMIC_YEAR\" = '២០២៦-២០២៧' WHERE \"CURRENT_ACADEMIC_YEAR\" IS NULL OR \"CURRENT_ACADEMIC_YEAR\" = ''"
+                };
+                for (String q : yearCols) {
+                    try { stmt.execute(q); } catch (Exception ignored) {}
+                }
+
                 try {
                     String activeSchool = null;
                     try (ResultSet rs = stmt.executeQuery("SELECT school_name FROM account WHERE school_name IS NOT NULL AND school_name != '' AND school_name NOT LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%' AND school_name NOT LIKE '%គ្រឹះស្ថានសិក្សា%' LIMIT 1")) {

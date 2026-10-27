@@ -53,7 +53,10 @@ public class CertificateRecord {
     private String issueDateKhmer;
     private String issueDateEn;
 
+    @Column(name = "academic_year", length = 50)
+    private String academicYear;
     private LocalDateTime updatedAt;
+
 
     public CertificateRecord() {
         this.updatedAt = LocalDateTime.now();
@@ -126,4 +129,7 @@ public class CertificateRecord {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getAcademicYear() { return academicYear; }
+    public void setAcademicYear(String academicYear) { this.academicYear = academicYear; }
 }

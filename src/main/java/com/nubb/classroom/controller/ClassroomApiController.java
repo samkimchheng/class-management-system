@@ -28,13 +28,21 @@ public class ClassroomApiController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "ឈ្មោះថ្នាក់មិនអាចទទេបានទេ"));
         }
 
-        if (classroomRepository.existsByClassNameAndAccountId(trimmedName, accountId)) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "ឈ្មោះថ្នាក់នេះមានរួចហើយ"));
+        String academicYear = (String) session.getAttribute("CURRENT_ACADEMIC_YEAR");
+        if (academicYear == null || academicYear.trim().isEmpty()) {
+            academicYear = "២០២៦-២០២៧";
+        } else {
+            academicYear = academicYear.trim();
+        }
+
+        if (classroomRepository.existsByClassNameAndAccountIdAndAcademicYear(trimmedName, accountId, academicYear)) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "ឈ្មោះថ្នាក់នេះមានរួចហើយក្នុងឆ្នាំសិក្សា " + academicYear));
         }
 
         Classroom c = new Classroom();
         c.setClassName(trimmedName);
         c.setAccountId(accountId);
+        c.setAcademicYear(academicYear);
         classroomRepository.save(c);
 
         return ResponseEntity.ok(Map.of("success", true, "message", "បានបន្ថែមថ្នាក់រៀនដោយជោគជ័យ"));

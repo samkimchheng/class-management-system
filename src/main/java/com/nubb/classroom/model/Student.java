@@ -33,6 +33,9 @@ public class Student {
     private String motherName;
     private String motherOccupation;
     private String status;
+
+    @Column(name = "academic_year", length = 50)
+    private String academicYear;
     
     // Constructors, Getters, Setters
     public Student() {}
@@ -76,5 +79,7 @@ public class Student {
     public Long getAccountId() { return accountId; }
     public void setAccountId(Long accountId) { this.accountId = accountId; }
 
-}
 
+    public String getAcademicYear() { return academicYear; }
+    public void setAcademicYear(String academicYear) { this.academicYear = academicYear; }
+}

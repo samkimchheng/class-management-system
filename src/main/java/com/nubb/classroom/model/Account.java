@@ -35,7 +35,10 @@ public class Account {
     private String principalSignature; // ហត្ថលេខានាយក (Base64 data URI or image URL)
     @jakarta.persistence.Column(columnDefinition = "TEXT")
     private String schoolStamp;        // ត្រាសាលា (Base64 data URI or image URL)
-    private String principalName;      // គោត្តនាម និងនាម នាយកសាលា (Principal Full Name)
+    private String principalName;
+    @jakarta.persistence.Column(name = "current_academic_year", length = 50)
+    private String currentAcademicYear;
+      // គោត្តនាម និងនាម នាយកសាលា (Principal Full Name)
 
     public Account() {}
 
@@ -116,4 +119,7 @@ public class Account {
 
     public String getPrincipalName() { return principalName; }
     public void setPrincipalName(String principalName) { this.principalName = principalName; }
+
+    public String getCurrentAcademicYear() { return currentAcademicYear; }
+    public void setCurrentAcademicYear(String currentAcademicYear) { this.currentAcademicYear = currentAcademicYear; }
 }

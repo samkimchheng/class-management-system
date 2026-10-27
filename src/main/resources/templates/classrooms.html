@@ -145,12 +145,26 @@
     <div class="main-content">
         <div class="topbar">
             <h3>គ្រប់គ្រងបញ្ជីថ្នាក់រៀន (Classrooms)</h3>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: #eef2ff; color: #3730a3; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid #c7d2fe;">
+                    <span>📅 ឆ្នាំសិក្សា៖</span>
+                    <select onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.95rem; font-family: inherit;">
+                        <option th:each="yr : ${availableAcademicYears}" th:value="${yr}" th:text="${yr}" th:selected="${yr == currentAcademicYear}"></option>
+                        <option value="__NEW__">➕ បន្ថែមឆ្នាំសិក្សាថ្មី...</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <div class="content">
             <div class="card">
-                <h4 style="margin-top: 0;">បន្ថែមថ្នាក់រៀនថ្មី</h4>
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <h4 style="margin: 0;">បន្ថែមថ្នាក់រៀនថ្មី (ឆ្នាំសិក្សា <span style="color: var(--primary);" th:text="${currentAcademicYear}">២០២៦-២០២៧</span>)</h4>
+                    <button class="btn" onclick="copyClassesFromPrevYear()" style="background-color: #475569; display: inline-flex; align-items: center; gap: 6px; font-size: 0.95rem;">
+                        📥 ចម្លងថ្នាក់រៀនពីឆ្នាំមុន
+                    </button>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                     <input type="text" id="classNameInput" class="form-control" placeholder="ឧទាហរណ៍៖ ៧A, ១២B..." style="width: 300px;">
                     <button class="btn btn-primary" onclick="addClass()">+ បង្កើតថ្នាក់</button>
                 </div>

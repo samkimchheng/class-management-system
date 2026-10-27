@@ -124,6 +124,15 @@
     <div class="main-content">
         <div class="topbar">
             <h3>បញ្ជីស្រង់ពិន្ទុប្រចាំខែ</h3>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: #eef2ff; color: #3730a3; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid #c7d2fe;">
+                    <span>📅 ឆ្នាំសិក្សា៖</span>
+                    <select onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.95rem; font-family: inherit;">
+                        <option th:each="yr : ${availableAcademicYears}" th:value="${yr}" th:text="${yr}" th:selected="${yr == currentAcademicYear}"></option>
+                        <option value="__NEW__">➕ បន្ថែមឆ្នាំសិក្សាថ្មី...</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <div class="content">
@@ -141,21 +150,8 @@
                 <div class="header-action" style="flex-direction: column; align-items: flex-start; gap: 15px;">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
                         <select name="month" class="form-control" style="width: auto;">
-                    <option value="តេស្តដើមឆ្នាំ">តេស្តដើមឆ្នាំ</option>
-                    <option value="ខែវិច្ឆិកា ២០២៦">ខែវិច្ឆិកា ២០២៦</option>
-                    <option value="ខែធ្នូ ២០២៦">ខែធ្នូ ២០២៦</option>
-                    <option value="ខែមករា ២០២៧">ខែមករា ២០២៧</option>
-                    <option value="ខែកុម្ភៈ ២០២៧">ខែកុម្ភៈ ២០២៧</option>
-                            <option value="ឆមាសទី១">ឆមាសទី១</option>
-                    <option value="ខែមីនា ២០២៧">ខែមីនា ២០២៧</option>
-                    <option value="ខែមេសា ២០២៧">ខែមេសា ២០២៧</option>
-                    <option value="ខែឧសភា ២០២៧">ខែឧសភា ២០២៧</option>
-                    <option value="ខែមិថុនា ២០២៧">ខែមិថុនា ២០២៧</option>
-                    <option value="ខែកក្កដា ២០២៧">ខែកក្កដា ២០២៧</option>
-                            <option value="ឆមាសទី២">ឆមាសទី២</option>
-                    <option value="ខែសីហា ២០២៧">ខែសីហា ២០២៧</option>
-                            <option value="ប្រចាំឆ្នាំ">ប្រចាំឆ្នាំ</option>
-                </select>
+                            <option th:each="m : ${monthsList}" th:value="${m}" th:text="${m}"></option>
+                        </select>
                         <select name="className" class="form-control" style="width: auto; display: inline-block;" onchange="window.location.href = '/scores?className=' + this.value;">
                             <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
                             <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>

@@ -932,5 +932,22 @@
             }
         }
     </script>
+<script>
+function switchAcademicYear(year) {
+    if (year === '__NEW__') {
+        const customYear = prompt("សូមបញ្ចូលឆ្នាំសិក្សាថ្មី (ឧទាហរណ៍៖ ២០២៧-២០២៨ ឬ ២០២៨-២០២៩)៖");
+        if (customYear && customYear.trim()) {
+            window.location.href = '/switch-academic-year?year=' + encodeURIComponent(customYear.trim()) + '&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+        } else {
+            location.reload();
+        }
+        return;
+    }
+    if (year) {
+        window.location.href = '/switch-academic-year?year=' + encodeURIComponent(year) + '&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+    }
+}
+</script>
+
 </body>
 </html>

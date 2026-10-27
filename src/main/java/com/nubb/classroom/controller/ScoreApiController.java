@@ -41,14 +41,23 @@ public class ScoreApiController {
 
     @GetMapping("/get")
     public ResponseEntity<List<Score>> getScores(@RequestParam String month, @RequestParam String className, @RequestParam String subjectName) {
-        return ResponseEntity.ok(scoreRepository.findByMonthAndClassNameAndSubjectNameAndAccountId(month, className, subjectName, (Long) session.getAttribute("ACCOUNT_ID")));
+        String academicYear = (String) session.getAttribute("CURRENT_ACADEMIC_YEAR");
+        if (academicYear == null || academicYear.trim().isEmpty()) {
+            academicYear = "២០២៦-២០២៧";
+        }
+        return ResponseEntity.ok(scoreRepository.findByMonthAndClassNameAndSubjectNameAndAccountIdAndAcademicYear(
+            month, className, subjectName, (Long) session.getAttribute("ACCOUNT_ID"), academicYear));
     }
 
     @PostMapping("/save")
     public ResponseEntity<?> saveScores(@RequestBody SavePayload payload) {
+        String academicYear = (String) session.getAttribute("CURRENT_ACADEMIC_YEAR");
+        if (academicYear == null || academicYear.trim().isEmpty()) {
+            academicYear = "២០២៦-២០២៧";
+        }
         for (Score s : payload.getScores()) {
-            Optional<Score> existingOpt = scoreRepository.findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(
-                    s.getStudentId(), payload.getMonth(), payload.getClassName(), payload.getSubjectName(), (Long) session.getAttribute("ACCOUNT_ID"));
+            Optional<Score> existingOpt = scoreRepository.findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountIdAndAcademicYear(
+                    s.getStudentId(), payload.getMonth(), payload.getClassName(), payload.getSubjectName(), (Long) session.getAttribute("ACCOUNT_ID"), academicYear);
             
             Score score = existingOpt.orElse(new Score());
             score.setStudentId(s.getStudentId());
@@ -58,10 +67,12 @@ public class ScoreApiController {
             score.setMonthlyScore(s.getMonthlyScore());
             score.setAttendanceScore(s.getAttendanceScore());
             score.setAssignmentScore(s.getAssignmentScore());
+            score.setAcademicYear(academicYear);
             
             score.setTotal(s.getMonthlyScore() + s.getAttendanceScore() + s.getAssignmentScore());
             
-            score.setAccountId((Long) session.getAttribute("ACCOUNT_ID")); scoreRepository.save(score);
+            score.setAccountId((Long) session.getAttribute("ACCOUNT_ID")); 
+            scoreRepository.save(score);
         }
         return ResponseEntity.ok(Map.of("success", true));
     }

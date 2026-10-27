@@ -38,11 +38,208 @@ public class WebController {
     @Autowired
     private AccountRepository accountRepository;
 
+    public static String toKhmerNumber(int n) {
+        String s = String.valueOf(n);
+        StringBuilder sb = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            if (c >= '0' && c <= '9') {
+                sb.append((char) ('០' + (c - '0')));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    public static int fromKhmerNumber(String s) {
+        if (s == null) return 0;
+        StringBuilder sb = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            if (c >= '០' && c <= '៩') {
+                sb.append((char) ('0' + (c - '០')));
+            } else if (c >= '0' && c <= '9') {
+                sb.append(c);
+            }
+        }
+        try {
+            return Integer.parseInt(sb.toString());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public static int[] parseAcademicYearNumbers(String academicYear) {
+        int startYear = 2026;
+        int endYear = 2027;
+        if (academicYear != null) {
+            String[] parts = academicYear.split("[-–/]+");
+            if (parts.length >= 2) {
+                int y1 = fromKhmerNumber(parts[0]);
+                int y2 = fromKhmerNumber(parts[1]);
+                if (y1 > 1900 && y1 < 2100) startYear = y1;
+                if (y2 > 1900 && y2 < 2100) endYear = y2;
+            } else if (parts.length == 1) {
+                int y = fromKhmerNumber(parts[0]);
+                if (y > 1900 && y < 2100) {
+                    startYear = y;
+                    endYear = y + 1;
+                }
+            }
+        }
+        return new int[]{startYear, endYear};
+    }
+
+    public static List<String> getMonthsForAcademicYear(String academicYear) {
+        int[] years = parseAcademicYearNumbers(academicYear);
+        int y1 = years[0];
+        int y2 = years[1];
+        String sy1 = toKhmerNumber(y1);
+        String sy2 = toKhmerNumber(y2);
+
+        List<String> list = new ArrayList<>();
+        list.add("តេស្តដើមឆ្នាំ");
+        list.add("ខែវិច្ឆិកា " + sy1);
+        list.add("ខែធ្នូ " + sy1);
+        list.add("ខែមករា " + sy2);
+        list.add("ខែកុម្ភៈ " + sy2);
+        list.add("ឆមាសទី១");
+        list.add("ខែមីនា " + sy2);
+        list.add("ខែមេសា " + sy2);
+        list.add("ខែឧសភា " + sy2);
+        list.add("ខែមិថុនា " + sy2);
+        list.add("ខែកក្កដា " + sy2);
+        list.add("ឆមាសទី២");
+        list.add("ខែសីហា " + sy2);
+        list.add("ប្រចាំឆ្នាំ");
+        return list;
+    }
+
+    public String getCurrentAcademicYear() {
+        String year = (String) session.getAttribute("CURRENT_ACADEMIC_YEAR");
+        if (year != null && !year.trim().isEmpty()) {
+            return year.trim();
+        }
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId != null) {
+            try {
+                Account acc = accountRepository.findById(accountId).orElse(null);
+                if (acc != null && acc.getCurrentAcademicYear() != null && !acc.getCurrentAcademicYear().trim().isEmpty()) {
+                    year = acc.getCurrentAcademicYear().trim();
+                    session.setAttribute("CURRENT_ACADEMIC_YEAR", year);
+                    return year;
+                }
+            } catch (Exception ignored) {}
+        }
+        year = "២០២៦-២០២៧";
+        session.setAttribute("CURRENT_ACADEMIC_YEAR", year);
+        return year;
+    }
+
+    @ModelAttribute("currentAcademicYear")
+    public String currentAcademicYear() {
+        return getCurrentAcademicYear();
+    }
+
+    @ModelAttribute("availableAcademicYears")
+    public List<String> availableAcademicYears() {
+        return getAvailableAcademicYears();
+    }
+
+    @ModelAttribute("monthsList")
+    public List<String> monthsList() {
+        return getMonthsForAcademicYear(getCurrentAcademicYear());
+    }
+
+    public List<String> getAvailableAcademicYears() {
+        Set<String> set = new java.util.LinkedHashSet<>();
+        set.add("២០២៤-២០២៥");
+        set.add("២០២៥-២០២៦");
+        set.add("២០២៦-២០២៧");
+        set.add("២០២៧-២០២៨");
+        set.add("២០២៨-២០២៩");
+        set.add("២០២៩-២០៣០");
+
+        String curr = (String) session.getAttribute("CURRENT_ACADEMIC_YEAR");
+        if (curr != null && !curr.trim().isEmpty()) {
+            set.add(curr.trim());
+        }
+
+        try {
+            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (accountId != null) {
+                List<Student> students = studentRepository.findByAccountId(accountId);
+                for (Student s : students) {
+                    if (s.getAcademicYear() != null && !s.getAcademicYear().trim().isEmpty()) {
+                        set.add(s.getAcademicYear().trim());
+                    }
+                }
+                List<Classroom> classrooms = classroomRepository.findByAccountId(accountId);
+                for (Classroom c : classrooms) {
+                    if (c.getAcademicYear() != null && !c.getAcademicYear().trim().isEmpty()) {
+                        set.add(c.getAcademicYear().trim());
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+
+        return new ArrayList<>(set);
+    }
+
+    @GetMapping("/switch-academic-year")
+    public String switchAcademicYear(@RequestParam("year") String year, 
+                                     @RequestParam(value = "redirect", required = false) String redirect) {
+        if (year != null && !year.trim().isEmpty()) {
+            String trimmed = year.trim();
+            session.setAttribute("CURRENT_ACADEMIC_YEAR", trimmed);
+            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (accountId != null) {
+                try {
+                    Account acc = accountRepository.findById(accountId).orElse(null);
+                    if (acc != null) {
+                        acc.setCurrentAcademicYear(trimmed);
+                        accountRepository.save(acc);
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+        if (redirect != null && !redirect.trim().isEmpty() && !redirect.startsWith("http")) {
+            return "redirect:" + redirect;
+        }
+        return "redirect:/";
+    }
+
+    @PostMapping("/classrooms/copy-from-previous-year")
+    @ResponseBody
+    public Map<String, Object> copyClassroomsFromPreviousYear(@RequestParam("fromYear") String fromYear) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return Map.of("success", false, "message", "សូមចូលប្រព័ន្ធជាមុនសិន");
+        }
+        String currentYear = getCurrentAcademicYear();
+        List<Classroom> prevClasses = classroomRepository.findByAccountIdAndAcademicYear(accountId, fromYear);
+        if (prevClasses == null || prevClasses.isEmpty()) {
+            return Map.of("success", false, "message", "មិនមានថ្នាក់រៀនក្នុងឆ្នាំសិក្សា " + fromYear + " ឡើយ");
+        }
+        int count = 0;
+        for (Classroom prev : prevClasses) {
+            if (!classroomRepository.existsByClassNameAndAccountIdAndAcademicYear(prev.getClassName(), accountId, currentYear)) {
+                Classroom c = new Classroom();
+                c.setClassName(prev.getClassName());
+                c.setAccountId(accountId);
+                c.setAcademicYear(currentYear);
+                classroomRepository.save(c);
+                count++;
+            }
+        }
+        return Map.of("success", true, "message", "បានចម្លងថ្នាក់រៀនចំនួន " + count + " ពីឆ្នាំសិក្សា " + fromYear + " ដោយជោគជ័យ!", "count", count);
+    }
+
     @ModelAttribute("myClassrooms")
     public List<Classroom> getMyClassrooms(jakarta.servlet.http.HttpSession session) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId != null) {
-            return classroomRepository.findByAccountId(accountId);
+            String academicYear = getCurrentAcademicYear();
+            return classroomRepository.findByAccountIdAndAcademicYear(accountId, academicYear);
         }
         return new java.util.ArrayList<>();
     }
@@ -112,43 +309,50 @@ public class WebController {
             List<com.nubb.classroom.model.Attendance> recentAbsents = new java.util.ArrayList<>();
 
 
+            String currentYear = getCurrentAcademicYear();
             if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-                List<Student> students = (accountId != null) ? studentRepository.findByClassNameAndAccountId(className, accountId) : studentRepository.findAll();
+                List<Student> students = (accountId != null) ? studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear) : studentRepository.findAll();
                 if (students != null) {
                     totalStudents = students.size();
                     totalFemale = students.stream().filter(s -> s != null && "ស្រី".equals(s.getGender())).count();
-                }
-                
-                List<com.nubb.classroom.model.Attendance> pres = attendanceRepository.findByDateAndPresentTrueAndStudentClassName(today, className);
-                if (pres != null) {
-                    presentToday = pres.size();
-                    presentFemale = pres.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
-                }
-                
-                List<com.nubb.classroom.model.Attendance> abs = attendanceRepository.findByDateAndPresentFalseAndStudentClassName(today, className);
-                if (abs != null) {
-                    absentToday = abs.size();
-                    absentFemale = abs.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
-                    recentAbsents = abs;
+                    Set<Long> studentIds = students.stream().map(Student::getId).collect(Collectors.toSet());
+                    
+                    List<com.nubb.classroom.model.Attendance> pres = attendanceRepository.findByDateAndPresentTrueAndStudentClassName(today, className);
+                    if (pres != null) {
+                        pres = pres.stream().filter(a -> a != null && a.getStudent() != null && studentIds.contains(a.getStudent().getId())).collect(Collectors.toList());
+                        presentToday = pres.size();
+                        presentFemale = pres.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
+                    }
+                    
+                    List<com.nubb.classroom.model.Attendance> abs = attendanceRepository.findByDateAndPresentFalseAndStudentClassName(today, className);
+                    if (abs != null) {
+                        abs = abs.stream().filter(a -> a != null && a.getStudent() != null && studentIds.contains(a.getStudent().getId())).collect(Collectors.toList());
+                        absentToday = abs.size();
+                        absentFemale = abs.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
+                        recentAbsents = abs;
+                    }
                 }
             } else {
-                List<Student> students = (accountId != null) ? studentRepository.findByAccountId(accountId) : studentRepository.findAll();
+                List<Student> students = (accountId != null) ? studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear) : studentRepository.findAll();
                 if (students != null) {
                     totalStudents = students.size();
                     totalFemale = students.stream().filter(s -> s != null && "ស្រី".equals(s.getGender())).count();
-                }
-                
-                List<com.nubb.classroom.model.Attendance> pres = attendanceRepository.findByDateAndPresentTrue(today);
-                if (pres != null) {
-                    presentToday = pres.size();
-                    presentFemale = pres.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
-                }
-                
-                List<com.nubb.classroom.model.Attendance> abs = attendanceRepository.findByDateAndPresentFalse(today);
-                if (abs != null) {
-                    absentToday = abs.size();
-                    absentFemale = abs.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
-                    recentAbsents = abs;
+                    Set<Long> studentIds = students.stream().map(Student::getId).collect(Collectors.toSet());
+                    
+                    List<com.nubb.classroom.model.Attendance> pres = attendanceRepository.findByDateAndPresentTrue(today);
+                    if (pres != null) {
+                        pres = pres.stream().filter(a -> a != null && a.getStudent() != null && studentIds.contains(a.getStudent().getId())).collect(Collectors.toList());
+                        presentToday = pres.size();
+                        presentFemale = pres.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
+                    }
+                    
+                    List<com.nubb.classroom.model.Attendance> abs = attendanceRepository.findByDateAndPresentFalse(today);
+                    if (abs != null) {
+                        abs = abs.stream().filter(a -> a != null && a.getStudent() != null && studentIds.contains(a.getStudent().getId())).collect(Collectors.toList());
+                        absentToday = abs.size();
+                        absentFemale = abs.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
+                        recentAbsents = abs;
+                    }
                 }
             }
 
@@ -667,23 +871,19 @@ public class WebController {
             accountId = 97L;
         }
 
+        String currentYear = getCurrentAcademicYear();
+        int[] years = parseAcademicYearNumbers(currentYear);
         if (month == null || month.trim().isEmpty()) {
-            month = "ខែវិច្ឆិកា ២០២៦";
+            month = "ខែវិច្ឆិកា " + toKhmerNumber(years[0]);
         } else {
             month = month.trim();
         }
 
         List<Student> students;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountId(className, accountId);
-            if (students.isEmpty()) {
-                students = studentRepository.findByClassName(className);
-            }
+            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear);
         } else {
-            students = studentRepository.findByAccountId(accountId);
-            if (students.isEmpty()) {
-                students = studentRepository.findAll();
-            }
+            students = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
         }
 
         boolean isYearly = "ប្រចាំឆ្នាំ".equals(month);
@@ -692,8 +892,15 @@ public class WebController {
 
         if (isYearly || isSemester1 || isSemester2) {
             List<YearlyStudentAbsence> yearlyList = new ArrayList<>();
-            LocalDate yrStart = LocalDate.of(2026, 10, 1);
-            LocalDate yrEnd = LocalDate.of(2027, 9, 30);
+            LocalDate yrStart = LocalDate.of(years[0], 10, 1);
+            LocalDate yrEnd = LocalDate.of(years[1], 9, 30);
+            if (isSemester1) {
+                yrStart = LocalDate.of(years[0], 11, 1);
+                yrEnd = LocalDate.of(years[1], 2, 28);
+            } else if (isSemester2) {
+                yrStart = LocalDate.of(years[1], 3, 1);
+                yrEnd = LocalDate.of(years[1], 8, 31);
+            }
 
             List<Attendance> allAbsences = Collections.emptyList();
             if (students != null && !students.isEmpty()) {
@@ -791,17 +998,12 @@ public class WebController {
         LocalDate start = LocalDate.of(year, monthNum, 1);
         LocalDate end = start.with(TemporalAdjusters.lastDayOfMonth());
 
+        String currentYear = getCurrentAcademicYear();
         List<Student> students;
         if (!safeClass.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountId(safeClass, accountId);
-            if (students.isEmpty()) {
-                students = studentRepository.findByClassName(safeClass);
-            }
+            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(safeClass, accountId, currentYear);
         } else {
-            students = studentRepository.findByAccountId(accountId);
-            if (students.isEmpty()) {
-                students = studentRepository.findAll();
-            }
+            students = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
         }
 
         if (students != null && !students.isEmpty()) {
@@ -848,11 +1050,12 @@ public class WebController {
 
     @GetMapping("/students")
     public String students(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
+        String currentYear = getCurrentAcademicYear();
         List<Student> students;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountId(className, (Long) session.getAttribute("ACCOUNT_ID"));
+            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, (Long) session.getAttribute("ACCOUNT_ID"), currentYear);
         } else {
-            students = studentRepository.findByAccountId((Long) session.getAttribute("ACCOUNT_ID"));
+            students = studentRepository.findByAccountIdAndAcademicYear((Long) session.getAttribute("ACCOUNT_ID"), currentYear);
         }
         model.addAttribute("students", students);
         model.addAttribute("selectedClass", className);
@@ -861,7 +1064,9 @@ public class WebController {
 
     @GetMapping("/student/add")
     public String addStudentForm(Model model) {
-        model.addAttribute("student", new Student());
+        Student st = new Student();
+        st.setAcademicYear(getCurrentAcademicYear());
+        model.addAttribute("student", st);
         return "add-student";
     }
 
@@ -869,6 +1074,9 @@ public class WebController {
     public String addStudentSubmit(Student student) {
         Long accId = (Long) session.getAttribute("ACCOUNT_ID");
         student.setAccountId(accId != null ? accId : 97L);
+        if (student.getAcademicYear() == null || student.getAcademicYear().trim().isEmpty()) {
+            student.setAcademicYear(getCurrentAcademicYear());
+        }
         studentRepository.save(student);
         return "redirect:/students";
     }
@@ -897,6 +1105,11 @@ public class WebController {
             existing.setMotherName(student.getMotherName());
             existing.setMotherOccupation(student.getMotherOccupation());
             existing.setStatus(student.getStatus());
+            if (student.getAcademicYear() != null && !student.getAcademicYear().trim().isEmpty()) {
+                existing.setAcademicYear(student.getAcademicYear().trim());
+            } else if (existing.getAcademicYear() == null || existing.getAcademicYear().trim().isEmpty()) {
+                existing.setAcademicYear(getCurrentAcademicYear());
+            }
             Long accId = (Long) session.getAttribute("ACCOUNT_ID");
             if (accId != null) {
                 existing.setAccountId(accId);
@@ -919,11 +1132,12 @@ public class WebController {
 
     @GetMapping("/scores")
     public String scores(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
+        String currentYear = getCurrentAcademicYear();
         List<Student> students;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountId(className, (Long) session.getAttribute("ACCOUNT_ID"));
+            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, (Long) session.getAttribute("ACCOUNT_ID"), currentYear);
         } else {
-            students = studentRepository.findByAccountId((Long) session.getAttribute("ACCOUNT_ID"));
+            students = studentRepository.findByAccountIdAndAcademicYear((Long) session.getAttribute("ACCOUNT_ID"), currentYear);
         }
         model.addAttribute("students", students);
         model.addAttribute("selectedClass", className);
@@ -957,20 +1171,21 @@ public class WebController {
             month = "តេស្តដើមឆ្នាំ";
         }
         
+        String currentYear = getCurrentAcademicYear();
         List<com.nubb.classroom.model.Score> allScores;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            allScores = scoreRepository.findByMonthAndClassNameAndAccountId(month, className, accountId);
+            allScores = scoreRepository.findByMonthAndClassNameAndAccountIdAndAcademicYear(month, className, accountId, currentYear);
         } else {
-            allScores = scoreRepository.findByMonthAndAccountId(month, accountId);
+            allScores = scoreRepository.findByMonthAndAccountIdAndAcademicYear(month, accountId, currentYear);
             className = "ថ្នាក់រៀនទាំងអស់";
         }
 
         // Get enrolled students for this class or all classes
         List<com.nubb.classroom.model.Student> enrolledStudents;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            enrolledStudents = studentRepository.findByClassNameAndAccountId(className, accountId);
+            enrolledStudents = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear);
         } else {
-            enrolledStudents = studentRepository.findByAccountId(accountId);
+            enrolledStudents = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
         }
         int enrolledTotal = enrolledStudents.size();
         int enrolledFemale = (int) enrolledStudents.stream().filter(s -> "ស្រី".equals(s.getGender())).count();
@@ -1324,47 +1539,47 @@ public class WebController {
             month = "តេស្តដើមឆ្នាំ";
         }
 
+        String currentYear = getCurrentAcademicYear();
         List<Student> students;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountId(className, (Long) session.getAttribute("ACCOUNT_ID"));
+            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, (Long) session.getAttribute("ACCOUNT_ID"), currentYear);
         } else {
-            students = studentRepository.findByAccountId((Long) session.getAttribute("ACCOUNT_ID"));
+            students = studentRepository.findByAccountIdAndAcademicYear((Long) session.getAttribute("ACCOUNT_ID"), currentYear);
         }
 
+        int[] years = parseAcademicYearNumbers(currentYear);
         int monthNum = 1;
-        int year = java.time.LocalDate.now().getYear();
-        if (month.contains("មករា")) monthNum = 1;
-        else if (month.contains("កុម្ភៈ")) monthNum = 2;
-        else if (month.contains("មីនា")) monthNum = 3;
-        else if (month.contains("មេសា")) monthNum = 4;
-        else if (month.contains("ឧសភា")) monthNum = 5;
-        else if (month.contains("មិថុនា")) monthNum = 6;
-        else if (month.contains("កក្កដា")) monthNum = 7;
-        else if (month.contains("សីហា")) monthNum = 8;
-        else if (month.contains("កញ្ញា")) monthNum = 9;
-        else if (month.contains("តុលា")) monthNum = 10;
-        else if (month.contains("វិច្ឆិកា")) monthNum = 11;
-        else if (month.contains("ធ្នូ")) monthNum = 12;
+        int year = years[1];
+        if (month.contains("វិច្ឆិកា")) { monthNum = 11; year = years[0]; }
+        else if (month.contains("ធ្នូ")) { monthNum = 12; year = years[0]; }
+        else if (month.contains("មករា")) { monthNum = 1; year = years[1]; }
+        else if (month.contains("កុម្ភៈ")) { monthNum = 2; year = years[1]; }
+        else if (month.contains("មីនា")) { monthNum = 3; year = years[1]; }
+        else if (month.contains("មេសា")) { monthNum = 4; year = years[1]; }
+        else if (month.contains("ឧសភា")) { monthNum = 5; year = years[1]; }
+        else if (month.contains("មិថុនា")) { monthNum = 6; year = years[1]; }
+        else if (month.contains("កក្កដា")) { monthNum = 7; year = years[1]; }
+        else if (month.contains("សីហា")) { monthNum = 8; year = years[1]; }
+        else if (month.contains("កញ្ញា")) { monthNum = 9; year = years[1]; }
+        else if (month.contains("តុលា")) { monthNum = 10; year = years[0]; }
 
-        String[] parts = month.split(" ");
-        if(parts.length > 1) {
-            try {
-                year = Integer.parseInt(parts[1]);
-            } catch (Exception e) {}
+        int extY = extractYear(month);
+        if (extY > 2000 && extY < 2100) {
+            year = extY;
         }
 
         java.time.LocalDate start = java.time.LocalDate.of(year, monthNum, 1);
         java.time.LocalDate end = start.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
 
         if (month.contains("តេស្តដើមឆ្នាំ") || month.contains("ប្រចាំឆ្នាំ")) {
-            start = java.time.LocalDate.of(year, 1, 1);
-            end = java.time.LocalDate.of(year, 12, 31);
+            start = java.time.LocalDate.of(years[0], 10, 1);
+            end = java.time.LocalDate.of(years[1], 9, 30);
         } else if (month.contains("ឆមាសទី១")) {
-            start = java.time.LocalDate.of(2026, 11, 1);
-            end = java.time.LocalDate.of(2027, 1, 31);
+            start = java.time.LocalDate.of(years[0], 11, 1);
+            end = java.time.LocalDate.of(years[1], 2, 28);
         } else if (month.contains("ឆមាសទី២")) {
-            start = java.time.LocalDate.of(2027, 2, 1);
-            end = java.time.LocalDate.of(2027, 7, 31);
+            start = java.time.LocalDate.of(years[1], 3, 1);
+            end = java.time.LocalDate.of(years[1], 8, 31);
         }
 
         java.util.List<ReportRow> reportRows = new java.util.ArrayList<>();
@@ -1373,7 +1588,7 @@ public class WebController {
             double totalScore = 0;
             String grade = "-";
             
-            List<com.nubb.classroom.model.Score> scores = scoreRepository.findByStudentIdAndMonthAndClassNameAndAccountId(student.getId(), month, student.getClassName(), (Long) session.getAttribute("ACCOUNT_ID"));
+            List<com.nubb.classroom.model.Score> scores = scoreRepository.findByStudentIdAndMonthAndClassNameAndAccountIdAndAcademicYear(student.getId(), month, student.getClassName(), (Long) session.getAttribute("ACCOUNT_ID"), currentYear);
             for (com.nubb.classroom.model.Score s : scores) {
                 totalScore += s.getTotal();
             }

@@ -41,11 +41,25 @@
     <div class="main-content">
         <div class="topbar">
             <h3>កែប្រែព័ត៌មានសិស្ស</h3>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: #eef2ff; color: #3730a3; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid #c7d2fe;">
+                    <span>📅 ឆ្នាំសិក្សា៖</span>
+                    <select onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.95rem; font-family: inherit;">
+                        <option th:each="yr : ${availableAcademicYears}" th:value="${yr}" th:text="${yr}" th:selected="${yr == currentAcademicYear}"></option>
+                        <option value="__NEW__">➕ បន្ថែមឆ្នាំសិក្សាថ្មី...</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <div class="content">
             <div class="table-container" style="max-width: 600px; margin: 0 auto;">
                 <form th:action="@{/student/edit/{id}(id=${student.id})}" th:object="${student}" method="post">
+                    <div style="margin-bottom: 15px; background: #e0e7ff; color: #3730a3; padding: 10px 14px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                        <span>📅 ឆ្នាំសិក្សា៖ </span>
+                        <span th:text="${student.academicYear != null ? student.academicYear : currentAcademicYear}">២០២៦-២០២៧</span>
+                        <input type="hidden" name="academicYear" th:value="${student.academicYear != null ? student.academicYear : currentAcademicYear}">
+                    </div>
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: bold;">ឈ្មោះសិស្ស</label>
                         <input type="text" th:field="*{name}" class="form-control" style="width: 100%;" required>
