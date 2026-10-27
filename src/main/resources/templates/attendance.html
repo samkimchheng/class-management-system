@@ -202,10 +202,10 @@
                 <div style="display: flex; gap: 15px; align-items: center; margin: 15px 0 10px 0; flex-wrap: wrap;">
                     <span style="font-size: 0.9rem; font-weight: bold; color: #475569;">កំណត់សម្គាល់៖</span>
                     <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; background: #fef3c7; color: #92400e; font-size: 0.82rem; font-weight: bold; border: 1px solid #f59e0b;">
-                        🟡 ច្បាប់ (មានច្បាប់អនុញ្ញាត)
+                        🟡 ច្បាប់ (មានច្បាប់អនុញ្ញាត - ច)
                     </span>
                     <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; background: #fee2e2; color: #991b1b; font-size: 0.82rem; font-weight: bold; border: 1px solid #ef4444;">
-                        🔴 គ្មានច្បាប់ (អវត្តមានឥតច្បាប់)
+                        🔴 គ្មានច្បាប់ (អវត្តមានឥតច្បាប់ - គ)
                     </span>
                     <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; background: #f8fafc; color: #64748b; font-size: 0.82rem; border: 1px solid #cbd5e1;">
                         ⚪ - (វត្តមានធម្មតា)
@@ -267,23 +267,23 @@
                             
                             <!-- Sem 1 month counts -->
                             <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
-                                <span th:if="${row.novPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.novPermission + 'ច '}"></span>
-                                <span th:if="${row.novUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.novUnexcused + 'ក'}"></span>
+                                <span th:if="${row.novPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.novPermission + 'ច'}"></span>
+                                <span th:if="${row.novUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.novUnexcused + 'គ'}"></span>
                                 <span th:if="${row.nov == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
-                                <span th:if="${row.decPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.decPermission + 'ច '}"></span>
-                                <span th:if="${row.decUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.decUnexcused + 'ក'}"></span>
+                                <span th:if="${row.decPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.decPermission + 'ច'}"></span>
+                                <span th:if="${row.decUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.decUnexcused + 'គ'}"></span>
                                 <span th:if="${row.dec == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
-                                <span th:if="${row.janPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.janPermission + 'ច '}"></span>
-                                <span th:if="${row.janUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.janUnexcused + 'ក'}"></span>
+                                <span th:if="${row.janPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.janPermission + 'ច'}"></span>
+                                <span th:if="${row.janUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.janUnexcused + 'គ'}"></span>
                                 <span th:if="${row.jan == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
-                                <span th:if="${row.febPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.febPermission + 'ច '}"></span>
-                                <span th:if="${row.febUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.febUnexcused + 'ក'}"></span>
+                                <span th:if="${row.febPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.febPermission + 'ច'}"></span>
+                                <span th:if="${row.febUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.febUnexcused + 'គ'}"></span>
                                 <span th:if="${row.feb == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <!-- Sem 1 totals: ច្បាប់ / គ្មានច្បាប់ -->
@@ -292,33 +292,33 @@
                             
                             <!-- Sem 2 month counts -->
                             <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
-                                <span th:if="${row.marPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.marPermission + 'ច '}"></span>
-                                <span th:if="${row.marUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.marUnexcused + 'ក'}"></span>
+                                <span th:if="${row.marPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.marPermission + 'ច'}"></span>
+                                <span th:if="${row.marUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.marUnexcused + 'គ'}"></span>
                                 <span th:if="${row.mar == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
-                                <span th:if="${row.aprPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.aprPermission + 'ច '}"></span>
-                                <span th:if="${row.aprUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.aprUnexcused + 'ក'}"></span>
+                                <span th:if="${row.aprPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.aprPermission + 'ច'}"></span>
+                                <span th:if="${row.aprUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.aprUnexcused + 'គ'}"></span>
                                 <span th:if="${row.apr == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
-                                <span th:if="${row.mayPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.mayPermission + 'ច '}"></span>
-                                <span th:if="${row.mayUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.mayUnexcused + 'ក'}"></span>
+                                <span th:if="${row.mayPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.mayPermission + 'ច'}"></span>
+                                <span th:if="${row.mayUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.mayUnexcused + 'គ'}"></span>
                                 <span th:if="${row.may == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
-                                <span th:if="${row.junPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.junPermission + 'ច '}"></span>
-                                <span th:if="${row.junUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.junUnexcused + 'ក'}"></span>
+                                <span th:if="${row.junPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.junPermission + 'ច'}"></span>
+                                <span th:if="${row.junUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.junUnexcused + 'គ'}"></span>
                                 <span th:if="${row.jun == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
-                                <span th:if="${row.julPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.julPermission + 'ច '}"></span>
-                                <span th:if="${row.julUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.julUnexcused + 'ក'}"></span>
+                                <span th:if="${row.julPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.julPermission + 'ច'}"></span>
+                                <span th:if="${row.julUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.julUnexcused + 'គ'}"></span>
                                 <span th:if="${row.jul == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
-                                <span th:if="${row.augPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.augPermission + 'ច '}"></span>
-                                <span th:if="${row.augUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.augUnexcused + 'ក'}"></span>
+                                <span th:if="${row.augPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.augPermission + 'ច'}"></span>
+                                <span th:if="${row.augUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.augUnexcused + 'គ'}"></span>
                                 <span th:if="${row.aug == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <!-- Sem 2 totals: ច្បាប់ / គ្មានច្បាប់ -->
