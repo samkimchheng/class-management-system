@@ -50,6 +50,11 @@ public class AuthInterceptor implements HandlerInterceptor {
                                 session.setAttribute("ACCOUNT_ID", acc.getId());
                                 session.setAttribute("ACCOUNT_ROLE", acc.getRole());
                                 session.setAttribute("ACCOUNT_NAME", acc.getFullName());
+                                if (acc.getCurrentAcademicYear() != null && !acc.getCurrentAcademicYear().trim().isEmpty()) {
+                                    session.setAttribute("CURRENT_ACADEMIC_YEAR", acc.getCurrentAcademicYear().trim());
+                                } else {
+                                    session.setAttribute("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧");
+                                }
                             }
                         } catch (Exception ignored) {}
                         break;
