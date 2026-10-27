@@ -306,7 +306,25 @@
             font-family: 'Moul', 'Kantumruy Pro', cursive;
             font-size: 0.95rem;
             color: var(--cert-navy);
-            margin: 0 0 55px 0;
+            margin: 0 0 2px 0;
+        }
+
+        .signature-slot {
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .signature-preview-img {
+            max-height: 52px;
+            max-width: 175px;
+            object-fit: contain;
+            display: block;
+            image-rendering: -webkit-optimize-contrast;
+            pointer-events: none;
         }
 
         .footer-name {
@@ -518,7 +536,16 @@
             </form>
 
             <!-- Action Buttons for Teacher: Always active -->
-            <div style="display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap;">
+                <input type="file" id="sigFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this)">
+                <button type="button" class="btn-action" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: 1px solid #38bdf8;" onclick="document.getElementById('sigFileInput').click()" title="បញ្ចូលហត្ថលេខាគ្រូជាឯកសារ .png">
+                    ✍️ បញ្ចូលហត្ថលេខា (.png)
+                </button>
+                <button type="button" id="btnRemoveSig" class="btn-action"
+                        th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'display: inline-flex; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);' : 'display: none; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);'"
+                        onclick="removeSignature()" title="លុបហត្ថលេខាចេញ">
+                    ❌ លុប
+                </button>
                 <button class="btn-action btn-print" onclick="window.print()">
                     🖨️ បោះពុម្ព / Save as PDF
                 </button>
@@ -670,6 +697,7 @@
                             បានឃើញ និងឯកភាព
                         </div>
                         <div class="footer-role" id="dispRoleLeft" th:text="${roleSignerLeft}">នាយកសាលា / គណៈគ្រប់គ្រង</div>
+                        <div class="signature-slot" style="pointer-events: none;"></div>
                         <div style="border-top: 1px dashed #cbd5e1; height: 26px;"></div>
                     </div>
 
@@ -698,6 +726,18 @@
                             <span id="dispProvinceDate" th:text="${province}">ខេត្តពោធិ៍សាត់</span>, <span id="dispIssueDate" th:text="${issueDateKhmer}">ថ្ងៃទី ២៤ ខែ តុលា ឆ្នាំ ២០២៦</span>
                         </div>
                         <div class="footer-role" id="dispRoleRight" th:text="${roleSignerRight}">គ្រូទទួលបន្ទុកថ្នាក់</div>
+                        <div class="signature-slot" id="sigSlotRight"
+                             th:title="${isTeacher} ? 'ចុចត្រង់នេះដើម្បីបញ្ចូល ឬផ្លាស់ប្តូរហត្ថលេខា (.png)' : ''"
+                             th:style="${isTeacher} ? 'cursor: pointer;' : ''"
+                             th:onclick="${isTeacher} ? 'document.getElementById(\'sigFileInput\').click()' : ''">
+                            <img id="teacherSignatureImg" th:src="${teacherSignature}" alt="ហត្ថលេខាគ្រូទទួលបន្ទុកថ្នាក់" class="signature-preview-img"
+                                 th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'max-height: 52px; max-width: 175px; object-fit: contain; display: block;' : 'display: none;'"
+                                 crossorigin="anonymous" />
+                            <span id="sigPlaceholderHint" class="no-print" th:if="${isTeacher}"
+                                  th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'display: none;' : 'display: inline-block; font-size: 0.72rem; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 2px 8px; border-radius: 4px;'">
+                                ✍️ ចុចបញ្ចូលហត្ថលេខា (.png)
+                            </span>
+                        </div>
                         <div class="footer-name" id="dispTeacherName" th:text="${teacherName}">លោកគ្រូ សំ គឹមឆេង</div>
                     </div>
                 </div>
@@ -714,8 +754,96 @@
                 ['cert_school', 'cert_class', 'cert_student_name', 'cert_student_gender',
                  'cert_student_code', 'cert_subject', 'cert_province', 'cert_teacher',
                  'cert_role_left', 'cert_role_right'].forEach(k => localStorage.removeItem(k));
+
+                // Restore signature from localStorage if not rendered by server
+                const sigImg = document.getElementById('teacherSignatureImg');
+                const currentSrc = sigImg ? sigImg.getAttribute('src') : null;
+                if (!currentSrc || currentSrc.trim() === '') {
+                    const cachedSig = localStorage.getItem('teacher_signature');
+                    if (cachedSig && cachedSig.startsWith('data:image/')) {
+                        sigImg.src = cachedSig;
+                        sigImg.style.display = 'block';
+                        const hint = document.getElementById('sigPlaceholderHint');
+                        if (hint) hint.style.display = 'none';
+                        const btnRemove = document.getElementById('btnRemoveSig');
+                        if (btnRemove) btnRemove.style.display = 'inline-flex';
+                    }
+                }
             } catch (e) {}
         });
+
+        function uploadSignature(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+
+            if (!file.type.match(/image\/(png|jpeg|jpg|webp)/i) && !file.name.match(/\.(png|jpe?g|webp)$/i)) {
+                alert('សូមជ្រើសរើសឯកសាររូបភាពហត្ថលេខាជាទម្រង់ .png (ឬ .jpg, .webp)');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result;
+
+                // Update UI immediately
+                const sigImg = document.getElementById('teacherSignatureImg');
+                if (sigImg) {
+                    sigImg.src = base64Data;
+                    sigImg.style.display = 'block';
+                }
+
+                const hint = document.getElementById('sigPlaceholderHint');
+                if (hint) hint.style.display = 'none';
+
+                const btnRemove = document.getElementById('btnRemoveSig');
+                if (btnRemove) btnRemove.style.display = 'inline-flex';
+
+                try { localStorage.setItem('teacher_signature', base64Data); } catch (err) {}
+
+                // Upload to server to persist in DB
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('signatureBase64', base64Data);
+
+                fetch('/api/certificate/signature', {
+                    method: 'POST',
+                    body: formData
+                }).then(res => res.json())
+                  .then(data => {
+                      if (data.success) {
+                          console.log('Signature saved successfully to server');
+                      }
+                  }).catch(err => {
+                      console.warn('Error saving signature to server:', err);
+                  });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeSignature() {
+            if (!confirm('តើលោកគ្រូពិតជាចង់លុបហត្ថលេខានេះចេញមែនទេ?')) return;
+
+            const sigImg = document.getElementById('teacherSignatureImg');
+            if (sigImg) {
+                sigImg.src = '';
+                sigImg.style.display = 'none';
+            }
+
+            const hint = document.getElementById('sigPlaceholderHint');
+            if (hint) hint.style.display = 'inline-block';
+
+            const btnRemove = document.getElementById('btnRemoveSig');
+            if (btnRemove) btnRemove.style.display = 'none';
+
+            const fileInput = document.getElementById('sigFileInput');
+            if (fileInput) fileInput.value = '';
+
+            try { localStorage.removeItem('teacher_signature'); } catch (err) {}
+
+            fetch('/api/certificate/signature', {
+                method: 'DELETE'
+            }).catch(err => console.warn('Error deleting signature from server:', err));
+        }
 
         const isLockedForStudent = [[${!isTeacher and !isAllCompleted and percentage < 100}]];
 
@@ -742,6 +870,11 @@
             const certNode = document.getElementById('certificateNode');
             const studentName = "[[${student.name}]]" || "Student";
 
+            // Temporarily hide the placeholder hint so it's not captured
+            const hint = document.getElementById('sigPlaceholderHint');
+            const origHintDisplay = hint ? hint.style.display : '';
+            if (hint) hint.style.display = 'none';
+
             // Show loading state
             const btn = document.querySelector('.btn-download');
             const originalText = btn.innerHTML;
@@ -753,6 +886,8 @@
                 useCORS: true,
                 backgroundColor: '#fffdf9'
             }).then(canvas => {
+                if (hint) hint.style.display = origHintDisplay;
+
                 const link = document.createElement('a');
                 link.download = 'វិញ្ញាបនបត្រ_' + studentName.replace(/\s+/g, '_') + '_2027.png';
                 link.href = canvas.toDataURL('image/png');
@@ -761,6 +896,8 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }).catch(err => {
+                if (hint) hint.style.display = origHintDisplay;
+
                 alert('មានបញ្ហាក្នុងការទាញយកជារូបភាព សូមសាកល្បងចុច Print រួច Save as PDF!');
                 btn.innerHTML = originalText;
                 btn.disabled = false;

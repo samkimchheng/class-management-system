@@ -29,6 +29,8 @@ public class Account {
     private String teachingClasses;   // កម្រិតថ្នាក់បង្រៀន
     @jakarta.persistence.Column(length = 1000)
     private String bio;               // បទពិសោធន៍ / ចំណាំ
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
+    private String signature;         // ហត្ថលេខាគ្រូ (Base64 data URI or image URL)
 
     public Account() {}
 
@@ -97,4 +99,7 @@ public class Account {
 
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
+
+    public String getSignature() { return signature; }
+    public void setSignature(String signature) { this.signature = signature; }
 }

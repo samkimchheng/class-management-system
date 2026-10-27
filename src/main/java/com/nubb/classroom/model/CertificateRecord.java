@@ -38,6 +38,9 @@ public class CertificateRecord {
     @Column(length = 255)
     private String roleSignerRight;
 
+    @Column(columnDefinition = "TEXT")
+    private String signature;
+
     private String issueDateKhmer;
     private String issueDateEn;
 
@@ -93,6 +96,9 @@ public class CertificateRecord {
 
     public String getRoleSignerRight() { return roleSignerRight; }
     public void setRoleSignerRight(String roleSignerRight) { this.roleSignerRight = roleSignerRight; }
+
+    public String getSignature() { return signature; }
+    public void setSignature(String signature) { this.signature = signature; }
 
     public String getIssueDateKhmer() { return issueDateKhmer; }
     public void setIssueDateKhmer(String issueDateKhmer) { this.issueDateKhmer = issueDateKhmer; }

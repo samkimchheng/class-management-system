@@ -16,19 +16,23 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -426,6 +430,24 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 }
             }
 
+            // Resolve Teacher Signature (Priority: Teacher Account -> Template / Existing Record -> Account 97 / 1)
+            String teacherSignature = null;
+            if (currentTeacherAcc != null && currentTeacherAcc.getSignature() != null && !currentTeacherAcc.getSignature().trim().isEmpty()) {
+                teacherSignature = currentTeacherAcc.getSignature().trim();
+            } else if (template != null && template.getSignature() != null && !template.getSignature().trim().isEmpty()) {
+                teacherSignature = template.getSignature().trim();
+            } else {
+                Optional<Account> tAcc = accountRepository.findById(97L);
+                if (tAcc.isPresent() && tAcc.get().getSignature() != null && !tAcc.get().getSignature().trim().isEmpty()) {
+                    teacherSignature = tAcc.get().getSignature().trim();
+                } else {
+                    Optional<Account> aAcc = accountRepository.findById(1L);
+                    if (aAcc.isPresent() && aAcc.get().getSignature() != null && !aAcc.get().getSignature().trim().isEmpty()) {
+                        teacherSignature = aAcc.get().getSignature().trim();
+                    }
+                }
+            }
+
             // Always auto-save or update database record safely for the serialNumber so QR scanning is immediate and accurate
             try {
                 CertificateRecord record = existingRecord.orElse(
@@ -442,6 +464,9 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 record.setSubjectName(subjectName);
                 record.setProvince(province);
                 record.setTeacherName(teacherName);
+                if (teacherSignature != null && !teacherSignature.trim().isEmpty()) {
+                    record.setSignature(teacherSignature);
+                }
                 record.setRoleSignerLeft(roleSignerLeft);
                 record.setRoleSignerRight(roleSignerRight);
                 record.setIssueDateKhmer(issueDateKhmer);
@@ -482,6 +507,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("selectedSubjectName", subjectName);
             model.addAttribute("province", province);
             model.addAttribute("teacherName", teacherName);
+            model.addAttribute("teacherSignature", teacherSignature);
             model.addAttribute("roleSignerLeft", roleSignerLeft);
             model.addAttribute("roleSignerRight", roleSignerRight);
 
@@ -506,6 +532,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("subjectName", "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", "ខេត្តពោធិ៍សាត់");
             model.addAttribute("teacherName", "លោកគ្រូ សំ គឹមឆេង");
+            model.addAttribute("teacherSignature", null);
             model.addAttribute("roleSignerLeft", "នាយកសាលា / គណៈគ្រប់គ្រង");
             model.addAttribute("roleSignerRight", "គ្រូទទួលបន្ទុកថ្នាក់");
             List<String> fbClasses = new ArrayList<>(List.of("ថ្នាក់ទី១០ A", "ថ្នាក់ទី១០ B", "ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១២ វិទ្យាសាស្ត្រ"));
@@ -829,6 +856,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("subject", finalSubject);
             model.addAttribute("province", finalProvince);
             model.addAttribute("teacher", finalTeacher);
+            model.addAttribute("teacherSignature", foundRecord != null ? foundRecord.getSignature() : null);
             model.addAttribute("verifyDateKhmer", toKhmerDate(LocalDate.now()));
 
             return "certificate-verify";
@@ -1017,5 +1045,84 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             return "Secondary School • Class Management System 2027";
         }
         return "High School / Secondary School • Class Management System 2027";
+    }
+
+    @PostMapping("/api/certificate/signature")
+    @ResponseBody
+    public ResponseEntity<?> uploadSignature(
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "signatureBase64", required = false) String signatureBase64) {
+        try {
+            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (accountId == null) {
+                accountId = 97L;
+            }
+
+            String dataUri = null;
+            if (file != null && !file.isEmpty()) {
+                byte[] bytes = file.getBytes();
+                String contentType = file.getContentType();
+                if (contentType == null || contentType.isEmpty()) {
+                    contentType = "image/png";
+                }
+                String base64 = Base64.getEncoder().encodeToString(bytes);
+                dataUri = "data:" + contentType + ";base64," + base64;
+            } else if (signatureBase64 != null && !signatureBase64.trim().isEmpty()) {
+                dataUri = signatureBase64.trim();
+            }
+
+            if (dataUri == null || dataUri.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "No signature data provided"));
+            }
+
+            final String finalUri = dataUri;
+            accountRepository.findById(accountId).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
+            if (accountId != 97L) {
+                accountRepository.findById(97L).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
+            }
+            if (accountId != 1L) {
+                accountRepository.findById(1L).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
+            }
+
+            try {
+                List<CertificateRecord> certs = certificateRecordRepository.findAll();
+                for (CertificateRecord c : certs) {
+                    c.setSignature(finalUri);
+                    c.setUpdatedAt(LocalDateTime.now());
+                    certificateRecordRepository.save(c);
+                }
+            } catch (Exception ignored) {}
+
+            return ResponseEntity.ok(Map.of("success", true, "signature", finalUri));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/api/certificate/signature")
+    @ResponseBody
+    public ResponseEntity<?> removeSignature() {
+        try {
+            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (accountId == null) accountId = 97L;
+
+            accountRepository.findById(accountId).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
+            accountRepository.findById(97L).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
+            accountRepository.findById(1L).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
+
+            try {
+                List<CertificateRecord> certs = certificateRecordRepository.findAll();
+                for (CertificateRecord c : certs) {
+                    c.setSignature(null);
+                    certificateRecordRepository.save(c);
+                }
+            } catch (Exception ignored) {}
+
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
     }
 }

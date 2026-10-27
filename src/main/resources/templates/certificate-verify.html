@@ -156,7 +156,12 @@
                 </tr>
                 <tr>
                     <td>គ្រូទទួលបន្ទុកថ្នាក់៖</td>
-                    <td th:text="${teacher}">លោកគ្រូ...</td>
+                    <td>
+                        <span th:text="${teacher}">លោកគ្រូ...</span>
+                        <div th:if="${teacherSignature != null and !#strings.isEmpty(teacherSignature)}" style="margin-top: 6px;">
+                            <img th:src="${teacherSignature}" alt="ហត្ថលេខា" style="max-height: 45px; max-width: 140px; object-fit: contain;" />
+                        </div>
+                    </td>
                 </tr>
                 <tr>
                     <td>ស្ថានភាពការសិក្សា៖</td>

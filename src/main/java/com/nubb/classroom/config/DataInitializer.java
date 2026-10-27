@@ -61,12 +61,15 @@ public class DataInitializer {
                     "EMAIL VARCHAR(255)",
                     "POSITION VARCHAR(255)",
                     "TEACHING_CLASSES VARCHAR(255)",
-                    "BIO VARCHAR(1000)"
+                    "BIO VARCHAR(1000)",
+                    "SIGNATURE TEXT"
                 };
                 for (String col : profileCols) {
                     try { stmt.execute("ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS " + col); } catch (Exception ignored) {}
                     try { stmt.execute("ALTER TABLE IF EXISTS account ADD COLUMN IF NOT EXISTS " + col); } catch (Exception ignored) {}
                 }
+                try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS SIGNATURE TEXT"); } catch (Exception ignored) {}
+                try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS signature TEXT"); } catch (Exception ignored) {}
             } catch (Exception e) {
                 System.err.println(">>> [DataInitializer] Schema migration notice: " + e.getMessage());
             }
@@ -125,12 +128,15 @@ public class DataInitializer {
                             "EMAIL VARCHAR(255)",
                             "POSITION VARCHAR(255)",
                             "TEACHING_CLASSES VARCHAR(255)",
-                            "BIO VARCHAR(1000)"
+                            "BIO VARCHAR(1000)",
+                            "SIGNATURE TEXT"
                         };
                         for (String col : profileCols) {
                             try { stmt.execute("ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS " + col); } catch (Exception ignored) {}
                             try { stmt.execute("ALTER TABLE IF EXISTS account ADD COLUMN IF NOT EXISTS " + col); } catch (Exception ignored) {}
                         }
+                        try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS SIGNATURE TEXT"); } catch (Exception ignored) {}
+                        try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS signature TEXT"); } catch (Exception ignored) {}
                     } catch (Exception ignored) {}
                 } catch (Exception e) {
                     System.err.println(">>> [DataInitializer] Error restoring database: " + e.getMessage());
