@@ -36,6 +36,42 @@
             background-color: #f8fafc;
         }
 
+        /* Attendance Select Option Styles */
+        .att-select {
+            width: 62px;
+            height: 30px;
+            padding: 1px 2px;
+            font-size: 11px;
+            font-family: inherit;
+            font-weight: 600;
+            text-align: center;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #ffffff;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            outline: none;
+        }
+        .att-select:hover {
+            border-color: #94a3b8;
+        }
+        .att-select:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+        }
+        .att-select.att-permission {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+            border-color: #f59e0b !important;
+            font-weight: bold !important;
+        }
+        .att-select.att-unexcused {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+            border-color: #ef4444 !important;
+            font-weight: bold !important;
+        }
+
         .print-header { display: none; }
 
         @media print {
@@ -75,7 +111,6 @@
                 padding: 4px 2px !important;
                 font-size: 10px !important;
             }
-            /* Checkboxes show up as normal squares in print, perfect for hand-filling */
             .btn { display: none !important; }
             .alert, .success-message { display: none !important; }
             @page {
@@ -134,7 +169,7 @@
 
             <div class="table-container" style="overflow-x: auto;">
                 <form th:action="@{/attendance/save}" method="post">
-                <div class="header-action">
+                <div class="header-action" style="flex-wrap: wrap; gap: 15px;">
                     <div>
                         <select name="month" id="monthSelect" class="form-control" style="width: auto; display: inline-block;">
                             <option value="តេស្តដើមឆ្នាំ" th:selected="${selectedMonth == 'តេស្តដើមឆ្នាំ'}">តេស្តដើមឆ្នាំ</option>
@@ -162,104 +197,200 @@
                         <button type="submit" class="btn btn-primary" th:if="${!isYearly and !isSemester1 and !isSemester2}">💾 រក្សាទុកទិន្នន័យ</button>
                     </div>
                 </div>
+
+                <!-- Legend -->
+                <div style="display: flex; gap: 15px; align-items: center; margin: 15px 0 10px 0; flex-wrap: wrap;">
+                    <span style="font-size: 0.9rem; font-weight: bold; color: #475569;">កំណត់សម្គាល់៖</span>
+                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; background: #fef3c7; color: #92400e; font-size: 0.82rem; font-weight: bold; border: 1px solid #f59e0b;">
+                        🟡 ច្បាប់ (មានច្បាប់អនុញ្ញាត)
+                    </span>
+                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; background: #fee2e2; color: #991b1b; font-size: 0.82rem; font-weight: bold; border: 1px solid #ef4444;">
+                        🔴 គ្មានច្បាប់ (អវត្តមានឥតច្បាប់)
+                    </span>
+                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; background: #f8fafc; color: #64748b; font-size: 0.82rem; border: 1px solid #cbd5e1;">
+                        ⚪ - (វត្តមានធម្មតា)
+                    </span>
+                </div>
                 
                 <!-- 1. ANNUAL / SEMESTER SUMMARY TABLE (Shown when 'ប្រចាំឆ្នាំ' or 'ឆមាស' is selected) -->
                 <div th:if="${isYearly or isSemester1 or isSemester2}" class="attendance-table-wrapper" style="overflow: auto; max-height: 65vh; border: 1px solid var(--border); border-radius: 8px;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background-color: #0f172a; color: white;">
-                            <th style="width: 50px; text-align: center; padding: 10px;">ល.រ</th>
-                            <th style="min-width: 180px; padding: 10px; text-align: left;">ឈ្មោះសិស្ស</th>
-                            <th style="width: 70px; text-align: center; padding: 10px;">ភេទ</th>
-                            <th style="min-width: 90px; text-align: center; padding: 10px;">ថ្នាក់រៀន</th>
+                            <th rowspan="2" style="width: 50px; text-align: center; padding: 8px;">ល.រ</th>
+                            <th rowspan="2" style="min-width: 170px; padding: 8px; text-align: left;">ឈ្មោះសិស្ស</th>
+                            <th rowspan="2" style="width: 60px; text-align: center; padding: 8px;">ភេទ</th>
+                            <th rowspan="2" style="min-width: 80px; text-align: center; padding: 8px;">ថ្នាក់រៀន</th>
                             
                             <!-- Months for Semester 1 -->
-                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 60px; padding: 8px;" title="ខែវិច្ឆិកា ២០២៦">វិច្ឆិកា</th>
-                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 60px; padding: 8px;" title="ខែធ្នូ ២០២៦">ធ្នូ</th>
-                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 60px; padding: 8px;" title="ខែមករា ២០២៧">មករា</th>
-                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 60px; padding: 8px;" title="ខែកុម្ភៈ ២០២៧">កុម្ភៈ</th>
-                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 90px; padding: 8px; background: rgba(59, 130, 246, 0.15); color: #38bdf8; font-weight: bold;" title="សរុបអវត្តមានឆមាសទី១">សរុបឆមាស១</th>
+                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែវិច្ឆិកា ២០២៦">វិច្ឆិកា</th>
+                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែធ្នូ ២០២៦">ធ្នូ</th>
+                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែមករា ២០២៧">មករា</th>
+                            <th th:if="${isYearly or isSemester1}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែកុម្ភៈ ២០២៧">កុម្ភៈ</th>
+                            <th th:if="${isYearly or isSemester1}" colspan="2" style="text-align: center; padding: 6px; background: #1e3a8a; color: #93c5fd; font-weight: bold;">សរុបឆមាស១</th>
                             
                             <!-- Months for Semester 2 -->
-                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 60px; padding: 8px;" title="ខែមីនា ២០២៧">មីនា</th>
-                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 60px; padding: 8px;" title="ខែមេសា ២០២៧">មេសា</th>
-                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 60px; padding: 8px;" title="ខែឧសភា ២០២៧">ឧសភា</th>
-                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 60px; padding: 8px;" title="ខែមិថុនា ២០២៧">មិថុនា</th>
-                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 60px; padding: 8px;" title="ខែកក្កដា ២០២៧">កក្កដា</th>
-                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 60px; padding: 8px;" title="ខែសីហា ២០២៧">សីហា</th>
-                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 90px; padding: 8px; background: rgba(59, 130, 246, 0.15); color: #38bdf8; font-weight: bold;" title="សរុបអវត្តមានឆមាសទី២">សរុបឆមាស២</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែមីនា ២០២៧">មីនា</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែមេសា ២០២៧">មេសា</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែឧសភា ២០២៧">ឧសភា</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែមិថុនា ២០២៧">មិថុនា</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែកក្កដា ២០២៧">កក្កដា</th>
+                            <th th:if="${isYearly or isSemester2}" rowspan="2" style="text-align: center; min-width: 55px; padding: 6px;" title="ខែសីហា ២០២៧">សីហា</th>
+                            <th th:if="${isYearly or isSemester2}" colspan="2" style="text-align: center; padding: 6px; background: #1e3a8a; color: #93c5fd; font-weight: bold;">សរុបឆមាស២</th>
                             
-                            <!-- Total Annual Absences column -->
-                            <th th:if="${isYearly}" style="text-align: center; min-width: 150px; padding: 10px; background: #dc2626; color: white; font-weight: bold; font-size: 1rem;">
+                            <!-- Total Annual Absences column (3 sub-columns: ច្បាប់, គ្មានច្បាប់, សរុប) -->
+                            <th th:if="${isYearly}" colspan="3" style="text-align: center; padding: 8px; background: #991b1b; color: white; font-weight: bold; font-size: 0.95rem;">
                                 អវត្តមានសរុបប្រចាំឆ្នាំ
                             </th>
+                        </tr>
+                        <tr style="background-color: #1e293b; color: white;">
+                            <!-- Sub-headers for Sem 1 -->
+                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 60px; padding: 5px; background: #fef3c7; color: #92400e; font-size: 0.78rem; font-weight: bold;">ច្បាប់</th>
+                            <th th:if="${isYearly or isSemester1}" style="text-align: center; min-width: 75px; padding: 5px; background: #fee2e2; color: #991b1b; font-size: 0.78rem; font-weight: bold;">គ្មានច្បាប់</th>
+
+                            <!-- Sub-headers for Sem 2 -->
+                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 60px; padding: 5px; background: #fef3c7; color: #92400e; font-size: 0.78rem; font-weight: bold;">ច្បាប់</th>
+                            <th th:if="${isYearly or isSemester2}" style="text-align: center; min-width: 75px; padding: 5px; background: #fee2e2; color: #991b1b; font-size: 0.78rem; font-weight: bold;">គ្មានច្បាប់</th>
+
+                            <!-- Sub-headers for Annual Total -->
+                            <th th:if="${isYearly}" style="text-align: center; min-width: 70px; padding: 5px; background: #fef3c7; color: #92400e; font-size: 0.82rem; font-weight: bold;">ច្បាប់</th>
+                            <th th:if="${isYearly}" style="text-align: center; min-width: 85px; padding: 5px; background: #fee2e2; color: #991b1b; font-size: 0.82rem; font-weight: bold;">គ្មានច្បាប់</th>
+                            <th th:if="${isYearly}" style="text-align: center; min-width: 70px; padding: 5px; background: #e0e7ff; color: #3730a3; font-size: 0.82rem; font-weight: 800;">សរុប</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="row, iterStat : ${yearlyAbsences}">
-                            <td style="text-align: center; font-weight: bold; color: var(--text-muted); padding: 10px;" th:text="${iterStat.count}">១</td>
-                            <td style="font-weight: bold; color: var(--dark); padding: 10px; white-space: nowrap;" th:text="${row.student.name}">ឈ្មោះសិស្ស</td>
-                            <td style="text-align: center; padding: 10px;" th:text="${row.student.gender}">ភេទ</td>
-                            <td style="text-align: center; padding: 10px;" th:text="${row.student.className}">ថ្នាក់រៀន</td>
+                            <td style="text-align: center; font-weight: bold; color: var(--text-muted); padding: 8px;" th:text="${iterStat.count}">១</td>
+                            <td style="font-weight: bold; color: var(--dark); padding: 8px; white-space: nowrap;" th:text="${row.student.name}">ឈ្មោះសិស្ស</td>
+                            <td style="text-align: center; padding: 8px;" th:text="${row.student.gender}">ភេទ</td>
+                            <td style="text-align: center; padding: 8px;" th:text="${row.student.className}">ថ្នាក់រៀន</td>
                             
-                            <!-- Sem 1 counts -->
-                            <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 8px;" th:text="${row.nov > 0 ? row.nov : '-'}">-</td>
-                            <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 8px;" th:text="${row.dec > 0 ? row.dec : '-'}">-</td>
-                            <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 8px;" th:text="${row.jan > 0 ? row.jan : '-'}">-</td>
-                            <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 8px;" th:text="${row.feb > 0 ? row.feb : '-'}">-</td>
-                            <td th:if="${isYearly or isSemester1}" style="text-align: center; font-weight: bold; padding: 8px; background: rgba(59, 130, 246, 0.05); color: #2563eb;" th:text="${row.semester1Total}">0</td>
+                            <!-- Sem 1 month counts -->
+                            <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
+                                <span th:if="${row.novPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.novPermission + 'ច '}"></span>
+                                <span th:if="${row.novUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.novUnexcused + 'ក'}"></span>
+                                <span th:if="${row.nov == 0}" style="color: #94a3b8;">-</span>
+                            </td>
+                            <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
+                                <span th:if="${row.decPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.decPermission + 'ច '}"></span>
+                                <span th:if="${row.decUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.decUnexcused + 'ក'}"></span>
+                                <span th:if="${row.dec == 0}" style="color: #94a3b8;">-</span>
+                            </td>
+                            <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
+                                <span th:if="${row.janPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.janPermission + 'ច '}"></span>
+                                <span th:if="${row.janUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.janUnexcused + 'ក'}"></span>
+                                <span th:if="${row.jan == 0}" style="color: #94a3b8;">-</span>
+                            </td>
+                            <td th:if="${isYearly or isSemester1}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
+                                <span th:if="${row.febPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.febPermission + 'ច '}"></span>
+                                <span th:if="${row.febUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.febUnexcused + 'ក'}"></span>
+                                <span th:if="${row.feb == 0}" style="color: #94a3b8;">-</span>
+                            </td>
+                            <!-- Sem 1 totals: ច្បាប់ / គ្មានច្បាប់ -->
+                            <td th:if="${isYearly or isSemester1}" style="text-align: center; font-weight: bold; padding: 6px; background: #fffbeb; color: #92400e;" th:text="${row.semester1Permission}">0</td>
+                            <td th:if="${isYearly or isSemester1}" style="text-align: center; font-weight: bold; padding: 6px; background: #fef2f2; color: #991b1b;" th:text="${row.semester1Unexcused}">0</td>
                             
-                            <!-- Sem 2 counts -->
-                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 8px;" th:text="${row.mar > 0 ? row.mar : '-'}">-</td>
-                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 8px;" th:text="${row.apr > 0 ? row.apr : '-'}">-</td>
-                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 8px;" th:text="${row.may > 0 ? row.may : '-'}">-</td>
-                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 8px;" th:text="${row.jun > 0 ? row.jun : '-'}">-</td>
-                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 8px;" th:text="${row.jul > 0 ? row.jul : '-'}">-</td>
-                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 8px;" th:text="${row.aug > 0 ? row.aug : '-'}">-</td>
-                            <td th:if="${isYearly or isSemester2}" style="text-align: center; font-weight: bold; padding: 8px; background: rgba(59, 130, 246, 0.05); color: #2563eb;" th:text="${row.semester2Total}">0</td>
+                            <!-- Sem 2 month counts -->
+                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
+                                <span th:if="${row.marPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.marPermission + 'ច '}"></span>
+                                <span th:if="${row.marUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.marUnexcused + 'ក'}"></span>
+                                <span th:if="${row.mar == 0}" style="color: #94a3b8;">-</span>
+                            </td>
+                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
+                                <span th:if="${row.aprPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.aprPermission + 'ច '}"></span>
+                                <span th:if="${row.aprUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.aprUnexcused + 'ក'}"></span>
+                                <span th:if="${row.apr == 0}" style="color: #94a3b8;">-</span>
+                            </td>
+                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
+                                <span th:if="${row.mayPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.mayPermission + 'ច '}"></span>
+                                <span th:if="${row.mayUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.mayUnexcused + 'ក'}"></span>
+                                <span th:if="${row.may == 0}" style="color: #94a3b8;">-</span>
+                            </td>
+                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
+                                <span th:if="${row.junPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.junPermission + 'ច '}"></span>
+                                <span th:if="${row.junUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.junUnexcused + 'ក'}"></span>
+                                <span th:if="${row.jun == 0}" style="color: #94a3b8;">-</span>
+                            </td>
+                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
+                                <span th:if="${row.julPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.julPermission + 'ច '}"></span>
+                                <span th:if="${row.julUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.julUnexcused + 'ក'}"></span>
+                                <span th:if="${row.jul == 0}" style="color: #94a3b8;">-</span>
+                            </td>
+                            <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
+                                <span th:if="${row.augPermission > 0}" style="color: #b45309; font-weight: bold;" th:text="${row.augPermission + 'ច '}"></span>
+                                <span th:if="${row.augUnexcused > 0}" style="color: #b91c1c; font-weight: bold;" th:text="${row.augUnexcused + 'ក'}"></span>
+                                <span th:if="${row.aug == 0}" style="color: #94a3b8;">-</span>
+                            </td>
+                            <!-- Sem 2 totals: ច្បាប់ / គ្មានច្បាប់ -->
+                            <td th:if="${isYearly or isSemester2}" style="text-align: center; font-weight: bold; padding: 6px; background: #fffbeb; color: #92400e;" th:text="${row.semester2Permission}">0</td>
+                            <td th:if="${isYearly or isSemester2}" style="text-align: center; font-weight: bold; padding: 6px; background: #fef2f2; color: #991b1b;" th:text="${row.semester2Unexcused}">0</td>
                             
-                            <!-- Annual Total -->
-                            <td th:if="${isYearly}" style="text-align: center; font-weight: 800; font-size: 1.05rem; padding: 8px; background: rgba(220, 38, 38, 0.06); color: #dc2626;">
-                                <span style="display: inline-block; padding: 3px 12px; border-radius: 6px; background: #fee2e2; color: #991b1b; font-weight: bold;"
-                                      th:text="${row.totalYearly + ' ថ្ងៃ'}">0 ថ្ងៃ</span>
+                            <!-- Annual Totals: ច្បាប់ / គ្មានច្បាប់ / សរុប -->
+                            <td th:if="${isYearly}" style="text-align: center; font-weight: bold; padding: 6px; background: #fffbeb; color: #92400e;">
+                                <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; background: #fef3c7; border: 1px solid #f59e0b;" th:text="${row.totalYearlyPermission + ' ថ្ងៃ'}">0 ថ្ងៃ</span>
+                            </td>
+                            <td th:if="${isYearly}" style="text-align: center; font-weight: bold; padding: 6px; background: #fef2f2; color: #991b1b;">
+                                <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; background: #fee2e2; border: 1px solid #ef4444;" th:text="${row.totalYearlyUnexcused + ' ថ្ងៃ'}">0 ថ្ងៃ</span>
+                            </td>
+                            <td th:if="${isYearly}" style="text-align: center; font-weight: 800; padding: 6px; background: #e0e7ff; color: #3730a3;">
+                                <span style="display: inline-block; padding: 3px 10px; border-radius: 6px; background: #c7d2fe; border: 1px solid #818cf8;" th:text="${row.totalYearly + ' ថ្ងៃ'}">0 ថ្ងៃ</span>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(yearlyAbsences)}">
-                            <td colspan="17" style="text-align: center; padding: 25px; color: var(--text-muted);">មិនមានទិន្នន័យសិស្សទេ</td>
+                            <td colspan="20" style="text-align: center; padding: 25px; color: var(--text-muted);">មិនមានទិន្នន័យសិស្សទេ</td>
                         </tr>
                     </tbody>
                 </table>
                 </div>
 
-                <!-- 2. MONTHLY ABSENCE TABLE (Days 1 to 31 with Checkboxes) -->
+                <!-- 2. MONTHLY ABSENCE TABLE (Days 1 to 31 with Select: ច្បាប់ / គ្មានច្បាប់) -->
                 <div th:if="${!isYearly and !isSemester1 and !isSemester2}" class="attendance-table-wrapper" style="overflow: auto; max-height: 65vh; border: 1px solid var(--border); border-radius: 8px;">
                 <table>
                     <thead>
                         <tr>
-                            <th class="sticky-col" style="width: 60px; min-width: 60px; max-width: 60px; left: 0px; white-space: nowrap;">ល.រ</th>
-                            <th class="sticky-col" style="width: 200px; min-width: 200px; max-width: 200px; left: 60px; white-space: nowrap;">ឈ្មោះសិស្ស</th>
-                            <th class="sticky-col last-sticky" style="width: 80px; min-width: 80px; max-width: 80px; left: 260px; white-space: nowrap;">ភេទ</th>
+                            <th class="sticky-col" style="width: 50px; min-width: 50px; max-width: 50px; left: 0px; white-space: nowrap; text-align: center;">ល.រ</th>
+                            <th class="sticky-col" style="width: 180px; min-width: 180px; max-width: 180px; left: 50px; white-space: nowrap;">ឈ្មោះសិស្ស</th>
+                            <th class="sticky-col last-sticky" style="width: 70px; min-width: 70px; max-width: 70px; left: 230px; white-space: nowrap; text-align: center;">ភេទ</th>
                             <!-- Days 1 to 31 -->
-                            <th th:each="i : ${#numbers.sequence(1, 31)}" th:text="${i}" th:attr="data-day=${i}" class="day-cell" style="min-width: 30px; text-align: center;">1</th>
-                            <th style="min-width: 120px; white-space: nowrap; text-align: center; color: var(--danger);">សរុបអវត្តមាន</th>
+                            <th th:each="i : ${#numbers.sequence(1, 31)}" th:text="${i}" th:attr="data-day=${i}" class="day-cell" style="min-width: 65px; text-align: center; padding: 6px 2px;">1</th>
+                            
+                            <!-- Totals divided into ច្បាប់ / គ្មានច្បាប់ / សរុប -->
+                            <th style="min-width: 75px; text-align: center; background: #fef3c7; color: #92400e; font-size: 0.85rem;" title="សរុបអវត្តមានមានច្បាប់">🟡 ច្បាប់</th>
+                            <th style="min-width: 85px; text-align: center; background: #fee2e2; color: #991b1b; font-size: 0.85rem;" title="សរុបអវត្តមានគ្មានច្បាប់">🔴 គ្មានច្បាប់</th>
+                            <th style="min-width: 75px; text-align: center; background: #f1f5f9; color: #0f172a; font-size: 0.85rem; font-weight: 800;" title="អវត្តមានសរុប">សរុប</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="student, iterStat : ${students}">
-                            <td class="sticky-col" style="width: 60px; min-width: 60px; max-width: 60px; left: 0px;" th:text="${iterStat.count}">១</td>
-                            <td class="sticky-col" style="width: 200px; min-width: 200px; max-width: 200px; left: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${student.name}">ឈ្មោះសិស្ស</td>
-                            <td class="sticky-col last-sticky" style="width: 80px; min-width: 80px; max-width: 80px; left: 260px;" th:text="${student.gender}">ភេទ</td>
+                            <td class="sticky-col" style="width: 50px; min-width: 50px; max-width: 50px; left: 0px; text-align: center;" th:text="${iterStat.count}">១</td>
+                            <td class="sticky-col" style="width: 180px; min-width: 180px; max-width: 180px; left: 50px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;" th:text="${student.name}">ឈ្មោះសិស្ស</td>
+                            <td class="sticky-col last-sticky" style="width: 70px; min-width: 70px; max-width: 70px; left: 230px; text-align: center;" th:text="${student.gender}">ភេទ</td>
                             <!-- Days 1 to 31 -->
-                            <td th:each="i : ${#numbers.sequence(1, 31)}" th:attr="data-day=${i}" class="day-cell" style="text-align: center;">
-                                <input type="checkbox" class="attendance-cb" name="attendanceData" 
-                                       th:value="${student.id + '_' + i}"
-                                       th:checked="${absentDays != null and absentDays.contains(student.id + '_' + i)}">
+                            <td th:each="i : ${#numbers.sequence(1, 31)}" th:attr="data-day=${i}" class="day-cell" style="text-align: center; padding: 2px;">
+                                <select name="attendanceData" 
+                                        class="att-select"
+                                        th:classappend="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PERMISSION' ? ' att-permission' : (absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'UNEXCUSED' ? ' att-unexcused' : '')}"
+                                        th:attr="data-student-id=${student.id}">
+                                    <option value="" th:selected="${absentDayTypes == null or absentDayTypes.get(student.id + '_' + i) == null}">-</option>
+                                    <option th:value="${student.id + '_' + i + '_PERMISSION'}" 
+                                            th:selected="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PERMISSION'}">ច្បាប់</option>
+                                    <option th:value="${student.id + '_' + i + '_UNEXCUSED'}" 
+                                            th:selected="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'UNEXCUSED'}">គ្មានច្បាប់</option>
+                                </select>
                             </td>
-                            <td class="total-absent" style="text-align: center; font-weight: bold; color: var(--danger);"
-                                th:text="${studentMonthlyAbsentCounts != null and studentMonthlyAbsentCounts.containsKey(student.id) ? studentMonthlyAbsentCounts.get(student.id) : 0}">0</td>
+                            <!-- Totals: ច្បាប់ / គ្មានច្បាប់ / សរុប -->
+                            <td style="text-align: center; font-weight: bold; background: #fffbeb; color: #92400e;">
+                                <span class="total-perm" th:id="${'perm_' + student.id}" th:text="${studentPermissionCounts != null and studentPermissionCounts.containsKey(student.id) ? studentPermissionCounts.get(student.id) : 0}">0</span> ថ្ងៃ
+                            </td>
+                            <td style="text-align: center; font-weight: bold; background: #fef2f2; color: #991b1b;">
+                                <span class="total-unex" th:id="${'unex_' + student.id}" th:text="${studentUnexcusedCounts != null and studentUnexcusedCounts.containsKey(student.id) ? studentUnexcusedCounts.get(student.id) : 0}">0</span> ថ្ងៃ
+                            </td>
+                            <td style="text-align: center; font-weight: 800; background: #f8fafc; color: #0f172a;">
+                                <span class="total-all" th:id="${'tot_' + student.id}" th:text="${studentTotalCounts != null and studentTotalCounts.containsKey(student.id) ? studentTotalCounts.get(student.id) : 0}">0</span> ថ្ងៃ
+                            </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(students)}">
-                            <td colspan="35" style="text-align: center; padding: 25px; color: var(--text-muted);">មិនមានទិន្នន័យសិស្សទេ</td>
+                            <td colspan="36" style="text-align: center; padding: 25px; color: var(--text-muted);">មិនមានទិន្នន័យសិស្សទេ</td>
                         </tr>
                     </tbody>
                 </table>
@@ -285,24 +416,39 @@
 
             const rows = document.querySelectorAll('tbody tr');
             
-            // --- Feature 1: Auto Calculate Total Absences ---
-            rows.forEach(row => {
-                const checkboxes = row.querySelectorAll('.attendance-cb');
-                const totalCell = row.querySelector('.total-absent');
-                if (!totalCell || checkboxes.length === 0) return;
+            // --- Feature 1: Live Calculate Row Totals (ច្បាប់, គ្មានច្បាប់, សរុប) ---
+            function updateRowTotals(row) {
+                const selects = row.querySelectorAll('select.att-select');
+                const permSpan = row.querySelector('.total-perm');
+                const unexSpan = row.querySelector('.total-unex');
+                const allSpan = row.querySelector('.total-all');
                 
-                function updateTotal() {
-                    let count = 0;
-                    checkboxes.forEach(cb => {
-                        if (cb.checked) count++;
-                    });
-                    totalCell.textContent = count;
-                }
-                
-                checkboxes.forEach(cb => {
-                    cb.addEventListener('change', updateTotal);
+                let perm = 0;
+                let unex = 0;
+                selects.forEach(s => {
+                    const val = s.value;
+                    s.classList.remove('att-permission', 'att-unexcused');
+                    if (val.endsWith('_PERMISSION')) {
+                        s.classList.add('att-permission');
+                        perm++;
+                    } else if (val.endsWith('_UNEXCUSED')) {
+                        s.classList.add('att-unexcused');
+                        unex++;
+                    }
                 });
-                updateTotal();
+                
+                if (permSpan) permSpan.textContent = perm;
+                if (unexSpan) unexSpan.textContent = unex;
+                if (allSpan) allSpan.textContent = (perm + unex);
+            }
+
+            rows.forEach(row => {
+                const selects = row.querySelectorAll('select.att-select');
+                selects.forEach(s => {
+                    s.addEventListener('change', function() {
+                        updateRowTotals(row);
+                    });
+                });
             });
 
             // --- Feature 2: Dynamic Days based on Month ---
@@ -348,27 +494,19 @@
                     const day = parseInt(cell.getAttribute('data-day'));
                     if (day > daysInMonth) {
                         cell.style.display = 'none';
-                        // if a hidden day was checked, uncheck it
-                        const input = cell.querySelector('input');
-                        if (input && input.checked) {
-                            input.checked = false;
+                        // if a hidden day was selected, reset it
+                        const sel = cell.querySelector('select');
+                        if (sel && sel.value !== "") {
+                            sel.value = "";
                         }
                     } else {
                         cell.style.display = 'table-cell';
                     }
                 });
                 
-                // Recalculate totals in case hidden days were unchecked
+                // Recalculate totals in case hidden days were reset
                 rows.forEach(row => {
-                    const totalCell = row.querySelector('.total-absent');
-                    const checkboxes = row.querySelectorAll('.attendance-cb');
-                    if (totalCell && checkboxes.length > 0) {
-                        let count = 0;
-                        checkboxes.forEach(cb => {
-                            if (cb.checked) count++;
-                        });
-                        totalCell.textContent = count;
-                    }
+                    updateRowTotals(row);
                 });
             }
 

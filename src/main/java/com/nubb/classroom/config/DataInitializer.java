@@ -91,6 +91,10 @@ public class DataInitializer {
                 try { stmt.execute("UPDATE \"ACCOUNT\" SET PRINCIPAL_NAME = 'លី ប៊ុនថេង' WHERE PRINCIPAL_NAME IS NULL OR PRINCIPAL_NAME = '' OR PRINCIPAL_NAME LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
                 try { stmt.execute("UPDATE certificate_records SET principal_name = 'លី ប៊ុនថេង' WHERE principal_name IS NULL OR principal_name = '' OR principal_name LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
                 try { stmt.execute("UPDATE \"CERTIFICATE_RECORDS\" SET PRINCIPAL_NAME = 'លី ប៊ុនថេង' WHERE PRINCIPAL_NAME IS NULL OR PRINCIPAL_NAME = '' OR PRINCIPAL_NAME LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
+                try { stmt.execute("ALTER TABLE IF EXISTS attendance ADD COLUMN IF NOT EXISTS absence_type VARCHAR(50)"); } catch (Exception ignored) {}
+                try { stmt.execute("ALTER TABLE IF EXISTS \"ATTENDANCE\" ADD COLUMN IF NOT EXISTS \"ABSENCE_TYPE\" VARCHAR(50)"); } catch (Exception ignored) {}
+                try { stmt.execute("UPDATE attendance SET absence_type = 'UNEXCUSED' WHERE absence_type IS NULL AND present = FALSE"); } catch (Exception ignored) {}
+                try { stmt.execute("UPDATE \"ATTENDANCE\" SET \"ABSENCE_TYPE\" = 'UNEXCUSED' WHERE \"ABSENCE_TYPE\" IS NULL AND \"PRESENT\" = FALSE"); } catch (Exception ignored) {}
                 try {
                     String activeSchool = null;
                     try (ResultSet rs = stmt.executeQuery("SELECT school_name FROM account WHERE school_name IS NOT NULL AND school_name != '' AND school_name NOT LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%' AND school_name NOT LIKE '%គ្រឹះស្ថានសិក្សា%' LIMIT 1")) {
@@ -187,6 +191,10 @@ public class DataInitializer {
                         try { stmt.execute("UPDATE \"ACCOUNT\" SET PRINCIPAL_NAME = 'លី ប៊ុនថេង' WHERE PRINCIPAL_NAME IS NULL OR PRINCIPAL_NAME = '' OR PRINCIPAL_NAME LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
                         try { stmt.execute("UPDATE certificate_records SET principal_name = 'លី ប៊ុនថេង' WHERE principal_name IS NULL OR principal_name = '' OR principal_name LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
                         try { stmt.execute("UPDATE \"CERTIFICATE_RECORDS\" SET PRINCIPAL_NAME = 'លី ប៊ុនថេង' WHERE PRINCIPAL_NAME IS NULL OR PRINCIPAL_NAME = '' OR PRINCIPAL_NAME LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
+                try { stmt.execute("ALTER TABLE IF EXISTS attendance ADD COLUMN IF NOT EXISTS absence_type VARCHAR(50)"); } catch (Exception ignored) {}
+                try { stmt.execute("ALTER TABLE IF EXISTS \"ATTENDANCE\" ADD COLUMN IF NOT EXISTS \"ABSENCE_TYPE\" VARCHAR(50)"); } catch (Exception ignored) {}
+                try { stmt.execute("UPDATE attendance SET absence_type = 'UNEXCUSED' WHERE absence_type IS NULL AND present = FALSE"); } catch (Exception ignored) {}
+                try { stmt.execute("UPDATE \"ATTENDANCE\" SET \"ABSENCE_TYPE\" = 'UNEXCUSED' WHERE \"ABSENCE_TYPE\" IS NULL AND \"PRESENT\" = FALSE"); } catch (Exception ignored) {}
                     } catch (Exception ignored) {}
                 } catch (Exception e) {
                     System.err.println(">>> [DataInitializer] Error restoring database: " + e.getMessage());
@@ -389,7 +397,7 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
-            // 11. Ensure baseline sample absences exist if empty
+            // 11. Ensure baseline sample absences exist if empty or update them
             try {
                 if (attendanceRepository.count() == 0) {
                     List<Student> stList = studentRepository.findByClassName("១០E");
@@ -398,21 +406,30 @@ public class DataInitializer {
                     }
                     if (!stList.isEmpty()) {
                         Student s1 = stList.get(0);
-                        Attendance a1 = new Attendance(s1, LocalDate.of(2026, 11, 4), false); a1.setAccountId(97L); attendanceRepository.save(a1);
-                        Attendance a2 = new Attendance(s1, LocalDate.of(2026, 11, 15), false); a2.setAccountId(97L); attendanceRepository.save(a2);
-                        Attendance a3 = new Attendance(s1, LocalDate.of(2026, 12, 10), false); a3.setAccountId(97L); attendanceRepository.save(a3);
-                        Attendance a4 = new Attendance(s1, LocalDate.of(2027, 1, 8), false); a4.setAccountId(97L); attendanceRepository.save(a4);
+                        Attendance a1 = new Attendance(s1, LocalDate.of(2026, 11, 4), false, "PERMISSION"); a1.setAccountId(97L); attendanceRepository.save(a1);
+                        Attendance a2 = new Attendance(s1, LocalDate.of(2026, 11, 15), false, "UNEXCUSED"); a2.setAccountId(97L); attendanceRepository.save(a2);
+                        Attendance a3 = new Attendance(s1, LocalDate.of(2026, 12, 10), false, "PERMISSION"); a3.setAccountId(97L); attendanceRepository.save(a3);
+                        Attendance a4 = new Attendance(s1, LocalDate.of(2027, 1, 8), false, "UNEXCUSED"); a4.setAccountId(97L); attendanceRepository.save(a4);
 
                         if (stList.size() > 1) {
                             Student s2 = stList.get(1);
-                            Attendance a5 = new Attendance(s2, LocalDate.of(2026, 11, 8), false); a5.setAccountId(97L); attendanceRepository.save(a5);
-                            Attendance a6 = new Attendance(s2, LocalDate.of(2026, 12, 22), false); a6.setAccountId(97L); attendanceRepository.save(a6);
-                            Attendance a7 = new Attendance(s2, LocalDate.of(2027, 3, 12), false); a7.setAccountId(97L); attendanceRepository.save(a7);
+                            Attendance a5 = new Attendance(s2, LocalDate.of(2026, 11, 8), false, "PERMISSION"); a5.setAccountId(97L); attendanceRepository.save(a5);
+                            Attendance a6 = new Attendance(s2, LocalDate.of(2026, 12, 22), false, "PERMISSION"); a6.setAccountId(97L); attendanceRepository.save(a6);
+                            Attendance a7 = new Attendance(s2, LocalDate.of(2027, 3, 12), false, "UNEXCUSED"); a7.setAccountId(97L); attendanceRepository.save(a7);
                         }
                         if (stList.size() > 2) {
                             Student s3 = stList.get(2);
-                            Attendance a8 = new Attendance(s3, LocalDate.of(2026, 11, 19), false); a8.setAccountId(97L); attendanceRepository.save(a8);
-                            Attendance a9 = new Attendance(s3, LocalDate.of(2027, 4, 21), false); a9.setAccountId(97L); attendanceRepository.save(a9);
+                            Attendance a8 = new Attendance(s3, LocalDate.of(2026, 11, 19), false, "UNEXCUSED"); a8.setAccountId(97L); attendanceRepository.save(a8);
+                            Attendance a9 = new Attendance(s3, LocalDate.of(2027, 4, 21), false, "PERMISSION"); a9.setAccountId(97L); attendanceRepository.save(a9);
+                        }
+                    }
+                } else {
+                    List<Attendance> allAtt = attendanceRepository.findAll();
+                    for (Attendance att : allAtt) {
+                        if (att.getAbsenceType() == null || att.getAbsenceType().isEmpty()) {
+                            int day = att.getDate().getDayOfMonth();
+                            att.setAbsenceType((day % 2 == 0) ? "PERMISSION" : "UNEXCUSED");
+                            attendanceRepository.save(att);
                         }
                     }
                 }

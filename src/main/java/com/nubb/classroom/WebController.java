@@ -439,56 +439,172 @@ public class WebController {
 
     public static class YearlyStudentAbsence {
         private Student student;
-        private int nov; // ខែវិច្ឆិកា ២០២៦
-        private int dec; // ខែធ្នូ ២០២៦
-        private int jan; // ខែមករា ២០២៧
-        private int feb; // ខែកុម្ភៈ ២០២៧
+        // Month breakdowns (Permission / Unexcused)
+        private int novPermission;
+        private int novUnexcused;
+
+        private int decPermission;
+        private int decUnexcused;
+
+        private int janPermission;
+        private int janUnexcused;
+
+        private int febPermission;
+        private int febUnexcused;
+
+        private int semester1Permission;
+        private int semester1Unexcused;
         private int semester1Total;
-        private int mar; // ខែមីនា ២០២៧
-        private int apr; // ខែមេសា ២០២៧
-        private int may; // ខែឧសភា ២០២៧
-        private int jun; // ខែមិថុនា ២០២៧
-        private int jul; // ខែកក្កដា ២០២៧
-        private int aug; // ខែសីហា ២០២៧
+
+        private int marPermission;
+        private int marUnexcused;
+
+        private int aprPermission;
+        private int aprUnexcused;
+
+        private int mayPermission;
+        private int mayUnexcused;
+
+        private int junPermission;
+        private int junUnexcused;
+
+        private int julPermission;
+        private int julUnexcused;
+
+        private int augPermission;
+        private int augUnexcused;
+
+        private int semester2Permission;
+        private int semester2Unexcused;
         private int semester2Total;
+
+        private int totalYearlyPermission;
+        private int totalYearlyUnexcused;
         private int totalYearly;
 
         public YearlyStudentAbsence(Student student) {
             this.student = student;
         }
 
+        public void addAbsence(int year, int month, boolean isPermission) {
+            if (year == 2026 && month == 11) {
+                if (isPermission) novPermission++; else novUnexcused++;
+            } else if (year == 2026 && month == 12) {
+                if (isPermission) decPermission++; else decUnexcused++;
+            } else if (year == 2027 && month == 1) {
+                if (isPermission) janPermission++; else janUnexcused++;
+            } else if (year == 2027 && month == 2) {
+                if (isPermission) febPermission++; else febUnexcused++;
+            } else if (year == 2027 && month == 3) {
+                if (isPermission) marPermission++; else marUnexcused++;
+            } else if (year == 2027 && month == 4) {
+                if (isPermission) aprPermission++; else aprUnexcused++;
+            } else if (year == 2027 && month == 5) {
+                if (isPermission) mayPermission++; else mayUnexcused++;
+            } else if (year == 2027 && month == 6) {
+                if (isPermission) junPermission++; else junUnexcused++;
+            } else if (year == 2027 && month == 7) {
+                if (isPermission) julPermission++; else julUnexcused++;
+            } else if (year == 2027 && month == 8) {
+                if (isPermission) augPermission++; else augUnexcused++;
+            }
+        }
+
         public void calculateTotals() {
-            this.semester1Total = nov + dec + jan + feb;
-            this.semester2Total = mar + apr + may + jun + jul + aug;
-            this.totalYearly = this.semester1Total + this.semester2Total;
+            this.semester1Permission = novPermission + decPermission + janPermission + febPermission;
+            this.semester1Unexcused = novUnexcused + decUnexcused + janUnexcused + febUnexcused;
+            this.semester1Total = semester1Permission + semester1Unexcused;
+
+            this.semester2Permission = marPermission + aprPermission + mayPermission + junPermission + julPermission + augPermission;
+            this.semester2Unexcused = marUnexcused + aprUnexcused + mayUnexcused + junUnexcused + julUnexcused + augUnexcused;
+            this.semester2Total = semester2Permission + semester2Unexcused;
+
+            this.totalYearlyPermission = semester1Permission + semester2Permission;
+            this.totalYearlyUnexcused = semester1Unexcused + semester2Unexcused;
+            this.totalYearly = totalYearlyPermission + totalYearlyUnexcused;
         }
 
         public Student getStudent() { return student; }
         public void setStudent(Student student) { this.student = student; }
-        public int getNov() { return nov; }
-        public void setNov(int nov) { this.nov = nov; }
-        public int getDec() { return dec; }
-        public void setDec(int dec) { this.dec = dec; }
-        public int getJan() { return jan; }
-        public void setJan(int jan) { this.jan = jan; }
-        public int getFeb() { return feb; }
-        public void setFeb(int feb) { this.feb = feb; }
+
+        public int getNovPermission() { return novPermission; }
+        public void setNovPermission(int novPermission) { this.novPermission = novPermission; }
+        public int getNovUnexcused() { return novUnexcused; }
+        public void setNovUnexcused(int novUnexcused) { this.novUnexcused = novUnexcused; }
+        public int getNov() { return novPermission + novUnexcused; }
+
+        public int getDecPermission() { return decPermission; }
+        public void setDecPermission(int decPermission) { this.decPermission = decPermission; }
+        public int getDecUnexcused() { return decUnexcused; }
+        public void setDecUnexcused(int decUnexcused) { this.decUnexcused = decUnexcused; }
+        public int getDec() { return decPermission + decUnexcused; }
+
+        public int getJanPermission() { return janPermission; }
+        public void setJanPermission(int janPermission) { this.janPermission = janPermission; }
+        public int getJanUnexcused() { return janUnexcused; }
+        public void setJanUnexcused(int janUnexcused) { this.janUnexcused = janUnexcused; }
+        public int getJan() { return janPermission + janUnexcused; }
+
+        public int getFebPermission() { return febPermission; }
+        public void setFebPermission(int febPermission) { this.febPermission = febPermission; }
+        public int getFebUnexcused() { return febUnexcused; }
+        public void setFebUnexcused(int febUnexcused) { this.febUnexcused = febUnexcused; }
+        public int getFeb() { return febPermission + febUnexcused; }
+
+        public int getSemester1Permission() { return semester1Permission; }
+        public void setSemester1Permission(int semester1Permission) { this.semester1Permission = semester1Permission; }
+        public int getSemester1Unexcused() { return semester1Unexcused; }
+        public void setSemester1Unexcused(int semester1Unexcused) { this.semester1Unexcused = semester1Unexcused; }
         public int getSemester1Total() { return semester1Total; }
         public void setSemester1Total(int semester1Total) { this.semester1Total = semester1Total; }
-        public int getMar() { return mar; }
-        public void setMar(int mar) { this.mar = mar; }
-        public int getApr() { return apr; }
-        public void setApr(int apr) { this.apr = apr; }
-        public int getMay() { return may; }
-        public void setMay(int may) { this.may = may; }
-        public int getJun() { return jun; }
-        public void setJun(int jun) { this.jun = jun; }
-        public int getJul() { return jul; }
-        public void setJul(int jul) { this.jul = jul; }
-        public int getAug() { return aug; }
-        public void setAug(int aug) { this.aug = aug; }
+
+        public int getMarPermission() { return marPermission; }
+        public void setMarPermission(int marPermission) { this.marPermission = marPermission; }
+        public int getMarUnexcused() { return marUnexcused; }
+        public void setMarUnexcused(int marUnexcused) { this.marUnexcused = marUnexcused; }
+        public int getMar() { return marPermission + marUnexcused; }
+
+        public int getAprPermission() { return aprPermission; }
+        public void setAprPermission(int aprPermission) { this.aprPermission = aprPermission; }
+        public int getAprUnexcused() { return aprUnexcused; }
+        public void setAprUnexcused(int aprUnexcused) { this.aprUnexcused = aprUnexcused; }
+        public int getApr() { return aprPermission + aprUnexcused; }
+
+        public int getMayPermission() { return mayPermission; }
+        public void setMayPermission(int mayPermission) { this.mayPermission = mayPermission; }
+        public int getMayUnexcused() { return mayUnexcused; }
+        public void setMayUnexcused(int mayUnexcused) { this.mayUnexcused = mayUnexcused; }
+        public int getMay() { return mayPermission + mayUnexcused; }
+
+        public int getJunPermission() { return junPermission; }
+        public void setJunPermission(int junPermission) { this.junPermission = junPermission; }
+        public int getJunUnexcused() { return junUnexcused; }
+        public void setJunUnexcused(int junUnexcused) { this.junUnexcused = junUnexcused; }
+        public int getJun() { return junPermission + junUnexcused; }
+
+        public int getJulPermission() { return julPermission; }
+        public void setJulPermission(int julPermission) { this.julPermission = julPermission; }
+        public int getJulUnexcused() { return julUnexcused; }
+        public void setJulUnexcused(int julUnexcused) { this.julUnexcused = julUnexcused; }
+        public int getJul() { return julPermission + julUnexcused; }
+
+        public int getAugPermission() { return augPermission; }
+        public void setAugPermission(int augPermission) { this.augPermission = augPermission; }
+        public int getAugUnexcused() { return augUnexcused; }
+        public void setAugUnexcused(int augUnexcused) { this.augUnexcused = augUnexcused; }
+        public int getAug() { return augPermission + augUnexcused; }
+
+        public int getSemester2Permission() { return semester2Permission; }
+        public void setSemester2Permission(int semester2Permission) { this.semester2Permission = semester2Permission; }
+        public int getSemester2Unexcused() { return semester2Unexcused; }
+        public void setSemester2Unexcused(int semester2Unexcused) { this.semester2Unexcused = semester2Unexcused; }
         public int getSemester2Total() { return semester2Total; }
         public void setSemester2Total(int semester2Total) { this.semester2Total = semester2Total; }
+
+        public int getTotalYearlyPermission() { return totalYearlyPermission; }
+        public void setTotalYearlyPermission(int totalYearlyPermission) { this.totalYearlyPermission = totalYearlyPermission; }
+        public int getTotalYearlyUnexcused() { return totalYearlyUnexcused; }
+        public void setTotalYearlyUnexcused(int totalYearlyUnexcused) { this.totalYearlyUnexcused = totalYearlyUnexcused; }
         public int getTotalYearly() { return totalYearly; }
         public void setTotalYearly(int totalYearly) { this.totalYearly = totalYearly; }
     }
@@ -593,18 +709,7 @@ public class WebController {
                 List<Attendance> sAtts = studentAttMap.getOrDefault(s.getId(), Collections.emptyList());
                 for (Attendance a : sAtts) {
                     LocalDate d = a.getDate();
-                    int y = d.getYear();
-                    int m = d.getMonthValue();
-                    if (y == 2026 && m == 11) row.setNov(row.getNov() + 1);
-                    else if (y == 2026 && m == 12) row.setDec(row.getDec() + 1);
-                    else if (y == 2027 && m == 1) row.setJan(row.getJan() + 1);
-                    else if (y == 2027 && m == 2) row.setFeb(row.getFeb() + 1);
-                    else if (y == 2027 && m == 3) row.setMar(row.getMar() + 1);
-                    else if (y == 2027 && m == 4) row.setApr(row.getApr() + 1);
-                    else if (y == 2027 && m == 5) row.setMay(row.getMay() + 1);
-                    else if (y == 2027 && m == 6) row.setJun(row.getJun() + 1);
-                    else if (y == 2027 && m == 7) row.setJul(row.getJul() + 1);
-                    else if (y == 2027 && m == 8) row.setAug(row.getAug() + 1);
+                    row.addAbsence(d.getYear(), d.getMonthValue(), a.isPermission());
                 }
                 row.calculateTotals();
                 yearlyList.add(row);
@@ -623,20 +728,30 @@ public class WebController {
                 monthAtts = attendanceRepository.findByStudentInAndDateBetween(students, start, end);
             }
 
-            Set<String> absentDays = new HashSet<>();
-            Map<Long, Integer> studentMonthlyAbsentCounts = new HashMap<>();
+            Map<String, String> absentDayTypes = new HashMap<>();
+            Map<Long, Integer> studentPermissionCounts = new HashMap<>();
+            Map<Long, Integer> studentUnexcusedCounts = new HashMap<>();
+            Map<Long, Integer> studentTotalCounts = new HashMap<>();
 
             for (Attendance a : monthAtts) {
                 if (!a.isPresent()) {
                     Long sId = a.getStudent().getId();
                     int day = a.getDate().getDayOfMonth();
-                    absentDays.add(sId + "_" + day);
-                    studentMonthlyAbsentCounts.put(sId, studentMonthlyAbsentCounts.getOrDefault(sId, 0) + 1);
+                    String type = a.isPermission() ? "PERMISSION" : "UNEXCUSED";
+                    absentDayTypes.put(sId + "_" + day, type);
+                    if ("PERMISSION".equals(type)) {
+                        studentPermissionCounts.put(sId, studentPermissionCounts.getOrDefault(sId, 0) + 1);
+                    } else {
+                        studentUnexcusedCounts.put(sId, studentUnexcusedCounts.getOrDefault(sId, 0) + 1);
+                    }
+                    studentTotalCounts.put(sId, studentTotalCounts.getOrDefault(sId, 0) + 1);
                 }
             }
 
-            model.addAttribute("absentDays", absentDays);
-            model.addAttribute("studentMonthlyAbsentCounts", studentMonthlyAbsentCounts);
+            model.addAttribute("absentDayTypes", absentDayTypes);
+            model.addAttribute("studentPermissionCounts", studentPermissionCounts);
+            model.addAttribute("studentUnexcusedCounts", studentUnexcusedCounts);
+            model.addAttribute("studentTotalCounts", studentTotalCounts);
         }
 
         model.addAttribute("students", students);
@@ -699,18 +814,23 @@ public class WebController {
             Map<Long, Student> studentMap = (students != null) ? students.stream().collect(Collectors.toMap(Student::getId, s -> s, (s1, s2) -> s1)) : Collections.emptyMap();
             List<Attendance> toSave = new ArrayList<>();
             for (String item : attendanceData) {
-                String[] parts = item.split("_");
-                if (parts.length == 2) {
+                if (item == null || item.trim().isEmpty()) continue;
+                String[] parts = item.trim().split("_");
+                if (parts.length >= 2) {
                     try {
                         Long sId = Long.parseLong(parts[0]);
                         int day = Integer.parseInt(parts[1]);
+                        String type = (parts.length >= 3) ? parts[2] : "UNEXCUSED";
+                        if (!"PERMISSION".equalsIgnoreCase(type) && !"UNEXCUSED".equalsIgnoreCase(type)) {
+                            type = "UNEXCUSED";
+                        }
                         Student st = studentMap.get(sId);
                         if (st == null) {
                             st = studentRepository.findById(sId).orElse(null);
                         }
                         if (st != null && day >= 1 && day <= end.getDayOfMonth()) {
                             LocalDate attDate = LocalDate.of(year, monthNum, day);
-                            Attendance att = new Attendance(st, attDate, false);
+                            Attendance att = new Attendance(st, attDate, false, type);
                             att.setAccountId(accountId);
                             toSave.add(att);
                         }
