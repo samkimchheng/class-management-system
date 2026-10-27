@@ -7,6 +7,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
     <style>
+        .scrollable-table-wrapper {
+            overflow-x: auto;
+            overflow-y: auto;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius);
+        }
+        .scrollable-table-wrapper table {
+            margin-top: 0;
+            border-collapse: collapse;
+        }
         .stat-card {
             background-color: var(--white);
             padding: 30px;
@@ -245,41 +255,102 @@
                 </table>
             
             <!-- Summary Table for All Subjects -->
-            <div class="table-container" style="margin-top: 30px; overflow-x: auto;">
-                <h3 style="margin-bottom: 15px; color: var(--dark);">តារាងស្ថិតិតាមមុខវិជ្ជានីមួយៗ</h3>
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background-color: var(--light);">
-                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">មុខវិជ្ជា</th>
-                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd; color: var(--success);">ជាប់</th>
-                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd; color: var(--danger);">ធ្លាក់</th>
-                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;">និទ្ទេស A</th>
-                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;">និទ្ទេស B</th>
-                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;">និទ្ទេស C</th>
-                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;">និទ្ទេស D</th>
-                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;">និទ្ទេស E</th>
-                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;">និទ្ទេស F</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="stat : ${subjectStats}" style="border-bottom: 1px solid #eee;">
-                            <td style="padding: 12px; font-weight: bold; color: var(--primary); white-space: nowrap;" th:text="${stat.subjectName}">មុខវិជ្ជា</td>
-                            <td style="padding: 12px; text-align: center; font-weight: bold; color: var(--success); white-space: nowrap;" th:text="|${stat.pass} នាក់ (ស្រី ${stat.passFemale})|">0</td>
-                            <td style="padding: 12px; text-align: center; font-weight: bold; color: var(--danger); white-space: nowrap;" th:text="|${stat.fail} នាក់ (ស្រី ${stat.failFemale})|">0</td>
-                            <td style="padding: 12px; text-align: center; white-space: nowrap;" th:text="|${stat.gradeA} នាក់ (ស្រី ${stat.gradeAFemale})|">0</td>
-                            <td style="padding: 12px; text-align: center; white-space: nowrap;" th:text="|${stat.gradeB} នាក់ (ស្រី ${stat.gradeBFemale})|">0</td>
-                            <td style="padding: 12px; text-align: center; white-space: nowrap;" th:text="|${stat.gradeC} នាក់ (ស្រី ${stat.gradeCFemale})|">0</td>
-                            <td style="padding: 12px; text-align: center; white-space: nowrap;" th:text="|${stat.gradeD} នាក់ (ស្រី ${stat.gradeDFemale})|">0</td>
-                            <td style="padding: 12px; text-align: center; white-space: nowrap;" th:text="|${stat.gradeE} នាក់ (ស្រី ${stat.gradeEFemale})|">0</td>
-                            <td style="padding: 12px; text-align: center; white-space: nowrap;" th:text="|${stat.gradeF} នាក់ (ស្រី ${stat.gradeFFemale})|">0</td>
-                        </tr>
-                        <tr th:if="${#lists.isEmpty(subjectStats)}">
-                            <td colspan="9" style="text-align: center; padding: 20px; color: #999;">មិនទាន់មានទិន្នន័យ</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="table-container" style="margin-top: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 style="margin: 0; color: var(--dark);">តារាងស្ថិតិតាមមុខវិជ្ជានីមួយៗ</h3>
+                        <span style="font-size: 0.9rem; color: #64748b;" th:text="'ប្រចាំខែ៖ ' + (${selectedMonth} ?: 'តេស្តដើមឆ្នាំ') + ' | ថ្នាក់៖ ' + (${selectedClass} ?: 'ថ្នាក់រៀនទាំងអស់')"></span>
+                    </div>
+                </div>
+                <div class="scrollable-table-wrapper">
+                    <table style="width: 100%; border-collapse: collapse; min-width: 950px;">
+                        <thead>
+                            <tr style="background-color: var(--light);">
+                                <th rowspan="2" style="text-align: center; width: 45px; vertical-align: middle; border: 1px solid #cbd5e1; padding: 10px;">ល.រ</th>
+                                <th rowspan="2" style="text-align: left; vertical-align: middle; min-width: 130px; border: 1px solid #cbd5e1; padding: 10px;">មុខវិជ្ជា</th>
+                                <th colspan="2" style="text-align: center; border: 1px solid #cbd5e1; background-color: #f1f5f9; padding: 8px;">សិស្សប្រឡង</th>
+                                <th colspan="3" style="text-align: center; border: 1px solid #cbd5e1; background-color: #ecfdf5; color: var(--success); padding: 8px;">សិស្សជាប់</th>
+                                <th colspan="3" style="text-align: center; border: 1px solid #cbd5e1; background-color: #fef2f2; color: var(--danger); padding: 8px;">សិស្សធ្លាក់</th>
+                                <th colspan="6" style="text-align: center; border: 1px solid #cbd5e1; background-color: #f8fafc; padding: 8px;">កម្រិតនិទ្ទេស</th>
+                            </tr>
+                            <tr style="background-color: var(--light); font-size: 0.88rem;">
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 55px; padding: 8px;">សរុប</th>
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 55px; color: #be185d; padding: 8px;">ស្រី</th>
+
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 55px; color: var(--success); padding: 8px;">សរុប</th>
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 55px; color: #be185d; padding: 8px;">ស្រី</th>
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 65px; color: var(--success); padding: 8px;">ភាគរយ</th>
+
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 55px; color: var(--danger); padding: 8px;">សរុប</th>
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 55px; color: #be185d; padding: 8px;">ស្រី</th>
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 65px; color: var(--danger); padding: 8px;">ភាគរយ</th>
+
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 60px; padding: 8px;">A</th>
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 60px; padding: 8px;">B</th>
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 60px; padding: 8px;">C</th>
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 60px; padding: 8px;">D</th>
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 60px; padding: 8px;">E</th>
+                                <th style="text-align: center; border: 1px solid #cbd5e1; width: 60px; color: var(--danger); padding: 8px;">F</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="stat, iterStat : ${subjectStats}" 
+                                th:style="${selectedSubject != null and selectedSubject == stat.subjectName ? 'background-color: #ecfdf5; font-weight: 500;' : ''}">
+                                <td th:text="${iterStat.count}" style="text-align: center; font-weight: bold; color: var(--text-muted); border: 1px solid #cbd5e1; padding: 8px;">1</td>
+                                <td style="font-weight: bold; color: var(--primary); white-space: nowrap; border: 1px solid #cbd5e1; padding: 8px;">
+                                    <span th:text="${stat.subjectName}">មុខវិជ្ជា</span>
+                                    <span th:if="${selectedSubject != null and selectedSubject == stat.subjectName}" class="badge badge-success" style="font-size: 0.72rem; margin-left: 6px;">កំពុងមើល</span>
+                                </td>
+                                <!-- Examined -->
+                                <td style="text-align: center; font-weight: bold; border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.total}">0</td>
+                                <td style="text-align: center; color: #be185d; font-weight: 600; border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.totalFemale}">0</td>
+                                <!-- Pass -->
+                                <td style="text-align: center; font-weight: bold; color: var(--success); border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.pass}">0</td>
+                                <td style="text-align: center; color: #be185d; border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.passFemale}">0</td>
+                                <td style="text-align: center; font-weight: bold; color: var(--success); border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.passPercentFormatted}">0.0%</td>
+                                <!-- Fail -->
+                                <td style="text-align: center; font-weight: bold; color: var(--danger); border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.fail}">0</td>
+                                <td style="text-align: center; color: #be185d; border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.failFemale}">0</td>
+                                <td style="text-align: center; font-weight: bold; color: var(--danger); border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.failPercentFormatted}">0.0%</td>
+                                <!-- Grades -->
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.gradeA > 0 ? (stat.gradeA + (stat.gradeAFemale > 0 ? ' (' + stat.gradeAFemale + ')' : '')) : '-'}">-</td>
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.gradeB > 0 ? (stat.gradeB + (stat.gradeBFemale > 0 ? ' (' + stat.gradeBFemale + ')' : '')) : '-'}">-</td>
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.gradeC > 0 ? (stat.gradeC + (stat.gradeCFemale > 0 ? ' (' + stat.gradeCFemale + ')' : '')) : '-'}">-</td>
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.gradeD > 0 ? (stat.gradeD + (stat.gradeDFemale > 0 ? ' (' + stat.gradeDFemale + ')' : '')) : '-'}">-</td>
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${stat.gradeE > 0 ? (stat.gradeE + (stat.gradeEFemale > 0 ? ' (' + stat.gradeEFemale + ')' : '')) : '-'}">-</td>
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px; color: var(--danger);" th:text="${stat.gradeF > 0 ? (stat.gradeF + (stat.gradeFFemale > 0 ? ' (' + stat.gradeFFemale + ')' : '')) : '-'}">-</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(subjectStats)}">
+                                <td colspan="16" style="text-align: center; padding: 25px; color: #94a3b8; border: 1px solid #cbd5e1;">មិនទាន់មានទិន្នន័យពិន្ទុសម្រាប់ខែនេះទេ</td>
+                            </tr>
+                        </tbody>
+                        <!-- Footer Summary Row -->
+                        <tfoot th:if="${!#lists.isEmpty(subjectStats) and totalSubjectStat != null}" style="background-color: #f8fafc; font-weight: bold;">
+                            <tr>
+                                <td colspan="2" style="text-align: center; padding: 10px; border: 1px solid #cbd5e1; color: var(--dark); font-weight: bold;">សរុបរួម</td>
+                                <!-- Examined Total -->
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.total}">0</td>
+                                <td style="text-align: center; color: #be185d; border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.totalFemale}">0</td>
+                                <!-- Pass Total -->
+                                <td style="text-align: center; color: var(--success); border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.pass}">0</td>
+                                <td style="text-align: center; color: #be185d; border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.passFemale}">0</td>
+                                <td style="text-align: center; color: var(--success); border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.passPercentFormatted}">0.0%</td>
+                                <!-- Fail Total -->
+                                <td style="text-align: center; color: var(--danger); border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.fail}">0</td>
+                                <td style="text-align: center; color: #be185d; border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.failFemale}">0</td>
+                                <td style="text-align: center; color: var(--danger); border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.failPercentFormatted}">0.0%</td>
+                                <!-- Grades Total -->
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.gradeA}">0</td>
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.gradeB}">0</td>
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.gradeC}">0</td>
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.gradeD}">0</td>
+                                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.gradeE}">0</td>
+                                <td style="text-align: center; color: var(--danger); border: 1px solid #cbd5e1; padding: 8px;" th:text="${totalSubjectStat.gradeF}">0</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
-</div>
         </div>
     </div>
     <script src="/js/academic-year.js"></script>

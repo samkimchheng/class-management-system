@@ -1172,14 +1172,6 @@ public class WebController {
         }
         
         String currentYear = getCurrentAcademicYear();
-        List<com.nubb.classroom.model.Score> allScores;
-        if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            allScores = scoreRepository.findByMonthAndClassNameAndAccountIdAndAcademicYear(month, className, accountId, currentYear);
-        } else {
-            allScores = scoreRepository.findByMonthAndAccountIdAndAcademicYear(month, accountId, currentYear);
-            className = "ថ្នាក់រៀនទាំងអស់";
-        }
-
         // Get enrolled students for this class or all classes
         List<com.nubb.classroom.model.Student> enrolledStudents;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
@@ -1189,6 +1181,27 @@ public class WebController {
         }
         int enrolledTotal = enrolledStudents.size();
         int enrolledFemale = (int) enrolledStudents.stream().filter(s -> "ស្រី".equals(s.getGender())).count();
+
+        List<com.nubb.classroom.model.Score> allScores;
+        if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
+            allScores = scoreRepository.findByMonthAndClassNameAndAccountIdAndAcademicYear(month, className, accountId, currentYear);
+            java.util.Set<Long> scoreIds = new java.util.HashSet<>();
+            for (com.nubb.classroom.model.Score sc : allScores) {
+                if (sc.getId() != null) scoreIds.add(sc.getId());
+            }
+            for (com.nubb.classroom.model.Student st : enrolledStudents) {
+                List<com.nubb.classroom.model.Score> stScores = scoreRepository.findByStudentIdAndMonthAndAccountIdAndAcademicYear(st.getId(), month, accountId, currentYear);
+                for (com.nubb.classroom.model.Score sc : stScores) {
+                    if (sc.getId() != null && !scoreIds.contains(sc.getId())) {
+                        allScores.add(sc);
+                        scoreIds.add(sc.getId());
+                    }
+                }
+            }
+        } else {
+            allScores = scoreRepository.findByMonthAndAccountIdAndAcademicYear(month, accountId, currentYear);
+            className = "ថ្នាក់រៀនទាំងអស់";
+        }
 
         // Student fast lookup map
         java.util.Map<Long, com.nubb.classroom.model.Student> studentMap = new java.util.HashMap<>();
@@ -1206,10 +1219,13 @@ public class WebController {
         // Helper to get max total score for subject
         java.util.function.BiFunction<String, String, Double> getMaxTotal = (cls, subj) -> {
             com.nubb.classroom.model.ScoreRule rule = null;
-            List<com.nubb.classroom.model.ScoreRule> rules = scoreRuleRepository.findRules(cls, subj, accountId);
-            if (rules != null && !rules.isEmpty()) {
-                rule = rules.get(0);
-            } else {
+            if (cls != null && !cls.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(cls)) {
+                List<com.nubb.classroom.model.ScoreRule> rules = scoreRuleRepository.findRules(cls, subj, accountId);
+                if (rules != null && !rules.isEmpty()) {
+                    rule = rules.get(0);
+                }
+            }
+            if (rule == null) {
                 List<com.nubb.classroom.model.ScoreRule> globalRules = scoreRuleRepository.findRules("ថ្នាក់រៀនទាំងអស់", subj, accountId);
                 if (globalRules != null && !globalRules.isEmpty()) {
                     rule = globalRules.get(0);
@@ -1232,11 +1248,18 @@ public class WebController {
             stat.subjectName = subj;
             stat.total++;
             
-            double maxTotal = getMaxTotal.apply(score.getClassName(), subj);
+            String studentCls = score.getClassName();
+            com.nubb.classroom.model.Student st = studentMap.get(score.getStudentId());
+            if (studentCls == null || studentCls.isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(studentCls)) {
+                if (st != null && st.getClassName() != null) {
+                    studentCls = st.getClassName();
+                }
+            }
+
+            double maxTotal = getMaxTotal.apply(studentCls, subj);
             double percentage = (score.getTotal() / maxTotal) * 100.0;
             
             boolean isFemale = false;
-            com.nubb.classroom.model.Student st = studentMap.get(score.getStudentId());
             if (st != null && "ស្រី".equals(st.getGender())) {
                 isFemale = true;
                 stat.totalFemale++;
@@ -1423,9 +1446,50 @@ public class WebController {
         model.addAttribute("ePercent", ePercent);
         model.addAttribute("fPercent", fPercent);
         
-        // Table data
+        // Sort by standard academic subject order
+        List<String> standardOrder = java.util.Arrays.asList(
+            "ភាសាខ្មែរ", "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", "ជីវៈវិទ្យា",
+            "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា", "ពលរដ្ឋវិទ្យា", "សីលធម៌", "សីលធម៌-ពលរដ្ឋវិជ្ជា",
+            "ផែនដីវិទ្យា", "ផែនដី", "ផែនដី និងបរិស្ថានវិទ្យា",
+            "ភាសាអង់គ្លេស", "ភាសាបារាំង", "ព័ត៌មានវិទ្យា/កុំព្យូទ័រ", "កុំព្យូទ័រ", "ព័ត៌មានវិទ្យា (ICT)",
+            "កីឡា", "អក្សរសិល្ប៍"
+        );
+
         List<SubjectStat> subjectStatList = new java.util.ArrayList<>(subjectStatMap.values());
+        subjectStatList.sort((s1, s2) -> {
+            int idx1 = standardOrder.indexOf(s1.getSubjectName());
+            int idx2 = standardOrder.indexOf(s2.getSubjectName());
+            if (idx1 != -1 && idx2 != -1) return Integer.compare(idx1, idx2);
+            if (idx1 != -1) return -1;
+            if (idx2 != -1) return 1;
+            return s1.getSubjectName().compareTo(s2.getSubjectName());
+        });
+
+        SubjectStat totalStat = new SubjectStat();
+        totalStat.subjectName = "សរុបរួម";
+        for (SubjectStat s : subjectStatList) {
+            totalStat.total += s.total;
+            totalStat.totalFemale += s.totalFemale;
+            totalStat.pass += s.pass;
+            totalStat.passFemale += s.passFemale;
+            totalStat.fail += s.fail;
+            totalStat.failFemale += s.failFemale;
+            totalStat.gradeA += s.gradeA;
+            totalStat.gradeAFemale += s.gradeAFemale;
+            totalStat.gradeB += s.gradeB;
+            totalStat.gradeBFemale += s.gradeBFemale;
+            totalStat.gradeC += s.gradeC;
+            totalStat.gradeCFemale += s.gradeCFemale;
+            totalStat.gradeD += s.gradeD;
+            totalStat.gradeDFemale += s.gradeDFemale;
+            totalStat.gradeE += s.gradeE;
+            totalStat.gradeEFemale += s.gradeEFemale;
+            totalStat.gradeF += s.gradeF;
+            totalStat.gradeFFemale += s.gradeFFemale;
+        }
+
         model.addAttribute("subjectStats", subjectStatList);
+        model.addAttribute("totalSubjectStat", totalStat);
         
         model.addAttribute("myClassrooms", classroomRepository.findByAccountId(accountId));
         model.addAttribute("subjectsList", getSubjectList(accountId));
@@ -1837,5 +1901,21 @@ public class WebController {
         public int getGradeEFemale() { return gradeEFemale; }
         public int getGradeF() { return gradeF; }
         public int getGradeFFemale() { return gradeFFemale; }
+
+        public double getPassPercent() {
+            return total > 0 ? Math.round((pass * 100.0) / total * 10.0) / 10.0 : 0.0;
+        }
+
+        public double getFailPercent() {
+            return total > 0 ? Math.round((fail * 100.0) / total * 10.0) / 10.0 : 0.0;
+        }
+
+        public String getPassPercentFormatted() {
+            return String.format(java.util.Locale.US, "%.1f%%", total > 0 ? (pass * 100.0) / total : 0.0);
+        }
+
+        public String getFailPercentFormatted() {
+            return String.format(java.util.Locale.US, "%.1f%%", total > 0 ? (fail * 100.0) / total : 0.0);
+        }
     }
 }
