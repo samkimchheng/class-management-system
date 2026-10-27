@@ -755,19 +755,30 @@
                  'cert_student_code', 'cert_subject', 'cert_province', 'cert_teacher',
                  'cert_role_left', 'cert_role_right'].forEach(k => localStorage.removeItem(k));
 
-                // Restore signature from localStorage if not rendered by server
+                // Two-way sync: Keep server & localStorage in perfect sync across all computers
                 const sigImg = document.getElementById('teacherSignatureImg');
                 const currentSrc = sigImg ? sigImg.getAttribute('src') : null;
-                if (!currentSrc || currentSrc.trim() === '') {
-                    const cachedSig = localStorage.getItem('teacher_signature');
-                    if (cachedSig && cachedSig.startsWith('data:image/')) {
+                const cachedSig = localStorage.getItem('teacher_signature');
+
+                if (currentSrc && currentSrc.trim() !== '') {
+                    try { localStorage.setItem('teacher_signature', currentSrc); } catch (e) {}
+                } else if (cachedSig && cachedSig.startsWith('data:image/')) {
+                    if (sigImg) {
                         sigImg.src = cachedSig;
                         sigImg.style.display = 'block';
-                        const hint = document.getElementById('sigPlaceholderHint');
-                        if (hint) hint.style.display = 'none';
-                        const btnRemove = document.getElementById('btnRemoveSig');
-                        if (btnRemove) btnRemove.style.display = 'inline-flex';
                     }
+                    const hint = document.getElementById('sigPlaceholderHint');
+                    if (hint) hint.style.display = 'none';
+                    const btnRemove = document.getElementById('btnRemoveSig');
+                    if (btnRemove) btnRemove.style.display = 'inline-flex';
+
+                    // Sync back to server database
+                    const formData = new FormData();
+                    formData.append('signatureBase64', cachedSig);
+                    fetch('/api/certificate/signature', {
+                        method: 'POST',
+                        body: formData
+                    }).catch(err => {});
                 }
             } catch (e) {}
         });

@@ -430,7 +430,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 }
             }
 
-            // Resolve Teacher Signature (Priority: Teacher Account -> Template / Existing Record -> Account 97 / 1)
+            // Resolve Teacher Signature (Priority: Teacher Account -> Template / Existing Record -> Account 97 / 1 -> default resource)
             String teacherSignature = null;
             if (currentTeacherAcc != null && currentTeacherAcc.getSignature() != null && !currentTeacherAcc.getSignature().trim().isEmpty()) {
                 teacherSignature = currentTeacherAcc.getSignature().trim();
@@ -445,6 +445,18 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                     if (aAcc.isPresent() && aAcc.get().getSignature() != null && !aAcc.get().getSignature().trim().isEmpty()) {
                         teacherSignature = aAcc.get().getSignature().trim();
                     }
+                }
+            }
+
+            if (teacherSignature == null || teacherSignature.trim().isEmpty()) {
+                teacherSignature = loadDefaultSignature();
+            }
+
+            if (teacherSignature != null && !teacherSignature.trim().isEmpty()) {
+                final String sUri = teacherSignature;
+                if (currentTeacherAcc != null && (currentTeacherAcc.getSignature() == null || currentTeacherAcc.getSignature().isEmpty())) {
+                    currentTeacherAcc.setSignature(sUri);
+                    try { accountRepository.save(currentTeacherAcc); } catch (Exception ignored) {}
                 }
             }
 
@@ -532,7 +544,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("subjectName", "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", "ខេត្តពោធិ៍សាត់");
             model.addAttribute("teacherName", "លោកគ្រូ សំ គឹមឆេង");
-            model.addAttribute("teacherSignature", null);
+            model.addAttribute("teacherSignature", loadDefaultSignature());
             model.addAttribute("roleSignerLeft", "នាយកសាលា / គណៈគ្រប់គ្រង");
             model.addAttribute("roleSignerRight", "គ្រូទទួលបន្ទុកថ្នាក់");
             List<String> fbClasses = new ArrayList<>(List.of("ថ្នាក់ទី១០ A", "ថ្នាក់ទី១០ B", "ថ្នាក់ទី១១ វិទ្យាសាស្ត្រ", "ថ្នាក់ទី១២ វិទ្យាសាស្ត្រ"));
@@ -1124,5 +1136,16 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("success", false, "error", e.getMessage()));
         }
+    }
+
+    private String loadDefaultSignature() {
+        try {
+            org.springframework.core.io.Resource sigRes = new org.springframework.core.io.ClassPathResource("signature_default.txt");
+            if (sigRes.exists()) {
+                String sig = new String(sigRes.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
+                if (!sig.isEmpty()) return sig;
+            }
+        } catch (Exception ignored) {}
+        return null;
     }
 }

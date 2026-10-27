@@ -1,9 +1,11 @@
 package com.nubb.classroom.config;
 
+import com.nubb.classroom.model.CertificateRecord;
 import com.nubb.classroom.model.Score;
 import com.nubb.classroom.model.ScoreRule;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.repository.AccountRepository;
+import com.nubb.classroom.repository.CertificateRecordRepository;
 import com.nubb.classroom.repository.ScoreRepository;
 import com.nubb.classroom.repository.ScoreRuleRepository;
 import com.nubb.classroom.repository.StudentRepository;
@@ -26,6 +28,7 @@ public class DataInitializer {
                                      StudentRepository studentRepository,
                                      ScoreRepository scoreRepository,
                                      ScoreRuleRepository scoreRuleRepository,
+                                     CertificateRecordRepository certificateRecordRepository,
                                      DataSource dataSource) {
         return args -> {
             // 1. Schema migration: Ensure active and profile columns exist in account table
@@ -214,6 +217,49 @@ public class DataInitializer {
                 for (String sql : profileUpdates) {
                     try { stmt.executeUpdate(sql); } catch (Exception ignored) {}
                     try { stmt.executeUpdate(sql.replace("account", "\"ACCOUNT\"")); } catch (Exception ignored) {}
+                }
+            } catch (Exception ignored) {}
+
+            // 8b. Ensure default teacher signature is loaded and set on account 97 & 1 and certificate records
+            try {
+                String defaultSig = null;
+                try {
+                    org.springframework.core.io.Resource sigRes = new org.springframework.core.io.ClassPathResource("signature_default.txt");
+                    if (sigRes.exists()) {
+                        defaultSig = new String(sigRes.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).trim();
+                    }
+                } catch (Exception ignored) {}
+
+                if (defaultSig != null && !defaultSig.isEmpty()) {
+                    final String sigToSet = defaultSig;
+                    accountRepository.findById(97L).ifPresent(a -> {
+                        if (a.getSignature() == null || a.getSignature().isEmpty()) {
+                            a.setSignature(sigToSet);
+                            accountRepository.save(a);
+                        }
+                    });
+                    accountRepository.findById(1L).ifPresent(a -> {
+                        if (a.getSignature() == null || a.getSignature().isEmpty()) {
+                            a.setSignature(sigToSet);
+                            accountRepository.save(a);
+                        }
+                    });
+                    accountRepository.findByUsername("samkimchheng").ifPresent(a -> {
+                        if (a.getSignature() == null || a.getSignature().isEmpty()) {
+                            a.setSignature(sigToSet);
+                            accountRepository.save(a);
+                        }
+                    });
+
+                    try {
+                        List<CertificateRecord> cList = certificateRecordRepository.findAll();
+                        for (CertificateRecord cr : cList) {
+                            if (cr.getSignature() == null || cr.getSignature().isEmpty()) {
+                                cr.setSignature(sigToSet);
+                                certificateRecordRepository.save(cr);
+                            }
+                        }
+                    } catch (Exception ignored) {}
                 }
             } catch (Exception ignored) {}
 
