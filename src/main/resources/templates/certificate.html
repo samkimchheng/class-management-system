@@ -591,11 +591,19 @@
                         onclick="removeSignature('stamp')" title="លុបត្រាសាលាចេញ">
                     ❌ លុប
                 </button>
+            </div>
+        </div>
 
-                <button class="btn-action btn-print" onclick="window.print()">
+        <!-- Row 3: Print & Download Actions (ទម្លាក់មកជួរក្រោម) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px; margin-top: 12px;">
+            <div style="color: #cbd5e1; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                <span>📄 វិញ្ញាបនបត្រទំហំ A4 ស្តង់ដាផ្លូវការ អាចបោះពុម្ព ឬទាញយកជារូបភាព (PNG)</span>
+            </div>
+            <div style="display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <button class="btn-action btn-print" onclick="window.print()" style="padding: 10px 22px; font-size: 0.95rem; font-weight: bold; background: #3b82f6; color: white; border: 1px solid #60a5fa;">
                     🖨️ បោះពុម្ព / Save as PDF
                 </button>
-                <button class="btn-action btn-download" onclick="downloadCertificateAsImage()">
+                <button class="btn-action btn-download" onclick="downloadCertificateAsImage()" style="padding: 10px 24px; font-size: 0.95rem; font-weight: bold; background: #10b981; color: white; border: 1px solid #34d399;">
                     📥 ទាញយកជារូបភាព (PNG)
                 </button>
             </div>
@@ -766,7 +774,7 @@
                                 ✍️ ចុចបញ្ចូលហត្ថលេខានាយក (.png)
                             </span>
                         </div>
-                        <div class="footer-name" id="dispPrincipalName" th:text="${principalName != null and !#strings.isEmpty(principalName) ? principalName : ''}" style="min-height: 26px;"></div>
+                        <div class="footer-name" id="dispPrincipalName" th:text="${principalName != null and !#strings.isEmpty(principalName) ? principalName : 'លី ប៊ុនថេង'}" style="min-height: 26px; padding-left: 70px;"></div>
                     </div>
 
                     <!-- Center: Golden Seal Badge & Verification QR -->

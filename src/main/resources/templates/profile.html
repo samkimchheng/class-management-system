@@ -123,7 +123,7 @@
                     </div>
                     <div style="margin-top: 8px; color: #94a3b8; font-size: 0.95rem; display: flex; gap: 18px; flex-wrap: wrap;">
                         <span>សាលារៀន៖ <b th:text="${teacherAccount != null and teacherAccount.schoolName != null and !teacherAccount.schoolName.isEmpty() ? teacherAccount.schoolName : 'មិនទាន់កំណត់សាលា'}">វិទ្យាល័យ</b></span>
-                        <span>នាយកសាលា៖ <b th:text="${teacherAccount != null and teacherAccount.principalName != null and !teacherAccount.principalName.isEmpty() ? teacherAccount.principalName : 'មិនទាន់កំណត់'}">នាយកសាលា</b></span>
+                        <span>នាយកសាលា៖ <b th:text="${teacherAccount != null and teacherAccount.principalName != null and !teacherAccount.principalName.isEmpty() and !teacherAccount.principalName.contains('គឹម ហ៊ាង') ? teacherAccount.principalName : 'លី ប៊ុនថេង'}">លី ប៊ុនថេង</b></span>
                         <span>មុខវិជ្ជា៖ <b th:text="${teacherAccount != null and teacherAccount.subject != null and !teacherAccount.subject.isEmpty() ? teacherAccount.subject : 'គ្រប់មុខវិជ្ជា'}">មុខវិជ្ជា</b></span>
                         <span>ខេត្ត៖ <b th:text="${teacherAccount != null and teacherAccount.province != null and !teacherAccount.province.isEmpty() ? teacherAccount.province : 'ខេត្តពោធិ៍សាត់'}">ខេត្ត</b></span>
                     </div>
@@ -174,8 +174,8 @@
                                 គោត្តនាម និងនាម នាយកសាលា(Full Name) <span style="color: red;">*</span>៖
                             </label>
                             <input type="text" name="principalName" id="profPrincipalName" class="form-control" 
-                                   th:value="${teacherAccount != null and teacherAccount.principalName != null ? teacherAccount.principalName : ''}" 
-                                   placeholder="ឧ. គឹម ហ៊ាង (ឬ ឈ្មោះនាយកសាលា)">
+                                   th:value="${teacherAccount != null and teacherAccount.principalName != null and !teacherAccount.principalName.isEmpty() and !teacherAccount.principalName.contains('គឹម ហ៊ាង') ? teacherAccount.principalName : 'លី ប៊ុនថេង'}" 
+                                   placeholder="ឧ. លី ប៊ុនថេង">
                         </div>
 
                         <!-- 1. Full Name -->

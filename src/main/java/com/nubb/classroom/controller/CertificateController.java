@@ -498,24 +498,27 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             }
 
             // Resolve Principal Name
-            if (principalName == null || principalName.trim().isEmpty()) {
-                if (currentTeacherAcc != null && currentTeacherAcc.getPrincipalName() != null && !currentTeacherAcc.getPrincipalName().trim().isEmpty()) {
+            if (principalName == null || principalName.trim().isEmpty() || principalName.contains("គឹម ហ៊ាង")) {
+                if (currentTeacherAcc != null && currentTeacherAcc.getPrincipalName() != null && !currentTeacherAcc.getPrincipalName().trim().isEmpty() && !currentTeacherAcc.getPrincipalName().contains("គឹម ហ៊ាង")) {
                     principalName = currentTeacherAcc.getPrincipalName().trim();
-                } else if (template != null && template.getPrincipalName() != null && !template.getPrincipalName().trim().isEmpty()) {
+                } else if (template != null && template.getPrincipalName() != null && !template.getPrincipalName().trim().isEmpty() && !template.getPrincipalName().contains("គឹម ហ៊ាង")) {
                     principalName = template.getPrincipalName().trim();
                 } else {
                     Optional<Account> tAcc = accountRepository.findById(97L);
-                    if (tAcc.isPresent() && tAcc.get().getPrincipalName() != null && !tAcc.get().getPrincipalName().trim().isEmpty()) {
+                    if (tAcc.isPresent() && tAcc.get().getPrincipalName() != null && !tAcc.get().getPrincipalName().trim().isEmpty() && !tAcc.get().getPrincipalName().contains("គឹម ហ៊ាង")) {
                         principalName = tAcc.get().getPrincipalName().trim();
                     } else {
                         for (Account other : accountRepository.findAll()) {
-                            if (other.getPrincipalName() != null && !other.getPrincipalName().trim().isEmpty()) {
+                            if (other.getPrincipalName() != null && !other.getPrincipalName().trim().isEmpty() && !other.getPrincipalName().contains("គឹម ហ៊ាង")) {
                                 principalName = other.getPrincipalName().trim();
                                 break;
                             }
                         }
                     }
                 }
+            }
+            if (principalName == null || principalName.trim().isEmpty() || principalName.contains("គឹម ហ៊ាង")) {
+                principalName = "លី ប៊ុនថេង";
             } else {
                 principalName = principalName.trim();
             }
@@ -616,7 +619,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("subjectName", "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", "ខេត្តពោធិ៍សាត់");
             model.addAttribute("teacherName", "លោកគ្រូ សំ គឹមឆេង");
-            model.addAttribute("principalName", null);
+            model.addAttribute("principalName", "លី ប៊ុនថេង");
             model.addAttribute("teacherSignature", loadDefaultSignature());
             model.addAttribute("principalSignature", null);
             model.addAttribute("schoolStamp", null);
@@ -914,15 +917,18 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
 
             // 8.1 Resolve Principal Name
             String finalPrincipalName = null;
-            if (foundRecord != null && foundRecord.getPrincipalName() != null && !foundRecord.getPrincipalName().trim().isEmpty()) {
+            if (foundRecord != null && foundRecord.getPrincipalName() != null && !foundRecord.getPrincipalName().trim().isEmpty() && !foundRecord.getPrincipalName().contains("គឹម ហ៊ាង")) {
                 finalPrincipalName = foundRecord.getPrincipalName().trim();
             } else {
                 for (Account a : accountRepository.findAll()) {
-                    if (a.getPrincipalName() != null && !a.getPrincipalName().trim().isEmpty()) {
+                    if (a.getPrincipalName() != null && !a.getPrincipalName().trim().isEmpty() && !a.getPrincipalName().contains("គឹម ហ៊ាង")) {
                         finalPrincipalName = a.getPrincipalName().trim();
                         break;
                     }
                 }
+            }
+            if (finalPrincipalName == null || finalPrincipalName.trim().isEmpty()) {
+                finalPrincipalName = "លី ប៊ុនថេង";
             }
 
             // Auto-persist record if student is valid so subsequent scans are instant and permanently consistent
@@ -996,7 +1002,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("subject", subject != null && !subject.trim().isEmpty() ? subject : "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", province != null && !province.trim().isEmpty() ? province : "ខេត្តពោធិ៍សាត់");
             model.addAttribute("teacher", teacher != null && !teacher.trim().isEmpty() ? teacher : "លោកគ្រូ សំ គឹមឆេង");
-            model.addAttribute("principalName", null);
+            model.addAttribute("principalName", "លី ប៊ុនថេង");
             model.addAttribute("teacherSignature", null);
             model.addAttribute("principalSignature", null);
             model.addAttribute("schoolStamp", null);

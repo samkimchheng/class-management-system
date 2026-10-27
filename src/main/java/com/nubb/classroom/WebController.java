@@ -188,14 +188,19 @@ public class WebController {
                 }
             }
         }
-        if (teacherAccount != null && (teacherAccount.getPrincipalName() == null || teacherAccount.getPrincipalName().isEmpty())) {
+        if (teacherAccount != null && (teacherAccount.getPrincipalName() == null || teacherAccount.getPrincipalName().isEmpty() || teacherAccount.getPrincipalName().contains("គឹម ហ៊ាង"))) {
+            String foundName = null;
             for (Account other : accountRepository.findAll()) {
-                if (other.getPrincipalName() != null && !other.getPrincipalName().isEmpty()) {
-                    teacherAccount.setPrincipalName(other.getPrincipalName());
-                    accountRepository.save(teacherAccount);
+                if (other.getPrincipalName() != null && !other.getPrincipalName().isEmpty() && !other.getPrincipalName().contains("គឹម ហ៊ាង")) {
+                    foundName = other.getPrincipalName();
                     break;
                 }
             }
+            if (foundName == null || foundName.trim().isEmpty()) {
+                foundName = "លី ប៊ុនថេង";
+            }
+            teacherAccount.setPrincipalName(foundName);
+            try { accountRepository.save(teacherAccount); } catch (Exception ignored) {}
         }
         model.addAttribute("teacherAccount", teacherAccount);
 

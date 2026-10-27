@@ -82,6 +82,10 @@ public class DataInitializer {
                 try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS school_stamp TEXT"); } catch (Exception ignored) {}
                 try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS PRINCIPAL_NAME VARCHAR(255)"); } catch (Exception ignored) {}
                 try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS principal_name VARCHAR(255)"); } catch (Exception ignored) {}
+                try { stmt.execute("UPDATE account SET principal_name = 'លី ប៊ុនថេង' WHERE principal_name IS NULL OR principal_name = '' OR principal_name LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
+                try { stmt.execute("UPDATE \"ACCOUNT\" SET PRINCIPAL_NAME = 'លី ប៊ុនថេង' WHERE PRINCIPAL_NAME IS NULL OR PRINCIPAL_NAME = '' OR PRINCIPAL_NAME LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
+                try { stmt.execute("UPDATE certificate_records SET principal_name = 'លី ប៊ុនថេង' WHERE principal_name IS NULL OR principal_name = '' OR principal_name LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
+                try { stmt.execute("UPDATE \"CERTIFICATE_RECORDS\" SET PRINCIPAL_NAME = 'លី ប៊ុនថេង' WHERE PRINCIPAL_NAME IS NULL OR PRINCIPAL_NAME = '' OR PRINCIPAL_NAME LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
             } catch (Exception e) {
                 System.err.println(">>> [DataInitializer] Schema migration notice: " + e.getMessage());
             }
@@ -158,6 +162,10 @@ public class DataInitializer {
                         try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS school_stamp TEXT"); } catch (Exception ignored) {}
                         try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS PRINCIPAL_NAME VARCHAR(255)"); } catch (Exception ignored) {}
                         try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS principal_name VARCHAR(255)"); } catch (Exception ignored) {}
+                        try { stmt.execute("UPDATE account SET principal_name = 'លី ប៊ុនថេង' WHERE principal_name IS NULL OR principal_name = '' OR principal_name LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
+                        try { stmt.execute("UPDATE \"ACCOUNT\" SET PRINCIPAL_NAME = 'លី ប៊ុនថេង' WHERE PRINCIPAL_NAME IS NULL OR PRINCIPAL_NAME = '' OR PRINCIPAL_NAME LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
+                        try { stmt.execute("UPDATE certificate_records SET principal_name = 'លី ប៊ុនថេង' WHERE principal_name IS NULL OR principal_name = '' OR principal_name LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
+                        try { stmt.execute("UPDATE \"CERTIFICATE_RECORDS\" SET PRINCIPAL_NAME = 'លី ប៊ុនថេង' WHERE PRINCIPAL_NAME IS NULL OR PRINCIPAL_NAME = '' OR PRINCIPAL_NAME LIKE '%គឹម ហ៊ាង%'"); } catch (Exception ignored) {}
                     } catch (Exception ignored) {}
                 } catch (Exception e) {
                     System.err.println(">>> [DataInitializer] Error restoring database: " + e.getMessage());
