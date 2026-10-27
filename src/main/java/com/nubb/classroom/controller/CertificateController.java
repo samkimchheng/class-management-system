@@ -73,6 +73,7 @@ public class CertificateController {
             @RequestParam(required = false) String subjectName,
             @RequestParam(required = false) String province,
             @RequestParam(required = false) String teacherName,
+            @RequestParam(required = false) String principalName,
             @RequestParam(required = false) String roleSignerLeft,
             @RequestParam(required = false) String roleSignerRight,
             Model model) {
@@ -496,6 +497,29 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 }
             }
 
+            // Resolve Principal Name
+            if (principalName == null || principalName.trim().isEmpty()) {
+                if (currentTeacherAcc != null && currentTeacherAcc.getPrincipalName() != null && !currentTeacherAcc.getPrincipalName().trim().isEmpty()) {
+                    principalName = currentTeacherAcc.getPrincipalName().trim();
+                } else if (template != null && template.getPrincipalName() != null && !template.getPrincipalName().trim().isEmpty()) {
+                    principalName = template.getPrincipalName().trim();
+                } else {
+                    Optional<Account> tAcc = accountRepository.findById(97L);
+                    if (tAcc.isPresent() && tAcc.get().getPrincipalName() != null && !tAcc.get().getPrincipalName().trim().isEmpty()) {
+                        principalName = tAcc.get().getPrincipalName().trim();
+                    } else {
+                        for (Account other : accountRepository.findAll()) {
+                            if (other.getPrincipalName() != null && !other.getPrincipalName().trim().isEmpty()) {
+                                principalName = other.getPrincipalName().trim();
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+                principalName = principalName.trim();
+            }
+
             // Always auto-save or update database record safely for the serialNumber so QR scanning is immediate and accurate
             try {
                 CertificateRecord record = existingRecord.orElse(
@@ -512,6 +536,9 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 record.setSubjectName(subjectName);
                 record.setProvince(province);
                 record.setTeacherName(teacherName);
+                if (principalName != null && !principalName.trim().isEmpty()) {
+                    record.setPrincipalName(principalName);
+                }
                 if (teacherSignature != null && !teacherSignature.trim().isEmpty()) {
                     record.setSignature(teacherSignature);
                 }
@@ -561,6 +588,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("selectedSubjectName", subjectName);
             model.addAttribute("province", province);
             model.addAttribute("teacherName", teacherName);
+            model.addAttribute("principalName", principalName);
             model.addAttribute("teacherSignature", teacherSignature);
             model.addAttribute("principalSignature", principalSignature);
             model.addAttribute("schoolStamp", schoolStamp);
@@ -588,6 +616,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("subjectName", "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", "ខេត្តពោធិ៍សាត់");
             model.addAttribute("teacherName", "លោកគ្រូ សំ គឹមឆេង");
+            model.addAttribute("principalName", null);
             model.addAttribute("teacherSignature", loadDefaultSignature());
             model.addAttribute("principalSignature", null);
             model.addAttribute("schoolStamp", null);
@@ -625,6 +654,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             @RequestParam String subjectName,
             @RequestParam String province,
             @RequestParam String teacherName,
+            @RequestParam(required = false) String principalName,
             @RequestParam(required = false) String roleSignerLeft,
             @RequestParam(required = false) String roleSignerRight,
             @RequestParam(required = false, defaultValue = "false") boolean applyToWholeClass) {
@@ -654,10 +684,10 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 if (applyToWholeClass && student.getClassName() != null) {
                     List<Student> classStudents = studentRepository.findByClassName(student.getClassName());
                     for (Student s : classStudents) {
-                        saveOrUpdateRecord(s, schoolName, subjectName, province, teacherName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
+                        saveOrUpdateRecord(s, schoolName, subjectName, province, teacherName, principalName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
                     }
                 } else {
-                    saveOrUpdateRecord(student, schoolName, subjectName, province, teacherName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
+                    saveOrUpdateRecord(student, schoolName, subjectName, province, teacherName, principalName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
                 }
             } else {
                 // In preview mode or custom creation, save a class template record
@@ -672,6 +702,9 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 record.setSubjectName(subjectName);
                 record.setProvince(province);
                 record.setTeacherName(teacherName);
+                if (principalName != null && !principalName.trim().isEmpty()) {
+                    record.setPrincipalName(principalName.trim());
+                }
                 record.setRoleSignerLeft(roleSignerLeft != null && !roleSignerLeft.trim().isEmpty() ? roleSignerLeft.trim() : "នាយកសាលា / គណៈគ្រប់គ្រង");
                 record.setRoleSignerRight(roleSignerRight != null && !roleSignerRight.trim().isEmpty() ? roleSignerRight.trim() : "គ្រូទទួលបន្ទុកថ្នាក់");
                 record.setIssueDateKhmer(issueDateKhmer);
@@ -688,7 +721,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
     }
 
     private void saveOrUpdateRecord(Student s, String schoolName, String subjectName, String province,
-                                    String teacherName, String roleSignerLeft, String roleSignerRight,
+                                    String teacherName, String principalName, String roleSignerLeft, String roleSignerRight,
                                     String issueDateKhmer, String issueDateEn) {
         try {
             String sCode = (s.getStudentCode() != null && !s.getStudentCode().trim().isEmpty()) ? s.getStudentCode().trim() : "123456";
@@ -704,6 +737,9 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             record.setSubjectName(subjectName);
             record.setProvince(province);
             record.setTeacherName(teacherName);
+            if (principalName != null && !principalName.trim().isEmpty()) {
+                record.setPrincipalName(principalName.trim());
+            }
             record.setRoleSignerLeft(roleSignerLeft);
             record.setRoleSignerRight(roleSignerRight);
             record.setIssueDateKhmer(issueDateKhmer);
@@ -876,6 +912,19 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 }
             }
 
+            // 8.1 Resolve Principal Name
+            String finalPrincipalName = null;
+            if (foundRecord != null && foundRecord.getPrincipalName() != null && !foundRecord.getPrincipalName().trim().isEmpty()) {
+                finalPrincipalName = foundRecord.getPrincipalName().trim();
+            } else {
+                for (Account a : accountRepository.findAll()) {
+                    if (a.getPrincipalName() != null && !a.getPrincipalName().trim().isEmpty()) {
+                        finalPrincipalName = a.getPrincipalName().trim();
+                        break;
+                    }
+                }
+            }
+
             // Auto-persist record if student is valid so subsequent scans are instant and permanently consistent
             if (verifiedStudent != null) {
                 try {
@@ -892,6 +941,9 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                     autoRec.setSubjectName(finalSubject);
                     autoRec.setProvince(finalProvince);
                     autoRec.setTeacherName(finalTeacher);
+                    if (finalPrincipalName != null && !finalPrincipalName.trim().isEmpty()) {
+                        autoRec.setPrincipalName(finalPrincipalName);
+                    }
                     if (autoRec.getRoleSignerLeft() == null) autoRec.setRoleSignerLeft("នាយកសាលា / គណៈគ្រប់គ្រង");
                     if (autoRec.getRoleSignerRight() == null) autoRec.setRoleSignerRight("គ្រូទទួលបន្ទុកថ្នាក់");
                     if (autoRec.getIssueDateKhmer() == null) autoRec.setIssueDateKhmer(toKhmerDate(LocalDate.now()));
@@ -914,6 +966,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("subject", finalSubject);
             model.addAttribute("province", finalProvince);
             model.addAttribute("teacher", finalTeacher);
+            model.addAttribute("principalName", finalPrincipalName);
             model.addAttribute("teacherSignature", foundRecord != null ? foundRecord.getSignature() : null);
             model.addAttribute("principalSignature", foundRecord != null ? foundRecord.getPrincipalSignature() : null);
             model.addAttribute("schoolStamp", foundRecord != null ? foundRecord.getSchoolStamp() : null);
@@ -943,6 +996,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("subject", subject != null && !subject.trim().isEmpty() ? subject : "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", province != null && !province.trim().isEmpty() ? province : "ខេត្តពោធិ៍សាត់");
             model.addAttribute("teacher", teacher != null && !teacher.trim().isEmpty() ? teacher : "លោកគ្រូ សំ គឹមឆេង");
+            model.addAttribute("principalName", null);
             model.addAttribute("teacherSignature", null);
             model.addAttribute("principalSignature", null);
             model.addAttribute("schoolStamp", null);

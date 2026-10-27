@@ -182,6 +182,16 @@ public class WebController {
                     if (other.getTeachingClasses() != null) teacherAccount.setTeachingClasses(other.getTeachingClasses());
                     if (other.getTelegram() != null) teacherAccount.setTelegram(other.getTelegram());
                     if (other.getPhone() != null) teacherAccount.setPhone(other.getPhone());
+                    if (other.getPrincipalName() != null) teacherAccount.setPrincipalName(other.getPrincipalName());
+                    accountRepository.save(teacherAccount);
+                    break;
+                }
+            }
+        }
+        if (teacherAccount != null && (teacherAccount.getPrincipalName() == null || teacherAccount.getPrincipalName().isEmpty())) {
+            for (Account other : accountRepository.findAll()) {
+                if (other.getPrincipalName() != null && !other.getPrincipalName().isEmpty()) {
+                    teacherAccount.setPrincipalName(other.getPrincipalName());
                     accountRepository.save(teacherAccount);
                     break;
                 }
@@ -210,6 +220,7 @@ public class WebController {
 
     @PostMapping("/profile/save")
     public String saveProfile(
+            @RequestParam(value = "principalName", required = false) String principalName,
             @RequestParam("fullName") String fullName,
             @RequestParam(value = "gender", required = false) String gender,
             @RequestParam(value = "schoolName", required = false) String schoolName,
@@ -232,6 +243,9 @@ public class WebController {
         Optional<Account> accOpt = accountRepository.findById(accountId);
         if (accOpt.isPresent()) {
             Account acc = accOpt.get();
+            if (principalName != null) {
+                acc.setPrincipalName(principalName.trim());
+            }
             if (fullName != null && !fullName.trim().isEmpty()) {
                 acc.setFullName(fullName.trim());
                 session.setAttribute("ACCOUNT_NAME", acc.getFullName());
@@ -296,6 +310,7 @@ public class WebController {
                     if (src.getPosition() != null) other.setPosition(src.getPosition());
                     if (src.getTeachingClasses() != null) other.setTeachingClasses(src.getTeachingClasses());
                     if (src.getBio() != null) other.setBio(src.getBio());
+                    if (src.getPrincipalName() != null) other.setPrincipalName(src.getPrincipalName());
                     accountRepository.save(other);
                 }
             }
@@ -305,6 +320,7 @@ public class WebController {
     @PostMapping("/api/profile/save")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> apiSaveProfile(
+            @RequestParam(value = "principalName", required = false) String principalName,
             @RequestParam("fullName") String fullName,
             @RequestParam(value = "gender", required = false) String gender,
             @RequestParam(value = "schoolName", required = false) String schoolName,
@@ -326,6 +342,9 @@ public class WebController {
         Optional<Account> accOpt = accountRepository.findById(accountId);
         if (accOpt.isPresent()) {
             Account acc = accOpt.get();
+            if (principalName != null) {
+                acc.setPrincipalName(principalName.trim());
+            }
             if (fullName != null && !fullName.trim().isEmpty()) {
                 acc.setFullName(fullName.trim());
                 session.setAttribute("ACCOUNT_NAME", acc.getFullName());
@@ -372,7 +391,8 @@ public class WebController {
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "✅ បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!",
-                "fullName", acc.getFullName() != null ? acc.getFullName() : ""
+                "fullName", acc.getFullName() != null ? acc.getFullName() : "",
+                "principalName", acc.getPrincipalName() != null ? acc.getPrincipalName() : ""
             ));
         }
 

@@ -35,6 +35,7 @@ public class Account {
     private String principalSignature; // ហត្ថលេខានាយក (Base64 data URI or image URL)
     @jakarta.persistence.Column(columnDefinition = "TEXT")
     private String schoolStamp;        // ត្រាសាលា (Base64 data URI or image URL)
+    private String principalName;      // គោត្តនាម និងនាម នាយកសាលា (Principal Full Name)
 
     public Account() {}
 
@@ -112,4 +113,7 @@ public class Account {
 
     public String getSchoolStamp() { return schoolStamp; }
     public void setSchoolStamp(String schoolStamp) { this.schoolStamp = schoolStamp; }
+
+    public String getPrincipalName() { return principalName; }
+    public void setPrincipalName(String principalName) { this.principalName = principalName; }
 }

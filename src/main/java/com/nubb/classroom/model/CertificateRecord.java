@@ -47,6 +47,9 @@ public class CertificateRecord {
     @Column(columnDefinition = "TEXT")
     private String schoolStamp;
 
+    @Column(length = 255)
+    private String principalName;
+
     private String issueDateKhmer;
     private String issueDateEn;
 
@@ -111,6 +114,9 @@ public class CertificateRecord {
 
     public String getSchoolStamp() { return schoolStamp; }
     public void setSchoolStamp(String schoolStamp) { this.schoolStamp = schoolStamp; }
+
+    public String getPrincipalName() { return principalName; }
+    public void setPrincipalName(String principalName) { this.principalName = principalName; }
 
     public String getIssueDateKhmer() { return issueDateKhmer; }
     public void setIssueDateKhmer(String issueDateKhmer) { this.issueDateKhmer = issueDateKhmer; }
