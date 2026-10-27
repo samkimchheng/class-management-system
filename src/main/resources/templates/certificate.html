@@ -330,7 +330,7 @@
         /* School Stamp - Cambodian Administrative National Standard (38mm - 40mm => ~148px) */
         .school-stamp-container {
             position: absolute;
-            left: 15px;
+            left: 5px;
             top: -36px;
             z-index: 5;
             pointer-events: none;
@@ -745,7 +745,7 @@
                         <div class="footer-role" id="dispRoleLeft" th:text="${roleSignerLeft}">នាយកសាលា / គណៈគ្រប់គ្រង</div>
                         <div class="signature-slot" id="sigSlotLeft"
                              th:title="${isTeacher} ? 'ចុចត្រង់នេះដើម្បីបញ្ចូល ឬផ្លាស់ប្តូរហត្ថលេខានាយក (.png)' : ''"
-                             th:style="${isTeacher} ? 'cursor: pointer;' : ''"
+                             th:style="${isTeacher} ? 'cursor: pointer; justify-content: flex-end; padding-right: 18px;' : 'justify-content: flex-end; padding-right: 18px;'"
                              th:onclick="${isTeacher} ? 'document.getElementById(\'principalSigFileInput\').click()' : ''">
                             
                             <!-- School Stamp Overlay (Official Red Seal - National Standard 38-40mm: 148px) -->
@@ -757,9 +757,9 @@
                                      crossorigin="anonymous" />
                             </div>
 
-                            <!-- Principal Signature -->
+                            <!-- Principal Signature (Shifted to the right of seal) -->
                             <img id="principalSignatureImg" th:src="${principalSignature}" alt="ហត្ថលេខានាយកសាលា" class="signature-preview-img"
-                                 th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'max-height: 72px; max-width: 235px; object-fit: contain; display: block; position: relative; z-index: 2;' : 'display: none;'"
+                                 th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'max-height: 72px; max-width: 195px; object-fit: contain; display: block; position: relative; z-index: 2;' : 'display: none;'"
                                  crossorigin="anonymous" />
                             <span id="principalSigPlaceholderHint" class="no-print" th:if="${isTeacher}"
                                   th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'display: none;' : 'display: inline-block; font-size: 0.72rem; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 2px 8px; border-radius: 4px; position: relative; z-index: 2;'">
