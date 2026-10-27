@@ -330,7 +330,7 @@
         /* School Stamp - Cambodian Administrative National Standard (38mm - 40mm => ~148px) */
         .school-stamp-container {
             position: absolute;
-            left: 5px;
+            left: -5px;
             top: -36px;
             z-index: 5;
             pointer-events: none;
@@ -745,7 +745,7 @@
                         <div class="footer-role" id="dispRoleLeft" th:text="${roleSignerLeft}">នាយកសាលា / គណៈគ្រប់គ្រង</div>
                         <div class="signature-slot" id="sigSlotLeft"
                              th:title="${isTeacher} ? 'ចុចត្រង់នេះដើម្បីបញ្ចូល ឬផ្លាស់ប្តូរហត្ថលេខានាយក (.png)' : ''"
-                             th:style="${isTeacher} ? 'cursor: pointer; justify-content: flex-end; padding-right: 18px;' : 'justify-content: flex-end; padding-right: 18px;'"
+                             th:style="${isTeacher} ? 'cursor: pointer;' : ''"
                              th:onclick="${isTeacher} ? 'document.getElementById(\'principalSigFileInput\').click()' : ''">
                             
                             <!-- School Stamp Overlay (Official Red Seal - National Standard 38-40mm: 148px) -->
@@ -757,12 +757,12 @@
                                      crossorigin="anonymous" />
                             </div>
 
-                            <!-- Principal Signature (Shifted to the right of seal) -->
+                            <!-- Principal Signature (Straight line connected to the outer circle of the seal) -->
                             <img id="principalSignatureImg" th:src="${principalSignature}" alt="ហត្ថលេខានាយកសាលា" class="signature-preview-img"
-                                 th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'max-height: 72px; max-width: 195px; object-fit: contain; display: block; position: relative; z-index: 2;' : 'display: none;'"
+                                 th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'max-height: 72px; max-width: 175px; object-fit: contain; display: block; position: absolute; left: 116px; top: 1px; z-index: 2;' : 'display: none; position: absolute; left: 116px; top: 1px; max-height: 72px; max-width: 175px; object-fit: contain;'"
                                  crossorigin="anonymous" />
                             <span id="principalSigPlaceholderHint" class="no-print" th:if="${isTeacher}"
-                                  th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'display: none;' : 'display: inline-block; font-size: 0.72rem; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 2px 8px; border-radius: 4px; position: relative; z-index: 2;'">
+                                  th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'display: none;' : 'display: inline-block; font-size: 0.72rem; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 2px 8px; border-radius: 4px; position: absolute; left: 120px; z-index: 2;'">
                                 ✍️ ចុចបញ្ចូលហត្ថលេខានាយក (.png)
                             </span>
                         </div>
@@ -856,6 +856,9 @@
                     if (pSigImg) {
                         pSigImg.src = cachedPSig;
                         pSigImg.style.display = 'block';
+                        pSigImg.style.position = 'absolute';
+                        pSigImg.style.left = '116px';
+                        pSigImg.style.top = '1px';
                     }
                     const pHint = document.getElementById('principalSigPlaceholderHint');
                     if (pHint) pHint.style.display = 'none';
@@ -908,6 +911,9 @@
                     if (pSigImg) {
                         pSigImg.src = base64Data;
                         pSigImg.style.display = 'block';
+                        pSigImg.style.position = 'absolute';
+                        pSigImg.style.left = '116px';
+                        pSigImg.style.top = '1px';
                     }
                     const pHint = document.getElementById('principalSigPlaceholderHint');
                     if (pHint) pHint.style.display = 'none';
