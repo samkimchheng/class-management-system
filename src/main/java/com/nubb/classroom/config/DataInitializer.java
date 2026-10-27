@@ -288,6 +288,24 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
+            // 7c. Clean up orphan scores, leftover test score, test classroom and test score rules for account 33
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                String[] cleanupQueries = {
+                    "DELETE FROM score WHERE student_id NOT IN (SELECT id FROM students)",
+                    "DELETE FROM \"SCORE\" WHERE student_id NOT IN (SELECT id FROM \"STUDENTS\")",
+                    "DELETE FROM score WHERE account_id = 33 AND (class_name = '7A' OR student_id = 6)",
+                    "DELETE FROM \"SCORE\" WHERE account_id = 33 AND (class_name = '7A' OR student_id = 6)",
+                    "DELETE FROM classroom WHERE account_id = 33 AND class_name = '10E'",
+                    "DELETE FROM \"CLASSROOM\" WHERE account_id = 33 AND class_name = '10E'",
+                    "DELETE FROM score_rule WHERE account_id = 33",
+                    "DELETE FROM \"SCORE_RULE\" WHERE account_id = 33"
+                };
+                for (String q : cleanupQueries) {
+                    try { stmt.executeUpdate(q); } catch (Exception ignored) {}
+                }
+            } catch (Exception ignored) {}
+
             // 7b. Clean up telegram and teaching classes for other teachers' accounts so they don't inherit Sam Kimchheng's info
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {

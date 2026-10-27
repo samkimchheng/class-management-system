@@ -156,7 +156,7 @@
                         <select name="month" class="form-control" style="width: auto;">
                             <option th:each="m : ${monthsList}" th:value="${m}" th:text="${m}"></option>
                         </select>
-                        <select name="className" class="form-control" style="width: auto; display: inline-block;" onchange="window.location.href = '/scores?className=' + this.value;">
+                        <select name="className" class="form-control" style="width: auto; display: inline-block;" onchange="window.location.href = '/scores?className=' + encodeURIComponent(this.value);">
                             <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
                             <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
                         </select>
@@ -225,6 +225,15 @@
                                 <span class="badge" style="background-color: #e2e8f0; color: #64748b;">-</span>
                             </td>
                             <td class="score-rank" style="text-align: center; font-weight: bold; color: var(--danger); font-size: 1.1rem;">-</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(students)}">
+                            <td colspan="9" style="text-align: center; padding: 40px 20px; color: #64748b; font-size: 1.05rem; background-color: #f8fafc;">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                    <span style="font-size: 2rem;">📋</span>
+                                    <span style="font-weight: 800; color: #1e293b; font-size: 1.15rem;">មិនទាន់មានឈ្មោះសិស្សនៅក្នុងបញ្ជីនេះនៅឡើយទេ</span>
+                                    <span style="color: #64748b; font-size: 0.95rem;">សូមបង្កើតថ្នាក់រៀនក្នុង <a href="/classrooms" style="color: #4361ee; font-weight: bold; text-decoration: underline;">បញ្ជីថ្នាក់រៀនខ្ញុំ</a> និងបញ្ចូលឈ្មោះសិស្សក្នុង <a href="/students" style="color: #4361ee; font-weight: bold; text-decoration: underline;">បញ្ជីឈ្មោះសិស្ស</a> ជាមុនសិន។</span>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -389,6 +398,16 @@
                 }
                 
                 gradeCell.innerHTML = gradeHTML;
+            }
+
+                        // Restore saved month and subject from localStorage if available
+            const savedMonth = localStorage.getItem('scores_month');
+            if (savedMonth && Array.from(monthSelect.options).some(o => o.value === savedMonth)) {
+                monthSelect.value = savedMonth;
+            }
+            const savedSubject = localStorage.getItem('scores_subject');
+            if (savedSubject && Array.from(subjectSelect.options).some(o => o.value === savedSubject)) {
+                subjectSelect.value = savedSubject;
             }
 
             function updateAllRanks() {

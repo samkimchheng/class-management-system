@@ -1068,7 +1068,10 @@ public class WebController {
     @PostMapping("/student/add")
     public String addStudentSubmit(Student student) {
         Long accId = (Long) session.getAttribute("ACCOUNT_ID");
-        student.setAccountId(accId != null ? accId : 97L);
+        if (accId == null) {
+            return "redirect:/login";
+        }
+        student.setAccountId(accId);
         if (student.getAcademicYear() == null || student.getAcademicYear().trim().isEmpty()) {
             student.setAcademicYear(getCurrentAcademicYear());
         }
@@ -1207,9 +1210,14 @@ public class WebController {
         }
         for (com.nubb.classroom.model.Score sc : allScores) {
             if (sc.getStudentId() != null && !studentMap.containsKey(sc.getStudentId())) {
-                studentRepository.findById(sc.getStudentId()).ifPresent(s -> studentMap.put(s.getId(), s));
+                studentRepository.findById(sc.getStudentId()).ifPresent(s -> {
+                    if (accountId == null || accountId.equals(s.getAccountId())) {
+                        studentMap.put(s.getId(), s);
+                    }
+                });
             }
         }
+        allScores.removeIf(sc -> sc.getStudentId() == null || !studentMap.containsKey(sc.getStudentId()));
 
         // Helper to get max total score for subject
         java.util.function.BiFunction<String, String, Double> getMaxTotal = (cls, subj) -> {
@@ -1486,7 +1494,7 @@ public class WebController {
         model.addAttribute("subjectStats", subjectStatList);
         model.addAttribute("totalSubjectStat", totalStat);
         
-        model.addAttribute("myClassrooms", classroomRepository.findByAccountId(accountId));
+        model.addAttribute("myClassrooms", classroomRepository.findByAccountIdAndAcademicYear(accountId, currentYear));
         model.addAttribute("subjectsList", getSubjectList(accountId));
         
         return "statistics";
