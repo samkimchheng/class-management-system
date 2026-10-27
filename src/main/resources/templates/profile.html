@@ -150,7 +150,7 @@
             <!-- Flash Alert (Post-Redirect) -->
             <div th:if="${profileSuccess != null}" class="alert" style="background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; padding: 14px 20px; border-radius: 10px; margin-bottom: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
                 <span>✅</span>
-                <span th:text="${profileSuccess}">បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!</span>
+                <span th:text="${profileSuccess != null ? profileSuccess.replace('✅ ', '') : ''}">បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!</span>
             </div>
 
             <!-- Live Alert Success (AJAX) -->
@@ -439,7 +439,7 @@
                         if (data.success) {
                             const alertBox = document.getElementById('profileLiveAlert');
                             const alertMsg = document.getElementById('profileLiveAlertMsg');
-                            if (alertMsg && data.message) alertMsg.innerText = data.message;
+                            if (alertMsg && data.message) alertMsg.innerText = data.message.replace(/^✅\s*/, '');
                             alertBox.style.display = 'flex';
                             alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
 

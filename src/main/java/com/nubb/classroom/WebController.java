@@ -510,7 +510,7 @@ public class WebController {
 
             accountRepository.save(acc);
             syncTeacherAccounts(acc);
-            redirectAttributes.addFlashAttribute("profileSuccess", "✅ បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនរបស់លោកគ្រូ-អ្នកគ្រូដោយជោគជ័យ!");
+            redirectAttributes.addFlashAttribute("profileSuccess", "បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនរបស់លោកគ្រូ-អ្នកគ្រូដោយជោគជ័យ!");
         }
 
         return "redirect:/profile";
@@ -627,7 +627,7 @@ public class WebController {
             syncTeacherAccounts(acc);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "✅ បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!",
+                "message", "បានរក្សាទុកព័ត៌មានផ្ទាល់ខ្លួនដោយជោគជ័យ!",
                 "fullName", acc.getFullName() != null ? acc.getFullName() : "",
                 "principalName", acc.getPrincipalName() != null ? acc.getPrincipalName() : ""
             ));
