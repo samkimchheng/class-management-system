@@ -1428,6 +1428,7 @@ public class WebController {
         model.addAttribute("subjectStats", subjectStatList);
         
         model.addAttribute("myClassrooms", classroomRepository.findByAccountId(accountId));
+        model.addAttribute("subjectsList", getSubjectList(accountId));
         
         return "statistics";
     }
@@ -1504,13 +1505,55 @@ public class WebController {
         return "redirect:/test";
     }
 
+    public List<String> getSubjectList(Long accountId) {
+        Set<String> subjects = new java.util.LinkedHashSet<>();
+        subjects.add("គណិតវិទ្យា");
+        subjects.add("ភាសាខ្មែរ");
+        subjects.add("រូបវិទ្យា");
+        subjects.add("គីមីវិទ្យា");
+        subjects.add("ជីវវិទ្យា");
+        subjects.add("ប្រវត្តិវិទ្យា");
+        subjects.add("ភូមិវិទ្យា");
+        subjects.add("ពលរដ្ឋវិទ្យា");
+        subjects.add("សីលធម៌");
+        subjects.add("ផែនដីវិទ្យា");
+        subjects.add("ភាសាអង់គ្លេស");
+        subjects.add("ភាសាបារាំង");
+        subjects.add("ព័ត៌មានវិទ្យា/កុំព្យូទ័រ");
+        subjects.add("កីឡា");
+        subjects.add("អក្សរសិល្ប៍");
+        
+        try {
+            if (accountId != null) {
+                List<String> existing = scoreRepository.findDistinctSubjectNamesByAccountId(accountId);
+                if (existing != null) {
+                    for (String s : existing) {
+                        if (s != null && !s.trim().isEmpty()) {
+                            subjects.add(s.trim());
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        
+        return new ArrayList<>(subjects);
+    }
+
     public static class ReportRow {
         private Student student;
         private double totalScore;
+        private Double monthlyScore;
+        private Double attendanceScore;
+        private Double assignmentScore;
+        private Double averageScore;
+        private int subjectCount;
+        private String subjectBreakdown;
         private String grade;
         private int rank;
         private long presentCount;
         private long absentCount;
+        private long absentPermissionCount;
+        private long absentUnexcusedCount;
 
         public ReportRow(Student student, double totalScore, String grade, long presentCount, long absentCount) {
             this.student = student;
@@ -1522,29 +1565,55 @@ public class WebController {
 
         public Student getStudent() { return student; }
         public double getTotalScore() { return totalScore; }
+        public void setTotalScore(double totalScore) { this.totalScore = totalScore; }
+        public Double getMonthlyScore() { return monthlyScore; }
+        public void setMonthlyScore(Double monthlyScore) { this.monthlyScore = monthlyScore; }
+        public Double getAttendanceScore() { return attendanceScore; }
+        public void setAttendanceScore(Double attendanceScore) { this.attendanceScore = attendanceScore; }
+        public Double getAssignmentScore() { return assignmentScore; }
+        public void setAssignmentScore(Double assignmentScore) { this.assignmentScore = assignmentScore; }
+        public Double getAverageScore() { return averageScore; }
+        public void setAverageScore(Double averageScore) { this.averageScore = averageScore; }
+        public int getSubjectCount() { return subjectCount; }
+        public void setSubjectCount(int subjectCount) { this.subjectCount = subjectCount; }
+        public String getSubjectBreakdown() { return subjectBreakdown; }
+        public void setSubjectBreakdown(String subjectBreakdown) { this.subjectBreakdown = subjectBreakdown; }
         public String getGrade() { return grade; }
+        public void setGrade(String grade) { this.grade = grade; }
         public int getRank() { return rank; }
         public void setRank(int rank) { this.rank = rank; }
         public long getPresentCount() { return presentCount; }
         public long getAbsentCount() { return absentCount; }
+        public long getAbsentPermissionCount() { return absentPermissionCount; }
+        public void setAbsentPermissionCount(long absentPermissionCount) { this.absentPermissionCount = absentPermissionCount; }
+        public long getAbsentUnexcusedCount() { return absentUnexcusedCount; }
+        public void setAbsentUnexcusedCount(long absentUnexcusedCount) { this.absentUnexcusedCount = absentUnexcusedCount; }
     }
 
     @GetMapping("/report")
     public String report(
             @org.springframework.web.bind.annotation.RequestParam(required = false) String className,
             @org.springframework.web.bind.annotation.RequestParam(required = false) String month,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String subjectName,
             Model model) {
         
         if (month == null || month.isEmpty()) {
             month = "តេស្តដើមឆ្នាំ";
         }
 
+        if (subjectName == null || subjectName.trim().isEmpty()) {
+            subjectName = "គ្រប់មុខវិជ្ជា";
+        } else {
+            subjectName = subjectName.trim();
+        }
+
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         String currentYear = getCurrentAcademicYear();
         List<Student> students;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, (Long) session.getAttribute("ACCOUNT_ID"), currentYear);
+            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear);
         } else {
-            students = studentRepository.findByAccountIdAndAcademicYear((Long) session.getAttribute("ACCOUNT_ID"), currentYear);
+            students = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
         }
 
         int[] years = parseAcademicYearNumbers(currentYear);
@@ -1582,50 +1651,151 @@ public class WebController {
             end = java.time.LocalDate.of(years[1], 8, 31);
         }
 
+        // Helper to get max score for a subject
+        java.util.function.BiFunction<String, String, Double> getMaxTotal = (cls, subj) -> {
+            com.nubb.classroom.model.ScoreRule rule = null;
+            List<com.nubb.classroom.model.ScoreRule> rules = scoreRuleRepository.findRules(cls, subj, accountId);
+            if (rules != null && !rules.isEmpty()) {
+                rule = rules.get(0);
+            } else {
+                List<com.nubb.classroom.model.ScoreRule> globalRules = scoreRuleRepository.findRules("ថ្នាក់រៀនទាំងអស់", subj, accountId);
+                if (globalRules != null && !globalRules.isEmpty()) {
+                    rule = globalRules.get(0);
+                }
+            }
+            if (rule != null) {
+                double max = rule.getMaxMonthlyScore() + rule.getMaxAttendanceScore() + rule.getMaxAssignmentScore();
+                if (max > 0) return max;
+            }
+            return 100.0;
+        };
+
+        boolean isAllSubjects = "គ្រប់មុខវិជ្ជា".equals(subjectName);
         java.util.List<ReportRow> reportRows = new java.util.ArrayList<>();
 
         for (Student student : students) {
-            double totalScore = 0;
-            String grade = "-";
-            
-            List<com.nubb.classroom.model.Score> scores = scoreRepository.findByStudentIdAndMonthAndClassNameAndAccountIdAndAcademicYear(student.getId(), month, student.getClassName(), (Long) session.getAttribute("ACCOUNT_ID"), currentYear);
-            for (com.nubb.classroom.model.Score s : scores) {
-                totalScore += s.getTotal();
-            }
-            if (!scores.isEmpty()) {
-                if (totalScore >= 90) grade = "A (ល្អណាស់)";
-                else if (totalScore >= 80) grade = "B (ល្អ)";
-                else if (totalScore >= 70) grade = "C (បង្គួរ)";
-                else if (totalScore >= 60) grade = "D (មធ្យម)";
-                else if (totalScore >= 50) grade = "E (ខ្សោយ)";
-                else grade = "F (ធ្លាក់)";
-            }
-            
             List<com.nubb.classroom.model.Attendance> attList = attendanceRepository.findByStudentIdAndDateBetween(student.getId(), start, end);
             long presentCount = attList.stream().filter(a -> a.isPresent()).count();
             long absentCount = attList.stream().filter(a -> !a.isPresent()).count();
-            
-            reportRows.add(new ReportRow(student, totalScore, grade, presentCount, absentCount));
+            long absentPermission = attList.stream().filter(a -> !a.isPresent() && a.isPermission()).count();
+            long absentUnexcused = attList.stream().filter(a -> !a.isPresent() && a.isUnexcused()).count();
+
+            if (isAllSubjects) {
+                List<com.nubb.classroom.model.Score> studentScores = scoreRepository.findByStudentIdAndMonthAndAccountIdAndAcademicYear(
+                        student.getId(), month, accountId, currentYear);
+
+                double totalScore = 0;
+                double sumPercentage = 0;
+                java.util.List<String> breakdowns = new java.util.ArrayList<>();
+
+                for (com.nubb.classroom.model.Score s : studentScores) {
+                    totalScore += s.getTotal();
+                    double maxT = getMaxTotal.apply(student.getClassName(), s.getSubjectName());
+                    sumPercentage += (s.getTotal() / maxT) * 100.0;
+
+                    String scoreFormatted = (s.getTotal() == Math.floor(s.getTotal())) ? String.valueOf((long) s.getTotal()) : String.format("%.1f", s.getTotal());
+                    breakdowns.add(s.getSubjectName() + "៖ " + scoreFormatted);
+                }
+
+                String grade = "-";
+                Double avgScore = null;
+                int count = studentScores.size();
+                if (count > 0) {
+                    avgScore = Math.round((totalScore / count) * 100.0) / 100.0;
+                    double avgPct = sumPercentage / count;
+                    if (avgPct >= 90.0) grade = "A (ល្អណាស់)";
+                    else if (avgPct >= 80.0) grade = "B (ល្អ)";
+                    else if (avgPct >= 70.0) grade = "C (បង្គួរ)";
+                    else if (avgPct >= 60.0) grade = "D (មធ្យម)";
+                    else if (avgPct >= 50.0) grade = "E (ខ្សោយ)";
+                    else grade = "F (ធ្លាក់)";
+                }
+
+                ReportRow row = new ReportRow(student, totalScore, grade, presentCount, absentCount);
+                row.setAverageScore(avgScore);
+                row.setSubjectCount(count);
+                row.setSubjectBreakdown(String.join(" | ", breakdowns));
+                row.setAbsentPermissionCount(absentPermission);
+                row.setAbsentUnexcusedCount(absentUnexcused);
+                reportRows.add(row);
+            } else {
+                List<com.nubb.classroom.model.Score> studentScores = scoreRepository.findByStudentIdAndMonthAndSubjectNameAndAccountIdAndAcademicYear(
+                        student.getId(), month, subjectName, accountId, currentYear);
+
+                double totalScore = 0;
+                Double monthlyScore = null;
+                Double attendanceScore = null;
+                Double assignmentScore = null;
+                String grade = "-";
+
+                if (!studentScores.isEmpty()) {
+                    com.nubb.classroom.model.Score s = studentScores.get(0);
+                    monthlyScore = s.getMonthlyScore();
+                    attendanceScore = s.getAttendanceScore();
+                    assignmentScore = s.getAssignmentScore();
+                    totalScore = s.getTotal();
+
+                    double maxT = getMaxTotal.apply(student.getClassName(), subjectName);
+                    double pct = (totalScore / maxT) * 100.0;
+                    if (pct >= 90.0) grade = "A (ល្អណាស់)";
+                    else if (pct >= 80.0) grade = "B (ល្អ)";
+                    else if (pct >= 70.0) grade = "C (បង្គួរ)";
+                    else if (pct >= 60.0) grade = "D (មធ្យម)";
+                    else if (pct >= 50.0) grade = "E (ខ្សោយ)";
+                    else grade = "F (ធ្លាក់)";
+                }
+
+                ReportRow row = new ReportRow(student, totalScore, grade, presentCount, absentCount);
+                row.setMonthlyScore(monthlyScore);
+                row.setAttendanceScore(attendanceScore);
+                row.setAssignmentScore(assignmentScore);
+                row.setSubjectCount(studentScores.isEmpty() ? 0 : 1);
+                row.setAbsentPermissionCount(absentPermission);
+                row.setAbsentUnexcusedCount(absentUnexcused);
+                reportRows.add(row);
+            }
         }
 
-        // Sort by total score descending
-        reportRows.sort((r1, r2) -> Double.compare(r2.getTotalScore(), r1.getTotalScore()));
+        // Sort descending
+        reportRows.sort((r1, r2) -> {
+            if (isAllSubjects) {
+                double avg1 = r1.getAverageScore() != null ? r1.getAverageScore() : 0.0;
+                double avg2 = r2.getAverageScore() != null ? r2.getAverageScore() : 0.0;
+                int cmp = Double.compare(avg2, avg1);
+                if (cmp != 0) return cmp;
+            }
+            return Double.compare(r2.getTotalScore(), r1.getTotalScore());
+        });
 
         // Calculate ranks
         int currentRank = 1;
         for (int i = 0; i < reportRows.size(); i++) {
-            if (i > 0 && reportRows.get(i).getTotalScore() < reportRows.get(i - 1).getTotalScore()) {
-                currentRank = i + 1;
+            ReportRow row = reportRows.get(i);
+            if (row.getSubjectCount() == 0 || "-".equals(row.getGrade())) {
+                row.setRank(0);
+                continue;
             }
-            reportRows.get(i).setRank(currentRank);
+            if (i > 0) {
+                ReportRow prev = reportRows.get(i - 1);
+                double scorePrev = isAllSubjects ? (prev.getAverageScore() != null ? prev.getAverageScore() : prev.getTotalScore()) : prev.getTotalScore();
+                double scoreCurr = isAllSubjects ? (row.getAverageScore() != null ? row.getAverageScore() : row.getTotalScore()) : row.getTotalScore();
+                if (scoreCurr < scorePrev) {
+                    currentRank = i + 1;
+                }
+            }
+            row.setRank(currentRank);
         }
 
         model.addAttribute("reportRows", reportRows);
         model.addAttribute("selectedClass", className);
         model.addAttribute("selectedMonth", month);
-        
+        model.addAttribute("selectedSubject", subjectName);
+        model.addAttribute("isAllSubjects", isAllSubjects);
+        model.addAttribute("subjectsList", getSubjectList(accountId));
+
         return "report";
     }
+
     public static class SubjectStat {
         public String subjectName;
         public int total;

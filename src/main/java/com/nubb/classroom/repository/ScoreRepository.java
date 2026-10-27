@@ -73,4 +73,28 @@ public interface ScoreRepository extends JpaRepository<Score, Long> {
             @Param("accountId") Long accountId,
             @Param("academicYear") String academicYear);
 
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    List<Score> findByStudentIdAndMonthAndAccountIdAndAcademicYear(
+            @Param("studentId") Long studentId, 
+            @Param("month") String month, 
+            @Param("accountId") Long accountId,
+            @Param("academicYear") String academicYear);
+
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.subjectName = :subjectName AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    List<Score> findByStudentIdAndMonthAndSubjectNameAndAccountIdAndAcademicYear(
+            @Param("studentId") Long studentId, 
+            @Param("month") String month, 
+            @Param("subjectName") String subjectName, 
+            @Param("accountId") Long accountId,
+            @Param("academicYear") String academicYear);
+
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.subjectName = :subjectName AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL)")
+    List<Score> findByMonthAndSubjectNameAndAccountIdAndAcademicYear(
+            @Param("month") String month, 
+            @Param("subjectName") String subjectName, 
+            @Param("accountId") Long accountId,
+            @Param("academicYear") String academicYear);
+
+    @Query("SELECT DISTINCT s.subjectName FROM Score s WHERE (:accountId IS NULL OR s.accountId = :accountId OR s.accountId = 97 OR s.accountId = 1 OR s.accountId IS NULL) AND s.subjectName IS NOT NULL AND s.subjectName != ''")
+    List<String> findDistinctSubjectNamesByAccountId(@Param("accountId") Long accountId);
 }

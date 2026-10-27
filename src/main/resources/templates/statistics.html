@@ -160,20 +160,7 @@
                 </select>
                 <select name="subjectName" class="form-control" style="width: auto; margin-left:10px;" onchange="this.form.submit()">
                     <option value="គ្រប់មុខវិជ្ជា" th:selected="${selectedSubject == null or selectedSubject == 'គ្រប់មុខវិជ្ជា'}">គ្រប់មុខវិជ្ជា</option>
-                    <option value="គណិតវិទ្យា" th:selected="${selectedSubject == 'គណិតវិទ្យា'}">គណិតវិទ្យា</option>
-                    <option value="រូបវិទ្យា" th:selected="${selectedSubject == 'រូបវិទ្យា'}">រូបវិទ្យា</option>
-                    <option value="គីមីវិទ្យា" th:selected="${selectedSubject == 'គីមីវិទ្យា'}">គីមីវិទ្យា</option>
-                    <option value="ជីវវិទ្យា" th:selected="${selectedSubject == 'ជីវវិទ្យា'}">ជីវវិទ្យា</option>
-                    <option value="ភាសាខ្មែរ" th:selected="${selectedSubject == 'ភាសាខ្មែរ'}">ភាសាខ្មែរ</option>
-                    <option value="អក្សរសិល្ប៍" th:selected="${selectedSubject == 'អក្សរសិល្ប៍'}">អក្សរសិល្ប៍</option>
-                    <option value="ប្រវត្តិវិទ្យា" th:selected="${selectedSubject == 'ប្រវត្តិវិទ្យា'}">ប្រវត្តិវិទ្យា</option>
-                    <option value="ភូមិវិទ្យា" th:selected="${selectedSubject == 'ភូមិវិទ្យា'}">ភូមិវិទ្យា</option>
-                    <option value="ពលរដ្ឋវិទ្យា" th:selected="${selectedSubject == 'ពលរដ្ឋវិទ្យា'}">ពលរដ្ឋវិទ្យា</option>
-                    <option value="ភាសាអង់គ្លេស" th:selected="${selectedSubject == 'ភាសាអង់គ្លេស'}">ភាសាអង់គ្លេស</option>
-                    <option value="ភាសាបារាំង" th:selected="${selectedSubject == 'ភាសាបារាំង'}">ភាសាបារាំង</option>
-                    <option value="សីលធម៌" th:selected="${selectedSubject == 'សីលធម៌'}">សីលធម៌</option>
-                    <option value="ផែនដីវិទ្យា" th:selected="${selectedSubject == 'ផែនដីវិទ្យា'}">ផែនដីវិទ្យា</option>
-                    <option value="កុំព្យូទ័រ" th:selected="${selectedSubject == 'កុំព្យូទ័រ'}">កុំព្យូទ័រ</option>
+                    <option th:each="s : ${subjectsList}" th:value="${s}" th:text="${s}" th:selected="${selectedSubject == s}"></option>
                 </select>
                 
                 <button type="button" class="btn btn-primary" style="margin-left: auto;" onclick="window.print()">ទាញយករបាយការណ៍</button>

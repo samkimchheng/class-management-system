@@ -2,8 +2,10 @@ package com.nubb.classroom.controller;
 
 import com.nubb.classroom.model.Score;
 import com.nubb.classroom.model.ScoreRule;
+import com.nubb.classroom.model.Student;
 import com.nubb.classroom.repository.ScoreRepository;
 import com.nubb.classroom.repository.ScoreRuleRepository;
+import com.nubb.classroom.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,14 +41,22 @@ public class ScoreApiController {
     @Autowired
     private ScoreRuleRepository scoreRuleRepository;
 
+    @Autowired
+    private StudentRepository studentRepository;
+
     @GetMapping("/get")
     public ResponseEntity<List<Score>> getScores(@RequestParam String month, @RequestParam String className, @RequestParam String subjectName) {
         String academicYear = (String) session.getAttribute("CURRENT_ACADEMIC_YEAR");
         if (academicYear == null || academicYear.trim().isEmpty()) {
             academicYear = "២០២៦-២០២៧";
         }
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (className == null || className.isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className)) {
+            return ResponseEntity.ok(scoreRepository.findByMonthAndSubjectNameAndAccountIdAndAcademicYear(
+                month, subjectName, accountId, academicYear));
+        }
         return ResponseEntity.ok(scoreRepository.findByMonthAndClassNameAndSubjectNameAndAccountIdAndAcademicYear(
-            month, className, subjectName, (Long) session.getAttribute("ACCOUNT_ID"), academicYear));
+            month, className, subjectName, accountId, academicYear));
     }
 
     @PostMapping("/save")
@@ -55,14 +65,27 @@ public class ScoreApiController {
         if (academicYear == null || academicYear.trim().isEmpty()) {
             academicYear = "២០២៦-២០២៧";
         }
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         for (Score s : payload.getScores()) {
-            Optional<Score> existingOpt = scoreRepository.findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountIdAndAcademicYear(
-                    s.getStudentId(), payload.getMonth(), payload.getClassName(), payload.getSubjectName(), (Long) session.getAttribute("ACCOUNT_ID"), academicYear);
+            String actualClassName = payload.getClassName();
+            if (actualClassName == null || actualClassName.isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(actualClassName)) {
+                if (s.getClassName() != null && !s.getClassName().isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(s.getClassName())) {
+                    actualClassName = s.getClassName();
+                } else {
+                    Optional<Student> stOpt = studentRepository.findById(s.getStudentId());
+                    if (stOpt.isPresent() && stOpt.get().getClassName() != null) {
+                        actualClassName = stOpt.get().getClassName();
+                    }
+                }
+            }
+
+            List<Score> existingScores = scoreRepository.findByStudentIdAndMonthAndSubjectNameAndAccountIdAndAcademicYear(
+                    s.getStudentId(), payload.getMonth(), payload.getSubjectName(), accountId, academicYear);
             
-            Score score = existingOpt.orElse(new Score());
+            Score score = (!existingScores.isEmpty()) ? existingScores.get(0) : new Score();
             score.setStudentId(s.getStudentId());
             score.setMonth(payload.getMonth());
-            score.setClassName(payload.getClassName());
+            score.setClassName(actualClassName);
             score.setSubjectName(payload.getSubjectName());
             score.setMonthlyScore(s.getMonthlyScore());
             score.setAttendanceScore(s.getAttendanceScore());
@@ -71,7 +94,7 @@ public class ScoreApiController {
             
             score.setTotal(s.getMonthlyScore() + s.getAttendanceScore() + s.getAssignmentScore());
             
-            score.setAccountId((Long) session.getAttribute("ACCOUNT_ID")); 
+            score.setAccountId(accountId); 
             scoreRepository.save(score);
         }
         return ResponseEntity.ok(Map.of("success", true));
