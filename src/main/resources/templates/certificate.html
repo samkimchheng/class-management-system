@@ -327,6 +327,28 @@
             pointer-events: none;
         }
 
+        /* School Stamp - Cambodian Administrative National Standard (38mm - 40mm => ~148px) */
+        .school-stamp-container {
+            position: absolute;
+            left: 15px;
+            top: -36px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .school-stamp-img {
+            width: 148px;
+            height: 148px;
+            object-fit: contain;
+            display: block;
+            opacity: 0.92;
+            mix-blend-mode: multiply;
+            transform: rotate(-3deg);
+            image-rendering: -webkit-optimize-contrast;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
         .footer-name {
             font-family: 'Moul', 'Kantumruy Pro', cursive;
             font-size: 1.05rem;
@@ -726,10 +748,12 @@
                              th:style="${isTeacher} ? 'cursor: pointer;' : ''"
                              th:onclick="${isTeacher} ? 'document.getElementById(\'principalSigFileInput\').click()' : ''">
                             
-                            <!-- School Stamp Overlay (Official Red Seal) -->
-                            <div id="schoolStampContainer" style="position: absolute; left: 15px; top: -15px; pointer-events: none; z-index: 5;">
-                                <img id="schoolStampImg" th:src="${schoolStamp}" alt="ត្រាសាលា"
-                                     th:style="${schoolStamp != null and !#strings.isEmpty(schoolStamp)} ? 'width: 105px; height: 105px; object-fit: contain; display: block; opacity: 0.92; mix-blend-mode: multiply; transform: rotate(-3deg);' : 'display: none;'"
+                            <!-- School Stamp Overlay (Official Red Seal - National Standard 38-40mm: 148px) -->
+                            <div id="schoolStampContainer" class="school-stamp-container">
+                                <img id="schoolStampImg" th:src="${schoolStamp}" alt="ត្រាសាលា" class="school-stamp-img"
+                                     th:style="${schoolStamp != null and !#strings.isEmpty(schoolStamp)} ? 'display: block;' : 'display: none;'"
+                                     th:title="${isTeacher} ? 'ចុចត្រង់នេះដើម្បីផ្លាស់ប្តូរត្រាសាលា (.png)' : ''"
+                                     th:onclick="${isTeacher} ? 'event.stopPropagation(); document.getElementById(\'stampFileInput\').click();' : ''"
                                      crossorigin="anonymous" />
                             </div>
 
