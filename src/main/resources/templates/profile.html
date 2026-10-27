@@ -103,7 +103,9 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="topbar">
-            <h3>បំពេញព័ត៌មានផ្ទាល់ខ្លួន</h3>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <h3 style="margin: 0; font-size: 1.35rem; color: var(--dark); font-weight: 700;">បំពេញព័ត៌មានផ្ទាល់ខ្លួន</h3>
+            </div>
             <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                 <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: #eef2ff; color: #3730a3; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid #c7d2fe;">
                     <span>📅 ឆ្នាំសិក្សា៖</span>
@@ -112,12 +114,29 @@
                         <option value="__NEW__">➕ បន្ថែមឆ្នាំសិក្សាថ្មី...</option>
                     </select>
                 </div>
-<div>
-                <span>អ្នកប្រើប្រាស់: <b id="headerTeacherName" th:text="${teacherAccount != null ? teacherAccount.fullName : (session.ACCOUNT_NAME != null ? session.ACCOUNT_NAME : 'គ្រូបង្រៀន')}">គ្រូបង្រៀន</b></span>
+                <div style="display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; color: #0f172a; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid #cbd5e1;">
+                    <span>👤 អ្នកប្រើប្រាស់៖ <b id="headerTeacherName" th:text="${teacherAccount != null and teacherAccount.fullName != null and !teacherAccount.fullName.equalsIgnoreCase('Administrator') ? teacherAccount.fullName : (session.ACCOUNT_NAME != null and !session.ACCOUNT_NAME.equalsIgnoreCase('Administrator') ? session.ACCOUNT_NAME : 'សំ គឹមឆេង')}">សំ គឹមឆេង</b></span>
+                </div>
             </div>
         </div>
 
         <div class="content" style="padding: 25px 30px;">
+
+            <!-- Header strip directly above ផ្ទាំង សំ គឹមឆេង -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; padding: 12px 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">
+                    <span>👤 បំពេញព័ត៌មានផ្ទាល់ខ្លួន៖</span>
+                    <span style="color: #4361ee;" th:text="${teacherAccount != null and teacherAccount.fullName != null and !teacherAccount.fullName.equalsIgnoreCase('Administrator') ? teacherAccount.fullName : 'សំ គឹមឆេង'}">សំ គឹមឆេង</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; color: #3730a3; padding: 5px 12px; border-radius: 16px; font-weight: bold; font-size: 0.9rem; border: 1px solid #c7d2fe;">
+                        <span>📅 ឆ្នាំសិក្សា៖ <b th:text="${currentAcademicYear}">២០២៦-២០២៧</b></span>
+                    </div>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; color: #0f172a; padding: 5px 12px; border-radius: 16px; font-weight: bold; font-size: 0.9rem; border: 1px solid #cbd5e1;">
+                        <span>👤 អ្នកប្រើប្រាស់៖ <b th:text="${teacherAccount != null and teacherAccount.fullName != null and !teacherAccount.fullName.equalsIgnoreCase('Administrator') ? teacherAccount.fullName : 'សំ គឹមឆេង'}">សំ គឹមឆេង</b></span>
+                    </div>
+                </div>
+            </div>
 
             <!-- Overview Banner (Without avatar image) -->
             <div class="profile-hero-card">

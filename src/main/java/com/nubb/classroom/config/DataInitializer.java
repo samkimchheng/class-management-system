@@ -262,24 +262,31 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
-            // 7. Ensure students exist (including តានិន and classmates in ១០E)
-            String[][] initialStudents = {
-                {"តានិន", "ប្រុស", "១០E", "1003"},
-                {"សុខ ពិសី", "ស្រី", "១០E", "1004"},
-                {"ហេង វ៉ាន់ដា", "ប្រុស", "១០E", "1005"},
-                {"ចាន់ ស្រីនីន", "ស្រី", "១០E", "1006"},
-                {"ម៉ៅ វិបុល", "ប្រុស", "១០E", "1007"}
-            };
-            for (String[] stData : initialStudents) {
-                if (studentRepository.findByStudentCode(stData[3]).isEmpty()) {
-                    Student s = new Student(stData[0], stData[1], stData[2], stData[3]);
-                    s.setProvince("ខេត្តពោធិ៍សាត់");
-                    s.setStatus("កំពុងសិក្សា");
-                    s.setAccountId(97L);
-                    s.setAcademicYear("២០២៦-២០២៧");
-                    studentRepository.save(s);
+            // 7. Permanently delete all 10 demo sample students and their scores, attendances, and certificates
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                String[] demoCodes = {"'1003'", "'1004'", "'1005'", "'1006'", "'1007'", "'123456'", "'654321'", "'111111'", "'222222'", "'333333'"};
+                String codesIn = String.join(",", demoCodes);
+                String[] demoNames = {"'តានិន'", "'សុខ ពិសី'", "'ហេង វ៉ាន់ដា'", "'ចាន់ ស្រីនីន'", "'ម៉ៅ វិបុល'", "'សុខ សាន្ត'", "'ចាន់ ធីតា'", "'មាស សុវណ្ណ'", "'កែវ និមល'", "'រិទ្ធី ពិសិដ្ឋ'"};
+                String namesIn = String.join(",", demoNames);
+
+                String[] studentTables = {"students", "\"STUDENTS\""};
+                for (String stTable : studentTables) {
+                    try {
+                        String stSub = "SELECT id FROM " + stTable + " WHERE student_code IN (" + codesIn + ") OR name IN (" + namesIn + ")";
+                        try { stmt.executeUpdate("DELETE FROM score WHERE student_id IN (" + stSub + ")"); } catch (Exception ignored) {}
+                        try { stmt.executeUpdate("DELETE FROM \"SCORE\" WHERE student_id IN (" + stSub + ")"); } catch (Exception ignored) {}
+
+                        try { stmt.executeUpdate("DELETE FROM attendance WHERE student_id IN (" + stSub + ")"); } catch (Exception ignored) {}
+                        try { stmt.executeUpdate("DELETE FROM \"ATTENDANCE\" WHERE student_id IN (" + stSub + ")"); } catch (Exception ignored) {}
+
+                        try { stmt.executeUpdate("DELETE FROM certificate_records WHERE student_id IN (" + stSub + ")"); } catch (Exception ignored) {}
+                        try { stmt.executeUpdate("DELETE FROM \"CERTIFICATE_RECORDS\" WHERE student_id IN (" + stSub + ")"); } catch (Exception ignored) {}
+
+                        stmt.executeUpdate("DELETE FROM " + stTable + " WHERE student_code IN (" + codesIn + ") OR name IN (" + namesIn + ")");
+                    } catch (Exception ignored) {}
                 }
-            }
+            } catch (Exception ignored) {}
 
             // 8. Ensure Teacher Profile for 'សំ គឹមឆេង' is fully initialized on both account 97 and account 1
             try (Connection conn = dataSource.getConnection();
@@ -358,84 +365,14 @@ public class DataInitializer {
                 }
             }
 
-            // 10. Ensure Baseline Scores exist for "តេស្តដើមឆ្នាំ"
+            // 10. Ensure existing absences have a default absence type
             try {
-                if (scoreRepository.findByMonth("តេស្តដើមឆ្នាំ").size() <= 1) {
-                    List<Student> allSt = studentRepository.findAll();
-                    String[] testSubjects = {"គណិតវិទ្យា", "ភាសាខ្មែរ", "រូបវិទ្យា"};
-                    for (Student s : allSt) {
-                        if (s.getId() == null) continue;
-                        double baseScore = 75.0;
-                        if ("1003".equals(s.getStudentCode()) || "តានិន".equals(s.getName())) baseScore = 90.0;
-                        else if ("1004".equals(s.getStudentCode())) baseScore = 94.0;
-                        else if ("1005".equals(s.getStudentCode())) baseScore = 78.0;
-                        else if ("1006".equals(s.getStudentCode())) baseScore = 65.0;
-                        else if ("1007".equals(s.getStudentCode())) baseScore = 46.0;
-                        else if ("123456".equals(s.getStudentCode())) baseScore = 82.0;
-                        else if ("654321".equals(s.getStudentCode())) baseScore = 91.0;
-                        else if ("111111".equals(s.getStudentCode())) baseScore = 68.0;
-                        else if ("222222".equals(s.getStudentCode())) baseScore = 87.0;
-                        else if ("333333".equals(s.getStudentCode())) baseScore = 55.0;
-
-                        int i = 0;
-                        for (String subj : testSubjects) {
-                            double offset = (i == 0 ? 0 : (i == 1 ? 2.0 : -3.0));
-                            double totalVal = Math.min(100.0, Math.max(30.0, baseScore + offset));
-                            double monthly = Math.round(totalVal * 0.6);
-                            double attendance = Math.round(totalVal * 0.2);
-                            double assignment = totalVal - monthly - attendance;
-
-                            Score sc = new Score();
-                            sc.setStudentId(s.getId());
-                            sc.setMonth("តេស្តដើមឆ្នាំ");
-                            sc.setClassName(s.getClassName());
-                            sc.setSubjectName(subj);
-                            sc.setMonthlyScore(monthly);
-                            sc.setAttendanceScore(attendance);
-                            sc.setAssignmentScore(assignment);
-                            sc.setTotal(totalVal);
-                            sc.setAccountId(97L);
-                            scoreRepository.save(sc);
-                            i++;
-                        }
-                    }
-                }
-            } catch (Exception ignored) {}
-
-            // 11. Ensure baseline sample absences exist if empty or update them
-            try {
-                if (attendanceRepository.count() == 0) {
-                    List<Student> stList = studentRepository.findByClassName("១០E");
-                    if (stList.isEmpty()) {
-                        stList = studentRepository.findAll();
-                    }
-                    if (!stList.isEmpty()) {
-                        Student s1 = stList.get(0);
-                        Attendance a1 = new Attendance(s1, LocalDate.of(2026, 11, 4), false, "PERMISSION"); a1.setAccountId(97L); attendanceRepository.save(a1);
-                        Attendance a2 = new Attendance(s1, LocalDate.of(2026, 11, 15), false, "UNEXCUSED"); a2.setAccountId(97L); attendanceRepository.save(a2);
-                        Attendance a3 = new Attendance(s1, LocalDate.of(2026, 12, 10), false, "PERMISSION"); a3.setAccountId(97L); attendanceRepository.save(a3);
-                        Attendance a4 = new Attendance(s1, LocalDate.of(2027, 1, 8), false, "UNEXCUSED"); a4.setAccountId(97L); attendanceRepository.save(a4);
-
-                        if (stList.size() > 1) {
-                            Student s2 = stList.get(1);
-                            Attendance a5 = new Attendance(s2, LocalDate.of(2026, 11, 8), false, "PERMISSION"); a5.setAccountId(97L); attendanceRepository.save(a5);
-                            Attendance a6 = new Attendance(s2, LocalDate.of(2026, 12, 22), false, "PERMISSION"); a6.setAccountId(97L); attendanceRepository.save(a6);
-                            Attendance a7 = new Attendance(s2, LocalDate.of(2027, 3, 12), false, "UNEXCUSED"); a7.setAccountId(97L); attendanceRepository.save(a7);
-                        }
-                        if (stList.size() > 2) {
-                            Student s3 = stList.get(2);
-                            Attendance a8 = new Attendance(s3, LocalDate.of(2026, 11, 19), false, "UNEXCUSED"); a8.setAccountId(97L); attendanceRepository.save(a8);
-                            Attendance a9 = new Attendance(s3, LocalDate.of(2027, 4, 21), false, "PERMISSION"); a9.setAccountId(97L); attendanceRepository.save(a9);
-                        }
-                    }
-                } else {
-                    List<Attendance> allAtt = attendanceRepository.findAll();
-                    for (Attendance att : allAtt) {
-                        if (att.getAbsenceType() == null || att.getAbsenceType().isEmpty()) {
-                            int day = att.getDate().getDayOfMonth();
-                            att.setAbsenceType((day % 2 == 0) ? "PERMISSION" : "UNEXCUSED");
-                            attendanceRepository.save(att);
-                        }
+                List<Attendance> allAtt = attendanceRepository.findAll();
+                for (Attendance att : allAtt) {
+                    if (att.getAbsenceType() == null || att.getAbsenceType().isEmpty()) {
+                        int day = att.getDate().getDayOfMonth();
+                        att.setAbsenceType((day % 2 == 0) ? "PERMISSION" : "UNEXCUSED");
+                        attendanceRepository.save(att);
                     }
                 }
             } catch (Exception ignored) {}
