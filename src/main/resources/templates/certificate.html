@@ -499,7 +499,7 @@
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); color: #a5b4fc; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.2);">
                     <span style="color: #e0e7ff;">📅 ឆ្នាំសិក្សា៖</span>
-                    <select onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #ffffff; cursor: pointer; outline: none; font-size: 0.9rem; font-family: inherit;">
+                    <select id="academicYearSelect" onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #ffffff; cursor: pointer; outline: none; font-size: 0.9rem; font-family: inherit;">
                         <option style="background: #1e293b; color: white;" th:each="yr : ${availableAcademicYears}" th:value="${yr}" th:text="${yr}" th:selected="${yr == currentAcademicYear}"></option>
                         <option style="background: #1e293b; color: #38bdf8;" value="__NEW__">➕ បន្ថែមឆ្នាំសិក្សាថ្មី...</option>
                     </select>
