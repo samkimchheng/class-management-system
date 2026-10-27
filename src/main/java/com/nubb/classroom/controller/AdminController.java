@@ -41,6 +41,12 @@ public class AdminController {
         if (account.getActive() == null) {
             account.setActive(true);
         }
+        if (account.getProvince() == null || account.getProvince().trim().isEmpty()) {
+            account.setProvince("ខេត្តពោធិ៍សាត់");
+        }
+        if (account.getPrincipalName() == null || account.getPrincipalName().trim().isEmpty()) {
+            account.setPrincipalName("លី ប៊ុនថេង");
+        }
         accountRepository.save(account);
         redirectAttributes.addFlashAttribute("successMessage", "បានបង្កើតគណនី «" + account.getFullName() + "» ដោយជោគជ័យ!");
         return "redirect:/admin/accounts";

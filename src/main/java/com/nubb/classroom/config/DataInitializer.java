@@ -183,8 +183,12 @@ public class DataInitializer {
                  Statement stmt = conn.createStatement()) {
                 stmt.executeUpdate("UPDATE \"ACCOUNT\" SET full_name = 'សំ គឹមឆេង' WHERE full_name = 'Administrator' OR (username = 'admin' AND (full_name IS NULL OR full_name = '' OR full_name = 'Administrator'))");
                 stmt.executeUpdate("UPDATE account SET full_name = 'សំ គឹមឆេង' WHERE full_name = 'Administrator' OR (username = 'admin' AND (full_name IS NULL OR full_name = '' OR full_name = 'Administrator'))");
-                stmt.executeUpdate("UPDATE \"CERTIFICATE_RECORDS\" SET teacher_name = 'លោកគ្រូ សំ គឹមឆេង' WHERE teacher_name LIKE '%Administrator%' OR teacher_name LIKE '%admin%'");
-                stmt.executeUpdate("UPDATE certificate_records SET teacher_name = 'លោកគ្រូ សំ គឹមឆេង' WHERE teacher_name LIKE '%Administrator%' OR teacher_name LIKE '%admin%'");
+                stmt.executeUpdate("UPDATE \"CERTIFICATE_RECORDS\" SET teacher_name = 'សំ គឹមឆេង' WHERE teacher_name LIKE '%Administrator%' OR teacher_name LIKE '%admin%'");
+                stmt.executeUpdate("UPDATE certificate_records SET teacher_name = 'សំ គឹមឆេង' WHERE teacher_name LIKE '%Administrator%' OR teacher_name LIKE '%admin%'");
+                stmt.executeUpdate("UPDATE \"CERTIFICATE_RECORDS\" SET teacher_name = TRIM(REPLACE(REPLACE(teacher_name, 'លោកគ្រូ', ''), 'អ្នកគ្រូ', '')) WHERE teacher_name LIKE '%លោកគ្រូ%' OR teacher_name LIKE '%អ្នកគ្រូ%'");
+                stmt.executeUpdate("UPDATE certificate_records SET teacher_name = TRIM(REPLACE(REPLACE(teacher_name, 'លោកគ្រូ', ''), 'អ្នកគ្រូ', '')) WHERE teacher_name LIKE '%លោកគ្រូ%' OR teacher_name LIKE '%អ្នកគ្រូ%'");
+                stmt.executeUpdate("UPDATE account SET province = 'ខេត្តពោធិ៍សាត់' WHERE province IS NULL OR province = ''");
+                stmt.executeUpdate("UPDATE \"ACCOUNT\" SET PROVINCE = 'ខេត្តពោធិ៍សាត់' WHERE PROVINCE IS NULL OR PROVINCE = ''");
             } catch (Exception ignored) {}
 
             // 5. Ensure any existing students or classrooms are assigned to account 97 (samkimchheng) & 1

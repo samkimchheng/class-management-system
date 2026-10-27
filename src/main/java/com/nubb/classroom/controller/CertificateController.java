@@ -400,13 +400,13 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                     Optional<Account> tAcc = accountRepository.findById(student.getAccountId());
                     teacherName = tAcc.filter(a -> !isGenericAdminOrInvalidTeacher(a.getFullName()))
                             .map(a -> cleanTeacherName(a.getFullName(), a.getGender()))
-                            .orElse("លោកគ្រូ សំ គឹមឆេង");
+                            .orElse("សំ គឹមឆេង");
                 } else {
                     teacherName = accountRepository.findAll().stream()
                             .filter(a -> !isGenericAdminOrInvalidTeacher(a.getFullName()))
                             .findFirst()
                             .map(a -> cleanTeacherName(a.getFullName(), a.getGender()))
-                            .orElse("លោកគ្រូ សំ គឹមឆេង");
+                            .orElse("សំ គឹមឆេង");
                 }
             } else {
                 teacherName = cleanTeacherName(teacherName, currentTeacherAcc != null ? currentTeacherAcc.getGender() : null);
@@ -618,7 +618,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("schoolName", "វិទ្យាល័យ / អនុវិទ្យាល័យ");
             model.addAttribute("subjectName", "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", "ខេត្តពោធិ៍សាត់");
-            model.addAttribute("teacherName", "លោកគ្រូ សំ គឹមឆេង");
+            model.addAttribute("teacherName", "សំ គឹមឆេង");
             model.addAttribute("principalName", "លី ប៊ុនថេង");
             model.addAttribute("teacherSignature", loadDefaultSignature());
             model.addAttribute("principalSignature", null);
@@ -901,8 +901,8 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             }
 
             // 8. Resolve Teacher Name
-            String finalTeacher = "លោកគ្រូ សំ គឹមឆេង";
-            if (teacher != null && !teacher.trim().isEmpty() && !isGenericAdminOrInvalidTeacher(teacher) && !teacher.equals("លោកគ្រូ សំ គឹមឆេង")) {
+            String finalTeacher = "សំ គឹមឆេង";
+            if (teacher != null && !teacher.trim().isEmpty() && !isGenericAdminOrInvalidTeacher(teacher) && !teacher.equals("សំ គឹមឆេង")) {
                 finalTeacher = cleanTeacherName(teacher, null);
             } else if (foundRecord != null && foundRecord.getTeacherName() != null && !isGenericAdminOrInvalidTeacher(foundRecord.getTeacherName())) {
                 finalTeacher = cleanTeacherName(foundRecord.getTeacherName(), null);
@@ -1001,7 +1001,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             model.addAttribute("schoolEn", resolveSchoolEn(fbSchool));
             model.addAttribute("subject", subject != null && !subject.trim().isEmpty() ? subject : "គ្រប់មុខវិជ្ជា");
             model.addAttribute("province", province != null && !province.trim().isEmpty() ? province : "ខេត្តពោធិ៍សាត់");
-            model.addAttribute("teacher", teacher != null && !teacher.trim().isEmpty() ? teacher : "លោកគ្រូ សំ គឹមឆេង");
+            model.addAttribute("teacher", teacher != null && !teacher.trim().isEmpty() ? cleanTeacherName(teacher, null) : "សំ គឹមឆេង");
             model.addAttribute("principalName", "លី ប៊ុនថេង");
             model.addAttribute("teacherSignature", null);
             model.addAttribute("principalSignature", null);
@@ -1079,14 +1079,20 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
 
     private String cleanTeacherName(String name, String gender) {
         if (isGenericAdminOrInvalidTeacher(name)) {
-            return "លោកគ្រូ សំ គឹមឆេង";
+            return "សំ គឹមឆេង";
         }
         String clean = name.trim();
-        if (clean.startsWith("លោកគ្រូ") || clean.startsWith("អ្នកគ្រូ") || clean.startsWith("គ្រូ")) {
-            return clean;
+        if (clean.startsWith("លោកគ្រូ")) {
+            clean = clean.substring("លោកគ្រូ".length()).trim();
+        } else if (clean.startsWith("អ្នកគ្រូ")) {
+            clean = clean.substring("អ្នកគ្រូ".length()).trim();
+        } else if (clean.startsWith("គ្រូ")) {
+            clean = clean.substring("គ្រូ".length()).trim();
         }
-        String prefix = (gender != null && gender.contains("ស្រី")) ? "អ្នកគ្រូ " : "លោកគ្រូ ";
-        return prefix + clean;
+        if (clean.isEmpty() || isGenericAdminOrInvalidTeacher(clean)) {
+            return "សំ គឹមឆេង";
+        }
+        return clean;
     }
 
     public static String extractGradeLevel(String className) {

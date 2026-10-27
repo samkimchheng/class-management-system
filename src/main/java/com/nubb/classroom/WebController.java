@@ -202,10 +202,14 @@ public class WebController {
             teacherAccount.setPrincipalName(foundName);
             try { accountRepository.save(teacherAccount); } catch (Exception ignored) {}
         }
+        if (teacherAccount != null && (teacherAccount.getProvince() == null || teacherAccount.getProvince().trim().isEmpty())) {
+            teacherAccount.setProvince("ខេត្តពោធិ៍សាត់");
+            try { accountRepository.save(teacherAccount); } catch (Exception ignored) {}
+        }
         model.addAttribute("teacherAccount", teacherAccount);
 
         String[] provinces = {
-            "ខេត្តបាត់ដំបង", "រាជធានីភ្នំពេញ", "ខេត្តសៀមរាប", "ខេត្តបន្ទាយមានជ័យ", "ខេត្តពោធិ៍សាត់",
+            "ខេត្តពោធិ៍សាត់", "រាជធានីភ្នំពេញ", "ខេត្តបាត់ដំបង", "ខេត្តសៀមរាប", "ខេត្តបន្ទាយមានជ័យ",
             "ខេត្តកំពង់ចាម", "ខេត្តកំពង់ធំ", "ខេត្តកំពង់ឆ្នាំង", "ខេត្តកំពង់ស្ពឺ", "ខេត្តកណ្តាល",
             "ខេត្តតាកែវ", "ខេត្តកំពត", "ខេត្តកែប", "ខេត្តព្រះសីហនុ", "ខេត្តកោះកុង",
             "ខេត្តព្រៃវែង", "ខេត្តស្វាយរៀង", "ខេត្តក្រចេះ", "ខេត្តស្ទឹងត្រែង", "ខេត្តរតនគិរី",

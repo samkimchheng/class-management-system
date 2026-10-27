@@ -260,7 +260,7 @@
                                 <option th:each="p : ${provinces}" 
                                         th:value="${p}" 
                                         th:text="${p}"
-                                        th:selected="${teacherAccount != null and teacherAccount.province == p}">
+                                        th:selected="${teacherAccount != null and teacherAccount.province != null and !teacherAccount.province.isEmpty() ? teacherAccount.province == p : p == 'ខេត្តពោធិ៍សាត់'}">
                                     ខេត្តពោធិ៍សាត់
                                 </option>
                             </select>
