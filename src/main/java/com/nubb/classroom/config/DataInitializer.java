@@ -320,7 +320,10 @@ public class DataInitializer {
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
                 String[] profileUpdates = {
-                    "UPDATE account SET full_name = 'សំ គឹមឆេង' WHERE username IN ('samkimchheng', 'admin')",
+                    "UPDATE account SET full_name = 'សំ គឹមឆេង' WHERE username = 'samkimchheng'",
+                    "UPDATE account SET full_name = 'អ្នកគ្រប់គ្រងប្រព័ន្ធ' WHERE username = 'admin'",
+                    "DELETE FROM account WHERE username = 't1' OR full_name = 'Test Teacher'",
+                    "DELETE FROM \"ACCOUNT\" WHERE username = 't1' OR full_name = 'Test Teacher'",
                     "UPDATE account SET gender = 'ប្រុស' WHERE (gender IS NULL OR gender = '') AND username IN ('samkimchheng', 'admin')",
                     "UPDATE account SET school_name = 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត' WHERE (school_name IS NULL OR school_name = '' OR school_name LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%') AND username IN ('samkimchheng', 'admin')",
                     "UPDATE account SET subject = 'គ្រប់មុខវិជ្ជា' WHERE (subject IS NULL OR subject = '') AND username IN ('samkimchheng', 'admin')",

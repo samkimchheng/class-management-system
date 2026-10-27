@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>គ្រប់គ្រងគណនីគ្រូ - Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #4361ee;
@@ -29,45 +29,67 @@
         .nav-item.active a, .nav-item.active .nav-link { background-color: #334155; color: white; border-left: 4px solid #6366f1; box-shadow: none; }
         .main-content { margin-left: 260px; flex: 1; min-height: 100vh; }
         .topbar { background: white; padding: 15px 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .topbar h3 { margin: 0; color: var(--dark); }
+        .topbar h3 { margin: 0; color: var(--dark); font-size: 1.35rem; font-weight: 800; }
         .content { padding: 30px; }
         
-        .panel { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .panel { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #e2e8f0; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: var(--light); font-weight: 600; color: var(--dark); white-space: nowrap; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 950px; }
+        th { 
+            background-color: #e2e8f0; 
+            color: #0f172a; 
+            font-size: 1.05rem; 
+            font-weight: 800; 
+            border: 1.5px solid #94a3b8; 
+            padding: 12px 10px; 
+            white-space: nowrap; 
+            vertical-align: middle;
+        }
+        td { 
+            padding: 10px 12px; 
+            text-align: left; 
+            border: 1px solid #cbd5e1; 
+            vertical-align: middle;
+            font-size: 0.95rem;
+        }
         tr:hover { background-color: #f8fafc; }
         
-        .btn { padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: 500; cursor: pointer; border: none; font-family: inherit; display: inline-block; }
+        .btn { padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: 600; cursor: pointer; border: none; font-family: inherit; display: inline-block; transition: all 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #3651d4; }
         .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #dc2626; }
         
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; box-sizing: border-box; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 700; color: #334155; font-size: 0.92rem; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-family: inherit; box-sizing: border-box; font-size: 0.95rem; transition: border-color 0.2s; }
+        .form-control:focus { outline: none; border-color: var(--primary); }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
-        .alert-success { background: #dcfce7; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; border: 1px solid #bbf7d0; }
-        .alert-danger { background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; border: 1px solid #fecaca; }
+        .alert-success { background: #dcfce7; color: #166534; padding: 14px 18px; border-radius: 10px; margin-bottom: 22px; font-weight: 700; border: 1.5px solid #86efac; display: flex; align-items: center; gap: 8px; }
+        .alert-danger { background: #fee2e2; color: #991b1b; padding: 14px 18px; border-radius: 10px; margin-bottom: 22px; font-weight: 700; border: 1.5px solid #fca5a5; display: flex; align-items: center; gap: 8px; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>.swal2-popup { font-family: 'Kantumruy Pro', 'Hanuman', sans-serif !important; }</style>
+    <style>.swal2-popup { font-family: 'Kantumruy Pro', sans-serif !important; }</style>
 </head>
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>អ្នកគ្រប់គ្រងប្រព័ន្ធ</h2>
+            <div style="margin-top: 8px; font-size: 0.9rem; color: #a5b4fc;">
+                <span>👤 <b th:text="${session.ACCOUNT_NAME ?: 'Admin'}">Admin</b></span>
+            </div>
         </div>
         <ul class="nav-menu">
-            <li class="nav-item"><a href="/admin">Dashboard ទូទៅ</a></li>
-            <li class="nav-item active"><a href="/admin/accounts">គ្រប់គ្រងគណនីគ្រូ</a></li>
-            <li class="nav-item"><a href="/" target="_blank">ចូលមើលទំព័រសាលា &nearr;</a></li>
+            <li class="nav-item"><a href="/admin">📊 Dashboard ទូទៅ</a></li>
+            <li class="nav-item active"><a href="/admin/accounts">👥 គ្រប់គ្រងគណនីគ្រូ</a></li>
+            <li class="nav-item"><a href="/" target="_blank">🏫 ចូលមើលទំព័រសាលា &nearr;</a></li>
             <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">✈️ ទាក់ទងខ្ញុំ (Telegram)</a></li>
         </ul>
         <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
             <ul class="nav-menu" style="overflow-y: visible; flex: none;">
-                <li class="nav-item"><a href="/logout" style="color: var(--danger);">ចាកចេញ (Logout)</a></li>
+                <li class="nav-item"><a href="/logout" style="color: var(--danger); font-weight: bold;">🚪 ចាកចេញ (Logout)</a></li>
             </ul>
         </div>
     </div>
@@ -75,83 +97,130 @@
     <div class="main-content">
         <div class="topbar">
             <h3>គ្រប់គ្រងគណនីគ្រូបង្រៀន</h3>
-            <div style="font-weight: 500;">
-                <span th:text="${session.ACCOUNT_NAME}">Admin Name</span>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background: #eef2ff; color: #3730a3; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.92rem; border: 1px solid #c7d2fe;">
+                    <span>🛡️ សិទ្ធិ៖ អ្នកគ្រប់គ្រង (Admin)</span>
+                </div>
             </div>
         </div>
 
         <div class="content">
             <!-- Flash Message Alerts -->
-            <div th:if="${successMessage}" class="alert-success" th:text="${successMessage}"></div>
-            <div th:if="${error}" class="alert-danger" th:text="${error}"></div>
+            <div th:if="${successMessage}" class="alert-success">
+                <span>✅</span>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${error}" class="alert-danger">
+                <span>⚠️</span>
+                <span th:text="${error}"></span>
+            </div>
 
             <!-- Create Account Panel -->
             <div class="panel">
-                <h3 style="margin-top: 0; color: var(--primary);">+ បង្កើតគណនីថ្មី</h3>
+                <h3 style="margin-top: 0; color: var(--primary); font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                    <span>➕ បង្កើតគណនីគ្រូថ្មី</span>
+                </h3>
                 <form th:action="@{/admin/accounts/add}" method="post">
-                    <div class="grid-2">
+                    <div class="grid-4">
                         <div class="form-group">
-                            <label>ឈ្មោះពេញ (Full Name)</label>
+                            <label>ឈ្មោះពេញ (Full Name) <span style="color:red;">*</span></label>
                             <input type="text" name="fullName" class="form-control" required placeholder="ឧ. លោកគ្រូ សុខ...">
                         </div>
                         <div class="form-group">
-                            <label>តួនាទី (Role)</label>
+                            <label>ឈ្មោះចូលប្រើ (Username) <span style="color:red;">*</span></label>
+                            <input type="text" name="username" class="form-control" required placeholder="ឧ. teacher101">
+                        </div>
+                        <div class="form-group">
+                            <label>លេខសម្ងាត់ (Password) <span style="color:red;">*</span></label>
+                            <input type="text" name="password" class="form-control" required placeholder="••••••••">
+                        </div>
+                        <div class="form-group">
+                            <label>តួនាទី (Role) <span style="color:red;">*</span></label>
                             <select name="role" class="form-control" required>
-                                <option value="TEACHER">គ្រូបង្រៀន (TEACHER)</option>
+                                <option value="TEACHER" selected>គ្រូបង្រៀន (TEACHER)</option>
                                 <option value="ADMIN">អ្នកគ្រប់គ្រង (ADMIN)</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>ឈ្មោះចូលប្រើ (Username)</label>
-                            <input type="text" name="username" class="form-control" required placeholder="ឧ. teacher1">
+                            <label>មុខវិជ្ជាបង្រៀន (Subject)</label>
+                            <input type="text" name="subject" class="form-control" placeholder="ឧ. គណិតវិទ្យា, រូបវិទ្យា...">
                         </div>
                         <div class="form-group">
-                            <label>លេខសម្ងាត់ (Password)</label>
-                            <input type="password" name="password" class="form-control" required placeholder="••••••••">
+                            <label>ថ្នាក់បង្រៀន (Teaching Classes)</label>
+                            <input type="text" name="teachingClasses" class="form-control" placeholder="ឧ. ១០E, ១០F...">
+                        </div>
+                        <div class="form-group">
+                            <label>លេខទូរស័ព្ទ (Phone)</label>
+                            <input type="text" name="phone" class="form-control" placeholder="ឧ. 012 345 678">
+                        </div>
+                        <div class="form-group">
+                            <label>តេឡេក្រាម (Telegram)</label>
+                            <input type="text" name="telegram" class="form-control" placeholder="ឧ. @teacher_telegram">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="margin-top: 10px; font-weight: bold;">💾 រក្សាទុកគណនីថ្មី</button>
+                    <div style="margin-top: 10px;">
+                        <button type="submit" class="btn btn-primary" style="font-weight: 800; padding: 10px 22px;">💾 រក្សាទុកគណនីថ្មី</button>
+                    </div>
                 </form>
             </div>
             
             <!-- Accounts List Panel -->
             <div class="panel">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="margin: 0; color: #0f172a;">បញ្ជីគណនីទាំងអស់</h3>
-                    <span style="font-size: 0.9rem; color: #64748b;">(កែប្រែឈ្មោះ លេខសម្ងាត់ ឬបិទ/បើកសិទ្ធិចូលប្រើប្រាស់)</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 style="margin: 0; color: #0f172a; font-size: 1.25rem; font-weight: 800;">បញ្ជីគណនីទាំងអស់</h3>
+                        <span style="font-size: 0.9rem; color: #64748b;">(គ្រប់គ្រង កែប្រែឈ្មោះ លេខសម្ងាត់ មុខវិជ្ជា ឬបិទ/បើកសិទ្ធិចូលប្រើប្រាស់របស់គ្រូនីមួយៗ)</span>
+                    </div>
+                    <div style="background: #f1f5f9; padding: 6px 14px; border-radius: 8px; font-weight: 700; color: #334155; font-size: 0.95rem; border: 1px solid #cbd5e1;">
+                        <span>សរុប៖ <b th:text="${#lists.size(accounts)}">0</b> គណនី</span>
+                    </div>
                 </div>
 
                 <div style="overflow-x: auto;">
                     <table>
                         <thead>
                             <tr>
-                                <th style="width: 50px;">ល.រ</th>
-                                <th>ឈ្មោះពេញ</th>
-                                <th>ឈ្មោះចូលប្រើ</th>
-                                <th>លេខសម្ងាត់</th>
-                                <th>តួនាទី</th>
-                                <th style="text-align: center; width: 140px;">ស្ថានភាព</th>
-                                <th style="width: 250px; text-align: center;">សកម្មភាព</th>
+                                <th style="text-align: center; width: 45px;">ល.រ</th>
+                                <th style="min-width: 130px;">ឈ្មោះពេញ</th>
+                                <th style="min-width: 120px;">ឈ្មោះចូលប្រើ</th>
+                                <th style="min-width: 110px;">លេខសម្ងាត់</th>
+                                <th style="min-width: 110px;">មុខវិជ្ជា</th>
+                                <th style="min-width: 110px;">ថ្នាក់បង្រៀន</th>
+                                <th style="min-width: 120px;">ទូរស័ព្ទ / Telegram</th>
+                                <th style="text-align: center; width: 95px;">តួនាទី</th>
+                                <th style="text-align: center; width: 115px;">ស្ថានភាព</th>
+                                <th style="text-align: center; width: 220px;">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="acc, iterStat : ${accounts}">
-                                <td th:text="${iterStat.count}">១</td>
-                                <td th:text="${acc.fullName}" style="font-weight: bold;">ឈ្មោះ</td>
-                                <td><code th:text="${acc.username}" style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 0.9rem;">username</code></td>
-                                <td>
-                                    <span style="font-family: monospace; background: #f8fafc; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0;" th:text="${acc.password}">password</span>
+                                <td th:text="${iterStat.count}" style="text-align: center; font-weight: 800; color: #475569;">១</td>
+                                <td style="font-weight: 700; color: #0f172a;">
+                                    <span th:text="${acc.fullName}">ឈ្មោះ</span>
                                 </td>
                                 <td>
-                                    <span th:if="${acc.role == 'ADMIN'}" style="background: var(--primary); color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">ADMIN</span>
-                                    <span th:if="${acc.role == 'TEACHER'}" style="background: #0284c7; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">TEACHER</span>
+                                    <code th:text="${acc.username}" style="background: #e2e8f0; color: #1e293b; padding: 3px 8px; border-radius: 4px; font-size: 0.92rem; font-weight: 700;">username</code>
+                                </td>
+                                <td>
+                                    <span style="font-family: monospace; background: #f1f5f9; color: #0f172a; padding: 3px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; font-size: 0.92rem;" th:text="${acc.password}">password</span>
+                                </td>
+                                <td style="color: #334155; font-weight: 600;" th:text="${acc.subject != null and !acc.subject.isEmpty() ? acc.subject : '-'}">-</td>
+                                <td style="color: #334155; font-weight: 600;" th:text="${acc.teachingClasses != null and !acc.teachingClasses.isEmpty() ? acc.teachingClasses : '-'}">-</td>
+                                <td style="color: #475569; font-size: 0.88rem;">
+                                    <div th:if="${acc.phone != null and !acc.phone.isEmpty()}" th:text="'📞 ' + ${acc.phone}"></div>
+                                    <div th:if="${acc.telegram != null and !acc.telegram.isEmpty()}" style="color: #0284c7; font-weight: 600;" th:text="'✈️ ' + ${acc.telegram}"></div>
+                                    <span th:if="${(acc.phone == null or acc.phone.isEmpty()) and (acc.telegram == null or acc.telegram.isEmpty())}">-</span>
                                 </td>
                                 <td style="text-align: center;">
-                                    <span th:if="${acc.active == null or acc.active}" style="background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px;">
-                                        🟢 សកម្ម (បើក)
+                                    <span th:if="${acc.role == 'ADMIN'}" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.5px;">ADMIN</span>
+                                    <span th:if="${acc.role == 'TEACHER'}" style="background: #0284c7; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.5px;">TEACHER</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span th:if="${acc.active == null or acc.active}" style="background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; border: 1px solid #86efac;">
+                                        🟢 សកម្ម
                                     </span>
-                                    <span th:if="${acc.active != null and !acc.active}" style="background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px;">
-                                        🔴 ផ្អាក (បិទសិទ្ធិ)
+                                    <span th:if="${acc.active != null and !acc.active}" style="background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; border: 1px solid #fca5a5;">
+                                        🔴 ផ្អាក
                                     </span>
                                 </td>
                                 <td style="text-align: center; white-space: nowrap;">
@@ -162,35 +231,42 @@
                                             th:data-username="${acc.username}"
                                             th:data-password="${acc.password}"
                                             th:data-role="${acc.role}"
-                                            onclick="openEditModal(this.getAttribute('data-id'), this.getAttribute('data-fullname'), this.getAttribute('data-username'), this.getAttribute('data-password'), this.getAttribute('data-role'))"
-                                            style="background: #3b82f6; color: white; padding: 5px 10px; font-size: 0.82rem; border-radius: 4px; font-weight: bold; cursor: pointer; margin-right: 4px;">
+                                            th:data-subject="${acc.subject}"
+                                            th:data-teachingclasses="${acc.teachingClasses}"
+                                            th:data-phone="${acc.phone}"
+                                            th:data-telegram="${acc.telegram}"
+                                            onclick="openEditModal(this.getAttribute('data-id'), this.getAttribute('data-fullname'), this.getAttribute('data-username'), this.getAttribute('data-password'), this.getAttribute('data-role'), this.getAttribute('data-subject'), this.getAttribute('data-teachingclasses'), this.getAttribute('data-phone'), this.getAttribute('data-telegram'))"
+                                            style="background: #3b82f6; color: white; padding: 6px 12px; font-size: 0.84rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-right: 4px;">
                                         ✏️ កែប្រែ
                                     </button>
 
                                     <!-- Toggle status & Delete buttons (Only for other accounts, not self) -->
                                     <span th:if="${acc.id != session.ACCOUNT_ID}">
                                         <form th:if="${acc.active == null or acc.active}" th:action="@{/admin/accounts/toggle-status/{id}(id=${acc.id})}" method="post" style="display:inline; margin:0;" onsubmit="return confirmToggle(event, this, 'បិទសិទ្ធិ', 'តើអ្នកពិតជាចង់បិទសិទ្ធិគ្រូរូបនេះ មិនឱ្យចូលប្រើប្រាស់ប្រព័ន្ធមែនទេ?');">
-                                            <button type="submit" class="btn" style="background: #f59e0b; color: white; padding: 5px 10px; font-size: 0.82rem; border-radius: 4px; font-weight: bold; cursor: pointer;">
-                                                🔒 បិទសិទ្ធិ
+                                            <button type="submit" class="btn" style="background: #f59e0b; color: white; padding: 6px 12px; font-size: 0.84rem; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                                                🔒 បិទ
                                             </button>
                                         </form>
                                         <form th:if="${acc.active != null and !acc.active}" th:action="@{/admin/accounts/toggle-status/{id}(id=${acc.id})}" method="post" style="display:inline; margin:0;" onsubmit="return confirmToggle(event, this, 'បើកសិទ្ធិ', 'តើអ្នកពិតជាចង់បើកសិទ្ធិឱ្យគ្រូរូបនេះ ចូលប្រើប្រាស់ប្រព័ន្ធឡើងវិញមែនទេ?');">
-                                            <button type="submit" class="btn" style="background: #10b981; color: white; padding: 5px 10px; font-size: 0.82rem; border-radius: 4px; font-weight: bold; cursor: pointer;">
-                                                🔓 បើកសិទ្ធិ
+                                            <button type="submit" class="btn" style="background: #10b981; color: white; padding: 6px 12px; font-size: 0.84rem; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                                                🔓 បើក
                                             </button>
                                         </form>
 
                                         <!-- Delete button -->
                                         <form th:action="@{/admin/accounts/delete/{id}(id=${acc.id})}" method="post" style="display:inline; margin-left: 4px;" onsubmit="return confirmDelete(event, this);">
-                                            <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.82rem; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                                            <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.84rem; border-radius: 6px; font-weight: 700; cursor: pointer;">
                                                 🗑️ លុប
                                             </button>
                                         </form>
                                     </span>
-                                    <span th:if="${acc.id == session.ACCOUNT_ID}" style="color: #64748b; font-size: 0.85rem; font-weight: bold; background: #f1f5f9; padding: 4px 8px; border-radius: 4px;">
+                                    <span th:if="${acc.id == session.ACCOUNT_ID}" style="color: #64748b; font-size: 0.85rem; font-weight: 800; background: #f1f5f9; padding: 5px 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
                                         (គណនីអ្នក)
                                     </span>
                                 </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(accounts)}">
+                                <td colspan="10" style="text-align: center; padding: 30px; color: #64748b;">មិនទាន់មានគណនីគ្រូណាមួយត្រូវបានបង្កើតនៅឡើយទេ</td>
                             </tr>
                         </tbody>
                     </table>
@@ -201,60 +277,86 @@
 
     <!-- Modal Edit Account -->
     <div id="editAccountModal" style="display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
-        <div style="background: white; border-radius: 12px; width: 90%; max-width: 500px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
-                <h3 style="margin: 0; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-                    ✏️ កែប្រែព័ត៌មានគណនី
+        <div style="background: white; border-radius: 14px; width: 90%; max-width: 600px; padding: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); position: relative; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px;">
+                <h3 style="margin: 0; color: #0f172a; font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                    <span>✏️ កែប្រែព័ត៌មានគណនីគ្រូ</span>
                 </h3>
-                <span onclick="closeEditModal()" style="font-size: 1.8rem; cursor: pointer; color: #94a3b8; line-height: 1;">&times;</span>
+                <span onclick="closeEditModal()" style="font-size: 1.8rem; cursor: pointer; color: #94a3b8; line-height: 1; font-weight: bold;">&times;</span>
             </div>
 
             <form th:action="@{/admin/accounts/update}" method="post">
                 <input type="hidden" id="editAccountId" name="id">
 
-                <div class="form-group">
-                    <label>ឈ្មោះពេញ (Full Name) <span style="color:red;">*</span></label>
-                    <input type="text" id="editFullName" name="fullName" class="form-control" required placeholder="ឧ. លោកគ្រូ សំ គឹមឆេង">
-                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>ឈ្មោះពេញ (Full Name) <span style="color:red;">*</span></label>
+                        <input type="text" id="editFullName" name="fullName" class="form-control" required placeholder="ឧ. លោកគ្រូ សំ គឹមឆេង">
+                    </div>
 
-                <div class="form-group">
-                    <label>ឈ្មោះចូលប្រើ (Username) <span style="color:red;">*</span></label>
-                    <input type="text" id="editUsername" name="username" class="form-control" required placeholder="ឧ. samkimchheng">
-                </div>
+                    <div class="form-group">
+                        <label>ឈ្មោះចូលប្រើ (Username) <span style="color:red;">*</span></label>
+                        <input type="text" id="editUsername" name="username" class="form-control" required placeholder="ឧ. samkimchheng">
+                    </div>
 
-                <div class="form-group">
-                    <label>លេខសម្ងាត់ថ្មី (Password) <span style="color:red;">*</span></label>
-                    <div style="position: relative;">
-                        <input type="password" id="editPassword" name="password" class="form-control" style="padding-right: 45px;" required>
-                        <button type="button" onclick="togglePasswordVisibility('editPassword', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #64748b; padding: 0;">
-                            👁️
-                        </button>
+                    <div class="form-group">
+                        <label>លេខសម្ងាត់ថ្មី (Password) <span style="color:red;">*</span></label>
+                        <div style="position: relative;">
+                            <input type="password" id="editPassword" name="password" class="form-control" style="padding-right: 45px;" required>
+                            <button type="button" onclick="togglePasswordVisibility('editPassword', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #64748b; padding: 0;">
+                                👁️
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="editRoleGroup">
+                        <label>តួនាទី (Role) <span style="color:red;">*</span></label>
+                        <select id="editRole" name="role" class="form-control" required>
+                            <option value="TEACHER">គ្រូបង្រៀន (TEACHER)</option>
+                            <option value="ADMIN">អ្នកគ្រប់គ្រង (ADMIN)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>មុខវិជ្ជាបង្រៀន (Subject)</label>
+                        <input type="text" id="editSubject" name="subject" class="form-control" placeholder="ឧ. គណិតវិទ្យា, រូបវិទ្យា...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>ថ្នាក់បង្រៀន (Teaching Classes)</label>
+                        <input type="text" id="editTeachingClasses" name="teachingClasses" class="form-control" placeholder="ឧ. ១០E, ១០F...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>លេខទូរស័ព្ទ (Phone)</label>
+                        <input type="text" id="editPhone" name="phone" class="form-control" placeholder="ឧ. 012 345 678">
+                    </div>
+
+                    <div class="form-group">
+                        <label>តេឡេក្រាម (Telegram)</label>
+                        <input type="text" id="editTelegram" name="telegram" class="form-control" placeholder="ឧ. @teacher_telegram">
                     </div>
                 </div>
 
-                <div class="form-group" id="editRoleGroup">
-                    <label>តួនាទី (Role) <span style="color:red;">*</span></label>
-                    <select id="editRole" name="role" class="form-control" required>
-                        <option value="TEACHER">គ្រូបង្រៀន (TEACHER)</option>
-                        <option value="ADMIN">អ្នកគ្រប់គ្រង (ADMIN)</option>
-                    </select>
-                </div>
-
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
                     <button type="button" onclick="closeEditModal()" class="btn" style="background: #94a3b8; color: white;">បោះបង់</button>
-                    <button type="submit" class="btn btn-primary" style="font-weight: bold;">💾 រក្សាទុកការកែប្រែ</button>
+                    <button type="submit" class="btn btn-primary" style="font-weight: 800;">💾 រក្សាទុកការកែប្រែ</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        function openEditModal(id, fullName, username, password, role) {
-            document.getElementById('editAccountId').value = id;
-            document.getElementById('editFullName').value = fullName;
-            document.getElementById('editUsername').value = username;
-            document.getElementById('editPassword').value = password;
-            document.getElementById('editRole').value = role;
+        function openEditModal(id, fullName, username, password, role, subject, teachingClasses, phone, telegram) {
+            document.getElementById('editAccountId').value = id || '';
+            document.getElementById('editFullName').value = fullName || '';
+            document.getElementById('editUsername').value = username || '';
+            document.getElementById('editPassword').value = password || '';
+            document.getElementById('editRole').value = role || 'TEACHER';
+            document.getElementById('editSubject').value = (subject && subject !== 'null') ? subject : '';
+            document.getElementById('editTeachingClasses').value = (teachingClasses && teachingClasses !== 'null') ? teachingClasses : '';
+            document.getElementById('editPhone').value = (phone && phone !== 'null') ? phone : '';
+            document.getElementById('editTelegram').value = (telegram && telegram !== 'null') ? telegram : '';
             
             // Reset password type to password
             document.getElementById('editPassword').type = 'password';

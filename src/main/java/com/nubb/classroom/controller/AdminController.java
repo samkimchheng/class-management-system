@@ -59,6 +59,10 @@ public class AdminController {
             @RequestParam("username") String username,
             @RequestParam("password") String password,
             @RequestParam(value = "role", required = false) String role,
+            @RequestParam(value = "subject", required = false) String subject,
+            @RequestParam(value = "teachingClasses", required = false) String teachingClasses,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "telegram", required = false) String telegram,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
@@ -71,6 +75,10 @@ public class AdminController {
             if (role != null && !role.trim().isEmpty()) {
                 acc.setRole(role);
             }
+            if (subject != null) acc.setSubject(subject.trim());
+            if (teachingClasses != null) acc.setTeachingClasses(teachingClasses.trim());
+            if (phone != null) acc.setPhone(phone.trim());
+            if (telegram != null) acc.setTelegram(telegram.trim());
             accountRepository.save(acc);
 
             // Update session name if Admin edited their own account
