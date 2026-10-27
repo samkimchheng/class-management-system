@@ -1,10 +1,12 @@
 package com.nubb.classroom.config;
 
 import com.nubb.classroom.model.CertificateRecord;
+import com.nubb.classroom.model.Attendance;
 import com.nubb.classroom.model.Score;
 import com.nubb.classroom.model.ScoreRule;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.repository.AccountRepository;
+import com.nubb.classroom.repository.AttendanceRepository;
 import com.nubb.classroom.repository.CertificateRecordRepository;
 import com.nubb.classroom.repository.ScoreRepository;
 import com.nubb.classroom.repository.ScoreRuleRepository;
@@ -19,6 +21,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.List;
 
 @Configuration
@@ -30,6 +33,7 @@ public class DataInitializer {
                                      ScoreRepository scoreRepository,
                                      ScoreRuleRepository scoreRuleRepository,
                                      CertificateRecordRepository certificateRecordRepository,
+                                     AttendanceRepository attendanceRepository,
                                      DataSource dataSource) {
         return args -> {
             // 1. Schema migration: Ensure active and profile columns exist in account table
@@ -380,6 +384,35 @@ public class DataInitializer {
                             sc.setAccountId(97L);
                             scoreRepository.save(sc);
                             i++;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            // 11. Ensure baseline sample absences exist if empty
+            try {
+                if (attendanceRepository.count() == 0) {
+                    List<Student> stList = studentRepository.findByClassName("១០E");
+                    if (stList.isEmpty()) {
+                        stList = studentRepository.findAll();
+                    }
+                    if (!stList.isEmpty()) {
+                        Student s1 = stList.get(0);
+                        Attendance a1 = new Attendance(s1, LocalDate.of(2026, 11, 4), false); a1.setAccountId(97L); attendanceRepository.save(a1);
+                        Attendance a2 = new Attendance(s1, LocalDate.of(2026, 11, 15), false); a2.setAccountId(97L); attendanceRepository.save(a2);
+                        Attendance a3 = new Attendance(s1, LocalDate.of(2026, 12, 10), false); a3.setAccountId(97L); attendanceRepository.save(a3);
+                        Attendance a4 = new Attendance(s1, LocalDate.of(2027, 1, 8), false); a4.setAccountId(97L); attendanceRepository.save(a4);
+
+                        if (stList.size() > 1) {
+                            Student s2 = stList.get(1);
+                            Attendance a5 = new Attendance(s2, LocalDate.of(2026, 11, 8), false); a5.setAccountId(97L); attendanceRepository.save(a5);
+                            Attendance a6 = new Attendance(s2, LocalDate.of(2026, 12, 22), false); a6.setAccountId(97L); attendanceRepository.save(a6);
+                            Attendance a7 = new Attendance(s2, LocalDate.of(2027, 3, 12), false); a7.setAccountId(97L); attendanceRepository.save(a7);
+                        }
+                        if (stList.size() > 2) {
+                            Student s3 = stList.get(2);
+                            Attendance a8 = new Attendance(s3, LocalDate.of(2026, 11, 19), false); a8.setAccountId(97L); attendanceRepository.save(a8);
+                            Attendance a9 = new Attendance(s3, LocalDate.of(2027, 4, 21), false); a9.setAccountId(97L); attendanceRepository.save(a9);
                         }
                     }
                 }

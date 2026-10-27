@@ -20,7 +20,7 @@
             <li class="nav-item"><a href="/profile" class="nav-link">បំពេញព័ត៌មានផ្ទាល់ខ្លួន</a></li>
             <li class="nav-item"><a href="/certificate" class="nav-link">វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</a></li>
             <li class="nav-item active"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
-            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីអវត្តមាន</a></li>
             <li class="nav-item"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
             <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
             <li class="nav-item"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
@@ -56,8 +56,10 @@
                     </div>
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: bold;">ភេទ</label>
-                        <select th:field="*{gender}" class="form-control" style="width: 100%;">
-                            <option value="ប្រុស">ប្រុស</option>
+                        <select th:field="*{gender}" class="form-control" style="width: 100%;">
+
+                            <option value="ប្រុស">ប្រុស</option>
+
                             <option value="ស្រី">ស្រី</option>
                         </select>
                     </div>
@@ -118,9 +120,12 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: bold;">ស្ថានភាព</label>
-                        <select th:field="*{status}" class="form-control" style="width: 100%;">
-                            <option value="កំពុងសិក្សា">កំពុងសិក្សា</option>
-                            <option value="បោះបង់ការសិក្សា">បោះបង់ការសិក្សា</option>
+                        <select th:field="*{status}" class="form-control" style="width: 100%;">
+
+                            <option value="កំពុងសិក្សា">កំពុងសិក្សា</option>
+
+                            <option value="បោះបង់ការសិក្សា">បោះបង់ការសិក្សា</option>
+
                             <option value="ផ្ទេរការសិក្សា">ផ្ទេរការសិក្សា</option>
                         </select>
                     </div>

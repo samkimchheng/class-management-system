@@ -1,6 +1,7 @@
 package com.nubb.classroom;
 
 import com.nubb.classroom.model.Account;
+import com.nubb.classroom.model.Attendance;
 import com.nubb.classroom.model.Classroom;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.repository.AccountRepository;
@@ -17,9 +18,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 public class WebController {
@@ -426,32 +437,293 @@ public class WebController {
         return ResponseEntity.badRequest().body(Map.of("success", false, "message", "រកមិនឃើញគណនីគ្រូបង្រៀន!"));
     }
 
+    public static class YearlyStudentAbsence {
+        private Student student;
+        private int nov; // ខែវិច្ឆិកា ២០២៦
+        private int dec; // ខែធ្នូ ២០២៦
+        private int jan; // ខែមករា ២០២៧
+        private int feb; // ខែកុម្ភៈ ២០២៧
+        private int semester1Total;
+        private int mar; // ខែមីនា ២០២៧
+        private int apr; // ខែមេសា ២០២៧
+        private int may; // ខែឧសភា ២០២៧
+        private int jun; // ខែមិថុនា ២០២៧
+        private int jul; // ខែកក្កដា ២០២៧
+        private int aug; // ខែសីហា ២០២៧
+        private int semester2Total;
+        private int totalYearly;
+
+        public YearlyStudentAbsence(Student student) {
+            this.student = student;
+        }
+
+        public void calculateTotals() {
+            this.semester1Total = nov + dec + jan + feb;
+            this.semester2Total = mar + apr + may + jun + jul + aug;
+            this.totalYearly = this.semester1Total + this.semester2Total;
+        }
+
+        public Student getStudent() { return student; }
+        public void setStudent(Student student) { this.student = student; }
+        public int getNov() { return nov; }
+        public void setNov(int nov) { this.nov = nov; }
+        public int getDec() { return dec; }
+        public void setDec(int dec) { this.dec = dec; }
+        public int getJan() { return jan; }
+        public void setJan(int jan) { this.jan = jan; }
+        public int getFeb() { return feb; }
+        public void setFeb(int feb) { this.feb = feb; }
+        public int getSemester1Total() { return semester1Total; }
+        public void setSemester1Total(int semester1Total) { this.semester1Total = semester1Total; }
+        public int getMar() { return mar; }
+        public void setMar(int mar) { this.mar = mar; }
+        public int getApr() { return apr; }
+        public void setApr(int apr) { this.apr = apr; }
+        public int getMay() { return may; }
+        public void setMay(int may) { this.may = may; }
+        public int getJun() { return jun; }
+        public void setJun(int jun) { this.jun = jun; }
+        public int getJul() { return jul; }
+        public void setJul(int jul) { this.jul = jul; }
+        public int getAug() { return aug; }
+        public void setAug(int aug) { this.aug = aug; }
+        public int getSemester2Total() { return semester2Total; }
+        public void setSemester2Total(int semester2Total) { this.semester2Total = semester2Total; }
+        public int getTotalYearly() { return totalYearly; }
+        public void setTotalYearly(int totalYearly) { this.totalYearly = totalYearly; }
+    }
+
+    public static int[] parseMonthAndYear(String monthStr) {
+        int monthNum = 11;
+        int year = 2026;
+        if (monthStr == null || monthStr.isEmpty()) {
+            return new int[]{11, 2026};
+        }
+        if (monthStr.contains("វិច្ឆិកា")) { monthNum = 11; year = 2026; }
+        else if (monthStr.contains("ធ្នូ")) { monthNum = 12; year = 2026; }
+        else if (monthStr.contains("មករា")) { monthNum = 1; year = 2027; }
+        else if (monthStr.contains("កុម្ភៈ")) { monthNum = 2; year = 2027; }
+        else if (monthStr.contains("មីនា")) { monthNum = 3; year = 2027; }
+        else if (monthStr.contains("មេសា")) { monthNum = 4; year = 2027; }
+        else if (monthStr.contains("ឧសភា")) { monthNum = 5; year = 2027; }
+        else if (monthStr.contains("មិថុនា")) { monthNum = 6; year = 2027; }
+        else if (monthStr.contains("កក្កដា")) { monthNum = 7; year = 2027; }
+        else if (monthStr.contains("សីហា")) { monthNum = 8; year = 2027; }
+        else if (monthStr.contains("កញ្ញា")) { monthNum = 9; year = 2027; }
+        else if (monthStr.contains("តុលា")) { monthNum = 10; year = 2026; }
+
+        int extractedYear = extractYear(monthStr);
+        if (extractedYear > 2000 && extractedYear < 2100) {
+            year = extractedYear;
+        }
+
+        return new int[]{monthNum, year};
+    }
+
+    public static int extractYear(String str) {
+        if (str == null) return 0;
+        StringBuilder sb = new StringBuilder();
+        for (char c : str.toCharArray()) {
+            if (c >= '០' && c <= '៩') {
+                sb.append((char) ('0' + (c - '០')));
+            } else if (c >= '0' && c <= '9') {
+                sb.append(c);
+            } else {
+                if (sb.length() >= 4) break;
+                sb.setLength(0);
+            }
+        }
+        try {
+            return Integer.parseInt(sb.toString());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     @GetMapping("/attendance")
-    public String attendance(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
+    public String attendance(
+            @RequestParam(required = false) String className,
+            @RequestParam(required = false) String month,
+            Model model) {
+
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            accountId = 97L;
+        }
+
+        if (month == null || month.trim().isEmpty()) {
+            month = "ខែវិច្ឆិកា ២០២៦";
+        } else {
+            month = month.trim();
+        }
+
         List<Student> students;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountId(className, (Long) session.getAttribute("ACCOUNT_ID"));
+            students = studentRepository.findByClassNameAndAccountId(className, accountId);
+            if (students.isEmpty()) {
+                students = studentRepository.findByClassName(className);
+            }
         } else {
-            students = studentRepository.findByAccountId((Long) session.getAttribute("ACCOUNT_ID"));
+            students = studentRepository.findByAccountId(accountId);
+            if (students.isEmpty()) {
+                students = studentRepository.findAll();
+            }
         }
+
+        boolean isYearly = "ប្រចាំឆ្នាំ".equals(month);
+        boolean isSemester1 = "ឆមាសទី១".equals(month);
+        boolean isSemester2 = "ឆមាសទី២".equals(month);
+
+        if (isYearly || isSemester1 || isSemester2) {
+            List<YearlyStudentAbsence> yearlyList = new ArrayList<>();
+            LocalDate yrStart = LocalDate.of(2026, 10, 1);
+            LocalDate yrEnd = LocalDate.of(2027, 9, 30);
+
+            List<Attendance> allAbsences = Collections.emptyList();
+            if (students != null && !students.isEmpty()) {
+                allAbsences = attendanceRepository.findByStudentInAndDateBetween(students, yrStart, yrEnd);
+            }
+
+            Map<Long, List<Attendance>> studentAttMap = allAbsences.stream()
+                    .filter(a -> !a.isPresent())
+                    .collect(Collectors.groupingBy(a -> a.getStudent().getId()));
+
+            for (Student s : students) {
+                YearlyStudentAbsence row = new YearlyStudentAbsence(s);
+                List<Attendance> sAtts = studentAttMap.getOrDefault(s.getId(), Collections.emptyList());
+                for (Attendance a : sAtts) {
+                    LocalDate d = a.getDate();
+                    int y = d.getYear();
+                    int m = d.getMonthValue();
+                    if (y == 2026 && m == 11) row.setNov(row.getNov() + 1);
+                    else if (y == 2026 && m == 12) row.setDec(row.getDec() + 1);
+                    else if (y == 2027 && m == 1) row.setJan(row.getJan() + 1);
+                    else if (y == 2027 && m == 2) row.setFeb(row.getFeb() + 1);
+                    else if (y == 2027 && m == 3) row.setMar(row.getMar() + 1);
+                    else if (y == 2027 && m == 4) row.setApr(row.getApr() + 1);
+                    else if (y == 2027 && m == 5) row.setMay(row.getMay() + 1);
+                    else if (y == 2027 && m == 6) row.setJun(row.getJun() + 1);
+                    else if (y == 2027 && m == 7) row.setJul(row.getJul() + 1);
+                    else if (y == 2027 && m == 8) row.setAug(row.getAug() + 1);
+                }
+                row.calculateTotals();
+                yearlyList.add(row);
+            }
+
+            model.addAttribute("yearlyAbsences", yearlyList);
+        } else {
+            int[] my = parseMonthAndYear(month);
+            int monthNum = my[0];
+            int year = my[1];
+            LocalDate start = LocalDate.of(year, monthNum, 1);
+            LocalDate end = start.with(TemporalAdjusters.lastDayOfMonth());
+
+            List<Attendance> monthAtts = Collections.emptyList();
+            if (students != null && !students.isEmpty()) {
+                monthAtts = attendanceRepository.findByStudentInAndDateBetween(students, start, end);
+            }
+
+            Set<String> absentDays = new HashSet<>();
+            Map<Long, Integer> studentMonthlyAbsentCounts = new HashMap<>();
+
+            for (Attendance a : monthAtts) {
+                if (!a.isPresent()) {
+                    Long sId = a.getStudent().getId();
+                    int day = a.getDate().getDayOfMonth();
+                    absentDays.add(sId + "_" + day);
+                    studentMonthlyAbsentCounts.put(sId, studentMonthlyAbsentCounts.getOrDefault(sId, 0) + 1);
+                }
+            }
+
+            model.addAttribute("absentDays", absentDays);
+            model.addAttribute("studentMonthlyAbsentCounts", studentMonthlyAbsentCounts);
+        }
+
         model.addAttribute("students", students);
         model.addAttribute("selectedClass", className);
+        model.addAttribute("selectedMonth", month);
+        model.addAttribute("isYearly", isYearly);
+        model.addAttribute("isSemester1", isSemester1);
+        model.addAttribute("isSemester2", isSemester2);
+
         return "attendance";
     }
 
     @PostMapping("/attendance/save")
     public String saveAttendance(
-            @org.springframework.web.bind.annotation.RequestParam("month") String month,
-            @org.springframework.web.bind.annotation.RequestParam("className") String className,
-            @org.springframework.web.bind.annotation.RequestParam(value = "attendanceData", required = false) java.util.List<String> attendanceData,
-            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
-        
-        // In a real application, you would parse attendanceData (which contains studentId_day)
-        // and save it to the Attendance repository for the specific month and class.
-        // System.out.println("Saved attendance for: " + month + " - " + className + " Data: " + attendanceData);
-        
-        redirectAttributes.addFlashAttribute("successMessage", "ទិន្នន័យវត្តមានប្រចាំ " + month + " សម្រាប់ " + className + " ត្រូវបានរក្សាទុកដោយជោគជ័យ!");
-        return "redirect:/attendance";
+            @RequestParam("month") String month,
+            @RequestParam(value = "className", required = false) String className,
+            @RequestParam(value = "attendanceData", required = false) List<String> attendanceData,
+            RedirectAttributes redirectAttributes) {
+
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            accountId = 97L;
+        }
+
+        String safeClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ថ្នាក់រៀនទាំងអស់";
+        String safeMonth = (month != null && !month.trim().isEmpty()) ? month.trim() : "ខែវិច្ឆិកា ២០២៦";
+
+        if ("ប្រចាំឆ្នាំ".equals(safeMonth) || "ឆមាសទី១".equals(safeMonth) || "ឆមាសទី២".equals(safeMonth) || "តេស្តដើមឆ្នាំ".equals(safeMonth)) {
+            redirectAttributes.addFlashAttribute("successMessage", "ℹ️ ទិន្នន័យ " + safeMonth + " ជាទិន្នន័យសរុបស្វ័យប្រវត្តិនៃអវត្តមានសិស្ស!");
+            return "redirect:/attendance?className=" + URLEncoder.encode(safeClass, StandardCharsets.UTF_8) + "&month=" + URLEncoder.encode(safeMonth, StandardCharsets.UTF_8);
+        }
+
+        int[] my = parseMonthAndYear(safeMonth);
+        int monthNum = my[0];
+        int year = my[1];
+
+        LocalDate start = LocalDate.of(year, monthNum, 1);
+        LocalDate end = start.with(TemporalAdjusters.lastDayOfMonth());
+
+        List<Student> students;
+        if (!safeClass.equals("ថ្នាក់រៀនទាំងអស់")) {
+            students = studentRepository.findByClassNameAndAccountId(safeClass, accountId);
+            if (students.isEmpty()) {
+                students = studentRepository.findByClassName(safeClass);
+            }
+        } else {
+            students = studentRepository.findByAccountId(accountId);
+            if (students.isEmpty()) {
+                students = studentRepository.findAll();
+            }
+        }
+
+        if (students != null && !students.isEmpty()) {
+            try {
+                attendanceRepository.deleteByStudentInAndDateBetween(students, start, end);
+            } catch (Exception ignored) {}
+        }
+
+        if (attendanceData != null && !attendanceData.isEmpty()) {
+            Map<Long, Student> studentMap = (students != null) ? students.stream().collect(Collectors.toMap(Student::getId, s -> s, (s1, s2) -> s1)) : Collections.emptyMap();
+            List<Attendance> toSave = new ArrayList<>();
+            for (String item : attendanceData) {
+                String[] parts = item.split("_");
+                if (parts.length == 2) {
+                    try {
+                        Long sId = Long.parseLong(parts[0]);
+                        int day = Integer.parseInt(parts[1]);
+                        Student st = studentMap.get(sId);
+                        if (st == null) {
+                            st = studentRepository.findById(sId).orElse(null);
+                        }
+                        if (st != null && day >= 1 && day <= end.getDayOfMonth()) {
+                            LocalDate attDate = LocalDate.of(year, monthNum, day);
+                            Attendance att = new Attendance(st, attDate, false);
+                            att.setAccountId(accountId);
+                            toSave.add(att);
+                        }
+                    } catch (Exception ignored) {}
+                }
+            }
+            if (!toSave.isEmpty()) {
+                attendanceRepository.saveAll(toSave);
+            }
+        }
+
+        redirectAttributes.addFlashAttribute("successMessage", "✅ បានរក្សាទុកទិន្នន័យអវត្តមាន " + safeMonth + " សម្រាប់ " + safeClass + " ដោយជោគជ័យ!");
+        return "redirect:/attendance?className=" + URLEncoder.encode(safeClass, StandardCharsets.UTF_8) + "&month=" + URLEncoder.encode(safeMonth, StandardCharsets.UTF_8);
     }
 
     @GetMapping("/students")
