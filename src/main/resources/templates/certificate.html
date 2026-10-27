@@ -310,7 +310,7 @@
         }
 
         .signature-slot {
-            height: 55px;
+            height: 75px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -319,8 +319,8 @@
         }
 
         .signature-preview-img {
-            max-height: 52px;
-            max-width: 175px;
+            max-height: 72px;
+            max-width: 235px;
             object-fit: contain;
             display: block;
             image-rendering: -webkit-optimize-contrast;
@@ -731,7 +731,7 @@
                              th:style="${isTeacher} ? 'cursor: pointer;' : ''"
                              th:onclick="${isTeacher} ? 'document.getElementById(\'sigFileInput\').click()' : ''">
                             <img id="teacherSignatureImg" th:src="${teacherSignature}" alt="ហត្ថលេខាគ្រូទទួលបន្ទុកថ្នាក់" class="signature-preview-img"
-                                 th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'max-height: 52px; max-width: 175px; object-fit: contain; display: block;' : 'display: none;'"
+                                 th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'max-height: 72px; max-width: 235px; object-fit: contain; display: block;' : 'display: none;'"
                                  crossorigin="anonymous" />
                             <span id="sigPlaceholderHint" class="no-print" th:if="${isTeacher}"
                                   th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'display: none;' : 'display: inline-block; font-size: 0.72rem; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 2px 8px; border-radius: 4px;'">
