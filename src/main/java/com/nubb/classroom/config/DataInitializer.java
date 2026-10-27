@@ -270,7 +270,7 @@ public class DataInitializer {
                 String[] profileUpdates = {
                     "UPDATE account SET full_name = 'សំ គឹមឆេង' WHERE username IN ('samkimchheng', 'admin')",
                     "UPDATE account SET gender = 'ប្រុស' WHERE (gender IS NULL OR gender = '') AND username IN ('samkimchheng', 'admin')",
-                    "UPDATE account SET school_name = 'វិទ្យាល័យ / អនុវិទ្យាល័យ' WHERE (school_name IS NULL OR school_name = '') AND username IN ('samkimchheng', 'admin')",
+                    "UPDATE account SET school_name = 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត' WHERE (school_name IS NULL OR school_name = '' OR school_name LIKE '%វិទ្យាល័យ / អនុវិទ្យាល័យ%') AND username IN ('samkimchheng', 'admin')",
                     "UPDATE account SET subject = 'គ្រប់មុខវិជ្ជា' WHERE (subject IS NULL OR subject = '') AND username IN ('samkimchheng', 'admin')",
                     "UPDATE account SET province = 'ខេត្តពោធិ៍សាត់' WHERE (province IS NULL OR province = '') AND username IN ('samkimchheng', 'admin')",
                     "UPDATE account SET position = 'គ្រូទទួលបន្ទុកថ្នាក់' WHERE (position IS NULL OR position = '') AND username IN ('samkimchheng', 'admin')",
