@@ -12,28 +12,42 @@ public class Feedback {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "teacher_account_id")
     private Long teacherAccountId;
+    @Column(name = "teacher_name")
     private String teacherName;
+    @Column(name = "teacher_username")
     private String teacherUsername;
+    @Column(name = "school_name", length = 500)
     private String schoolName;
+    @Column(name = "province")
     private String province;
+    @Column(name = "phone")
     private String phone;
 
+    @Column(name = "category")
     private String category;  // e.g. "ចំណុចខ្វះខាតប្រព័ន្ធ", "សំណូមពរបន្ថែមមុខងារ", "រាយការណ៍បញ្ហា/កំហុស", "ការប្រើប្រាស់", "ផ្សេងៗ"
+    @Column(name = "priority")
     private String priority;  // "ធម្មតា", "មធ្យម", "បន្ទាន់"
+    @Column(name = "title", length = 500)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "status")
     private String status = "PENDING"; // PENDING, IN_PROGRESS, RESOLVED, CLOSED
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "admin_reply", columnDefinition = "TEXT")
     private String adminReply;
+    @Column(name = "admin_reply_by")
     private String adminReplyBy;
+    @Column(name = "replied_at")
     private LocalDateTime repliedAt;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public Feedback() {}

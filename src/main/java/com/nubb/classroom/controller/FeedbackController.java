@@ -35,7 +35,10 @@ public class FeedbackController {
         Account teacherAccount = accountRepository.findById(accountId).orElse(null);
         model.addAttribute("teacherAccount", teacherAccount);
 
-        List<Feedback> myFeedbacks = feedbackRepository.findByTeacherAccountIdOrderByCreatedAtDesc(accountId);
+        List<Feedback> myFeedbacks = List.of();
+        try {
+            myFeedbacks = feedbackRepository.findByTeacherAccountIdOrderByCreatedAtDesc(accountId);
+        } catch (Exception ignored) {}
         model.addAttribute("myFeedbacks", myFeedbacks);
 
         return "feedback";

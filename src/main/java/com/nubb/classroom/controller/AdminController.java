@@ -35,16 +35,27 @@ public class AdminController {
     public String dashboard(Model model) {
         model.addAttribute("totalStudents", studentRepository.count());
         model.addAttribute("totalAccounts", accountRepository.count());
-        model.addAttribute("totalFeedbacks", feedbackRepository.count());
-        model.addAttribute("pendingFeedbacks", feedbackRepository.countByStatus("PENDING"));
-        model.addAttribute("recentFeedbacks", feedbackRepository.findAllByOrderByCreatedAtDesc().stream().limit(5).toList());
+        long totalFb = 0, pendingFb = 0;
+        List<Feedback> recentFb = List.of();
+        try {
+            totalFb = feedbackRepository.count();
+            pendingFb = feedbackRepository.countByStatus("PENDING");
+            recentFb = feedbackRepository.findAllByOrderByCreatedAtDesc().stream().limit(5).toList();
+        } catch (Exception ignored) {}
+        model.addAttribute("totalFeedbacks", totalFb);
+        model.addAttribute("pendingFeedbacks", pendingFb);
+        model.addAttribute("recentFeedbacks", recentFb);
         return "admin/dashboard";
     }
 
     @GetMapping("/accounts")
     public String accounts(Model model) {
         model.addAttribute("accounts", accountRepository.findAll());
-        model.addAttribute("pendingFeedbacks", feedbackRepository.countByStatus("PENDING"));
+        long pendingFb = 0;
+        try {
+            pendingFb = feedbackRepository.countByStatus("PENDING");
+        } catch (Exception ignored) {}
+        model.addAttribute("pendingFeedbacks", pendingFb);
         return "admin/accounts";
     }
 
@@ -146,20 +157,27 @@ public class AdminController {
 
     @GetMapping("/feedbacks")
     public String feedbacks(@RequestParam(value = "status", required = false) String status, Model model) {
-        List<Feedback> list;
-        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("ALL")) {
-            list = feedbackRepository.findByStatusOrderByCreatedAtDesc(status.trim());
-        } else {
-            list = feedbackRepository.findAllByOrderByCreatedAtDesc();
-            status = "ALL";
-        }
+        List<Feedback> list = List.of();
+        long total = 0, pending = 0, inProgress = 0, resolved = 0;
+        try {
+            if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("ALL")) {
+                list = feedbackRepository.findByStatusOrderByCreatedAtDesc(status.trim());
+            } else {
+                list = feedbackRepository.findAllByOrderByCreatedAtDesc();
+                status = "ALL";
+            }
+            total = feedbackRepository.count();
+            pending = feedbackRepository.countByStatus("PENDING");
+            inProgress = feedbackRepository.countByStatus("IN_PROGRESS");
+            resolved = feedbackRepository.countByStatus("RESOLVED");
+        } catch (Exception ignored) {}
 
         model.addAttribute("feedbacks", list);
-        model.addAttribute("selectedStatus", status);
-        model.addAttribute("totalCount", feedbackRepository.count());
-        model.addAttribute("pendingCount", feedbackRepository.countByStatus("PENDING"));
-        model.addAttribute("inProgressCount", feedbackRepository.countByStatus("IN_PROGRESS"));
-        model.addAttribute("resolvedCount", feedbackRepository.countByStatus("RESOLVED"));
+        model.addAttribute("selectedStatus", status != null ? status : "ALL");
+        model.addAttribute("totalCount", total);
+        model.addAttribute("pendingCount", pending);
+        model.addAttribute("inProgressCount", inProgress);
+        model.addAttribute("resolvedCount", resolved);
 
         return "admin/feedbacks";
     }
