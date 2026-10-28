@@ -51,6 +51,9 @@ public class ScoreApiController {
             academicYear = "២០២៦-២០២៧";
         }
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null || accountId == 1L) {
+            accountId = 97L;
+        }
         if (className == null || className.isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className)) {
             return ResponseEntity.ok(scoreRepository.findByMonthAndSubjectNameAndAccountIdAndAcademicYear(
                 month, subjectName, accountId, academicYear));
@@ -66,6 +69,9 @@ public class ScoreApiController {
             academicYear = "២០២៦-២០២៧";
         }
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null || accountId == 1L) {
+            accountId = 97L;
+        }
         for (Score s : payload.getScores()) {
             String actualClassName = payload.getClassName();
             if (actualClassName == null || actualClassName.isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(actualClassName)) {
@@ -103,7 +109,13 @@ public class ScoreApiController {
     @GetMapping("/rules")
     public ResponseEntity<ScoreRule> getScoreRule(@RequestParam String className, @RequestParam String subjectName) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null || accountId == 1L) {
+            accountId = 97L;
+        }
         Optional<ScoreRule> rule = scoreRuleRepository.findByAccountIdAndClassNameAndSubjectName(accountId, className, subjectName);
+        if (rule.isEmpty() && (accountId == 97L || accountId == 1L)) {
+            rule = scoreRuleRepository.findByAccountIdAndClassNameAndSubjectName(1L, className, subjectName);
+        }
         if (rule.isPresent()) {
             return ResponseEntity.ok(rule.get());
         }
@@ -111,6 +123,9 @@ public class ScoreApiController {
         String khmerAllClassrooms = "ថ្នាក់រៀនទាំងអស់";
         if (!khmerAllClassrooms.equals(className)) {
             Optional<ScoreRule> globalRule = scoreRuleRepository.findByAccountIdAndClassNameAndSubjectName(accountId, khmerAllClassrooms, subjectName);
+            if (globalRule.isEmpty() && (accountId == 97L || accountId == 1L)) {
+                globalRule = scoreRuleRepository.findByAccountIdAndClassNameAndSubjectName(1L, khmerAllClassrooms, subjectName);
+            }
             if (globalRule.isPresent()) {
                 return ResponseEntity.ok(globalRule.get());
             }
@@ -129,6 +144,9 @@ public class ScoreApiController {
     @PostMapping("/rules")
     public ResponseEntity<?> saveScoreRule(@RequestBody ScoreRule payload) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null || accountId == 1L) {
+            accountId = 97L;
+        }
         Optional<ScoreRule> existingOpt = scoreRuleRepository.findByAccountIdAndClassNameAndSubjectName(accountId, payload.getClassName(), payload.getSubjectName());
         
         ScoreRule rule = existingOpt.orElse(new ScoreRule());

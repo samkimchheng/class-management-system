@@ -8,93 +8,93 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ScoreRepository extends JpaRepository<Score, Long> {
-    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.className = :className AND s.subjectName = :subjectName AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.className = :className AND s.subjectName = :subjectName AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByMonthAndClassNameAndSubjectNameAndAccountId(@Param("month") String month, @Param("className") String className, @Param("subjectName") String subjectName, @Param("accountId") Long accountId);
 
-    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.className = :className AND s.subjectName = :subjectName AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.className = :className AND s.subjectName = :subjectName AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByMonthAndClassNameAndSubjectNameAndAccountIdAndAcademicYear(
-            @Param("month") String month, 
-            @Param("className") String className, 
-            @Param("subjectName") String subjectName, 
+            @Param("month") String month,
+            @Param("className") String className,
+            @Param("subjectName") String subjectName,
             @Param("accountId") Long accountId,
             @Param("academicYear") String academicYear);
 
-    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.className = :className AND s.subjectName = :subjectName AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.className = :className AND s.subjectName = :subjectName AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     Optional<Score> findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(@Param("studentId") Long studentId, @Param("month") String month, @Param("className") String className, @Param("subjectName") String subjectName, @Param("accountId") Long accountId);
 
     List<Score> findByMonth(String month);
     List<Score> findByClassName(String className);
 
-    @Query("SELECT s FROM Score s WHERE s.month = :month AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByMonthAndAccountId(@Param("month") String month, @Param("accountId") Long accountId);
 
-    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     Optional<Score> findByStudentIdAndMonthAndAccountId(@Param("studentId") Long studentId, @Param("month") String month, @Param("accountId") Long accountId);
 
-    @Query("SELECT s FROM Score s WHERE (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByAccountId(@Param("accountId") Long accountId);
 
-    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.className = :className AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.className = :className AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByMonthAndClassNameAndAccountId(@Param("month") String month, @Param("className") String className, @Param("accountId") Long accountId);
 
-    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.className = :className AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.className = :className AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByMonthAndClassNameAndAccountIdAndAcademicYear(
-            @Param("month") String month, 
-            @Param("className") String className, 
+            @Param("month") String month,
+            @Param("className") String className,
             @Param("accountId") Long accountId,
             @Param("academicYear") String academicYear);
 
-    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.className = :className AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.className = :className AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByStudentIdAndMonthAndClassNameAndAccountId(@Param("studentId") Long studentId, @Param("month") String month, @Param("className") String className, @Param("accountId") Long accountId);
 
     @org.springframework.transaction.annotation.Transactional
     void deleteByStudentId(Long studentId);
 
-    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.className = :className AND s.subjectName = :subjectName AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.className = :className AND s.subjectName = :subjectName AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     Optional<Score> findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountIdAndAcademicYear(
-            @Param("studentId") Long studentId, 
-            @Param("month") String month, 
-            @Param("className") String className, 
-            @Param("subjectName") String subjectName, 
+            @Param("studentId") Long studentId,
+            @Param("month") String month,
+            @Param("className") String className,
+            @Param("subjectName") String subjectName,
             @Param("accountId") Long accountId,
             @Param("academicYear") String academicYear);
 
-    @Query("SELECT s FROM Score s WHERE s.month = :month AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByMonthAndAccountIdAndAcademicYear(
-            @Param("month") String month, 
+            @Param("month") String month,
             @Param("accountId") Long accountId,
             @Param("academicYear") String academicYear);
 
-    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.className = :className AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.className = :className AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByStudentIdAndMonthAndClassNameAndAccountIdAndAcademicYear(
-            @Param("studentId") Long studentId, 
-            @Param("month") String month, 
-            @Param("className") String className, 
+            @Param("studentId") Long studentId,
+            @Param("month") String month,
+            @Param("className") String className,
             @Param("accountId") Long accountId,
             @Param("academicYear") String academicYear);
 
-    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByStudentIdAndMonthAndAccountIdAndAcademicYear(
-            @Param("studentId") Long studentId, 
-            @Param("month") String month, 
+            @Param("studentId") Long studentId,
+            @Param("month") String month,
             @Param("accountId") Long accountId,
             @Param("academicYear") String academicYear);
 
-    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.subjectName = :subjectName AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND s.month = :month AND s.subjectName = :subjectName AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByStudentIdAndMonthAndSubjectNameAndAccountIdAndAcademicYear(
-            @Param("studentId") Long studentId, 
-            @Param("month") String month, 
-            @Param("subjectName") String subjectName, 
+            @Param("studentId") Long studentId,
+            @Param("month") String month,
+            @Param("subjectName") String subjectName,
             @Param("accountId") Long accountId,
             @Param("academicYear") String academicYear);
 
-    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.subjectName = :subjectName AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR s.accountId = :accountId)")
+    @Query("SELECT s FROM Score s WHERE s.month = :month AND s.subjectName = :subjectName AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = ''))) AND (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId)")
     List<Score> findByMonthAndSubjectNameAndAccountIdAndAcademicYear(
-            @Param("month") String month, 
-            @Param("subjectName") String subjectName, 
+            @Param("month") String month,
+            @Param("subjectName") String subjectName,
             @Param("accountId") Long accountId,
             @Param("academicYear") String academicYear);
 
-    @Query("SELECT DISTINCT s.subjectName FROM Score s WHERE (:accountId IS NULL OR s.accountId = :accountId) AND s.subjectName IS NOT NULL AND s.subjectName != ''")
+    @Query("SELECT DISTINCT s.subjectName FROM Score s WHERE (:accountId IS NULL OR (:accountId IN (1, 97) AND (s.accountId IN (1, 97) OR s.accountId IS NULL)) OR s.accountId = :accountId) AND s.subjectName IS NOT NULL AND s.subjectName != ''")
     List<String> findDistinctSubjectNamesByAccountId(@Param("accountId") Long accountId);
 }
