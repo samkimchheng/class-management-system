@@ -1308,52 +1308,10 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
 
             if ("principal".equals(sigType)) {
                 accountRepository.findById(accountId).ifPresent(a -> { a.setPrincipalSignature(finalUri); accountRepository.save(a); });
-                if (accountId != 97L) {
-                    accountRepository.findById(97L).ifPresent(a -> { a.setPrincipalSignature(finalUri); accountRepository.save(a); });
-                }
-                if (accountId != 1L) {
-                    accountRepository.findById(1L).ifPresent(a -> { a.setPrincipalSignature(finalUri); accountRepository.save(a); });
-                }
-                try {
-                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
-                    for (CertificateRecord c : certs) {
-                        c.setPrincipalSignature(finalUri);
-                        c.setUpdatedAt(LocalDateTime.now());
-                        certificateRecordRepository.save(c);
-                    }
-                } catch (Exception ignored) {}
             } else if ("stamp".equals(sigType)) {
                 accountRepository.findById(accountId).ifPresent(a -> { a.setSchoolStamp(finalUri); accountRepository.save(a); });
-                if (accountId != 97L) {
-                    accountRepository.findById(97L).ifPresent(a -> { a.setSchoolStamp(finalUri); accountRepository.save(a); });
-                }
-                if (accountId != 1L) {
-                    accountRepository.findById(1L).ifPresent(a -> { a.setSchoolStamp(finalUri); accountRepository.save(a); });
-                }
-                try {
-                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
-                    for (CertificateRecord c : certs) {
-                        c.setSchoolStamp(finalUri);
-                        c.setUpdatedAt(LocalDateTime.now());
-                        certificateRecordRepository.save(c);
-                    }
-                } catch (Exception ignored) {}
             } else {
                 accountRepository.findById(accountId).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
-                if (accountId != 97L) {
-                    accountRepository.findById(97L).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
-                }
-                if (accountId != 1L) {
-                    accountRepository.findById(1L).ifPresent(a -> { a.setSignature(finalUri); accountRepository.save(a); });
-                }
-                try {
-                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
-                    for (CertificateRecord c : certs) {
-                        c.setSignature(finalUri);
-                        c.setUpdatedAt(LocalDateTime.now());
-                        certificateRecordRepository.save(c);
-                    }
-                } catch (Exception ignored) {}
             }
 
             return ResponseEntity.ok(Map.of("success", true, "type", sigType, "signature", finalUri));
@@ -1377,37 +1335,10 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
 
             if ("principal".equals(sigType)) {
                 accountRepository.findById(accountId).ifPresent(a -> { a.setPrincipalSignature(null); accountRepository.save(a); });
-                accountRepository.findById(97L).ifPresent(a -> { a.setPrincipalSignature(null); accountRepository.save(a); });
-                accountRepository.findById(1L).ifPresent(a -> { a.setPrincipalSignature(null); accountRepository.save(a); });
-                try {
-                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
-                    for (CertificateRecord c : certs) {
-                        c.setPrincipalSignature(null);
-                        certificateRecordRepository.save(c);
-                    }
-                } catch (Exception ignored) {}
             } else if ("stamp".equals(sigType)) {
                 accountRepository.findById(accountId).ifPresent(a -> { a.setSchoolStamp(null); accountRepository.save(a); });
-                accountRepository.findById(97L).ifPresent(a -> { a.setSchoolStamp(null); accountRepository.save(a); });
-                accountRepository.findById(1L).ifPresent(a -> { a.setSchoolStamp(null); accountRepository.save(a); });
-                try {
-                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
-                    for (CertificateRecord c : certs) {
-                        c.setSchoolStamp(null);
-                        certificateRecordRepository.save(c);
-                    }
-                } catch (Exception ignored) {}
             } else {
                 accountRepository.findById(accountId).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
-                accountRepository.findById(97L).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
-                accountRepository.findById(1L).ifPresent(a -> { a.setSignature(null); accountRepository.save(a); });
-                try {
-                    List<CertificateRecord> certs = certificateRecordRepository.findAll();
-                    for (CertificateRecord c : certs) {
-                        c.setSignature(null);
-                        certificateRecordRepository.save(c);
-                    }
-                } catch (Exception ignored) {}
             }
 
             return ResponseEntity.ok(Map.of("success", true, "type", sigType));
