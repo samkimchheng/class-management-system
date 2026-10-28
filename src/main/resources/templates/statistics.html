@@ -17,6 +17,9 @@
             margin-top: 0;
             border-collapse: collapse;
         }
+        th {
+            letter-spacing: normal !important;
+        }
         .stat-card {
             background-color: var(--white);
             padding: 30px;
@@ -126,10 +129,14 @@
                 table-layout: fixed !important;
             }
             .table-container th, .table-container td {
-                padding: 5px 2px !important;
+                padding: 6px 2px !important;
                 font-size: 0.80rem !important;
+                letter-spacing: normal !important;
+                word-break: normal !important;
+                white-space: nowrap !important;
+            }
+            .scrollable-table-wrapper table tbody tr td:nth-child(2) {
                 white-space: normal !important;
-                word-break: break-word !important;
             }
         }
             @keyframes spin {
@@ -314,32 +321,32 @@
                 <div class="scrollable-table-wrapper">
                     <table style="width: 100%; border-collapse: collapse; min-width: 950px;">
                         <thead>
-                            <tr style="background-color: #e2e8f0;">
-                                <th rowspan="2" style="text-align: center; width: 45px; vertical-align: middle; border: 1.5px solid #94a3b8; padding: 10px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">ល.រ</th>
-                                <th rowspan="2" style="text-align: left; vertical-align: middle; min-width: 130px; border: 1.5px solid #94a3b8; padding: 10px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">មុខវិជ្ជា</th>
+                            <tr>
+                                <th rowspan="2" style="text-align: center; width: 45px; vertical-align: middle; border: 1.5px solid #94a3b8; padding: 10px; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">ល.រ</th>
+                                <th rowspan="2" style="text-align: left; vertical-align: middle; min-width: 130px; border: 1.5px solid #94a3b8; padding: 10px; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">មុខវិជ្ជា</th>
                                 <th colspan="2" style="text-align: center; border: 1.5px solid #94a3b8; background-color: #e2e8f0; color: #0f172a; padding: 9px; font-size: 1.05rem; font-weight: 800;">សិស្សប្រឡង</th>
                                 <th colspan="3" style="text-align: center; border: 1.5px solid #94a3b8; background-color: #d1fae5; color: #065f46; padding: 9px; font-size: 1.05rem; font-weight: 800;">សិស្សជាប់</th>
                                 <th colspan="3" style="text-align: center; border: 1.5px solid #94a3b8; background-color: #fee2e2; color: #991b1b; padding: 9px; font-size: 1.05rem; font-weight: 800;">សិស្សធ្លាក់</th>
                                 <th colspan="6" style="text-align: center; border: 1.5px solid #94a3b8; background-color: #e2e8f0; color: #0f172a; padding: 9px; font-size: 1.05rem; font-weight: 800;">កម្រិតនិទ្ទេស</th>
                             </tr>
-                            <tr style="background-color: #f1f5f9; font-size: 1rem; font-weight: 800;">
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; padding: 8px; color: #0f172a;">សរុប</th>
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; color: #9d174d; padding: 8px;">ស្រី</th>
+                            <tr style="font-size: 1rem; font-weight: 800;">
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; padding: 8px; color: #0f172a; background-color: #f1f5f9;">សរុប</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; color: #9d174d; padding: 8px; background-color: #f1f5f9;">ស្រី</th>
 
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; color: #065f46; padding: 8px;">សរុប</th>
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; color: #9d174d; padding: 8px;">ស្រី</th>
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 65px; color: #065f46; padding: 8px;">ភាគរយ</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; color: #065f46; padding: 8px; background-color: #f1f5f9;">សរុប</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; color: #9d174d; padding: 8px; background-color: #f1f5f9;">ស្រី</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 65px; color: #065f46; padding: 8px; background-color: #f1f5f9;">ភាគរយ</th>
 
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; color: #991b1b; padding: 8px;">សរុប</th>
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; color: #9d174d; padding: 8px;">ស្រី</th>
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 65px; color: #991b1b; padding: 8px;">ភាគរយ</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; color: #991b1b; padding: 8px; background-color: #f1f5f9;">សរុប</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 55px; color: #9d174d; padding: 8px; background-color: #f1f5f9;">ស្រី</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 65px; color: #991b1b; padding: 8px; background-color: #f1f5f9;">ភាគរយ</th>
 
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; padding: 8px; color: #0f172a; font-size: 1.05rem;">A</th>
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; padding: 8px; color: #0f172a; font-size: 1.05rem;">B</th>
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; padding: 8px; color: #0f172a; font-size: 1.05rem;">C</th>
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; padding: 8px; color: #0f172a; font-size: 1.05rem;">D</th>
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; padding: 8px; color: #0f172a; font-size: 1.05rem;">E</th>
-                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; color: #991b1b; padding: 8px; font-size: 1.05rem;">F</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; padding: 8px; color: #0f172a; font-size: 1.05rem; background-color: #f1f5f9;">A</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; padding: 8px; color: #0f172a; font-size: 1.05rem; background-color: #f1f5f9;">B</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; padding: 8px; color: #0f172a; font-size: 1.05rem; background-color: #f1f5f9;">C</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; padding: 8px; color: #0f172a; font-size: 1.05rem; background-color: #f1f5f9;">D</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; padding: 8px; color: #0f172a; font-size: 1.05rem; background-color: #f1f5f9;">E</th>
+                                <th style="text-align: center; border: 1.5px solid #94a3b8; width: 60px; color: #991b1b; padding: 8px; font-size: 1.05rem; background-color: #f1f5f9;">F</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -486,6 +493,12 @@
                 w.style.boxShadow = 'none';
             });
 
+            // CRITICAL FOR KHMER TEXT: Reset letter-spacing and font on all cloned elements
+            clone.querySelectorAll('*').forEach(el => {
+                el.style.letterSpacing = 'normal';
+                el.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
+            });
+
             // Target the 16-column Subject Summary Table and enforce fixed 100% layout
             const subjectTable = clone.querySelector('.scrollable-table-wrapper table');
             if (subjectTable) {
@@ -494,6 +507,11 @@
                 subjectTable.style.maxWidth = '100%';
                 subjectTable.style.tableLayout = 'fixed';
                 subjectTable.style.borderCollapse = 'collapse';
+
+                // Ensure rows have transparent background so rowspan cells are never occluded in html2canvas
+                subjectTable.querySelectorAll('tr').forEach(tr => {
+                    tr.style.backgroundColor = 'transparent';
+                });
 
                 // Add colgroup with precise percentage distribution totaling 100%
                 const colgroup = document.createElement('colgroup');
@@ -520,16 +538,23 @@
                 });
             }
 
-            // Universal cell styling inside clone: wrap text properly, adjust padding and font size for clean fit
+            // Universal cell styling inside clone: prevent broken Khmer ligatures by avoiding character splitting
             clone.querySelectorAll('th, td').forEach(cell => {
-                cell.style.whiteSpace = 'normal';
-                cell.style.wordBreak = 'break-word';
-                cell.style.overflowWrap = 'break-word';
+                cell.style.whiteSpace = 'nowrap';
+                cell.style.wordBreak = 'normal';
+                cell.style.overflowWrap = 'normal';
+                cell.style.letterSpacing = 'normal';
                 cell.style.padding = '6px 2px';
                 cell.style.fontSize = '0.80rem';
-                cell.style.lineHeight = '1.25';
+                cell.style.lineHeight = '1.3';
                 cell.style.boxSizing = 'border-box';
                 cell.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
+            });
+
+            // Allow natural word wrapping only on the subject name column
+            clone.querySelectorAll('.scrollable-table-wrapper table tbody tr td:nth-child(2)').forEach(td => {
+                td.style.whiteSpace = 'normal';
+                td.style.wordBreak = 'normal';
             });
 
             // Optimize container width to match Landscape A4 (297mm - 16mm margins = 281mm ≈ 1062px at 96 DPI)
