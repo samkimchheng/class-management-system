@@ -102,8 +102,21 @@
                 print-color-adjust: exact !important;
             }
             @page {
-                size: A4 portrait;
-                margin: 15mm;
+                size: A4 landscape;
+                margin: 8mm;
+            }
+            .scrollable-table-wrapper {
+                overflow: visible !important;
+                border: none !important;
+                width: 100% !important;
+            }
+            .scrollable-table-wrapper table {
+                min-width: unset !important;
+                width: 100% !important;
+            }
+            .table-container th, .table-container td {
+                padding: 6px 3px !important;
+                font-size: 0.88rem !important;
             }
         }
             @keyframes spin {
@@ -448,16 +461,41 @@
                 }
             });
 
-            // Styling clone container for optimal A4 portrait fit
-            clone.style.width = '820px';
-            clone.style.padding = '25px';
+            // CRITICAL FIX: Remove min-width restrictions on all tables and wrappers so NOTHING cuts off on the right!
+            clone.querySelectorAll('.scrollable-table-wrapper').forEach(w => {
+                w.style.overflow = 'visible';
+                w.style.width = '100%';
+                w.style.maxWidth = '100%';
+                w.style.border = 'none';
+            });
+
+            clone.querySelectorAll('table').forEach(tbl => {
+                tbl.style.minWidth = 'unset';
+                tbl.style.width = '100%';
+                tbl.style.maxWidth = '100%';
+                tbl.style.borderCollapse = 'collapse';
+                tbl.style.tableLayout = 'auto';
+            });
+
+            clone.querySelectorAll('th, td').forEach(cell => {
+                cell.style.padding = '5px 3px';
+                cell.style.fontSize = '0.86rem';
+                cell.style.lineHeight = '1.25';
+                cell.style.wordBreak = 'break-word';
+            });
+
+            // Optimize container width to match Landscape A4 (297mm - 16mm margins = 281mm ≈ 1060px)
+            clone.style.width = '1060px';
+            clone.style.maxWidth = '1060px';
+            clone.style.boxSizing = 'border-box';
+            clone.style.padding = '15px 20px';
             clone.style.backgroundColor = '#ffffff';
             clone.style.color = '#0f172a';
             clone.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
 
-            // Direct PDF download configuration
+            // Direct PDF download configuration in Landscape mode
             const opt = {
-                margin: [10, 10, 10, 10], // mm
+                margin: [8, 8, 8, 8], // 8mm margin
                 filename: filename + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: {
@@ -465,12 +503,13 @@
                     useCORS: true,
                     logging: false,
                     letterRendering: true,
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    windowWidth: 1080
                 },
                 jsPDF: {
                     unit: 'mm',
                     format: 'a4',
-                    orientation: 'portrait'
+                    orientation: 'landscape' // <--- A4 Landscape guarantees full width for all 16 columns!
                 },
                 pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
@@ -485,7 +524,6 @@
                     console.error('Error generating PDF:', err);
                     btn.disabled = false;
                     btn.innerHTML = originalText;
-                    // Fallback to print dialog if canvas generation is blocked
                     window.print();
                 });
         }
