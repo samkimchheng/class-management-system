@@ -176,53 +176,91 @@ public class DataInitializer {
                 System.err.println(">>> [DataInitializer] Schema migration notice: " + e.getMessage());
             }
 
-            // 2. Check if samkimchheng exists, if not restore from data_dump.sql
-            boolean needRestore = false;
-            try (Connection conn = dataSource.getConnection();
-                 Statement stmt = conn.createStatement()) {
-                try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM account WHERE username = 'samkimchheng'")) {
-                    if (rs.next() && rs.getInt(1) == 0) {
-                        needRestore = true;
-                    }
-                } catch (Exception ignored) {
-                    try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM \"ACCOUNT\" WHERE username = 'samkimchheng'")) {
+            // 2. Detect if database is PostgreSQL or H2
+            boolean isPostgres = false;
+            try (Connection conn = dataSource.getConnection()) {
+                String pName = conn.getMetaData().getDatabaseProductName();
+                if (pName != null && pName.toLowerCase().contains("postgres")) {
+                    isPostgres = true;
+                }
+            } catch (Exception ignored) {}
+
+            if (!isPostgres) {
+                // Local H2 mode: check if samkimchheng exists, if not restore from data_dump.sql
+                boolean needRestore = false;
+                try (Connection conn = dataSource.getConnection();
+                     Statement stmt = conn.createStatement()) {
+                    try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM account WHERE username = 'samkimchheng'")) {
                         if (rs.next() && rs.getInt(1) == 0) {
                             needRestore = true;
                         }
-                    } catch (Exception ignored2) {
-                        needRestore = true;
+                    } catch (Exception ignored) {
+                        try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM \"ACCOUNT\" WHERE username = 'samkimchheng'")) {
+                            if (rs.next() && rs.getInt(1) == 0) {
+                                needRestore = true;
+                            }
+                        } catch (Exception ignored2) {
+                            needRestore = true;
+                        }
                     }
-                }
-            } catch (Exception e) {
-                needRestore = true;
-            }
-
-            if (needRestore) {
-                System.out.println(">>> [DataInitializer] Restoring full database for samkimchheng and all teachers...");
-                try (Connection conn = dataSource.getConnection();
-                     Statement stmt = conn.createStatement()) {
-                    stmt.execute("DROP ALL OBJECTS");
                 } catch (Exception e) {
-                    System.err.println(">>> [DataInitializer] Notice dropping objects: " + e.getMessage());
+                    needRestore = true;
                 }
 
-                try {
-                    ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-                    populator.addScript(new ClassPathResource("data_dump.sql"));
-                    populator.setContinueOnError(true);
-                    populator.setIgnoreFailedDrops(true);
-                    populator.execute(dataSource);
-                    System.out.println(">>> [DataInitializer] Full database successfully restored!");
-
-                    // Crucial: Re-apply schema migrations immediately after restore!
+                if (needRestore) {
+                    System.out.println(">>> [DataInitializer] Restoring full database for samkimchheng and all teachers...");
                     try (Connection conn = dataSource.getConnection();
                          Statement stmt = conn.createStatement()) {
-                        applySchemaMigrations(stmt);
+                        stmt.execute("DROP ALL OBJECTS");
                     } catch (Exception e) {
-                        System.err.println(">>> [DataInitializer] Error applying migrations after restore: " + e.getMessage());
+                        System.err.println(">>> [DataInitializer] Notice dropping objects: " + e.getMessage());
                     }
+
+                    try {
+                        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+                        populator.addScript(new ClassPathResource("data_dump.sql"));
+                        populator.setContinueOnError(true);
+                        populator.setIgnoreFailedDrops(true);
+                        populator.execute(dataSource);
+                        System.out.println(">>> [DataInitializer] Full database successfully restored!");
+
+                        // Crucial: Re-apply schema migrations immediately after restore!
+                        try (Connection conn = dataSource.getConnection();
+                             Statement stmt = conn.createStatement()) {
+                            applySchemaMigrations(stmt);
+                        } catch (Exception e) {
+                            System.err.println(">>> [DataInitializer] Error applying migrations after restore: " + e.getMessage());
+                        }
+                    } catch (Exception e) {
+                        System.err.println(">>> [DataInitializer] Error restoring database: " + e.getMessage());
+                    }
+                }
+            } else {
+                // PostgreSQL mode: If fresh database, seed official accounts and update serial sequences
+                System.out.println(">>> [DataInitializer] Running on PostgreSQL Managed Database. Skipping H2 DROP ALL OBJECTS.");
+                try (Connection conn = dataSource.getConnection();
+                     Statement stmt = conn.createStatement()) {
+                    // Seed Admin (ID: 1) if not present
+                    stmt.executeUpdate("INSERT INTO account (id, username, password, email, role, full_name, active, gender, school_name, province, position, principal_name, current_academic_year) " +
+                            "VALUES (1, 'admin', 'admin@manulife%27', 'admincl@mitpukae.com', 'ADMIN', 'អ្នកគ្រប់គ្រងប្រព័ន្ធ', true, 'ប្រុស', 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត', 'ខេត្តពោធិ៍សាត់', 'អ្នកគ្រប់គ្រង', 'លី ប៊ុនថេង', '២០២៦-២០២៧') " +
+                            "ON CONFLICT (id) DO NOTHING");
+
+                    // Seed Sam Kimchheng (ID: 97) if not present
+                    stmt.executeUpdate("INSERT INTO account (id, username, password, email, role, full_name, active, gender, school_name, province, position, teaching_classes, telegram, principal_name, current_academic_year) " +
+                            "VALUES (97, 'samkimchheng', 'techercl@%27', 'chhengcl@mitpukae.com', 'TEACHER', 'សំ គឹមឆេង', true, 'ប្រុស', 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត', 'ខេត្តពោធិ៍សាត់', 'គ្រូទទួលបន្ទុកថ្នាក់', '១០E, ១០F, ១០G, ១១F', '@Kimchheng12', 'លី ប៊ុនថេង', '២០២៦-២០២៧') " +
+                            "ON CONFLICT (id) DO NOTHING");
+
+                    // Seed Seung Somuny (ID: 33) if not present
+                    stmt.executeUpdate("INSERT INTO account (id, username, password, email, role, full_name, active, gender, school_name, province, position, principal_name, current_academic_year) " +
+                            "VALUES (33, 'Teacher1001', 'techercl@%21', 'teachercl21@mitpukae.com', 'TEACHER', 'ស៊ឹង សុមុនី', true, 'ស្រី', 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត', 'ខេត្តពោធិ៍សាត់', 'គ្រូបង្រៀន', 'លី ប៊ុនថេង', '២០២៦-២០២៧') " +
+                            "ON CONFLICT (id) DO NOTHING");
+
+                    // Align sequence so newly registered teacher accounts get clean auto-increment IDs without conflict
+                    try {
+                        stmt.execute("SELECT setval(pg_get_serial_sequence('account', 'id'), (SELECT COALESCE(MAX(id), 1) FROM account))");
+                    } catch (Exception ignored) {}
                 } catch (Exception e) {
-                    System.err.println(">>> [DataInitializer] Error restoring database: " + e.getMessage());
+                    System.err.println(">>> [DataInitializer] Notice seeding PostgreSQL accounts: " + e.getMessage());
                 }
             }
 
@@ -495,6 +533,13 @@ public class DataInitializer {
                     pop.setContinueOnError(true);
                     pop.execute(dataSource);
                     System.out.println(">>> [DataInitializer] Official students for 10E and 10F successfully seeded!");
+
+                    if (isPostgres) {
+                        try (Connection connPost = dataSource.getConnection();
+                             Statement stmtPost = connPost.createStatement()) {
+                            stmtPost.execute("SELECT setval(pg_get_serial_sequence('students', 'id'), (SELECT COALESCE(MAX(id), 1) FROM students))");
+                        } catch (Exception ignored) {}
+                    }
                 }
             } catch (Exception e) {
                 System.err.println(">>> [DataInitializer] Notice seeding students: " + e.getMessage());
