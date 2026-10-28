@@ -106,6 +106,10 @@
                 margin: 15mm;
             }
         }
+            @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -185,7 +189,16 @@
                 </div>
             </form>
 
-            <div class="card-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+            <!-- Printable & Exportable Statistics Report Area -->
+            <div id="statisticsReportArea" style="background: white; border-radius: var(--radius);">
+                <div id="pdfHeader" style="display: none; text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #0f172a;">
+                    <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 4px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                    <div style="font-size: 1.05rem; font-weight: bold; margin-bottom: 12px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    <h3 th:text="'របាយការណ៍ស្ថិតិសិស្ស ' + ${selectedClass} + ' (' + ${selectedMonth} + ') - ' + (${selectedSubject} != null ? ${selectedSubject} : 'គ្រប់មុខវិជ្ជា')" style="font-size: 1.3rem; font-weight: bold; color: #1e3a8a; margin: 0 0 6px 0;">របាយការណ៍ស្ថិតិសិស្ស</h3>
+                    <div style="font-size: 0.95rem; color: #475569;" th:text="'ឆ្នាំសិក្សា៖ ' + (${currentAcademicYear} ?: '២០២៦-២០២៧')">ឆ្នាំសិក្សា៖ ២០២៦-២០២៧</div>
+                </div>
+
+                <div class="card-grid" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="stat-card">
                     <h3>ចំនួនសិស្ស</h3>
                     <div class="stat-circle" style="background: conic-gradient(var(--primary) 100%, #eee 0);">
@@ -360,31 +373,121 @@
                     </table>
                 </div>
             </div>
+            </div><!-- end #statisticsReportArea -->
         </div>
     </div>
     <script src="/js/academic-year.js"></script>
+    <!-- html2pdf.js for Direct PDF File Download without Print Dialog -->
+    <script th:src="@{/js/html2pdf.bundle.min.js}" src="/js/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         function downloadAsPDF() {
-            const originalTitle = document.title;
+            const btn = document.getElementById('btnDownloadPDF');
+            const originalText = btn.innerHTML;
+
+            if (typeof html2pdf === 'undefined') {
+                btn.innerHTML = '<span>⏳ កំពុងរៀបចំ...</span>';
+                setTimeout(() => {
+                    if (typeof html2pdf !== 'undefined') {
+                        downloadAsPDF();
+                    } else {
+                        window.print();
+                        btn.innerHTML = originalText;
+                    }
+                }, 1000);
+                return;
+            }
+
+            // Set loading state
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg style="animation: spin 1s linear infinite; display: inline-block; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+                <span>កំពុងទាញយក...</span>
+            `;
+
+            // Extract file name from selected filters
             const classSelect = document.querySelector('select[name="className"]');
             const monthSelect = document.querySelector('select[name="month"]');
             const subjectSelect = document.querySelector('select[name="subjectName"]');
 
-            const className = classSelect ? classSelect.options[classSelect.selectedIndex].text : 'គ្រប់ថ្នាក់';
-            const monthName = monthSelect ? monthSelect.options[monthSelect.selectedIndex].text : '';
-            const subjectName = subjectSelect ? subjectSelect.options[subjectSelect.selectedIndex].text : '';
+            const className = classSelect ? classSelect.options[classSelect.selectedIndex].text.trim() : 'គ្រប់ថ្នាក់';
+            const monthName = monthSelect ? monthSelect.options[monthSelect.selectedIndex].text.trim() : '';
+            const subjectName = subjectSelect ? subjectSelect.options[subjectSelect.selectedIndex].text.trim() : '';
 
-            let titleParts = ['របាយការណ៍ស្ថិតិ'];
-            if (className) titleParts.push(className);
-            if (monthName) titleParts.push(monthName);
-            if (subjectName && subjectName !== 'គ្រប់មុខវិជ្ជា') titleParts.push(subjectName);
+            let filename = 'របាយការណ៍ស្ថិតិ';
+            if (className) filename += '_' + className;
+            if (monthName) filename += '_' + monthName;
+            if (subjectName && subjectName !== 'គ្រប់មុខវិជ្ជា') filename += '_' + subjectName;
 
-            document.title = titleParts.join('_');
-            window.print();
+            // Clone the report area to avoid touching the active screen
+            const originalArea = document.getElementById('statisticsReportArea');
+            const clone = originalArea.cloneNode(true);
 
-            setTimeout(() => {
-                document.title = originalTitle;
-            }, 1500);
+            // Display official PDF header in the exported file
+            const pdfHeader = clone.querySelector('#pdfHeader');
+            if (pdfHeader) {
+                pdfHeader.style.display = 'block';
+            }
+
+            // Convert CSS conic-gradient to crisp styled rings so html2canvas renders them with 100% clarity
+            clone.querySelectorAll('.stat-circle').forEach(circle => {
+                const inner = circle.querySelector('.stat-circle-inner');
+                const isPass = circle.classList.contains('pass-circle');
+                const isFail = circle.classList.contains('fail-circle');
+                const color = isPass ? '#10b981' : (isFail ? '#ef4444' : '#4361ee');
+                const bgColor = isPass ? '#ecfdf5' : (isFail ? '#fef2f2' : '#eef2ff');
+
+                circle.style.background = 'none';
+                circle.style.border = `6px solid ${color}`;
+                circle.style.backgroundColor = bgColor;
+                if (inner) {
+                    inner.style.background = 'transparent';
+                    inner.style.color = color;
+                    inner.style.fontWeight = 'bold';
+                    inner.style.fontSize = '1.8rem';
+                }
+            });
+
+            // Styling clone container for optimal A4 portrait fit
+            clone.style.width = '820px';
+            clone.style.padding = '25px';
+            clone.style.backgroundColor = '#ffffff';
+            clone.style.color = '#0f172a';
+            clone.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
+
+            // Direct PDF download configuration
+            const opt = {
+                margin: [10, 10, 10, 10], // mm
+                filename: filename + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    letterRendering: true,
+                    backgroundColor: '#ffffff'
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            // Trigger direct PDF download without opening print dialog
+            html2pdf().set(opt).from(clone).save()
+                .then(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                })
+                .catch(err => {
+                    console.error('Error generating PDF:', err);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    // Fallback to print dialog if canvas generation is blocked
+                    window.print();
+                });
         }
     </script>
 </body>
