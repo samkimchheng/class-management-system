@@ -268,15 +268,7 @@ public class WebController {
     @Autowired
     private com.nubb.classroom.repository.CertificateRecordRepository certificateRecordRepository;
 
-    @GetMapping("/debug/accounts")
-    @org.springframework.web.bind.annotation.ResponseBody
-    public String debugAccounts() {
-        StringBuilder sb = new StringBuilder();
-        for (com.nubb.classroom.model.Account a : ((com.nubb.classroom.repository.AccountRepository) org.springframework.web.context.support.WebApplicationContextUtils.getWebApplicationContext(session.getServletContext()).getBean(com.nubb.classroom.repository.AccountRepository.class)).findAll()) {
-            sb.append(a.getUsername()).append(" / ").append(a.getPassword()).append(" [").append(a.getRole()).append("]<br>");
-        }
-        return sb.toString();
-    }
+
     @GetMapping("/")
     public String index(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
         String[] provinces = {
