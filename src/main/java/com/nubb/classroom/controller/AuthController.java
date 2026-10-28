@@ -60,9 +60,27 @@ public class AuthController {
             return "login";
         }
 
-        Optional<Account> accOpt = accountRepository.findByUsername(username);
+        String cleanUsername = username != null ? username.trim() : "";
+        String cleanPassword = password != null ? password.trim() : "";
 
-        if (accOpt.isPresent() && accOpt.get().getPassword().equals(password)) {
+        Optional<Account> accOpt = accountRepository.findByUsername(cleanUsername);
+        if (accOpt.isEmpty()) {
+            // 1. Case-insensitive search on username
+            accOpt = accountRepository.findAll().stream()
+                    .filter(a -> a.getUsername() != null && a.getUsername().trim().equalsIgnoreCase(cleanUsername))
+                    .findFirst();
+        }
+        if (accOpt.isEmpty()) {
+            // 2. Flexible fallback: match by phone number, email, or full name
+            String strippedInput = cleanUsername.replaceAll("[\\s-]", "");
+            accOpt = accountRepository.findAll().stream()
+                    .filter(a -> (a.getPhone() != null && !strippedInput.isEmpty() && a.getPhone().trim().replaceAll("[\\s-]", "").equalsIgnoreCase(strippedInput))
+                              || (a.getEmail() != null && a.getEmail().trim().equalsIgnoreCase(cleanUsername))
+                              || (a.getFullName() != null && a.getFullName().trim().equalsIgnoreCase(cleanUsername)))
+                    .findFirst();
+        }
+
+        if (accOpt.isPresent() && (accOpt.get().getPassword().equals(password) || accOpt.get().getPassword().equals(cleanPassword))) {
             Account acc = accOpt.get();
             if (Boolean.FALSE.equals(acc.getActive())) {
                 model.addAttribute("error", "គណនីនេះត្រូវបានផ្អាក ឬបិទសិទ្ធិជាបណ្តោះអាសន្ន! សូមទាក់ទង Admin។");

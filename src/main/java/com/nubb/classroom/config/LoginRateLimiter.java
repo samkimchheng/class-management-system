@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class LoginRateLimiter {
 
-    private static final int MAX_FAILED_ATTEMPTS = 5;
-    private static final long LOCKOUT_DURATION_MS = 10L * 60 * 1000; // 10 minutes
+    private static final int MAX_FAILED_ATTEMPTS = 20;
+    private static final long LOCKOUT_DURATION_MS = 2L * 60 * 1000; // 2 minutes
 
     private static class AttemptInfo {
         int count;
@@ -24,6 +24,10 @@ public class LoginRateLimiter {
     private final ConcurrentHashMap<String, AttemptInfo> attemptsMap = new ConcurrentHashMap<>();
 
     public String getClientIp(HttpServletRequest request) {
+        String cfIp = request.getHeader("CF-Connecting-IP");
+        if (cfIp != null && !cfIp.trim().isEmpty()) {
+            return cfIp.trim();
+        }
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.trim().isEmpty()) {
             return xForwardedFor.split(",")[0].trim();
