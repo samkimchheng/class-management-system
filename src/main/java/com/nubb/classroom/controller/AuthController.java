@@ -1,11 +1,14 @@
 package com.nubb.classroom.controller;
 
+import com.nubb.classroom.config.LoginRateLimiter;
+import com.nubb.classroom.config.TokenSecurityService;
 import com.nubb.classroom.model.Account;
 import com.nubb.classroom.repository.AccountRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +21,15 @@ import java.util.Optional;
 public class AuthController {
 
     private final AccountRepository accountRepository;
+    private final TokenSecurityService tokenSecurityService;
+    private final LoginRateLimiter loginRateLimiter;
 
-    public AuthController(AccountRepository accountRepository) {
+    public AuthController(AccountRepository accountRepository,
+                          TokenSecurityService tokenSecurityService,
+                          LoginRateLimiter loginRateLimiter) {
         this.accountRepository = accountRepository;
+        this.tokenSecurityService = tokenSecurityService;
+        this.loginRateLimiter = loginRateLimiter;
     }
 
     @GetMapping("/login")
@@ -37,18 +46,32 @@ public class AuthController {
     public String doLogin(
             @RequestParam("username") String username,
             @RequestParam("password") String password,
-            HttpSession session,
+            HttpServletRequest request,
             HttpServletResponse response,
+            HttpSession session,
             Model model) {
-        
+
+        String clientIp = loginRateLimiter.getClientIp(request);
+
+        // 1. Check if IP is currently blocked due to multiple failed attempts
+        if (loginRateLimiter.isBlocked(clientIp)) {
+            long remainingMins = loginRateLimiter.getRemainingLockoutMinutes(clientIp);
+            model.addAttribute("error", "អ្នកបានព្យាយាមវាយលេខសម្ងាត់ខុសច្រើនដងពេក! ដើម្បីសុវត្ថិភាព សូមរង់ចាំប្រហែល " + remainingMins + " នាទីសិន ទើបអាចព្យាយាមម្តងទៀត។");
+            return "login";
+        }
+
         Optional<Account> accOpt = accountRepository.findByUsername(username);
-        
+
         if (accOpt.isPresent() && accOpt.get().getPassword().equals(password)) {
             Account acc = accOpt.get();
             if (Boolean.FALSE.equals(acc.getActive())) {
                 model.addAttribute("error", "គណនីនេះត្រូវបានផ្អាក ឬបិទសិទ្ធិជាបណ្តោះអាសន្ន! សូមទាក់ទង Admin។");
                 return "login";
             }
+
+            // Successful login: reset rate limiter
+            loginRateLimiter.recordSuccess(clientIp);
+
             session.setAttribute("ACCOUNT_ID", acc.getId());
             session.setAttribute("ACCOUNT_ROLE", acc.getRole());
             session.setAttribute("ACCOUNT_NAME", acc.getFullName());
@@ -57,13 +80,19 @@ public class AuthController {
             } else {
                 session.setAttribute("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧");
             }
-            
-            // Set 30-day persistent cookie
-            Cookie cookie = new Cookie("REMEMBER_ACCOUNT_ID", String.valueOf(acc.getId()));
-            cookie.setMaxAge(30 * 24 * 60 * 60); // 30 days
-            cookie.setPath("/");
-            cookie.setHttpOnly(true);
-            response.addCookie(cookie);
+
+            // Generate tamper-proof cryptographic token
+            String secureToken = tokenSecurityService.generateAccountToken(acc);
+
+            boolean isHttps = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+            ResponseCookie cookie = ResponseCookie.from("REMEMBER_ACCOUNT_ID", secureToken)
+                    .httpOnly(true)
+                    .secure(isHttps)
+                    .path("/")
+                    .maxAge(30L * 24 * 60 * 60) // 30 days
+                    .sameSite("Lax")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
             if ("ADMIN".equals(acc.getRole())) {
                 return "redirect:/admin";
@@ -71,7 +100,9 @@ public class AuthController {
                 return "redirect:/";
             }
         }
-        
+
+        // Failed login: record attempt
+        loginRateLimiter.recordFailedAttempt(clientIp);
         model.addAttribute("error", "បញ្ចូលឈ្មោះ ឬលេខសម្ងាត់មិនត្រឹមត្រូវ!");
         return "login";
     }
@@ -79,10 +110,13 @@ public class AuthController {
     @GetMapping("/logout")
     public String logout(HttpSession session, HttpServletResponse response) {
         // Clear persistent cookie
-        Cookie cookie = new Cookie("REMEMBER_ACCOUNT_ID", "");
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("REMEMBER_ACCOUNT_ID", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         session.invalidate();
         return "redirect:/login";

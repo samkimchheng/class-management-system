@@ -1282,7 +1282,8 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
         try {
             Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
             if (accountId == null) {
-                accountId = 97L;
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("success", false, "message", "Unauthorized. Please log in first."));
             }
 
             String dataUri = null;
@@ -1368,7 +1369,10 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             @RequestParam(value = "type", required = false, defaultValue = "teacher") String type) {
         try {
             Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-            if (accountId == null) accountId = 97L;
+            if (accountId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("success", false, "message", "Unauthorized. Please log in first."));
+            }
             final String sigType = (type != null) ? type.toLowerCase().trim() : "teacher";
 
             if ("principal".equals(sigType)) {

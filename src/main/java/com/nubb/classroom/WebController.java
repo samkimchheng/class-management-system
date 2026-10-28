@@ -8,6 +8,9 @@ import com.nubb.classroom.repository.AccountRepository;
 import com.nubb.classroom.repository.ClassroomRepository;
 import com.nubb.classroom.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import com.nubb.classroom.config.TokenSecurityService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,6 +40,9 @@ public class WebController {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private TokenSecurityService tokenSecurityService;
 
     public static String toKhmerNumber(int n) {
         String s = String.valueOf(n);
@@ -1531,6 +1537,7 @@ public class WebController {
     public String doStudentLogin(
             @org.springframework.web.bind.annotation.RequestParam("studentCode") String studentCode,
             jakarta.servlet.http.HttpSession session,
+            jakarta.servlet.http.HttpServletRequest request,
             jakarta.servlet.http.HttpServletResponse response,
             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         
@@ -1539,11 +1546,16 @@ public class WebController {
             Student student = studentOpt.get();
             session.setAttribute("loggedInStudent", student);
 
-            jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("REMEMBER_STUDENT_ID", String.valueOf(student.getId()));
-            cookie.setMaxAge(30 * 24 * 60 * 60);
-            cookie.setPath("/");
-            cookie.setHttpOnly(true);
-            response.addCookie(cookie);
+            String studentToken = tokenSecurityService.generateStudentToken(student);
+            boolean isHttps = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+            ResponseCookie cookie = ResponseCookie.from("REMEMBER_STUDENT_ID", studentToken)
+                    .httpOnly(true)
+                    .secure(isHttps)
+                    .path("/")
+                    .maxAge(30L * 24 * 60 * 60)
+                    .sameSite("Lax")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
             return "redirect:/test/take";
         }
@@ -1563,10 +1575,13 @@ public class WebController {
 
     @GetMapping("/test/logout")
     public String studentLogout(jakarta.servlet.http.HttpSession session, jakarta.servlet.http.HttpServletResponse response) {
-        jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("REMEMBER_STUDENT_ID", "");
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("REMEMBER_STUDENT_ID", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         session.invalidate();
         return "redirect:/test";
