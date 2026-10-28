@@ -71,11 +71,12 @@ public class AuthController {
                     .findFirst();
         }
         if (accOpt.isEmpty()) {
-            // 2. Flexible fallback: match by phone number, email, or full name
+            // 2. Flexible fallback: match by email, email prefix (e.g. admincl, chhengcl, teachercl21), phone number, or full name
             String strippedInput = cleanUsername.replaceAll("[\\s-]", "");
             accOpt = accountRepository.findAll().stream()
-                    .filter(a -> (a.getPhone() != null && !strippedInput.isEmpty() && a.getPhone().trim().replaceAll("[\\s-]", "").equalsIgnoreCase(strippedInput))
-                              || (a.getEmail() != null && a.getEmail().trim().equalsIgnoreCase(cleanUsername))
+                    .filter(a -> (a.getEmail() != null && a.getEmail().trim().equalsIgnoreCase(cleanUsername))
+                              || (a.getEmail() != null && a.getEmail().split("@")[0].equalsIgnoreCase(cleanUsername))
+                              || (a.getPhone() != null && !strippedInput.isEmpty() && a.getPhone().trim().replaceAll("[\\s-]", "").equalsIgnoreCase(strippedInput))
                               || (a.getFullName() != null && a.getFullName().trim().equalsIgnoreCase(cleanUsername)))
                     .findFirst();
         }

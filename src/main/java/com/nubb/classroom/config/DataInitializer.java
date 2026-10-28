@@ -402,6 +402,47 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
+            // 8c. Ensure official passwords and emails requested by user are permanently synchronized
+            try {
+                // 1. Admin (admincl@mitpukae.com / admin@manulife%27)
+                accountRepository.findByUsername("admin").ifPresent(a -> {
+                    a.setPassword("admin@manulife%27");
+                    a.setEmail("admincl@mitpukae.com");
+                    accountRepository.save(a);
+                });
+                accountRepository.findById(1L).ifPresent(a -> {
+                    a.setPassword("admin@manulife%27");
+                    a.setEmail("admincl@mitpukae.com");
+                    accountRepository.save(a);
+                });
+
+                // 2. Sam Kimchheng (chhengcl@mitpukae.com / techercl@%27)
+                accountRepository.findByUsername("samkimchheng").ifPresent(a -> {
+                    a.setPassword("techercl@%27");
+                    a.setEmail("chhengcl@mitpukae.com");
+                    accountRepository.save(a);
+                });
+                accountRepository.findById(97L).ifPresent(a -> {
+                    a.setPassword("techercl@%27");
+                    a.setEmail("chhengcl@mitpukae.com");
+                    accountRepository.save(a);
+                });
+
+                // 3. Seung Somuny (teachercl21@mitpukae.com / techercl@%21)
+                accountRepository.findByUsername("Teacher1001").ifPresent(a -> {
+                    a.setPassword("techercl@%21");
+                    a.setEmail("teachercl21@mitpukae.com");
+                    accountRepository.save(a);
+                });
+                accountRepository.findById(33L).ifPresent(a -> {
+                    a.setPassword("techercl@%21");
+                    a.setEmail("teachercl21@mitpukae.com");
+                    accountRepository.save(a);
+                });
+            } catch (Exception e) {
+                System.err.println(">>> [DataInitializer] Notice syncing official credentials: " + e.getMessage());
+            }
+
             // 9. Ensure default Score Rules exist for subjects (Max 60 / 20 / 20 = 100)
             String[] standardSubjects = {"គណិតវិទ្យា", "ភាសាខ្មែរ", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា", "ភាសាអង់គ្លេស"};
             for (String subj : standardSubjects) {
