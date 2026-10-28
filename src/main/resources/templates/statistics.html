@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ស្ថិតិសិស្ស - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
-    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
     <style>
         .scrollable-table-wrapper {
@@ -105,18 +105,31 @@
                 size: A4 landscape;
                 margin: 8mm;
             }
+            .table-container {
+                overflow: visible !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 10px 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
             .scrollable-table-wrapper {
                 overflow: visible !important;
                 border: none !important;
                 width: 100% !important;
+                max-width: 100% !important;
             }
             .scrollable-table-wrapper table {
                 min-width: unset !important;
                 width: 100% !important;
+                max-width: 100% !important;
+                table-layout: fixed !important;
             }
             .table-container th, .table-container td {
-                padding: 6px 3px !important;
-                font-size: 0.88rem !important;
+                padding: 5px 2px !important;
+                font-size: 0.80rem !important;
+                white-space: normal !important;
+                word-break: break-word !important;
             }
         }
             @keyframes spin {
@@ -288,6 +301,7 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
             
             <!-- Summary Table for All Subjects -->
             <div class="table-container" style="margin-top: 30px;">
@@ -461,37 +475,83 @@
                 }
             });
 
-            // CRITICAL FIX: Remove min-width restrictions on all tables and wrappers so NOTHING cuts off on the right!
-            clone.querySelectorAll('.scrollable-table-wrapper').forEach(w => {
+            // CRITICAL: Reset all table containers and scrollable wrappers so NO clipping or horizontal scrolling occurs!
+            clone.querySelectorAll('.table-container, .scrollable-table-wrapper').forEach(w => {
                 w.style.overflow = 'visible';
                 w.style.width = '100%';
                 w.style.maxWidth = '100%';
+                w.style.padding = '0';
+                w.style.margin = '0 0 25px 0';
                 w.style.border = 'none';
+                w.style.boxShadow = 'none';
             });
 
-            clone.querySelectorAll('table').forEach(tbl => {
-                tbl.style.minWidth = 'unset';
-                tbl.style.width = '100%';
-                tbl.style.maxWidth = '100%';
-                tbl.style.borderCollapse = 'collapse';
-                tbl.style.tableLayout = 'auto';
-            });
+            // Target the 16-column Subject Summary Table and enforce fixed 100% layout
+            const subjectTable = clone.querySelector('.scrollable-table-wrapper table');
+            if (subjectTable) {
+                subjectTable.style.width = '100%';
+                subjectTable.style.minWidth = '100%';
+                subjectTable.style.maxWidth = '100%';
+                subjectTable.style.tableLayout = 'fixed';
+                subjectTable.style.borderCollapse = 'collapse';
 
+                // Add colgroup with precise percentage distribution totaling 100%
+                const colgroup = document.createElement('colgroup');
+                // 16 columns:
+                // 1: No (4%)
+                // 2: Subject (15%)
+                // 3,4: Exam Total (5.5%), Female (5.5%)
+                // 5,6,7: Pass Total (5.5%), Female (5.5%), % (6.5%)
+                // 8,9,10: Fail Total (5.5%), Female (5.5%), % (6.5%)
+                // 11-16: Grade A, B, C, D, E, F (5.8% each x 5 + 6.0% = 35.0%)
+                // Total = 4 + 15 + 11 + 17.5 + 17.5 + 35 = 100%
+                const colWidths = ['4%', '15%', '5.5%', '5.5%', '5.5%', '5.5%', '6.5%', '5.5%', '5.5%', '6.5%', '5.8%', '5.8%', '5.8%', '5.8%', '5.8%', '6.0%'];
+                colWidths.forEach(w => {
+                    const col = document.createElement('col');
+                    col.style.width = w;
+                    colgroup.appendChild(col);
+                });
+                subjectTable.insertBefore(colgroup, subjectTable.firstChild);
+
+                // Clear any inline width and min-width on headers and cells so colgroup takes full authority
+                subjectTable.querySelectorAll('th, td').forEach(c => {
+                    c.style.width = '';
+                    c.style.minWidth = '';
+                });
+            }
+
+            // Universal cell styling inside clone: wrap text properly, adjust padding and font size for clean fit
             clone.querySelectorAll('th, td').forEach(cell => {
-                cell.style.padding = '5px 3px';
-                cell.style.fontSize = '0.86rem';
-                cell.style.lineHeight = '1.25';
+                cell.style.whiteSpace = 'normal';
                 cell.style.wordBreak = 'break-word';
+                cell.style.overflowWrap = 'break-word';
+                cell.style.padding = '6px 2px';
+                cell.style.fontSize = '0.80rem';
+                cell.style.lineHeight = '1.25';
+                cell.style.boxSizing = 'border-box';
+                cell.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
             });
 
-            // Optimize container width to match Landscape A4 (297mm - 16mm margins = 281mm ≈ 1060px)
-            clone.style.width = '1060px';
-            clone.style.maxWidth = '1060px';
+            // Optimize container width to match Landscape A4 (297mm - 16mm margins = 281mm ≈ 1062px at 96 DPI)
+            clone.style.width = '1080px';
+            clone.style.maxWidth = '1080px';
             clone.style.boxSizing = 'border-box';
             clone.style.padding = '15px 20px';
             clone.style.backgroundColor = '#ffffff';
             clone.style.color = '#0f172a';
             clone.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
+
+            // Attach offscreen export wrapper to document.body so all fonts and styles compute perfectly
+            const exportWrapper = document.createElement('div');
+            exportWrapper.id = 'pdfExportWrapper';
+            exportWrapper.style.position = 'fixed';
+            exportWrapper.style.left = '-99999px';
+            exportWrapper.style.top = '0';
+            exportWrapper.style.width = '1080px';
+            exportWrapper.style.zIndex = '-9999';
+            exportWrapper.style.backgroundColor = '#ffffff';
+            exportWrapper.appendChild(clone);
+            document.body.appendChild(exportWrapper);
 
             // Direct PDF download configuration in Landscape mode
             const opt = {
@@ -502,14 +562,14 @@
                     scale: 2,
                     useCORS: true,
                     logging: false,
-                    letterRendering: true,
                     backgroundColor: '#ffffff',
-                    windowWidth: 1080
+                    scrollX: 0,
+                    scrollY: 0
                 },
                 jsPDF: {
                     unit: 'mm',
                     format: 'a4',
-                    orientation: 'landscape' // <--- A4 Landscape guarantees full width for all 16 columns!
+                    orientation: 'landscape' // A4 Landscape
                 },
                 pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
@@ -517,10 +577,12 @@
             // Trigger direct PDF download without opening print dialog
             html2pdf().set(opt).from(clone).save()
                 .then(() => {
+                    exportWrapper.remove();
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                 })
                 .catch(err => {
+                    exportWrapper.remove();
                     console.error('Error generating PDF:', err);
                     btn.disabled = false;
                     btn.innerHTML = originalText;
