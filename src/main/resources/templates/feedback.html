@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>មតិកែលម្អប្រព័ន្ធ - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
+    <style>
+        .feedback-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+        @media (min-width: 1024px) {
+            .feedback-container {
+                grid-template-columns: 420px 1fr;
+                align-items: start;
+            }
+        }
+        .form-card {
+            background: white;
+            padding: 25px 28px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+        }
+        .feedback-item {
+            background: white;
+            border-radius: var(--radius);
+            padding: 22px 25px;
+            margin-bottom: 18px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+        .feedback-item:hover {
+            box-shadow: var(--shadow-md);
+            border-color: #cbd5e1;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .badge-pending {
+            background-color: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+        .badge-inprogress {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+        .badge-resolved {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+        .admin-reply-box {
+            background: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            padding: 14px 18px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">គ្រូបង្រៀន៖ <b id="sidebarTeacherName" th:text="${teacherAccount != null ? teacherAccount.fullName : session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/" class="nav-link">ផ្ទាំងដើម</a></li>
+            <li class="nav-item"><a href="/profile" class="nav-link">ប្រវត្តិរូបផ្ទាល់ខ្លួន</a></li>
+            <li class="nav-item"><a href="/certificate" class="nav-link">បោះពុម្ពលិខិតសរសើរ</a></li>
+            <li class="nav-item"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនផ្ទាល់</a></li>
+            <li class="nav-item"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីវត្តមាន</a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link">បោះពុម្ពក្រដាសប្រឡង</a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link">មេរៀន</a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
+            <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍សរុប</a></li>
+            <li class="nav-item active"><a href="/feedback" class="nav-link" style="color: #facc15; font-weight: bold; display: flex; align-items: center; gap: 8px;"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
+            <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">ជំនួយបច្ចេកទេស (Telegram)</a></li>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/admin" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin ⚙️</a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout)</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="topbar">
+            <div>
+                <h3 style="margin: 0; font-size: 1.35rem; font-weight: 700; color: #1e293b;">💬 មតិកែលម្អ និងចំណុចខ្វះខាតប្រព័ន្ធ</h3>
+                <span style="font-size: 0.88rem; color: #64748b;">បញ្ចេញចំណាប់អារម្មណ៍ សំណូមពរ ឬរាយការណ៍បញ្ហា ដើម្បី Admin ធ្វើការកែលម្អ</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span style="font-size: 0.95rem; font-weight: 600; color: #334155;" th:text="${teacherAccount != null ? teacherAccount.fullName : session.ACCOUNT_NAME}">ឈ្មោះគ្រូ</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Flash Message Alerts -->
+            <div th:if="${successMessage}" style="background-color: #dcfce7; border: 1px solid #86efac; color: #166534; padding: 14px 18px; border-radius: 8px; margin-bottom: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>✅</span>
+                <span th:text="${successMessage}">ជោគជ័យ</span>
+            </div>
+            <div th:if="${errorMessage}" style="background-color: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 14px 18px; border-radius: 8px; margin-bottom: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>⚠️</span>
+                <span th:text="${errorMessage}">មានបញ្ហា</span>
+            </div>
+
+            <!-- Welcome Guidance Banner -->
+            <div style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 22px 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: var(--shadow-md);">
+                <div style="display: flex; gap: 18px; align-items: flex-start;">
+                    <span style="font-size: 2.2rem; line-height: 1;">💡</span>
+                    <div>
+                        <h4 style="margin: 0 0 6px 0; font-size: 1.15rem; font-weight: 700;">សូមស្វាគមន៍លោកគ្រូ/អ្នកគ្រូ!</h4>
+                        <p style="margin: 0; font-size: 0.92rem; line-height: 1.6; opacity: 0.95;">
+                            ប្រសិនបើលោកគ្រូជួបប្រទះបញ្ហាបច្ចេកទេស ចំណុចខ្វះខាត ឬមានគំនិតចង់ឱ្យបន្ថែមមុខងារថ្មីៗដើម្បីសម្រួលដល់ការគ្រប់គ្រងថ្នាក់រៀន សូមបំពេញទម្រង់ខាងក្រោម។ ក្រុមការងារ Admin នឹងពិនិត្យ និងយកចិត្តទុកដាក់កែលម្អប្រព័ន្ធជាប្រចាំ។
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback-container">
+                <!-- Form Column -->
+                <div class="form-card">
+                    <h4 style="margin: 0 0 18px 0; font-size: 1.15rem; color: #0f172a; font-weight: 700; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        <span>✍️</span> <span>ផ្ញើមតិកែលម្អថ្មី</span>
+                    </h4>
+
+                    <form th:action="@{/feedback}" method="POST">
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.92rem; color: #334155;">ប្រភេទមតិ <span style="color: #ef4444;">*</span></label>
+                            <select name="category" class="form-control" style="width: 100%; box-sizing: border-box;" required>
+                                <option value="ចំណុចខ្វះខាតប្រព័ន្ធ">🛠️ ចំណុចខ្វះខាតប្រព័ន្ធ (System Shortcoming)</option>
+                                <option value="សំណូមពរបន្ថែមមុខងារ">💡 សំណូមពរបន្ថែមមុខងារថ្មី (Feature Request)</option>
+                                <option value="រាយការណ៍បញ្ហា/កំហុស">⚠️ រាយការណ៍បញ្ហា ឬកំហុស (Bug / Error)</option>
+                                <option value="រូបរាង និងភាពងាយស្រួល">🎨 មតិលើរូបរាង និងភាពងាយស្រួលប្រើ (UX/UI)</option>
+                                <option value="ផ្សេងៗ">💬 មតិទូទៅ ឬការសរសើរ (General / Other)</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.92rem; color: #334155;">កម្រិតអាទិភាព</label>
+                            <select name="priority" class="form-control" style="width: 100%; box-sizing: border-box;">
+                                <option value="ធម្មតា">ធម្មតា (Normal)</option>
+                                <option value="មធ្យម">មធ្យម (Medium)</option>
+                                <option value="បន្ទាន់">បន្ទាន់ (Urgent)</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.92rem; color: #334155;">ចំណងជើងសង្ខេប <span style="color: #ef4444;">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="ឧ. ចង់ឱ្យមានមុខងារទាញយករបាយការណ៍ជា Excel..." style="width: 100%; box-sizing: border-box;" required>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.92rem; color: #334155;">ខ្លឹមសារលម្អិត <span style="color: #ef4444;">*</span></label>
+                            <textarea name="content" class="form-control" rows="5" placeholder="សូមរៀបរាប់លម្អិតពីបញ្ហាដែលបានជួបប្រទះ ឬចំណុចខ្វះខាតដែលចង់ឱ្យ Admin ធ្វើការកែលម្អ..." style="width: 100%; box-sizing: border-box; resize: vertical;" required></textarea>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.92rem; color: #334155;">លេខទូរស័ព្ទ / Telegram (សម្រាប់ Admin ទាក់ទង)</label>
+                            <input type="text" name="phone" class="form-control" th:value="${teacherAccount != null ? (teacherAccount.phone ?: teacherAccount.telegram) : ''}" placeholder="ឧ. 012 345 678" style="width: 100%; box-sizing: border-box;">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            <span>បញ្ជូនមតិកែលម្អទៅកាន់ Admin</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- History / Feedback List Column -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h4 style="margin: 0; font-size: 1.15rem; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                            <span>📋</span> <span>ប្រវត្តិនៃមតិយោបល់របស់លោកគ្រូ</span>
+                        </h4>
+                        <span style="font-size: 0.88rem; background: #e2e8f0; color: #334155; padding: 4px 10px; border-radius: 20px; font-weight: 700;" th:text="${myFeedbacks.size()} + ' មតិ'">0 មតិ</span>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div th:if="${myFeedbacks == null or myFeedbacks.isEmpty()}" style="background: white; border-radius: var(--radius); padding: 45px 25px; text-align: center; border: 1px dashed #cbd5e1;">
+                        <span style="font-size: 3rem; display: block; margin-bottom: 12px;">📬</span>
+                        <h5 style="margin: 0 0 6px 0; font-size: 1.1rem; color: #475569;">មិនទាន់មានប្រវត្តិនៃមតិយោបល់នៅឡើយទេ</h5>
+                        <p style="margin: 0; font-size: 0.9rem; color: #94a3b8;">លោកគ្រូអាចប្រើទម្រង់ខាងឆ្វេងដើម្បីផ្ញើមតិកែលម្អលើកដំបូងទៅកាន់ Admin។</p>
+                    </div>
+
+                    <!-- Feedback Cards -->
+                    <div th:each="fb : ${myFeedbacks}" class="feedback-item">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <span class="badge" th:classappend="${fb.status == 'RESOLVED' ? 'badge-resolved' : (fb.status == 'IN_PROGRESS' ? 'badge-inprogress' : 'badge-pending')}" th:text="${fb.statusKhmer}">រង់ចាំពិនិត្យ</span>
+                                <span style="font-size: 0.82rem; background: #f1f5f9; color: #475569; padding: 3px 8px; border-radius: 4px; font-weight: 600;" th:text="${fb.category}">ចំណុចខ្វះខាត</span>
+                                <span th:if="${fb.priority == 'បន្ទាន់'}" style="font-size: 0.80rem; background: #fee2e2; color: #dc2626; padding: 2px 7px; border-radius: 4px; font-weight: bold;">🚨 បន្ទាន់</span>
+                            </div>
+                            <span style="font-size: 0.82rem; color: #94a3b8;" th:text="${fb.formattedCreatedAt}">កាលបរិច្ឆេទ</span>
+                        </div>
+
+                        <h5 style="margin: 0 0 8px 0; font-size: 1.05rem; font-weight: 700; color: #1e293b;" th:text="${fb.title}">ចំណងជើង</h5>
+                        <p style="margin: 0; font-size: 0.93rem; color: #475569; line-height: 1.6; white-space: pre-wrap;" th:text="${fb.content}">ខ្លឹមសារ</p>
+
+                        <!-- Admin Reply Section (if answered) -->
+                        <div th:if="${fb.adminReply != null and !fb.adminReply.isEmpty()}" class="admin-reply-box">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-weight: 700; font-size: 0.88rem; color: #1d4ed8; display: flex; align-items: center; gap: 6px;">
+                                    <span>💬</span>
+                                    <span>ការឆ្លើយតបពី Admin <span th:if="${fb.adminReplyBy != null}" th:text="'(' + ${fb.adminReplyBy} + ')'"></span></span>
+                                </span>
+                                <span style="font-size: 0.78rem; color: #64748b;" th:text="${fb.formattedRepliedAt}">កាលបរិច្ឆេទ</span>
+                            </div>
+                            <div style="font-size: 0.90rem; color: #1e293b; line-height: 1.5; white-space: pre-wrap;" th:text="${fb.adminReply}">ខ្លឹមសារឆ្លើយតប...</div>
+                        </div>
+
+                        <!-- Action footer if pending -->
+                        <div th:if="${fb.status == 'PENDING'}" style="margin-top: 14px; text-align: right;">
+                            <form th:action="@{/feedback/delete/{id}(id=${fb.id})}" method="POST" style="display: inline;" onsubmit="return confirm('តើលោកគ្រូពិតជាចង់លុបមតិកែលម្អនេះមែនទេ?');">
+                                <button type="submit" style="background: none; border: none; color: #ef4444; font-size: 0.82rem; cursor: pointer; text-decoration: underline; font-family: inherit;">
+                                    លុបចេញ
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

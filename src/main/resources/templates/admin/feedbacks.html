@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>គ្រប់គ្រងមតិកែលម្អ - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --sidebar: #2b2d42;
+        }
+        body { margin: 0; font-family: 'Kantumruy Pro', sans-serif; background-color: #f0f2f5; display: flex; }
+        
+        /* Sidebar layout */
+        .sidebar { width: 260px; background-color: #1e293b; border-right: none; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.2); position: fixed; height: 100vh; z-index: 100; color: white; }
+        .sidebar-header { padding: 25px 20px; text-align: center; background-color: #0f172a; border-bottom: 1px solid #334155; }
+        .sidebar-header h2 { margin: 0; font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; color: #38bdf8; text-shadow: 0 0 8px rgba(56, 189, 248, 0.6); }
+        .sidebar-header div span, .sidebar-header div b { color: #a5b4fc !important; text-shadow: 0 0 5px rgba(165, 180, 252, 0.4); }
+        .nav-menu { list-style: none; padding: 0; margin: 0; flex: 1; overflow-y: auto; }
+        .nav-item { border-bottom: 1px solid #334155; margin-bottom: 0; }
+        .nav-item a, .nav-link { display: block; padding: 15px 20px; color: #cbd5e1; text-decoration: none; border-radius: 0; transition: all 0.3s ease; font-weight: 600; font-size: 1rem; border-left: 4px solid transparent; }
+        .nav-item a:hover, .nav-link:hover { background-color: #334155; color: white; transform: none; }
+        .nav-item.active a, .nav-item.active .nav-link { background-color: #334155; color: white; border-left: 4px solid #6366f1; box-shadow: none; }
+        .main-content { margin-left: 260px; flex: 1; min-height: 100vh; }
+        .topbar { background: white; padding: 15px 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .topbar h3 { margin: 0; color: var(--dark); font-size: 1.35rem; font-weight: 800; }
+        .content { padding: 30px; }
+        
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 25px; }
+        .card { background: white; padding: 20px 22px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
+        .card h4 { margin: 0 0 8px 0; font-size: 0.95rem; color: #64748b; font-weight: 600; }
+        .card .value { font-size: 1.8rem; font-weight: 800; color: var(--dark); }
+        
+        .feedback-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        .feedback-card:hover {
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            border-color: #cbd5e1;
+        }
+        
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 0.82rem; font-weight: 700; }
+        .badge-pending { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .badge-inprogress { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .badge-resolved { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-closed { background-color: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+        
+        .tab-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            color: #475569;
+            background: white;
+            border: 1px solid #cbd5e1;
+        }
+        .tab-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        .btn { padding: 7px 14px; border-radius: 6px; text-decoration: none; font-weight: 600; cursor: pointer; border: none; font-family: inherit; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-secondary { background: #64748b; color: white; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>ផ្ទាំងគ្រប់គ្រង Admin</h2>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/admin">Dashboard ទូទៅ</a></li>
+            <li class="nav-item"><a href="/admin/accounts">គ្រប់គ្រងគណនីគ្រូ</a></li>
+            <li class="nav-item active"><a href="/admin/feedbacks" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>💬 មតិកែលម្អពីគ្រូៗ</span>
+                <span th:if="${pendingCount > 0}" style="background: #ef4444; color: white; font-size: 0.75rem; padding: 2px 7px; border-radius: 10px; font-weight: bold;" th:text="${pendingCount}">1</span>
+            </a></li>
+            <li class="nav-item"><a href="/" target="_blank">ទៅកាន់ផ្ទាំងសាលារៀន &nearr;</a></li>
+            <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">ជំនួយបច្ចេកទេស (Telegram)</a></li>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item"><a href="/logout" style="color: var(--danger);">ចាកចេញ (Logout)</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div>
+                <h3>💬 គ្រប់គ្រងមតិកែលម្អ និងសំណូមពរពីគ្រូបង្រៀន</h3>
+                <span style="font-size: 0.88rem; color: #64748b;">ពិនិត្យចំណុចខ្វះខាត ផ្លាស់ប្តូរស្ថានភាព និងឆ្លើយតបទៅកាន់លោកគ្រូអ្នកគ្រូ</span>
+            </div>
+            <div style="font-weight: 600; color: #1e293b;">
+                <span th:text="${session.ACCOUNT_NAME}">Admin Name</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Alert Messages -->
+            <div th:if="${successMessage}" style="background-color: #dcfce7; border: 1px solid #86efac; color: #166534; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
+                <span th:text="${successMessage}">ជោគជ័យ</span>
+            </div>
+
+            <!-- Stats Overview Cards -->
+            <div class="card-grid">
+                <div class="card" style="border-left-color: #6366f1;">
+                    <h4>មតិកែលម្អសរុប</h4>
+                    <div class="value" th:text="${totalCount} + ' មតិ'">0 មតិ</div>
+                </div>
+                <div class="card" style="border-left-color: #f59e0b;">
+                    <h4>រង់ចាំពិនិត្យ (Pending)</h4>
+                    <div class="value" style="color: #d97706;" th:text="${pendingCount} + ' មតិ'">0 មតិ</div>
+                </div>
+                <div class="card" style="border-left-color: #0284c7;">
+                    <h4>កំពុងកែលម្អ (In Progress)</h4>
+                    <div class="value" style="color: #0284c7;" th:text="${inProgressCount} + ' មតិ'">0 មតិ</div>
+                </div>
+                <div class="card" style="border-left-color: #10b981;">
+                    <h4>បានកែលម្អរួចរាល់ (Resolved)</h4>
+                    <div class="value" style="color: #10b981;" th:text="${resolvedCount} + ' មតិ'">0 មតិ</div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div style="display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap;">
+                <a th:href="@{/admin/feedbacks(status='ALL')}" class="tab-btn" th:classappend="${selectedStatus == 'ALL' ? 'active' : ''}">
+                    <span>ទាំងអស់</span> (<span th:text="${totalCount}">0</span>)
+                </a>
+                <a th:href="@{/admin/feedbacks(status='PENDING')}" class="tab-btn" th:classappend="${selectedStatus == 'PENDING' ? 'active' : ''}">
+                    <span>🟡 រង់ចាំពិនិត្យ</span> (<span th:text="${pendingCount}">0</span>)
+                </a>
+                <a th:href="@{/admin/feedbacks(status='IN_PROGRESS')}" class="tab-btn" th:classappend="${selectedStatus == 'IN_PROGRESS' ? 'active' : ''}">
+                    <span>🔵 កំពុងកែលម្អ</span> (<span th:text="${inProgressCount}">0</span>)
+                </a>
+                <a th:href="@{/admin/feedbacks(status='RESOLVED')}" class="tab-btn" th:classappend="${selectedStatus == 'RESOLVED' ? 'active' : ''}">
+                    <span>🟢 បានកែលម្អរួចរាល់</span> (<span th:text="${resolvedCount}">0</span>)
+                </a>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${feedbacks == null or feedbacks.isEmpty()}" style="background: white; border-radius: 12px; padding: 50px 25px; text-align: center; border: 1px dashed #cbd5e1;">
+                <span style="font-size: 3rem; display: block; margin-bottom: 12px;">🎉</span>
+                <h4 style="margin: 0 0 6px 0; color: #475569;">មិនមានមតិកែលម្អក្នុងប្រភេទនេះទេ</h4>
+                <p style="margin: 0; color: #94a3b8; font-size: 0.92rem;">រាល់ពេលគ្រូៗផ្ញើមតិកែលម្អ ទិន្នន័យនឹងបង្ហាញនៅទីនេះដោយស្វ័យប្រវត្តិ។</p>
+            </div>
+
+            <!-- Feedbacks List -->
+            <div th:each="fb : ${feedbacks}" class="feedback-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; margin-bottom: 12px; flex-wrap: wrap;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
+                            <!-- Status Badge -->
+                            <span class="badge" th:classappend="${fb.status == 'RESOLVED' ? 'badge-resolved' : (fb.status == 'IN_PROGRESS' ? 'badge-inprogress' : (fb.status == 'CLOSED' ? 'badge-closed' : 'badge-pending'))}" th:text="${fb.statusKhmer}">រង់ចាំពិនិត្យ</span>
+                            <!-- Category Badge -->
+                            <span style="font-size: 0.82rem; background: #f1f5f9; color: #475569; padding: 3px 8px; border-radius: 4px; font-weight: 600;" th:text="${fb.category}">ចំណុចខ្វះខាត</span>
+                            <!-- Priority Badge -->
+                            <span th:if="${fb.priority == 'បន្ទាន់'}" style="font-size: 0.80rem; background: #fee2e2; color: #dc2626; padding: 2px 7px; border-radius: 4px; font-weight: bold;">🚨 បន្ទាន់</span>
+                            <span th:if="${fb.priority == 'មធ្យម'}" style="font-size: 0.80rem; background: #fef3c7; color: #d97706; padding: 2px 7px; border-radius: 4px; font-weight: 600;">⚡ មធ្យម</span>
+                        </div>
+                        <h4 style="margin: 0 0 4px 0; font-size: 1.15rem; color: #0f172a; font-weight: 700;" th:text="${fb.title}">ចំណងជើង</h4>
+                        <div style="font-size: 0.86rem; color: #64748b; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <span>👤 <b>គ្រូបង្រៀន៖</b> <span th:text="${fb.teacherName} + ' (' + ${fb.teacherUsername} + ')'">ឈ្មោះគ្រូ</span></span>
+                            <span th:if="${fb.schoolName != null and !fb.schoolName.isEmpty()}">🏫 <span th:text="${fb.schoolName}">សាលា</span></span>
+                            <span th:if="${fb.phone != null and !fb.phone.isEmpty()}">📞 <span th:text="${fb.phone}">លេខទូរស័ព្ទ</span></span>
+                            <span>🕒 <span th:text="${fb.formattedCreatedAt}">កាលបរិច្ឆេទ</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Status Dropdown Form -->
+                    <form th:action="@{/admin/feedbacks/{id}/status(id=${fb.id})}" method="POST" style="display: flex; align-items: center; gap: 6px;">
+                        <select name="status" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 6px; border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer;">
+                            <option value="PENDING" th:selected="${fb.status == 'PENDING'}">🟡 រង់ចាំពិនិត្យ</option>
+                            <option value="IN_PROGRESS" th:selected="${fb.status == 'IN_PROGRESS'}">🔵 កំពុងកែលម្អ</option>
+                            <option value="RESOLVED" th:selected="${fb.status == 'RESOLVED'}">🟢 បានកែលម្អរួចរាល់</option>
+                            <option value="CLOSED" th:selected="${fb.status == 'CLOSED'}">⚪ បានបិទបញ្ចប់</option>
+                        </select>
+                    </form>
+                </div>
+
+                <!-- Teacher Feedback Content -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; font-size: 0.95rem; color: #334155; line-height: 1.6; white-space: pre-wrap; margin-bottom: 14px;" th:text="${fb.content}">
+                    ខ្លឹមសារលម្អិតនៃមតិកែលម្អពីគ្រូ...
+                </div>
+
+                <!-- Admin Reply Display (if exists) -->
+                <div th:if="${fb.adminReply != null and !fb.adminReply.isEmpty()}" style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-weight: 700; font-size: 0.88rem; color: #1d4ed8;">
+                            💬 ការឆ្លើយតបរបស់ Admin <span th:if="${fb.adminReplyBy != null}" th:text="'(' + ${fb.adminReplyBy} + ')'"></span>
+                        </span>
+                        <span style="font-size: 0.78rem; color: #64748b;" th:text="${fb.formattedRepliedAt}">កាលបរិច្ឆេទ</span>
+                    </div>
+                    <div style="font-size: 0.92rem; color: #1e3a8a; line-height: 1.5; white-space: pre-wrap;" th:text="${fb.adminReply}">ខ្លឹមសារឆ្លើយតប...</div>
+                </div>
+
+                <!-- Admin Action Row (Reply form & Delete) -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; flex-wrap: wrap; gap: 10px;">
+                    <!-- Reply Toggle Button -->
+                    <button type="button" class="btn btn-primary" th:onclick="'toggleReplyBox(' + ${fb.id} + ')'">
+                        <span>💬</span> <span th:text="${fb.adminReply != null and !fb.adminReply.isEmpty()} ? 'កែប្រែការឆ្លើយតប' : 'ឆ្លើយតបទៅកាន់គ្រូ'">ឆ្លើយតប</span>
+                    </button>
+
+                    <!-- Delete Button -->
+                    <form th:action="@{/admin/feedbacks/{id}/delete(id=${fb.id})}" method="POST" onsubmit="return confirm('តើ Admin ពិតជាចង់លុបមតិកែលម្អនេះចេញពីប្រព័ន្ធមែនទេ?');">
+                        <button type="submit" class="btn btn-danger" style="background: none; border: none; color: #ef4444; font-size: 0.85rem; cursor: pointer; text-decoration: underline;">
+                            លុបមតិនេះ
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Hidden Reply Form (Toggled by Button) -->
+                <div th:id="'replyBox-' + ${fb.id}" style="display: none; margin-top: 15px; background: #f8fafc; border: 1.5px dashed #93c5fd; border-radius: 8px; padding: 16px;">
+                    <form th:action="@{/admin/feedbacks/{id}/reply(id=${fb.id})}" method="POST">
+                        <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 0.90rem; color: #1e3a8a;">
+                            សរសេរការឆ្លើយតប ឬកំណត់សម្គាល់ការកែលម្អ៖
+                        </label>
+                        <textarea name="adminReply" rows="3" class="form-control" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.92rem; margin-bottom: 10px; resize: vertical;" placeholder="ឧ. បានជួសជុលបញ្ហានេះរួចរាល់ហើយក្នុងកំណែថ្មី..." th:text="${fb.adminReply}" required></textarea>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="font-size: 0.88rem; font-weight: 600; color: #475569;">ប្តូរស្ថានភាពទៅជា៖</label>
+                                <select name="status" style="padding: 5px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 0.88rem;">
+                                    <option value="RESOLVED" th:selected="${fb.status == 'RESOLVED'}">🟢 បានកែលម្អរួចរាល់</option>
+                                    <option value="IN_PROGRESS" th:selected="${fb.status == 'IN_PROGRESS'}">🔵 កំពុងកែលម្អ</option>
+                                    <option value="PENDING" th:selected="${fb.status == 'PENDING'}">🟡 រង់ចាំពិនិត្យ</option>
+                                    <option value="CLOSED" th:selected="${fb.status == 'CLOSED'}">⚪ បានបិទបញ្ចប់</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-secondary" th:onclick="'toggleReplyBox(' + ${fb.id} + ')'">បោះបង់</button>
+                                <button type="submit" class="btn btn-success">រក្សាទុកការឆ្លើយតប</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleReplyBox(id) {
+            const el = document.getElementById('replyBox-' + id);
+            if (el) {
+                el.style.display = el.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>

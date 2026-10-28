@@ -30,6 +30,7 @@
             <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន</a></li>
             <li class="nav-item"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
             <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍</a></li>
+            <li class="nav-item"><a href="/feedback" class="nav-link" style="display: flex; align-items: center; gap: 8px;"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
             <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">✈️ ទាក់ទងខ្ញុំ (Telegram)</a></li>
           </ul>
           <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
@@ -63,9 +64,15 @@
                     <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
                     <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
                 </select>
-                <a href="/docs/teacher-guide.docx" download class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="/feedback" class="btn" style="background-color: #f59e0b; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: bold;">
+                        <span>💬 បញ្ចេញមតិកែលម្អ</span>
+                    </a>
+                    <a href="/docs/teacher-guide.docx" download class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+
                     <span>📥 ទាញយកសៀវភៅណែនាំ (.doc)</span>
                 </a>
+                </div>
             </div>
             <div class="card-grid">
                 <div class="card">

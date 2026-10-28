@@ -84,6 +84,10 @@
         <ul class="nav-menu">
             <li class="nav-item"><a href="/admin">📊 Dashboard ទូទៅ</a></li>
             <li class="nav-item active"><a href="/admin/accounts">👥 គ្រប់គ្រងគណនីគ្រូ</a></li>
+            <li class="nav-item"><a href="/admin/feedbacks" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>💬 មតិកែលម្អពីគ្រូៗ</span>
+                <span th:if="${pendingFeedbacks != null and pendingFeedbacks > 0}" style="background: #ef4444; color: white; font-size: 0.75rem; padding: 2px 7px; border-radius: 10px; font-weight: bold;" th:text="${pendingFeedbacks}">1</span>
+            </a></li>
             <li class="nav-item"><a href="/" target="_blank">🏫 ចូលមើលទំព័រសាលា &nearr;</a></li>
             <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">✈️ ទាក់ទងខ្ញុំ (Telegram)</a></li>
         </ul>

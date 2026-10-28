@@ -51,6 +51,10 @@
         <ul class="nav-menu">
             <li class="nav-item active"><a href="/admin">Dashboard ទូទៅ</a></li>
             <li class="nav-item"><a href="/admin/accounts">គ្រប់គ្រងគណនីគ្រូ</a></li>
+            <li class="nav-item"><a href="/admin/feedbacks" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>💬 មតិកែលម្អពីគ្រូៗ</span>
+                <span th:if="${pendingFeedbacks > 0}" style="background: #ef4444; color: white; font-size: 0.75rem; padding: 2px 7px; border-radius: 10px; font-weight: bold;" th:text="${pendingFeedbacks}">1</span>
+            </a></li>
             <li class="nav-item"><a href="/" target="_blank">ចូលមើលទំព័រសាលា &nearr;</a></li>
             <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">✈️ ទាក់ទងខ្ញុំ (Telegram)</a></li>
           </ul>
@@ -79,6 +83,13 @@
                 <div class="card" style="border-left-color: var(--success);">
                     <h3>គណនីគ្រូ / Admin សរុប</h3>
                     <div class="value" th:text="${totalAccounts} + ' គណនី'">០ គណនី</div>
+                </div>
+                <div class="card" style="border-left-color: #f59e0b; cursor: pointer;" onclick="window.location.href='/admin/feedbacks'">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="margin: 0;">មតិកែលម្អពីគ្រូៗ</h3>
+                        <span th:if="${pendingFeedbacks > 0}" style="background: #fee2e2; color: #dc2626; font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; font-weight: bold;" th:text="${pendingFeedbacks} + ' រង់ចាំ'">1 រង់ចាំ</span>
+                    </div>
+                    <div class="value" style="color: #d97706;" th:text="${totalFeedbacks} + ' មតិ'">០ មតិ</div>
                 </div>
             </div>
             
