@@ -295,6 +295,30 @@ tbody tr:hover {
     transform: translateY(-2px);
 }
 
+.btn-danger {
+    background-color: #dc2626;
+    color: var(--white);
+    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.25);
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+    box-shadow: 0 6px 12px rgba(220, 38, 38, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: #64748b;
+    color: var(--white);
+    box-shadow: 0 4px 6px rgba(100, 116, 139, 0.25);
+}
+
+.btn-secondary:hover {
+    background-color: #475569;
+    box-shadow: 0 6px 12px rgba(100, 116, 139, 0.35);
+    transform: translateY(-2px);
+}
+
 /* Forms */
 .form-control {
     padding: 12px 15px;
