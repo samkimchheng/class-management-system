@@ -407,6 +407,36 @@ public class DataInitializer {
                     }
                 }
             } catch (Exception ignored) {}
+
+            // 11. Ensure official students for 10E and 10F are seeded if missing
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                boolean needsStudents = false;
+                try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM students WHERE class_name IN ('១០E', '១០F')")) {
+                    if (rs.next() && rs.getInt(1) < 10) {
+                        needsStudents = true;
+                    }
+                } catch (Exception ignored) {
+                    try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM \"STUDENTS\" WHERE \"CLASS_NAME\" IN ('១០E', '១០F')")) {
+                        if (rs.next() && rs.getInt(1) < 10) {
+                            needsStudents = true;
+                        }
+                    } catch (Exception ignored2) {
+                        needsStudents = true;
+                    }
+                }
+
+                if (needsStudents) {
+                    System.out.println(">>> [DataInitializer] Seeding official students for 10E and 10F from students_insert.sql...");
+                    ResourceDatabasePopulator pop = new ResourceDatabasePopulator();
+                    pop.addScript(new ClassPathResource("students_insert.sql"));
+                    pop.setContinueOnError(true);
+                    pop.execute(dataSource);
+                    System.out.println(">>> [DataInitializer] Official students for 10E and 10F successfully seeded!");
+                }
+            } catch (Exception e) {
+                System.err.println(">>> [DataInitializer] Notice seeding students: " + e.getMessage());
+            }
         };
     }
 }
