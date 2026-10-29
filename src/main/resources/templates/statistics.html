@@ -319,12 +319,27 @@
             </div>
 
             <div class="table-container" style="margin-top: 20px;">
-                <h3>ស្ថិតិតាមនិទ្ទេស</h3>
-                <table style="margin-top: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                    <h3 style="margin: 0; display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span>ស្ថិតិតាមនិទ្ទេស</span>
+                        <span th:if="${selectedSubject != null and selectedSubject != 'គ្រប់មុខវិជ្ជា'}" 
+                              class="badge" 
+                              style="background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; font-size: 0.9rem; padding: 4px 12px; border-radius: 14px; font-weight: 700;"
+                              th:text="${selectedSubject} + ' (ពិន្ទុពេញ ' + ${selectedMaxScoreFormatted} + ')'"></span>
+                        <span th:if="${selectedSubject == null or selectedSubject == 'គ្រប់មុខវិជ្ជា'}" 
+                              class="badge" 
+                              style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-size: 0.9rem; padding: 4px 12px; border-radius: 14px; font-weight: 700;">គ្រប់មុខវិជ្ជា (មធ្យមភាគសរុប %)</span>
+                    </h3>
+                    <span th:if="${selectedClass != null and selectedClass != 'ថ្នាក់រៀនទាំងអស់'}" 
+                          style="font-size: 0.9rem; color: #64748b; font-weight: 600;" 
+                          th:text="'ថ្នាក់៖ ' + ${selectedClass} + (${selectedClassTrack != null and selectedClassTrack != 'ទូទៅ'} ? ' (' + ${selectedClassTrack} + ')' : '')"></span>
+                </div>
+                <table style="margin-top: 5px;">
                     <thead>
                         <tr style="background-color: #e2e8f0; border-bottom: 2px solid #94a3b8;">
                             <th style="font-size: 1.05rem; font-weight: 800; color: #0f172a; padding: 12px 14px;">និទ្ទេស (Grade)</th>
-                            <th style="font-size: 1.05rem; font-weight: 800; color: #0f172a; padding: 12px 14px;">មធ្យមភាគ</th>
+                            <th style="font-size: 1.05rem; font-weight: 800; color: #0f172a; padding: 12px 14px;"
+                                th:text="${selectedSubject != null and selectedSubject != 'គ្រប់មុខវិជ្ជា'} ? ('ចន្លោះពិន្ទុ (ពេញ ' + ${selectedMaxScoreFormatted} + ')') : 'មធ្យមភាគ (%)'">មធ្យមភាគ</th>
                             <th style="font-size: 1.05rem; font-weight: 800; color: #0f172a; padding: 12px 14px;">ចំនួនសិស្ស</th>
                             <th style="font-size: 1.05rem; font-weight: 800; color: #0f172a; padding: 12px 14px;">ភាគរយ</th>
                         </tr>
@@ -418,7 +433,12 @@
                                 th:style="${selectedSubject != null and selectedSubject == stat.subjectName ? 'background-color: #ecfdf5; font-weight: 500;' : ''}">
                                 <td th:text="${iterStat.count}" style="text-align: center; font-weight: bold; color: var(--text-muted); border: 1px solid #cbd5e1; padding: 8px;">1</td>
                                 <td style="font-weight: bold; color: var(--primary); white-space: nowrap; border: 1px solid #cbd5e1; padding: 8px;">
-                                    <span th:text="${stat.subjectName}">មុខវិជ្ជា</span>
+                                    <a th:href="@{/statistics(month=${selectedMonth}, className=${selectedClass}, subjectName=${stat.subjectName})}" 
+                                       style="color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" 
+                                       title="ចុចដើម្បីមើលស្ថិតិតាមនិទ្ទេសនៃមុខវិជ្ជានេះ">
+                                        <span th:text="${stat.subjectName}">មុខវិជ្ជា</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                    </a>
                                     <span th:if="${selectedSubject != null and selectedSubject == stat.subjectName}" class="badge badge-success" style="font-size: 0.72rem; margin-left: 6px;">កំពុងមើល</span>
                                 </td>
                                 <!-- Examined -->

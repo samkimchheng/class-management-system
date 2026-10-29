@@ -34,8 +34,8 @@ public class Classroom {
             String upper = className.trim().toUpperCase();
             if (className.contains("សង្គម") || upper.contains("SOC")) return "វិទ្យាសាស្ត្រសង្គម";
             if (className.contains("វិទ្យា") || upper.contains("SCI")) return "វិទ្យាសាស្ត្រ";
-            if (upper.startsWith("11") || upper.startsWith("១១") ||
-                upper.startsWith("12") || upper.startsWith("១២")) {
+            if (upper.contains("11") || upper.contains("១១") ||
+                upper.contains("12") || upper.contains("១២")) {
                 return "វិទ្យាសាស្ត្រ";
             }
         }

@@ -123,6 +123,19 @@ public class ScoreApiController {
             return ResponseEntity.ok(rule.get());
         }
         
+        // If Science or Social track, default to track rules first!
+        double defaultMax = computeDefaultMaxScore(className, subjectName, accountId);
+        if (defaultMax != 100.0) {
+            ScoreRule trackRule = new ScoreRule();
+            trackRule.setAccountId(accountId);
+            trackRule.setClassName(className);
+            trackRule.setSubjectName(subjectName);
+            trackRule.setMaxMonthlyScore(defaultMax);
+            trackRule.setMaxAttendanceScore(0);
+            trackRule.setMaxAssignmentScore(0);
+            return ResponseEntity.ok(trackRule);
+        }
+
         String khmerAllClassrooms = "ថ្នាក់រៀនទាំងអស់";
         if (!khmerAllClassrooms.equals(className)) {
             Optional<ScoreRule> globalRule = scoreRuleRepository.findByAccountIdAndClassNameAndSubjectName(accountId, khmerAllClassrooms, subjectName);
@@ -133,13 +146,11 @@ public class ScoreApiController {
                 return ResponseEntity.ok(globalRule.get());
             }
         }
-        
+
         ScoreRule defaultRule = new ScoreRule();
         defaultRule.setAccountId(accountId);
         defaultRule.setClassName(className);
         defaultRule.setSubjectName(subjectName);
-        
-        double defaultMax = computeDefaultMaxScore(className, subjectName, accountId);
         defaultRule.setMaxMonthlyScore(defaultMax);
         defaultRule.setMaxAttendanceScore(0);
         defaultRule.setMaxAssignmentScore(0);

@@ -1249,9 +1249,27 @@ return "scores";
         return "schedule";
     }
 
-            private double computeDefaultMaxScoreForClass(String className, String subjectName, Long accountId, String academicYear) {
+                public static boolean isSameSubject(String s1, String s2) {
+        if (s1 == null || s2 == null) return false;
+        String t1 = s1.trim();
+        String t2 = s2.trim();
+        if (t1.equalsIgnoreCase(t2)) return true;
+        if ((t1.contains("ជីវវិទ្យា") || t1.contains("ជីវៈវិទ្យា")) && (t2.contains("ជីវវិទ្យា") || t2.contains("ជីវៈវិទ្យា"))) return true;
+        if ((t1.contains("ភាសាខ្មែរ") || t1.contains("អក្សរសិល្ប៍")) && (t2.contains("ភាសាខ្មែរ") || t2.contains("អក្សរសិល្ប៍"))) return true;
+        if ((t1.contains("សីលធម៌") || t1.contains("ពលរដ្ឋ")) && (t2.contains("សីលធម៌") || t2.contains("ពលរដ្ឋ"))) return true;
+        if (t1.contains("ផែនដី") && t2.contains("ផែនដី")) return true;
+        if ((t1.contains("កុំព្យូទ័រ") || t1.contains("ព័ត៌មានវិទ្យា")) && (t2.contains("កុំព្យូទ័រ") || t2.contains("ព័ត៌មានវិទ្យា"))) return true;
+        if ((t1.contains("អង់គ្លេស") || t1.equalsIgnoreCase("english")) && (t2.contains("អង់គ្លេស") || t2.equalsIgnoreCase("english"))) return true;
+        if ((t1.contains("បារាំង") || t1.equalsIgnoreCase("french")) && (t2.contains("បារាំង") || t2.equalsIgnoreCase("french"))) return true;
+        return false;
+    }
+
+    private double computeDefaultMaxScoreForClass(String className, String subjectName, Long accountId, String academicYear) {
         if (className == null || className.trim().isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className)) {
             return 100.0;
+        }
+        if (accountId == null || accountId == 1L) {
+            accountId = 97L;
         }
         String track = "ទូទៅ";
         List<Classroom> found = classroomRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, academicYear);
@@ -1266,22 +1284,21 @@ return "scores";
         String sub = (subjectName != null) ? subjectName.trim() : "";
 
         if ("វិទ្យាសាស្ត្រ".equals(track)) {
-            if ("គណិតវិទ្យា".equals(sub)) {
+            if (isSameSubject("គណិតវិទ្យា", sub)) {
                 return 125.0;
-            } else if ("រូបវិទ្យា".equals(sub) || "គីមីវិទ្យា".equals(sub) || "ជីវវិទ្យា".equals(sub) || "ជីវៈវិទ្យា".equals(sub) || "ភាសាខ្មែរ".equals(sub)) {
+            } else if (isSameSubject("រូបវិទ្យា", sub) || isSameSubject("គីមីវិទ្យា", sub) || isSameSubject("ជីវវិទ្យា", sub) || isSameSubject("ភាសាខ្មែរ", sub)) {
                 return 75.0;
-            } else if ("ភាសាអង់គ្លេស".equals(sub) || "ភាសាបារាំង".equals(sub) || "ប្រវត្តិវិទ្យា".equals(sub)) {
+            } else if (isSameSubject("ភាសាអង់គ្លេស", sub) || isSameSubject("ភាសាបារាំង", sub) || isSameSubject("ប្រវត្តិវិទ្យា", sub)) {
                 return 50.0;
             }
             return 100.0;
         } else if ("វិទ្យាសាស្ត្រសង្គម".equals(track)) {
-            if ("ភាសាខ្មែរ".equals(sub) || "អក្សរសិល្ប៍".equals(sub)) {
+            if (isSameSubject("ភាសាខ្មែរ", sub)) {
                 return 125.0;
-            } else if ("គណិតវិទ្យា".equals(sub) || "ប្រវត្តិវិទ្យា".equals(sub) || "ភូមិវិទ្យា".equals(sub) || 
-                       "សីលធម៌".equals(sub) || "សីលធម៌-ពលរដ្ឋ".equals(sub) || "សីលធម៌-ពលរដ្ឋវិជ្ជា".equals(sub) || "ពលរដ្ឋវិទ្យា".equals(sub) || 
-                       "ផែនដីវិទ្យា".equals(sub) || "ផែនដី".equals(sub) || "ផែនដី និងបរិស្ថានវិទ្យា".equals(sub)) {
+            } else if (isSameSubject("គណិតវិទ្យា", sub) || isSameSubject("ប្រវត្តិវិទ្យា", sub) || isSameSubject("ភូមិវិទ្យា", sub) || 
+                       isSameSubject("សីលធម៌", sub) || isSameSubject("ផែនដីវិទ្យា", sub)) {
                 return 75.0;
-            } else if ("ភាសាអង់គ្លេស".equals(sub) || "ភាសាបារាំង".equals(sub)) {
+            } else if (isSameSubject("ភាសាអង់គ្លេស", sub) || isSameSubject("ភាសាបារាំង", sub)) {
                 return 50.0;
             }
             return 100.0;
@@ -1290,12 +1307,13 @@ return "scores";
         return 100.0;
     }
 
-    @GetMapping("/statistics")
+@GetMapping("/statistics")
     public String statistics(@org.springframework.web.bind.annotation.RequestParam(required = false) String month, 
                              @org.springframework.web.bind.annotation.RequestParam(required = false) String className,
                              @org.springframework.web.bind.annotation.RequestParam(required = false) String subjectName,
                              Model model) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        Long sessionAccountId = (Long) session.getAttribute("ACCOUNT_ID");
+        final Long accountId = (sessionAccountId == null || sessionAccountId == 1L) ? 97L : sessionAccountId;
         if (month == null || month.isEmpty()) {
             month = "តេស្តដើមឆ្នាំ";
         }
@@ -1366,23 +1384,28 @@ return "scores";
 
         // Helper to get max total score for subject
         java.util.function.BiFunction<String, String, Double> getMaxTotal = (cls, subj) -> {
-            com.nubb.classroom.model.ScoreRule rule = null;
+            // 1. Explicit custom rule for this specific classroom
             if (cls != null && !cls.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(cls)) {
                 List<com.nubb.classroom.model.ScoreRule> rules = scoreRuleRepository.findRules(cls, subj, accountId);
                 if (rules != null && !rules.isEmpty()) {
-                    rule = rules.get(0);
+                    com.nubb.classroom.model.ScoreRule r = rules.get(0);
+                    double max = r.getMaxMonthlyScore() + r.getMaxAttendanceScore() + r.getMaxAssignmentScore();
+                    if (max > 0) return max;
+                }
+                // 2. Track standard default rule (125, 75, 50) MUST take priority over global 100 rule!
+                double trackDefault = computeDefaultMaxScoreForClass(cls, subj, accountId, currentYear);
+                if (trackDefault != 100.0) {
+                    return trackDefault;
                 }
             }
-            if (rule == null) {
-                List<com.nubb.classroom.model.ScoreRule> globalRules = scoreRuleRepository.findRules("ថ្នាក់រៀនទាំងអស់", subj, accountId);
-                if (globalRules != null && !globalRules.isEmpty()) {
-                    rule = globalRules.get(0);
-                }
-            }
-            if (rule != null) {
-                double max = rule.getMaxMonthlyScore() + rule.getMaxAttendanceScore() + rule.getMaxAssignmentScore();
+            // 3. Fallback to global rule for "ថ្នាក់រៀនទាំងអស់" if available
+            List<com.nubb.classroom.model.ScoreRule> globalRules = scoreRuleRepository.findRules("ថ្នាក់រៀនទាំងអស់", subj, accountId);
+            if (globalRules != null && !globalRules.isEmpty()) {
+                com.nubb.classroom.model.ScoreRule r = globalRules.get(0);
+                double max = r.getMaxMonthlyScore() + r.getMaxAttendanceScore() + r.getMaxAssignmentScore();
                 if (max > 0) return max;
             }
+            // 4. Default for class or 100.0
             return computeDefaultMaxScoreForClass(cls, subj, accountId, currentYear);
         };
 
@@ -1491,13 +1514,23 @@ return "scores";
             // Specific subject selected
             List<com.nubb.classroom.model.Score> filteredScores = new java.util.ArrayList<>();
             for (com.nubb.classroom.model.Score s : allScores) {
-                if (subjectName.equals(s.getSubjectName())) {
+                if (isSameSubject(subjectName, s.getSubjectName())) {
                     filteredScores.add(s);
                 }
             }
 
             for (com.nubb.classroom.model.Score score : filteredScores) {
-                double maxTotal = getMaxTotal.apply(score.getClassName(), subjectName);
+                String scoreCls = score.getClassName();
+                if (scoreCls == null || scoreCls.isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(scoreCls)) {
+                    com.nubb.classroom.model.Student st = studentMap.get(score.getStudentId());
+                    if (st != null && st.getClassName() != null) {
+                        scoreCls = st.getClassName();
+                    }
+                }
+                if (scoreCls == null || scoreCls.isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(scoreCls)) {
+                    scoreCls = className;
+                }
+                double maxTotal = getMaxTotal.apply(scoreCls, subjectName);
                 double percentage = (score.getTotal() / maxTotal) * 100.0;
 
                 boolean isPass = percentage >= 50.0;
@@ -1548,6 +1581,13 @@ return "scores";
         model.addAttribute("passPercent", passPercent);
         model.addAttribute("failPercent", failPercent);
         
+        double selectedMaxScore = 100.0;
+        if (subjectName != null && !subjectName.equals("គ្រប់មុខវិជ្ជា")) {
+            selectedMaxScore = getMaxTotal.apply(className, subjectName);
+        }
+        model.addAttribute("selectedMaxScore", selectedMaxScore);
+        model.addAttribute("selectedMaxScoreFormatted", toKhmerNumber((int) selectedMaxScore));
+
         String rangeA = "៩០ - ១០០";
         String rangeB = "៨០ - ៨៩";
         String rangeC = "៧០ - ៧៩";
@@ -1556,7 +1596,7 @@ return "scores";
         String rangeF = "ក្រោម ៥០";
         
         if (subjectName != null && !subjectName.equals("គ្រប់មុខវិជ្ជា") && className != null) {
-            double max = getMaxTotal.apply(className, subjectName);
+            double max = selectedMaxScore;
             if (max > 0 && max != 100.0) {
                 rangeA = toKhmerNumber((int) Math.ceil(max * 0.90)) + " - " + toKhmerNumber((int) max);
                 rangeB = toKhmerNumber((int) Math.ceil(max * 0.80)) + " - " + toKhmerNumber((int) (Math.ceil(max * 0.90) - 1));

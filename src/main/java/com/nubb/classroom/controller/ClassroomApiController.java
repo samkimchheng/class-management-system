@@ -56,8 +56,8 @@ public class ClassroomApiController {
                 c.setTrack("វិទ្យាសាស្ត្រសង្គម");
             } else if (trimmedName.contains("វិទ្យា") || upper.contains("SCI")) {
                 c.setTrack("វិទ្យាសាស្ត្រ");
-            } else if (upper.startsWith("11") || upper.startsWith("១១") ||
-                       upper.startsWith("12") || upper.startsWith("១២")) {
+            } else if (upper.contains("11") || upper.contains("១១") ||
+                       upper.contains("12") || upper.contains("១២")) {
                 c.setTrack("វិទ្យាសាស្ត្រ");
             } else {
                 c.setTrack("ទូទៅ");
