@@ -324,6 +324,12 @@ public class WebController {
                 .body(resource);
     }
 
+    
+    @GetMapping({"/guide", "/teacher-guide"})
+    public String guidePage() {
+        return "guide";
+    }
+
     @GetMapping("/")
     public String index(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
         String[] provinces = {

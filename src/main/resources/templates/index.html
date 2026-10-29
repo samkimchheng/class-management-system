@@ -68,11 +68,11 @@
                     <a href="/feedback" class="btn" style="background-color: #f59e0b; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: bold;">
                         <span>💬 បញ្ចេញមតិកែលម្អ</span>
                     </a>
-                    <a href="/docs/teacher-guide.pdf" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                        <span>📖 មើលសៀវភៅណែនាំ (.pdf)</span>
+                    <a href="/guide" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <span>📖 សៀវភៅណែនាំ (.pdf)</span>
                     </a>
-                    <a href="/download/teacher-guide" onclick="downloadGuideSmart(event, this)" class="btn" style="background: #0284c7; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: bold;">
-                        <span>📥 ទាញយក</span>
+                    <a href="/download/teacher-guide" download="សៀវភៅណែនាំ_ការប្រើប្រាស់ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន_២០២៧.pdf" class="btn" style="background: #0284c7; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: bold;">
+                        <span>📥 ទាញយកជា PDF</span>
                     </a>
                 </div>
             </div>
@@ -130,38 +130,6 @@
     <script src="/js/logout-confirm.js"></script>
     <script src="/js/mobile-nav.js?v=20261029g"></script>
 
-    <script>
-        async function downloadGuideSmart(e, btn) {
-            if (e) e.preventDefault();
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span>⏳ កំពុងទាញយក...</span>';
-            btn.style.pointerEvents = 'none';
-            try {
-                const response = await fetch('/docs/teacher-guide.pdf');
-                if (!response.ok) throw new Error('Network error: ' + response.status);
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = 'សៀវភៅណែនាំ_ការប្រើប្រាស់ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន_២០២៧.pdf';
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                    if (a.parentNode) document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                    btn.innerHTML = originalText;
-                    btn.style.pointerEvents = 'auto';
-                }, 1500);
-            } catch (err) {
-                console.warn('Smart blob download fallback:', err);
-                window.location.href = '/download/teacher-guide';
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.style.pointerEvents = 'auto';
-                }, 2000);
-            }
-        }
-    </script>
+    
 </body>
 </html>

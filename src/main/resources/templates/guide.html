@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>សៀវភៅណែនាំការប្រើប្រាស់ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន ២០២៧</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Battambang:wght@400;700&family=Moul&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm 18mm 15mm 18mm;
+            @bottom-right {
+                content: counter(page);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+            font-size: 10.5pt;
+            line-height: 1.65;
+            color: #1e293b;
+            background: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-break {
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .no-break {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* Cover Section */
+        .cover-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .royal-title {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+        .royal-sub {
+            font-size: 13pt;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+        .system-name {
+            font-size: 13pt;
+            font-weight: 700;
+            color: #0284c7;
+            margin-top: 12px;
+        }
+
+        .cover-hero {
+            background: #0f172a;
+            color: #ffffff;
+            border-radius: 14px;
+            padding: 30px 24px;
+            text-align: center;
+            margin: 25px 0;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
+        }
+        .hero-title {
+            font-size: 17pt;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .hero-sub {
+            font-size: 11pt;
+            color: #38bdf8;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .cover-meta {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 10pt;
+            color: #334155;
+            line-height: 1.8;
+        }
+        .cover-meta b {
+            color: #0f172a;
+        }
+        .cover-meta a {
+            color: #0284c7;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Headings */
+        h1.chap-title {
+            font-size: 13pt;
+            font-weight: 700;
+            color: #0f172a;
+            background: #e0f2fe;
+            border-left: 5px solid #0284c7;
+            padding: 8px 14px;
+            border-radius: 4px 8px 8px 4px;
+            margin-top: 28px;
+            margin-bottom: 12px;
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+
+        h2.sec-title {
+            font-size: 11.5pt;
+            font-weight: 700;
+            color: #0284c7;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+
+        p {
+            margin: 0 0 8px 0;
+            text-align: justify;
+        }
+
+        /* Callout Box */
+        .callout {
+            background: #f0f9ff;
+            border-left: 4px solid #0284c7;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin: 12px 0;
+            font-size: 10pt;
+            color: #334155;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .callout-title {
+            font-weight: 700;
+            color: #0284c7;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Lists */
+        ul.custom-list {
+            margin: 6px 0 12px 0;
+            padding-left: 20px;
+        }
+        ul.custom-list li {
+            margin-bottom: 5px;
+            line-height: 1.6;
+        }
+        ul.custom-list li b {
+            color: #0f172a;
+        }
+
+        /* Tables */
+        table.guide-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0;
+            font-size: 9.8pt;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        table.guide-table th {
+            background: #0284c7;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 8px 10px;
+            text-align: left;
+            border: 1px solid #0284c7;
+        }
+        table.guide-table td {
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
+        }
+        table.guide-table tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        /* Badge Grades */
+        .badge-a { background: #dcfce7; color: #166534; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
+        .badge-b { background: #e0f2fe; color: #075985; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
+        .badge-c { background: #fef3c7; color: #854d0e; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
+        .badge-f { background: #fee2e2; color: #991b1b; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
+    
+        /* Mobile-Friendly Web Toolbar */
+        .web-guide-toolbar {
+            position: sticky;
+            top: 0;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            z-index: 9999;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+        }
+        .web-guide-toolbar a.btn-back {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        .web-guide-toolbar a.btn-back:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .web-guide-toolbar .guide-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #38bdf8;
+            letter-spacing: 0.3px;
+        }
+        .web-guide-toolbar .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .web-guide-toolbar .btn-download {
+            background: #0284c7;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(2,132,199,0.4);
+            border: none;
+            cursor: pointer;
+        }
+        .web-guide-toolbar .btn-download:hover {
+            background: #0369a1;
+        }
+        .web-guide-toolbar .btn-print {
+            background: #334155;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+        }
+        .guide-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+            background: #ffffff;
+        }
+        @media print {
+            .web-guide-toolbar {
+                display: none !important;
+            }
+            .guide-container {
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+        }
+        @media (max-width: 640px) {
+            .web-guide-toolbar {
+                padding: 10px 14px;
+            }
+            .web-guide-toolbar .guide-title {
+                display: none;
+            }
+            .guide-container {
+                padding: 16px 14px 40px;
+            }
+            .hero-title {
+                font-size: 14pt !important;
+            }
+            .hero-sub {
+                font-size: 10pt !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Web Toolbar -->
+    <div class="web-guide-toolbar">
+        <a href="/" class="btn-back">
+            <span>← ត្រឡប់ក្រោយ</span>
+        </a>
+        <div class="guide-title">
+            📘 សៀវភៅណែនាំការប្រើប្រាស់ប្រព័ន្ធ ២០២៧
+        </div>
+        <div class="actions">
+            <a href="/download/teacher-guide" download="សៀវភៅណែនាំ_ការប្រើប្រាស់ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន_២០២៧.pdf" class="btn-download">
+                <span>📥 ទាញយកជា PDF</span>
+            </a>
+            <button onclick="window.print()" class="btn-print">
+                <span>🖨️ បោះពុម្ព</span>
+            </button>
+        </div>
+    </div>
+    <div class="guide-container">
+
+
+    <!-- COVER SECTION -->
+    <div class="cover-header">
+        <div class="royal-title">ព្រះរាជាណាចក្រកម្ពុជា</div>
+        <div class="royal-sub">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+        <div style="font-size: 14pt; letter-spacing: 2px; color: #94a3b8;">***</div>
+        <div class="system-name">ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀនអនឡាញ (Class Management System 2027)</div>
+    </div>
+
+    <div class="cover-hero">
+        <div class="hero-title">សៀវភៅមគ្គទេសក៍ និងមេរៀនណែនាំលម្អិត<br>ស្តីពីការចូលប្រើប្រាស់ និងគ្រប់គ្រងប្រព័ន្ធសាថ្មី</div>
+        <div class="hero-sub">ការកែលម្អប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀនជំនាន់ចុងក្រោយ សម្រាប់លោកគ្រូ-អ្នកគ្រូបង្រៀន និងគណៈគ្រប់គ្រង</div>
+    </div>
+
+    <div class="cover-meta">
+        <div>🌐 <b>គេហទំព័រផ្លូវការ៖</b> <a href="https://class.mitpukae.com">https://class.mitpukae.com</a></div>
+        <div>✍️ <b>រៀបចំ និងចងក្រងដោយ៖</b> លោកគ្រូ <b>សំ គឹមឆេង (Sam Kimchheng)</b></div>
+        <div>✈️ <b>Telegram ជំនួយបច្ចេកទេសផ្ទាល់៖</b> <a href="https://t.me/Kimchheng12">@Kimchheng12</a></div>
+        <div>📅 <b>ឆ្នាំសិក្សា៖</b> ២០២៦ - ២០២៧ (ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ)</div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- TABLE OF CONTENTS -->
+    <h1 class="chap-title" style="margin-top: 0;">មាតិកានៃសៀវភៅណែនាំសាថ្មី (TABLE OF CONTENTS)</h1>
+    <table class="guide-table">
+        <thead>
+            <tr>
+                <th style="width: 25%;">ជំពូក / លេខរៀង</th>
+                <th style="width: 75%;">ខ្លឹមសារមេរៀនណែនាំ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><b>ជំពូកទី ១</b></td><td>សេចក្តីផ្តើម និងព័ត៌មានទូទៅអំពីប្រព័ន្ធ</td></tr>
+            <tr><td><b>ជំពូកទី ២</b></td><td>របៀបចូលប្រើប្រាស់ប្រព័ន្ធ (Login) និងការគ្រប់គ្រងគណនី</td></tr>
+            <tr><td><b>ជំពូកទី ៣</b></td><td>ការគ្រប់គ្រងឆ្នាំសិក្សា (Multi-Academic Year Management)</td></tr>
+            <tr><td><b>ជំពូកទី ៤</b></td><td>ការបំពេញព័ត៌មានផ្ទាល់ខ្លួនគ្រូ ហត្ថលេខា និងត្រាសាលា (Teacher Profile & Signatures)</td></tr>
+            <tr><td><b>ជំពូកទី ៥</b></td><td>ការគ្រប់គ្រងបញ្ជីថ្នាក់រៀនផ្ទាល់ខ្លួន (Classroom Management)</td></tr>
+            <tr><td><b>ជំពូកទី ៦</b></td><td>ការគ្រប់គ្រងបញ្ជីឈ្មោះសិស្ស (Students Management)</td></tr>
+            <tr><td><b>ជំពូកទី ៧</b></td><td>ការកត់ត្រា និងតាមដានអវត្តមានសិស្ស (Daily & Monthly Attendance)</td></tr>
+            <tr><td><b>ជំពូកទី ៨</b></td><td>ការបញ្ចូល និងគ្រប់គ្រងពិន្ទុសិស្ស (Scores & Grading Rules)</td></tr>
+            <tr><td><b>ជំពូកទី ៩</b></td><td>ស្ថិតិ និងការវិភាគទិន្នន័យសិក្សា (Student Statistics & Subject Breakdown)</td></tr>
+            <tr><td><b>ជំពូកទី ១០</b></td><td>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា និងការផ្ទៀងផ្ទាត់ QR Code (Certificates & Verification)</td></tr>
+            <tr><td><b>ជំពូកទី ១១</b></td><td>ការគ្រប់គ្រងវិញ្ញាសា និងការប្រឡងអនឡាញ (Online Exams)</td></tr>
+            <tr><td><b>ជំពូកទី ១២</b></td><td>ការគ្រប់គ្រងមេរៀន និងកាលវិភាគបង្រៀន (Lessons & Schedules)</td></tr>
+            <tr><td><b>ជំពូកទី ១៣</b></td><td>ការទាញយក និងបោះពុម្ពរបាយការណ៍សរុប (Reports & Printing)</td></tr>
+            <tr><td><b>ជំពូកទី ១៤</b></td><td>ការគ្រប់គ្រងគណនីគ្រូបង្រៀនសម្រាប់ Admin (Admin Accounts Management)</td></tr>
+            <tr><td><b>ជំពូកទី ១៥</b></td><td>ផ្នែកទំនាក់ទំនង ជំនួយបច្ចេកទេស និងសុវត្ថិភាព (Support & Security)</td></tr>
+        </tbody>
+    </table>
+
+    <!-- CHAPTER 1 -->
+    <h1 class="chap-title">ជំពូកទី ១៖ សេចក្តីផ្តើម និងព័ត៌មានទូទៅអំពីប្រព័ន្ធ</h1>
+    <p>ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀនអនឡាញ (Class Management System 2027) ត្រូវបានអភិវឌ្ឍ និងកែលម្អសាថ្មីយ៉ាងទូលំទូលាយ ដើម្បីផ្តល់ជូនលោកគ្រូ-អ្នកគ្រូវិធីសាស្ត្រគ្រប់គ្រងថ្នាក់រៀនដ៏ទំនើប រហ័ស និងមានប្រសិទ្ធភាពខ្ពស់បំផុត។ កំណែថ្មីនេះបានពង្រឹងនូវប្រព័ន្ធសុវត្ថិភាពទិន្នន័យឯកោដាច់ដោយឡែករវាងគ្រូម្នាក់ៗ ការគ្រប់គ្រងឆ្នាំសិក្សាចម្រុះ ការស្រង់អវត្តមាន និងពិន្ទុច្បាស់លាស់ ព្រមទាំងការចេញវិញ្ញាបនបត្រស្វ័យប្រវត្តិជាមួយប្រព័ន្ធ QR Code ផ្ទៀងផ្ទាត់សច្ចភាព។</p>
+
+    <h2 class="sec-title">១.១. អាសយដ្ឋានតំណភ្ជាប់ផ្លូវការ (Official URLs)</h2>
+    <ul class="custom-list">
+        <li>👉 <b>គេហទំព័រផ្លូវការ៖</b> <a href="https://class.mitpukae.com">https://class.mitpukae.com</a> (ទំព័រទូទៅ និងការចូលរួម)</li>
+        <li>👉 <b>Link Login គ្រូ៖</b> <a href="https://class.mitpukae.com/login">https://class.mitpukae.com/login</a> (សម្រាប់លោកគ្រូ-អ្នកគ្រូ និងគណៈគ្រប់គ្រង Login)</li>
+        <li>👉 <b>Link សិស្សប្រឡង៖</b> <a href="https://class.mitpukae.com/test">https://class.mitpukae.com/test</a> (សម្រាប់សិស្សចូលធ្វើតេស្តប្រឡងអនឡាញ)</li>
+        <li>👉 <b>Link ផ្ទៀងផ្ទាត់វិញ្ញាបនបត្រ៖</b> <a href="https://class.mitpukae.com/certificate/verify/">https://class.mitpukae.com/certificate/verify/{serial}</a> (សម្រាប់ស្កេនផ្ទៀងផ្ទាត់)</li>
+    </ul>
+
+    <h2 class="sec-title">១.២. តម្រូវការបច្ចេកទេស និងឧបករណ៍ប្រើប្រាស់</h2>
+    <ul class="custom-list">
+        <li><b>ភាពត្រូវគ្នា៖</b> ដំណើរការបានយ៉ាងរលូនលើគ្រប់ឧបករណ៍៖ កុំព្យូទ័រលើតុ (Desktop PC), Laptop, iPad/Tablet, និង Smartphone (iOS & Android)។</li>
+        <li><b>កម្មវិធីរុករក (Web Browser)៖</b> Google Chrome, Microsoft Edge, Safari, ឬ Mozilla Firefox (ជំនាន់ចុងក្រោយ)។</li>
+        <li><b>តម្រូវការអ៊ីនធឺណិត៖</b> ភ្ជាប់ Wi-Fi ឬ 4G/5G ដើម្បីរក្សាទុក និងធ្វើបច្ចុប្បន្នភាពទិន្នន័យលើ Cloud Server ភ្លាមៗ។</li>
+    </ul>
+
+    <div class="callout">
+        <div class="callout-title">🔒 ចំណុចពិសេស និងការការពារទិន្នន័យ (Multi-Tenant Isolation)</div>
+        ប្រព័ន្ធជំនាន់ថ្មី ២០២៧ ត្រូវបានរចនាឡើងជាមួយនឹងស្ថាបត្យកម្ម Multi-Tenant Isolation ១០០% ដែលធានាថាគ្រូនីមួយៗមានទិន្នន័យផ្ទាល់ខ្លួនដាច់ដោយឡែក មិនប៉ះពាល់ មិនឃើញ និងមិនជាន់គ្នាជាមួយគ្រូដទៃឡើយ ទោះបីជាបង្រៀនមុខវិជ្ជាដូចគ្នា ឬឈ្មោះថ្នាក់ដូចគ្នាក៏ដោយ។
+    </div>
+
+    <!-- CHAPTER 2 -->
+    <h1 class="chap-title">ជំពូកទី ២៖ របៀបចូលប្រើប្រាស់ប្រព័ន្ធ (Login) និងការគ្រប់គ្រងគណនី</h1>
+    <p>ដើម្បីធានាសុវត្ថិភាពព័ត៌មានផ្ទាល់ខ្លួន ពិន្ទុ និងវត្តមានរបស់សិស្ស មានតែលោកគ្រូ-អ្នកគ្រូដែលមានគណនីផ្លូវការប៉ុណ្ណោះ ទើបអាចចូលប្រើប្រាស់មុខងារបង្រៀនបាន។</p>
+
+    <h2 class="sec-title">២.១. ជំហានក្នុងការ Login ចូលប្រព័ន្ធ</h2>
+    <ul class="custom-list">
+        <li><b>ជំហានទី ១៖</b> បើកកម្មវិធី Browser រួចវាយអាសយដ្ឋាន៖ <a href="https://class.mitpukae.com/login">https://class.mitpukae.com/login</a></li>
+        <li><b>ជំហានទី ២៖</b> ផ្ទាំង «ចូលប្រើប្រព័ន្ធគ្រប់គ្រង» នឹងបង្ហាញនៅចំកណ្តាលអេក្រង់។</li>
+        <li><b>ជំហានទី ៣៖</b> បញ្ចូល ឈ្មោះអ្នកប្រើប្រាស់ (Username) របស់អ្នក (ឧទាហរណ៍៖ samkimchheng)។</li>
+        <li><b>ជំហានទី ៤៖</b> បញ្ចូល លេខសម្ងាត់ (Password) របស់អ្នក។</li>
+        <li><b>ជំហានទី ៥៖</b> អាចចុចលើរូបសញ្ញា ភ្នែក 👁️ នៅខាងស្តាំប្រអប់ដើម្បីផ្ទៀងផ្ទាត់លេខសម្ងាត់មុននឹងចុចចូល។</li>
+        <li><b>ជំហានទី ៦៖</b> ចុចលើប៊ូតុងពណ៌ខៀវ «ចូលប្រព័ន្ធ (Login)» ដើម្បីបញ្ចប់។</li>
+    </ul>
+
+    <h2 class="sec-title">២.២. ការបែងចែកសិទ្ធិប្រើប្រាស់រវាង Admin និង Teacher</h2>
+    <ul class="custom-list">
+        <li><b>១. ROLE_ADMIN៖</b> គណនីអ្នកគ្រប់គ្រង មានសិទ្ធិគ្រប់គ្រងគណនីគ្រូទាំងអស់ បង្កើតគ្រូថ្មី បើក/ផ្អាកគណនី និងមើលស្ថិតិរួម។</li>
+        <li><b>២. ROLE_TEACHER៖</b> គណនីគ្រូបង្រៀន គ្រប់គ្រងថ្នាក់រៀនផ្ទាល់ខ្លួន បញ្ជីសិស្ស វត្តមាន ពិន្ទុ វិញ្ញាសា កាលវិភាគ និងវិញ្ញាបនបត្រ។</li>
+    </ul>
+
+    <h2 class="sec-title">២.៣. មុខងារចងចាំការចូលប្រើប្រាស់ (Persistent Session)</h2>
+    <p>ប្រព័ន្ធបានបំពាក់មុខងារចងចាំគណនីស្វ័យប្រវត្តិតាម Cookie រយៈពេល ៣០ ថ្ងៃ។ នៅពេលលោកគ្រូ-អ្នកគ្រូបាន Login ម្តងរួចហើយ លើកក្រោយបើក Browser ឡើងវិញ អាចចូលធ្វើការបានភ្លាមៗដោយមិនបាច់វាយលេខសម្ងាត់ម្តងទៀតឡើយ។</p>
+
+    <!-- CHAPTER 3 -->
+    <h1 class="chap-title">ជំពូកទី ៣៖ ការគ្រប់គ្រងឆ្នាំសិក្សា (Multi-Academic Year Management)</h1>
+    <p>ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន ២០២៧ គាំទ្រការគ្រប់គ្រងទិន្នន័យច្រើនឆ្នាំសិក្សា (Multi-Academic Year) ដោយរលូន និងមានសុវត្ថិភាពខ្ពស់។ មុខងារនេះជួយឱ្យលោកគ្រូ-អ្នកគ្រូអាចរក្សាទុកទិន្នន័យចាស់ៗបានគង់វង្ស និងចាប់ផ្តើមឆ្នាំសិក្សាថ្មីដោយមិនបាត់បង់ទិន្នន័យឆ្នាំមុនឡើយ។</p>
+
+    <h2 class="sec-title">៣.១. របារជ្រើសរើសឆ្នាំសិក្សា (Top Bar Academic Year Selector)</h2>
+    <ul class="custom-list">
+        <li>បង្ហាញឆ្នាំសិក្សាបច្ចុប្បន្ន (ឧទាហរណ៍៖ 📅 ២០២៦-២០២៧) នៅផ្នែកខាងលើនៃអេក្រង់។</li>
+        <li>លោកគ្រូ-អ្នកគ្រូអាចចុចលើ Dropdown ដើម្បីជ្រើសរើសឆ្នាំសិក្សាផ្សេងទៀត (ឧទាហរណ៍៖ ២០២៥-២០២៦) ដើម្បីពិនិត្យឡើងវិញនូវទិន្នន័យចាស់ៗ។</li>
+        <li>ប្រព័ន្ធនឹងផ្លាស់ប្តូរទិន្នន័យទាំងស្រុងទៅតាមឆ្នាំសិក្សានោះដោយស្វ័យប្រវត្តិ។</li>
+    </ul>
+
+    <h2 class="sec-title">៣.២. ការបង្កើតឆ្នាំសិក្សាថ្មី និងការថតចម្លងថ្នាក់</h2>
+    <ul class="custom-list">
+        <li><b>បង្កើតឆ្នាំថ្មី៖</b> ចូលទៅកាន់ «បញ្ជីថ្នាក់រៀនខ្ញុំ» -> ចុច «+ បង្កើតឆ្នាំសិក្សាថ្មី» -> វាយឈ្មោះឆ្នាំ (ឧទាហរណ៍៖ ២០២៧-២០២៨) -> ចុចរក្សាទុក។</li>
+        <li><b>ថតចម្លងថ្នាក់ពីឆ្នាំមុន៖</b> ប្រព័ន្ធមានប៊ូតុងពិសេសដែលអនុញ្ញាតឱ្យចម្លងរចនាសម្ព័ន្ធថ្នាក់រៀនទាំងអស់ពីឆ្នាំមុនមកឆ្នាំថ្មីដោយស្វ័យប្រវត្តិ ដោយមិនបាច់បង្កើតម្តងមួយៗឡើយ។</li>
+    </ul>
+
+    <!-- CHAPTER 4 -->
+    <h1 class="chap-title">ជំពូកទី ៤៖ ការបំពេញព័ត៌មានផ្ទាល់ខ្លួនគ្រូ ហត្ថលេខា និងត្រាសាលា</h1>
+    <p>ទំព័រ «បំពេញព័ត៌មានផ្ទាល់ខ្លួន (/profile)» គឺជាចំណុចស្នូលក្នុងការកំណត់អត្តសញ្ញាណរបស់លោកគ្រូ-អ្នកគ្រូ និងស្ថាប័នអប់រំ។ ព័ត៌មានដែលបានបំពេញនៅទីនេះ នឹងត្រូវយកទៅប្រើប្រាស់ស្វ័យប្រវត្តិនៅលើក្បាលរបាយការណ៍ វិញ្ញាបនបត្រ និងទំនាក់ទំនង។</p>
+
+    <h2 class="sec-title">៤.១. ព័ត៌មានទូទៅ និងការភ្ជាប់ Telegram</h2>
+    <ul class="custom-list">
+        <li><b>ព័ត៌មានគ្រូ៖</b> គោត្តនាម-នាម, ភេទ, ឈ្មោះគ្រឹះស្ថានសិក្សា/សាលារៀន, ខេត្ត/រាជធានី, មុខវិជ្ជាបង្រៀន, ថ្នាក់ទទួលបន្ទុក, លេខទូរស័ព្ទ។</li>
+        <li><b>គណនី Telegram ផ្ទាល់ខ្លួន៖</b> គ្រូនីមួយៗអាចបញ្ចូល Telegram Username របស់ខ្លួន (ឧទាហរណ៍៖ Kimchheng12)។ ប្រព័ន្ធនឹងតភ្ជាប់ប៊ូតុង Telegram នៅលើ Sidebar ទៅកាន់គណនីរបស់គ្រូនោះដោយស្វ័យប្រវត្តិ។</li>
+    </ul>
+
+    <h2 class="sec-title">៤.២. ការបញ្ចូលហត្ថលេខាគ្រូ ហត្ថលេខានាយក និងត្រាសាលា</h2>
+    <ul class="custom-list">
+        <li><b>ហត្ថលេខាគ្រូ៖</b> អាចគូសដោយដៃផ្ទាល់លើ Signature Drawing Pad ឬ Upload ជារូបភាពហត្ថលេខា។</li>
+        <li><b>ហត្ថលេខានាយក៖</b> អាចគូស ឬ Upload រូបភាពហត្ថលេខានាយកសាលា។</li>
+        <li><b>ត្រាសាលារៀន៖</b> Upload រូបភាពត្រាមូល ឬត្រាផ្លូវការរបស់សាលា (PNG/JPG)។</li>
+    </ul>
+
+    <div class="callout">
+        <div class="callout-title">💡 អត្ថប្រយោជន៍នៃត្រា និងហត្ថលេខាឌីជីថល</div>
+        រូបភាពត្រាសាលា និងហត្ថលេខាដែលបានរក្សាទុក នឹងត្រូវតភ្ជាប់ដោយស្វ័យប្រវត្តិចូលទៅក្នុង «វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា» របស់សិស្ស ដោយមិនចាំបាច់បោះត្រា ឬស៊ីញ៉េដោយដៃម្តងមួយៗលើក្រដាសឡើយ!
+    </div>
+
+    <!-- CHAPTER 5 & 6 -->
+    <h1 class="chap-title">ជំពូកទី ៥ & ៦៖ ការគ្រប់គ្រងបញ្ជីថ្នាក់រៀន និងបញ្ជីឈ្មោះសិស្ស</h1>
+    
+    <h2 class="sec-title">៥.១. ការគ្រប់គ្រងថ្នាក់រៀន (Classrooms)</h2>
+    <ul class="custom-list">
+        <li>ចូលទៅកាន់ «បញ្ជីថ្នាក់រៀនខ្ញុំ» -> ចុច «+ បន្ថែមថ្នាក់រៀនថ្មី» -> បញ្ចូលឈ្មោះថ្នាក់ (ឧទាហរណ៍៖ ថ្នាក់ទី១២ ក, IT-Year3) និងបន្ទប់សិក្សា -> ចុច «រក្សាទុក»។</li>
+        <li>អាចធ្វើការកែសម្រួល (Edit ✏️) ឬលុប (Delete 🗑️) ថ្នាក់រៀនបានយ៉ាងងាយស្រួល។</li>
+    </ul>
+
+    <h2 class="sec-title">៦.១. ការគ្រប់គ្រងសិស្ស (Students)</h2>
+    <ul class="custom-list">
+        <li>ចូលទៅកាន់ «បញ្ជីឈ្មោះសិស្ស» -> ចុច «+ បន្ថែមសិស្សថ្មី»។</li>
+        <li><b>ព័ត៌មានសិស្ស៖</b> លេខសម្គាល់សិស្ស (Student ID / Code ឧទាហរណ៍ STU-001 សម្រាប់ប្រើពេលប្រឡង), គោត្តនាម-នាម, ភេទ, ថ្ងៃខែឆ្នាំកំណើត, ថ្នាក់រៀន, និងលេខទូរស័ព្ទអាណាព្យាបាល។</li>
+        <li>អាចច្រោះមើលបញ្ជីសិស្សតាមថ្នាក់រៀននីមួយៗ (Filter by Class) បានយ៉ាងរហ័ស។</li>
+    </ul>
+
+    <!-- CHAPTER 7 & 8 -->
+    <h1 class="chap-title">ជំពូកទី ៧ & ៨៖ ការកត់ត្រាវត្តមាន និងការគ្រប់គ្រងពិន្ទុ</h1>
+
+    <h2 class="sec-title">៧.១. ការកត់ត្រាវត្តមានសិស្ស (Attendance)</h2>
+    <ul class="custom-list">
+        <li><b>✔️ វត្តមាន (Present)៖</b> សិស្សចូលរៀនពេញម៉ោង (លំនាំដើមត្រូវបានធីកជាស្រេច)។</li>
+        <li><b>📋 ច្បាប់ (1ច / Permission)៖</b> សិស្សមានលិខិតសុំច្បាប់ត្រឹមត្រូវ។</li>
+        <li><b>❌ គ្មានច្បាប់ (1គ / Absent)៖</b> សិស្សអវត្តមានដោយគ្មានមូលហេតុ។</li>
+        <li>ប្រព័ន្ធបូកសរុបវត្តមានប្រចាំខែ និងប្រចាំឆ្នាំដោយស្វ័យប្រវត្តិចូលក្នុងរបាយការណ៍។</li>
+    </ul>
+
+    <h2 class="sec-title">៨.១. ការបញ្ចូលពិន្ទុ និងការកំណត់ពិន្ទុពេញ (Scores & Grading)</h2>
+    <ul class="custom-list">
+        <li><b>សមាសភាគពិន្ទុ៖</b> ពិន្ទុប្រចាំខែ (Monthly Score), ពិន្ទុវត្តមាន (Attendance Score), និង ពិន្ទុកិច្ចការស្រាវជ្រាវ (Assignment Score)។</li>
+        <li><b>កំណត់ពិន្ទុពេញ (⚙️)៖</b> គ្រូអាចកំណត់ទម្ងន់ពិន្ទុពេញតាមមុខវិជ្ជា និងថ្នាក់រៀននីមួយៗ (ឧទាហរណ៍៖ ៧០/១៥/១៥ ឬ ១០០/០/០)។</li>
+        <li><b>ចំណាត់ថ្នាក់ និងនិទ្ទេសស្វ័យប្រវត្តិ៖</b> ប្រព័ន្ធបូកសរុបពិន្ទុ គណនាភាគរយ ចេញនិទ្ទេស A-F និងកំណត់ចំណាត់ថ្នាក់លេខ ១, ២, ៣... ដោយស្វ័យប្រវត្តិ។</li>
+    </ul>
+
+    <table class="guide-table">
+        <thead>
+            <tr>
+                <th>និទ្ទេស (Grade)</th>
+                <th>ភាគរយ (%)</th>
+                <th>ពិន្ទុលើ ១០០</th>
+                <th>ការវាយតម្លៃ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><span class="badge-a">A</span></td><td>៩០% - ១០០%</td><td>៩០ - ១០០</td><td>ល្អប្រសើរណាស់ (Excellent)</td></tr>
+            <tr><td><span class="badge-b">B</span></td><td>៨០% - ៨៩%</td><td>៨០ - ៨៩</td><td>ល្អណាស់ (Very Good)</td></tr>
+            <tr><td><span class="badge-c">C</span></td><td>៧០% - ៧៩%</td><td>៧០ - ៧៩</td><td>ល្អ (Good)</td></tr>
+            <tr><td><b>D</b></td><td>៦០% - ៦៩%</td><td>៦០ - ៦៩</td><td>ល្អបង្គួរ (Fair)</td></tr>
+            <tr><td><b>E</b></td><td>៥០% - ៥៩%</td><td>៥០ - ៥៩</td><td>មធ្យម / ជាប់ (Pass)</td></tr>
+            <tr><td><span class="badge-f">F</span></td><td>ក្រោម ៥០%</td><td>ក្រោម ៥០</td><td>ធ្លាក់ (Fail)</td></tr>
+        </tbody>
+    </table>
+
+    <!-- CHAPTER 9 & 10 -->
+    <h1 class="chap-title">ជំពូកទី ៩ & ១០៖ ស្ថិតិសិស្ស និងវិញ្ញាបនបត្រ QR Code</h1>
+
+    <h2 class="sec-title">៩.១. ស្ថិតិ និងការវិភាគទិន្នន័យ (Statistics)</h2>
+    <p>បង្ហាញតារាងស្ថិតិតាមមុខវិជ្ជានីមួយៗប្រចាំខែ៖ ចំនួនសិស្សសរុប/ស្រី, មធ្យមភាគពិន្ទុ, ចំនួនសិស្សតាមនិទ្ទេស A-F, អត្រាសិស្សជាប់ និងធ្លាក់ (%) ជួយឱ្យគ្រូរៀបចំផែនការបំប៉នសិស្សបានទាន់ពេលវេលា។</p>
+
+    <h2 class="sec-title">១០.១. វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា និងការផ្ទៀងផ្ទាត់ QR Code</h2>
+    <ul class="custom-list">
+        <li><b>ការចេញវិញ្ញាបនបត្រ៖</b> ជ្រើសរើសថ្នាក់ និងសិស្ស -> ប្រព័ន្ធរៀបចំទម្រង់ផ្លូវការដោយស្វ័យប្រវត្តិ រួមទាំងឈ្មោះ ត្រាសាលា ហត្ថលេខា និងលេខស៊េរីវិញ្ញាបនបត្រ -> ចុច «បោះពុម្ពវិញ្ញាបនបត្រ»។</li>
+        <li><b>ស្កេន QR Code ផ្ទៀងផ្ទាត់សច្ចភាព៖</b> អាណាព្យាបាល ឬសិស្សអាចយកទូរស័ព្ទដៃស្កេនលើ QR Code ដើម្បីបើកទំព័រផ្ទៀងផ្ទាត់ផ្លូវការលើ Server ការពារការក្លែងបន្លំឯកសារបាន ១០០%។</li>
+    </ul>
+
+    <!-- CHAPTER 11 & 12 -->
+    <h1 class="chap-title">ជំពូកទី ១១ & ១២៖ វិញ្ញាសាប្រឡងអនឡាញ មេរៀន និងកាលវិភាគ</h1>
+
+    <h2 class="sec-title">១១.១. វិញ្ញាសា និងការប្រឡងអនឡាញ (Online Exams)</h2>
+    <ul class="custom-list">
+        <li><b>គ្រូបង្កើតវិញ្ញាសា៖</b> ចូល «វិញ្ញាសាប្រឡង» -> បញ្ចូលសំណួរ ជម្រើសចម្លើយ A, B, C, D និងចម្លើយត្រឹមត្រូវ -> ចុច «រក្សាទុក»។</li>
+        <li><b>សិស្សចូលប្រឡង៖</b> សិស្សចូលតាមទូរស័ព្ទដៃតាម Link <a href="https://class.mitpukae.com/test">https://class.mitpukae.com/test</a> -> វាយលេខកូដសិស្ស (ឧ. STU-001) -> ធ្វើតេស្ត -> ប្រព័ន្ធកែពិន្ទុ និងបញ្ចូលទៅក្នុងបញ្ជីពិន្ទុរបស់គ្រូដោយស្វ័យប្រវត្តិ។</li>
+    </ul>
+
+    <h2 class="sec-title">១២.១. មេរៀន និងកាលវិភាគបង្រៀន (Lessons & Schedules)</h2>
+    <ul class="custom-list">
+        <li><b>ចែករំលែកមេរៀន៖</b> គ្រូអាចបង្ហោះមេរៀន ស្លាយបង្រៀន (PPT), ឯកសារ PDF ឬវីដេអូ ដើម្បីឱ្យសិស្សទាញយកទៅស្វ័យសិក្សា។</li>
+        <li><b>កាលវិភាគប្រចាំសប្តាហ៍៖</b> រៀបចំតារាងម៉ោងបង្រៀន មុខវិជ្ជា និងបន្ទប់សិក្សាច្បាស់លាស់ ជៀសវាងការជាន់ម៉ោងគ្នា។</li>
+    </ul>
+
+    <!-- CHAPTER 13, 14, 15 -->
+    <h1 class="chap-title">ជំពូកទី ១៣, ១៤ & ១៥៖ របាយការណ៍ គណនី Admin និងទំនាក់ទំនង</h1>
+
+    <h2 class="sec-title">១៣.១. ការទាញយក និងបោះពុម្ពរបាយការណ៍ (Reports & Printing)</h2>
+    <p>នៅដំណាច់ខែ គ្រូអាចចូលទំព័រ «របាយការណ៍» -> ជ្រើសរើសថ្នាក់ និងខែ -> ចុច «បោះពុម្ពរបាយការណ៍ (Print 🖨️)» ដើម្បីព្រីនជាក្រដាស A4 ឬ Save as PDF យ៉ាងស្អាត ដោយប្រព័ន្ធលាក់ Sidebar និងប៊ូតុងចុចដោយស្វ័យប្រវត្តិ។</p>
+
+    <h2 class="sec-title">១៤.១. ការគ្រប់គ្រងគណនីគ្រូបង្រៀនសម្រាប់ Admin</h2>
+    <p>គណនី ROLE_ADMIN អាចចូលទៅកាន់ <b>/admin/accounts</b> ដើម្បីបង្កើតគណនីគ្រូថ្មី កំណត់ពាក្យសម្ងាត់ឡើងវិញ (Reset Password) ឬបើក/ផ្អាកគណនី (Toggle Status) បានយ៉ាងងាយស្រួល។</p>
+
+    <h2 class="sec-title">១៥.១. ទំនាក់ទំនងជំនួយបច្ចេកទេស និងសុវត្ថិភាព</h2>
+    <div class="callout">
+        <div>👤 <b>អ្នកគ្រប់គ្រងបច្ចេកទេស៖</b> លោកគ្រូ <b>សំ គឹមឆេង (Sam Kimchheng)</b></div>
+        <div>✈️ <b>Telegram ផ្ទាល់៖</b> <a href="https://t.me/Kimchheng12">https://t.me/Kimchheng12</a> (Username: <b>@Kimchheng12</b>)</div>
+        <div>🔒 <b>សុវត្ថិភាព៖</b> សូមកុំចែករំលែកលេខសម្ងាត់ទៅកាន់អ្នកដទៃ និងសូមចុច «ចាកចេញ (Logout)» រាល់ពេលប្រើប្រាស់លើកុំព្យូទ័ររួម។</div>
+    </div>
+
+    </div>
+</body>
+</html>
