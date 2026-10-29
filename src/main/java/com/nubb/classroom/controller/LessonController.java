@@ -66,10 +66,14 @@ public class LessonController {
                     lessons = lessonRepository.findByClassNameAndAccountId(className, accountId);
                 }
             } else {
-                lessons = lessonRepository.findByAccountId(accountId);
+                lessons = lessonRepository.findByAccountIdOrderByIdAsc(accountId);
             }
         } else {
             lessons = new ArrayList<>();
+        }
+
+        if (lessons != null && !lessons.isEmpty()) {
+            lessons.sort(java.util.Comparator.comparing(Lesson::getId));
         }
 
         String userKey = getUserKey();
