@@ -8,6 +8,7 @@ import com.nubb.classroom.model.Student;
 import com.nubb.classroom.repository.AccountRepository;
 import com.nubb.classroom.repository.AttendanceRepository;
 import com.nubb.classroom.repository.CertificateRecordRepository;
+import com.nubb.classroom.repository.LessonRepository;
 import com.nubb.classroom.repository.ScoreRepository;
 import com.nubb.classroom.repository.ScoreRuleRepository;
 import com.nubb.classroom.repository.StudentRepository;
@@ -166,6 +167,7 @@ public class DataInitializer {
                                      ScoreRuleRepository scoreRuleRepository,
                                      CertificateRecordRepository certificateRecordRepository,
                                      AttendanceRepository attendanceRepository,
+                                     LessonRepository lessonRepository,
                                      DataSource dataSource) {
         return args -> {
             // 1. Schema migration: Ensure active and profile columns exist in account table
@@ -261,6 +263,29 @@ public class DataInitializer {
                     } catch (Exception ignored) {}
                 } catch (Exception e) {
                     System.err.println(">>> [DataInitializer] Notice seeding PostgreSQL accounts: " + e.getMessage());
+                }
+            }
+
+            // 2c. Ensure lessons and transcripts are seeded if empty
+            if (lessonRepository.count() == 0) {
+                System.out.println(">>> [DataInitializer] Seeding official lessons and transcripts from lessons_insert.sql...");
+                try {
+                    ResourceDatabasePopulator pop = new ResourceDatabasePopulator();
+                    pop.addScript(new ClassPathResource("lessons_insert.sql"));
+                    pop.setContinueOnError(true);
+                    pop.execute(dataSource);
+                    System.out.println(">>> [DataInitializer] Lessons and transcripts successfully seeded!");
+
+                    if (isPostgres) {
+                        try (Connection connPost = dataSource.getConnection();
+                             Statement stmtPost = connPost.createStatement()) {
+                            stmtPost.execute("SELECT setval(pg_get_serial_sequence('lessons', 'id'), (SELECT COALESCE(MAX(id), 1) FROM lessons))");
+                            stmtPost.execute("SELECT setval(pg_get_serial_sequence('lesson_transcripts', 'id'), (SELECT COALESCE(MAX(id), 1) FROM lesson_transcripts))");
+                            stmtPost.execute("SELECT setval(pg_get_serial_sequence('lesson_progress', 'id'), (SELECT COALESCE(MAX(id), 1) FROM lesson_progress))");
+                        } catch (Exception ignored) {}
+                    }
+                } catch (Exception e) {
+                    System.err.println(">>> [DataInitializer] Notice seeding lessons: " + e.getMessage());
                 }
             }
 
