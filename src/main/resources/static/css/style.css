@@ -808,8 +808,12 @@ th.last-sticky {
     }
 
     .attendance-filter-group .filter-select {
+        flex: 0 0 auto !important;
         width: 100% !important;
         min-width: 100% !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 42px !important;
         margin: 0 !important;
         text-align: center !important;
         text-align-last: center !important;
@@ -1056,7 +1060,8 @@ th.last-sticky {
 
 .scores-filter-group .filter-select {
     flex: 1 1 180px;
-    padding: 10px 14px;
+    height: 42px;
+    padding: 9px 14px;
     border-radius: 8px;
     border: 1px solid #cbd5e1;
     background-color: #ffffff;
@@ -1161,13 +1166,18 @@ th.last-sticky {
     }
 
     .scores-filter-group .filter-select {
+        flex: 0 0 auto !important;
         width: 100% !important;
         min-width: 100% !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 42px !important;
         text-align: center !important;
         text-align-last: center !important;
         margin: 0 !important;
         padding: 9px 10px !important;
         font-size: 0.92rem !important;
+        box-sizing: border-box !important;
     }
 
     .scores-actions-bar {
