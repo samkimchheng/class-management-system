@@ -45,10 +45,13 @@
             border-radius: 8px;
             font-size: 0.88rem;
             font-weight: 700;
-            white-space: nowrap;
-            height: 42px;
+            white-space: normal;
+            word-break: break-word;
+            min-height: 42px;
+            height: auto;
             box-sizing: border-box;
-            line-height: 1;
+            line-height: 1.4;
+            text-align: center;
         }
         .track-badge.track-sci {
             background: #eff6ff;
@@ -72,6 +75,13 @@
             .scores-track-indicator .track-badge {
                 width: 100%;
                 justify-content: center;
+                white-space: normal;
+                word-break: break-word;
+                height: auto;
+                min-height: 38px;
+                text-align: center;
+                font-size: 0.82rem;
+                padding: 7px 10px;
             }
         }
 
