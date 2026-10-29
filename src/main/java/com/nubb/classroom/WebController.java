@@ -1216,7 +1216,20 @@ public class WebController {
         }
         model.addAttribute("students", students);
         model.addAttribute("selectedClass", className);
-        return "scores";
+                // Determine track for selected classroom
+        String selectedClassTrack = "ទូទៅ";
+        if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
+            List<Classroom> found = classroomRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear);
+            if (found != null && !found.isEmpty()) {
+                selectedClassTrack = found.get(0).getTrack();
+            } else {
+                Classroom dummy = new Classroom();
+                dummy.setClassName(className);
+                selectedClassTrack = dummy.getTrack();
+            }
+        }
+        model.addAttribute("selectedClassTrack", selectedClassTrack);
+return "scores";
     }
 
     @PostMapping("/scores/save")

@@ -44,6 +44,9 @@ public class ScoreApiController {
     @Autowired
     private StudentRepository studentRepository;
 
+    @Autowired
+    private com.nubb.classroom.repository.ClassroomRepository classroomRepository;
+
     @GetMapping("/get")
     public ResponseEntity<List<Score>> getScores(@RequestParam String month, @RequestParam String className, @RequestParam String subjectName) {
         String academicYear = (String) session.getAttribute("CURRENT_ACADEMIC_YEAR");
@@ -135,12 +138,60 @@ public class ScoreApiController {
         defaultRule.setAccountId(accountId);
         defaultRule.setClassName(className);
         defaultRule.setSubjectName(subjectName);
-        defaultRule.setMaxMonthlyScore(100);
+        
+        double defaultMax = computeDefaultMaxScore(className, subjectName, accountId);
+        defaultRule.setMaxMonthlyScore(defaultMax);
         defaultRule.setMaxAttendanceScore(0);
         defaultRule.setMaxAssignmentScore(0);
         return ResponseEntity.ok(defaultRule);
     }
     
+        private double computeDefaultMaxScore(String className, String subjectName, Long accountId) {
+        if (className == null || className.trim().isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className)) {
+            return 100.0;
+        }
+        String academicYear = (String) session.getAttribute("CURRENT_ACADEMIC_YEAR");
+        if (academicYear == null || academicYear.trim().isEmpty()) {
+            academicYear = "២០២៦-២០២៧";
+        }
+
+        String track = "ទូទៅ";
+        List<com.nubb.classroom.model.Classroom> found = classroomRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, academicYear);
+        if (found != null && !found.isEmpty()) {
+            track = found.get(0).getTrack();
+        } else {
+            com.nubb.classroom.model.Classroom dummy = new com.nubb.classroom.model.Classroom();
+            dummy.setClassName(className);
+            track = dummy.getTrack();
+        }
+
+        String sub = (subjectName != null) ? subjectName.trim() : "";
+
+        if ("វិទ្យាសាស្ត្រ".equals(track)) {
+            if ("គណិតវិទ្យា".equals(sub)) {
+                return 125.0;
+            } else if ("រូបវិទ្យា".equals(sub) || "គីមីវិទ្យា".equals(sub) || "ជីវវិទ្យា".equals(sub) || "ជីវៈវិទ្យា".equals(sub) || "ភាសាខ្មែរ".equals(sub)) {
+                return 75.0;
+            } else if ("ភាសាអង់គ្លេស".equals(sub) || "ភាសាបារាំង".equals(sub) || "ប្រវត្តិវិទ្យា".equals(sub)) {
+                return 50.0;
+            }
+            return 100.0;
+        } else if ("វិទ្យាសាស្ត្រសង្គម".equals(track)) {
+            if ("ភាសាខ្មែរ".equals(sub) || "អក្សរសិល្ប៍".equals(sub)) {
+                return 125.0;
+            } else if ("គណិតវិទ្យា".equals(sub) || "ប្រវត្តិវិទ្យា".equals(sub) || "ភូមិវិទ្យា".equals(sub) || 
+                       "សីលធម៌".equals(sub) || "សីលធម៌-ពលរដ្ឋ".equals(sub) || "ពលរដ្ឋវិទ្យា".equals(sub) || 
+                       "ផែនដីវិទ្យា".equals(sub) || "ផែនដី".equals(sub)) {
+                return 75.0;
+            } else if ("ភាសាអង់គ្លេស".equals(sub) || "ភាសាបារាំង".equals(sub)) {
+                return 50.0;
+            }
+            return 100.0;
+        }
+
+        return 100.0;
+    }
+
     @PostMapping("/rules")
     public ResponseEntity<?> saveScoreRule(@RequestBody ScoreRule payload) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");

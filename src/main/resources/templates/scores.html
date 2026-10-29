@@ -36,6 +36,45 @@
             border-bottom: 1px solid #ddd;
         }
         
+                /* Track Badges */
+        .track-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            white-space: nowrap;
+            height: 42px;
+            box-sizing: border-box;
+            line-height: 1;
+        }
+        .track-badge.track-sci {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1.5px solid #bfdbfe;
+        }
+        .track-badge.track-soc {
+            background: #fffbeb;
+            color: #b45309;
+            border: 1.5px solid #fde68a;
+        }
+        .track-badge.track-gen {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1.5px solid #cbd5e1;
+        }
+        @media screen and (max-width: 640px) {
+            .scores-track-indicator {
+                width: 100%;
+            }
+            .scores-track-indicator .track-badge {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
         .print-header {
             display: none;
         }
@@ -161,27 +200,79 @@
                         </select>
                         <select name="className" class="form-control filter-select" onchange="window.location.href = '/scores?className=' + encodeURIComponent(this.value);">
                             <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
-                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                            <option th:each="c : ${myClassrooms}" th:value="${c.className}"
+                                    th:text="${c.track == 'វិទ្យាសាស្ត្រ' ? '🔬 ' + c.className : (c.track == 'វិទ្យាសាស្ត្រសង្គម' ? '📚 ' + c.className : c.className)}"
+                                    th:data-track="${c.track}"
+                                    th:selected="${selectedClass == c.className}"></option>
                         </select>
-                        <select name="subjectName" class="form-control filter-select">
-                            <option value="គណិតវិទ្យា">គណិតវិទ្យា</option>
-                            <option value="ភាសាខ្មែរ">ភាសាខ្មែរ</option>
-                            <option value="រូបវិទ្យា">រូបវិទ្យា</option>
-                            <option value="គីមីវិទ្យា">គីមីវិទ្យា</option>
-                            <option value="ជីវវិទ្យា">ជីវវិទ្យា</option>
-                            <option value="ជីវៈវិទ្យា">ជីវៈវិទ្យា</option>
-                            <option value="ប្រវត្តិវិទ្យា">ប្រវត្តិវិទ្យា</option>
-                            <option value="ភូមិវិទ្យា">ភូមិវិទ្យា</option>
-                            <option value="ពលរដ្ឋវិទ្យា">ពលរដ្ឋវិទ្យា</option>
-                            <option value="សីលធម៌">សីលធម៌</option>
-                            <option value="ផែនដីវិទ្យា">ផែនដីវិទ្យា</option>
-                            <option value="ផែនដី">ផែនដី</option>
-                            <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស</option>
-                            <option value="ភាសាបារាំង">ភាសាបារាំង</option>
-                            <option value="ព័ត៌មានវិទ្យា/កុំព្យូទ័រ">ព័ត៌មានវិទ្យា/កុំព្យូទ័រ</option>
-                            <option value="កីឡា">កីឡា</option>
-                            <option value="អក្សរសិល្ប៍">អក្សរសិល្ប៍</option>
+                        <select name="subjectName" class="form-control filter-select" id="subjectNameSelect">
+                            <!-- Science Track -->
+                            <th:block th:if="${selectedClassTrack == 'វិទ្យាសាស្ត្រ'}">
+                                <optgroup label="🔬 មុខវិជ្ជាស្នូល (វិទ្យាសាស្ត្រ)">
+                                    <option value="គណិតវិទ្យា">គណិតវិទ្យា (ពិន្ទុពេញ ១២៥)</option>
+                                    <option value="រូបវិទ្យា">រូបវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                                    <option value="គីមីវិទ្យា">គីមីវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                                    <option value="ជីវវិទ្យា">ជីវវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                                </optgroup>
+                                <optgroup label="📖 មុខវិជ្ជាទូទៅ & ភាសា">
+                                    <option value="ភាសាខ្មែរ">ភាសាខ្មែរ (ពិន្ទុពេញ ៧៥)</option>
+                                    <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស (ពិន្ទុពេញ ៥០)</option>
+                                    <option value="ភាសាបារាំង">ភាសាបារាំង (ពិន្ទុពេញ ៥០)</option>
+                                    <option value="ប្រវត្តិវិទ្យា">ប្រវត្តិវិទ្យា (ពិន្ទុពេញ ៥០)</option>
+                                    <option value="ព័ត៌មានវិទ្យា/កុំព្យូទ័រ">ព័ត៌មានវិទ្យា/កុំព្យូទ័រ</option>
+                                    <option value="កីឡា">កីឡា</option>
+                                </optgroup>
+                            </th:block>
+
+                            <!-- Social Track -->
+                            <th:block th:if="${selectedClassTrack == 'វិទ្យាសាស្ត្រសង្គម'}">
+                                <optgroup label="📚 មុខវិជ្ជាស្នូល (វិទ្យាសាស្ត្រសង្គម)">
+                                    <option value="ភាសាខ្មែរ">ភាសាខ្មែរ (ពិន្ទុពេញ ១២៥)</option>
+                                    <option value="គណិតវិទ្យា">គណិតវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                                    <option value="ប្រវត្តិវិទ្យា">ប្រវត្តិវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                                    <option value="ភូមិវិទ្យា">ភូមិវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                                    <option value="សីលធម៌">សីលធម៌-ពលរដ្ឋវិជ្ជា (ពិន្ទុពេញ ៧៥)</option>
+                                    <option value="ផែនដីវិទ្យា">ផែនដីវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                                </optgroup>
+                                <optgroup label="📖 មុខវិជ្ជាទូទៅ & ភាសា">
+                                    <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស (ពិន្ទុពេញ ៥០)</option>
+                                    <option value="ភាសាបារាំង">ភាសាបារាំង (ពិន្ទុពេញ ៥០)</option>
+                                    <option value="ព័ត៌មានវិទ្យា/កុំព្យូទ័រ">ព័ត៌មានវិទ្យា/កុំព្យូទ័រ</option>
+                                    <option value="កីឡា">កីឡា</option>
+                                </optgroup>
+                            </th:block>
+
+                            <!-- General Track (Grade 7-10 or All) -->
+                            <th:block th:if="${selectedClassTrack != 'វិទ្យាសាស្ត្រ' and selectedClassTrack != 'វិទ្យាសាស្ត្រសង្គម'}">
+                                <optgroup label="📖 មុខវិជ្ជាទូទៅ (ពិន្ទុពេញ ១០០)">
+                                    <option value="គណិតវិទ្យា">គណិតវិទ្យា</option>
+                                    <option value="ភាសាខ្មែរ">ភាសាខ្មែរ</option>
+                                    <option value="រូបវិទ្យា">រូបវិទ្យា</option>
+                                    <option value="គីមីវិទ្យា">គីមីវិទ្យា</option>
+                                    <option value="ជីវវិទ្យា">ជីវវិទ្យា</option>
+                                    <option value="ប្រវត្តិវិទ្យា">ប្រវត្តិវិទ្យា</option>
+                                    <option value="ភូមិវិទ្យា">ភូមិវិទ្យា</option>
+                                    <option value="សីលធម៌">សីលធម៌-ពលរដ្ឋវិជ្ជា</option>
+                                    <option value="ផែនដីវិទ្យា">ផែនដីវិទ្យា</option>
+                                    <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស</option>
+                                    <option value="ភាសាបារាំង">ភាសាបារាំង</option>
+                                    <option value="ព័ត៌មានវិទ្យា/កុំព្យូទ័រ">ព័ត៌មានវិទ្យា/កុំព្យូទ័រ</option>
+                                    <option value="កីឡា">កីឡា</option>
+                                </optgroup>
+                            </th:block>
                         </select>
+                        <!-- Track Badge Indicator -->
+                        <div class="scores-track-indicator" style="display: flex; align-items: center;">
+                            <span th:if="${selectedClassTrack == 'វិទ្យាសាស្ត្រ'}" class="track-badge track-sci" style="cursor: default;" title="ថ្នាក់វិទ្យាសាស្ត្រ (Science Track)">
+                                <span>🔬 ថ្នាក់វិទ្យាសាស្ត្រ</span>
+                            </span>
+                            <span th:if="${selectedClassTrack == 'វិទ្យាសាស្ត្រសង្គម'}" class="track-badge track-soc" style="cursor: default;" title="ថ្នាក់វិទ្យាសាស្ត្រសង្គម (Social Track)">
+                                <span>📚 ថ្នាក់វិទ្យាសាស្ត្រសង្គម</span>
+                            </span>
+                            <span th:if="${selectedClassTrack == 'ទូទៅ' and selectedClass != null and selectedClass != '' and selectedClass != 'ថ្នាក់រៀនទាំងអស់'}" class="track-badge track-gen" style="cursor: default;" title="ថ្នាក់ទូទៅ (General Track)">
+                                <span>📖 ថ្នាក់ទូទៅ</span>
+                            </span>
+                        </div>
                     </div>
                     <div class="scores-actions-bar">
                         <div class="scores-btn-group">
@@ -256,6 +347,14 @@
             window.configureScores = function() {
                 const className = document.querySelector('select[name="className"]').value;
                 const subjectName = document.querySelector('select[name="subjectName"]').value;
+                const classOpt = document.querySelector('select[name="className"] option:checked');
+                const track = classOpt ? classOpt.getAttribute('data-track') : '';
+                let trackBadge = '';
+                if (track === 'វិទ្យាសាស្ត្រ') {
+                    trackBadge = '<span style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 6px; font-size: 0.82rem; margin-left: 6px; font-weight: 600;">🔬 វិទ្យាសាស្ត្រ</span>';
+                } else if (track === 'វិទ្យាសាស្ត្រសង្គម') {
+                    trackBadge = '<span style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 6px; font-size: 0.82rem; margin-left: 6px; font-weight: 600;">📚 សង្គម</span>';
+                }
                 
                 let curMonthly = currentScoreRule.maxMonthlyScore;
                 let curAtt = currentScoreRule.maxAttendanceScore;
@@ -270,7 +369,7 @@
                     title: '🎯 កំណត់ពិន្ទុពេញ',
                     html: `
                         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; text-align: left; margin-bottom: 16px; font-size: 0.95rem;">
-                            <div style="margin-bottom: 4px;"><b>🏫 ថ្នាក់៖</b> <span style="color: #4361ee; font-weight: bold;">${className}</span></div>
+                            <div style="margin-bottom: 6px;"><b>🏫 ថ្នាក់៖</b> <span style="color: #4361ee; font-weight: bold;">${className}</span> ${trackBadge}</div>
                             <div><b>📚 មុខវិជ្ជា៖</b> <span style="color: #4361ee; font-weight: bold;">${subjectName}</span></div>
                         </div>
                         <div style="text-align: left;">

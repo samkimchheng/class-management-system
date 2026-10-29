@@ -18,4 +18,7 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
     @Query("SELECT COUNT(c) > 0 FROM Classroom c WHERE c.className = :className AND ((:accountId IN (1, 97) AND (c.accountId IN (1, 97) OR c.accountId IS NULL)) OR c.accountId = :accountId) AND (:academicYear IS NULL OR c.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (c.academicYear IS NULL OR c.academicYear = '')))")
     boolean existsByClassNameAndAccountIdAndAcademicYear(@Param("className") String className, @Param("accountId") Long accountId, @Param("academicYear") String academicYear);
+
+    @Query("SELECT c FROM Classroom c WHERE c.className = :className AND ((:accountId IN (1, 97) AND (c.accountId IN (1, 97) OR c.accountId IS NULL)) OR c.accountId = :accountId) AND (:academicYear IS NULL OR c.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (c.academicYear IS NULL OR c.academicYear = '')))")
+    List<Classroom> findByClassNameAndAccountIdAndAcademicYear(@Param("className") String className, @Param("accountId") Long accountId, @Param("academicYear") String academicYear);
 }
