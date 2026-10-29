@@ -11,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import com.nubb.classroom.config.TokenSecurityService;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -270,6 +273,39 @@ public class WebController {
     private com.nubb.classroom.repository.CertificateRecordRepository certificateRecordRepository;
 
 
+    
+    @GetMapping({"/download/teacher-guide", "/download/teacher-guide-pdf", "/docs/teacher-guide.pdf"})
+    @ResponseBody
+    public ResponseEntity<Resource> downloadTeacherGuidePdf() {
+        Resource resource = new ClassPathResource("static/docs/teacher-guide.pdf");
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        String khmerFilename = "សៀវភៅណែនាំ_ការប្រើប្រាស់ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន_២០២៧.pdf";
+        String encodedFilename = URLEncoder.encode(khmerFilename, StandardCharsets.UTF_8).replace("+", "%20");
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"teacher-guide.pdf\"; filename*=UTF-8''" + encodedFilename)
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .body(resource);
+    }
+
+    @GetMapping({"/download/teacher-guide.docx", "/download/teacher-guide.doc"})
+    @ResponseBody
+    public ResponseEntity<Resource> downloadTeacherGuideDocx() {
+        Resource resource = new ClassPathResource("static/docs/teacher-guide.docx");
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        String khmerFilename = "សៀវភៅណែនាំ_ការប្រើប្រាស់ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន_២០២៧.docx";
+        String encodedFilename = URLEncoder.encode(khmerFilename, StandardCharsets.UTF_8).replace("+", "%20");
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"teacher-guide.docx\"; filename*=UTF-8''" + encodedFilename)
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .body(resource);
+    }
+
     @GetMapping("/")
     public String index(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
         String[] provinces = {
