@@ -72,7 +72,24 @@
             margin: 25px 0;
             box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
         }
+        
         .hero-title {
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+            line-height: 1.35;
+            text-align: center;
+        }
+        .hero-line1, .hero-line2 {
+            font-size: clamp(10pt, 3.5vw, 16pt);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
+        }
+        .hero-line2 {
+            margin-top: 4px;
+        }
+        /* old hero */ .old-hero {
             font-size: 17pt;
             font-weight: 700;
             color: #ffffff;
@@ -214,13 +231,19 @@
     </div>
 
     <div class="cover-hero">
-        <div class="hero-title">សៀវភៅមគ្គទេសក៍ និងមេរៀនណែនាំលម្អិត<br>ស្តីពីការចូលប្រើប្រាស់ និងគ្រប់គ្រងប្រព័ន្ធសាថ្មី</div>
+        <div class="hero-title">
+            <div class="hero-line1">សៀវភៅមគ្គទេសក៍ និងមេរៀនណែនាំលម្អិត</div>
+            <div class="hero-line2">ស្តីពីការចូលប្រើប្រាស់ និងគ្រប់គ្រងប្រព័ន្ធសាថ្មី</div>
+        </div>
         <div class="hero-sub">ការកែលម្អប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀនជំនាន់ចុងក្រោយ សម្រាប់លោកគ្រូ-អ្នកគ្រូបង្រៀន និងគណៈគ្រប់គ្រង</div>
     </div>
 
     <div class="cover-meta">
         <div>🌐 <b>គេហទំព័រផ្លូវការ៖</b> <a href="https://class.mitpukae.com">https://class.mitpukae.com</a></div>
-        <div>✍️ <b>រៀបចំ និងចងក្រងដោយ៖</b> លោកគ្រូ <b>សំ គឹមឆេង (Sam Kimchheng)</b></div>
+        <div style="margin-top: 4px;">
+            <div>✍️ <b>រៀបចំ និងចងក្រងដោយ៖</b></div>
+            <div style="padding-left: 24px; margin-top: 2px;">លោកគ្រូ <b>សំ គឹមឆេង (Sam Kimchheng)</b></div>
+        </div>
         <div>✈️ <b>Telegram ជំនួយបច្ចេកទេសផ្ទាល់៖</b> <a href="https://t.me/Kimchheng12">@Kimchheng12</a></div>
         <div>📅 <b>ឆ្នាំសិក្សា៖</b> ២០២៦ - ២០២៧ (ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ)</div>
     </div>
@@ -228,7 +251,7 @@
     <div class="page-break"></div>
 
     <!-- TABLE OF CONTENTS -->
-    <h1 class="chap-title" style="margin-top: 0;">មាតិកានៃសៀវភៅណែនាំសាថ្មី (TABLE OF CONTENTS)</h1>
+    <h1 class="chap-title" style="margin-top: 0;">មាតិកានៃសៀវភៅណែនាំសាថ្មី<br><span style="font-size: 0.85em; font-weight: 600; color: #475569;">(TABLE OF CONTENTS)</span></h1>
     <table class="guide-table">
         <thead>
             <tr>
@@ -256,7 +279,7 @@
     </table>
 
     <!-- CHAPTER 1 -->
-    <h1 class="chap-title">ជំពូកទី ១៖ សេចក្តីផ្តើម និងព័ត៌មានទូទៅអំពីប្រព័ន្ធ</h1>
+    <h1 class="chap-title" style="font-size: clamp(9.5pt, 3.4vw, 13pt); white-space: nowrap; overflow: hidden; text-overflow: clip;">ជំពូកទី ១៖ សេចក្តីផ្តើម និងព័ត៌មានទូទៅអំពីប្រព័ន្ធ</h1>
     <p>ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀនអនឡាញ (Class Management System 2027) ត្រូវបានអភិវឌ្ឍ និងកែលម្អសាថ្មីយ៉ាងទូលំទូលាយ ដើម្បីផ្តល់ជូនលោកគ្រូ-អ្នកគ្រូវិធីសាស្ត្រគ្រប់គ្រងថ្នាក់រៀនដ៏ទំនើប រហ័ស និងមានប្រសិទ្ធភាពខ្ពស់បំផុត។ កំណែថ្មីនេះបានពង្រឹងនូវប្រព័ន្ធសុវត្ថិភាពទិន្នន័យឯកោដាច់ដោយឡែករវាងគ្រូម្នាក់ៗ ការគ្រប់គ្រងឆ្នាំសិក្សាចម្រុះ ការស្រង់អវត្តមាន និងពិន្ទុច្បាស់លាស់ ព្រមទាំងការចេញវិញ្ញាបនបត្រស្វ័យប្រវត្តិជាមួយប្រព័ន្ធ QR Code ផ្ទៀងផ្ទាត់សច្ចភាព។</p>
 
     <h2 class="sec-title">១.១. អាសយដ្ឋានតំណភ្ជាប់ផ្លូវការ (Official URLs)</h2>
@@ -275,7 +298,7 @@
     </ul>
 
     <div class="callout">
-        <div class="callout-title">🔒 ចំណុចពិសេស និងការការពារទិន្នន័យ (Multi-Tenant Isolation)</div>
+        <div class="callout-title" style="font-size: clamp(9pt, 3.2vw, 11pt); white-space: nowrap; overflow: hidden; text-overflow: clip;">🔒 ចំណុចពិសេស និងការការពារទិន្នន័យ (Multi-Tenant Isolation)</div>
         ប្រព័ន្ធជំនាន់ថ្មី ២០២៧ ត្រូវបានរចនាឡើងជាមួយនឹងស្ថាបត្យកម្ម Multi-Tenant Isolation ១០០% ដែលធានាថាគ្រូនីមួយៗមានទិន្នន័យផ្ទាល់ខ្លួនដាច់ដោយឡែក មិនប៉ះពាល់ មិនឃើញ និងមិនជាន់គ្នាជាមួយគ្រូដទៃឡើយ ទោះបីជាបង្រៀនមុខវិជ្ជាដូចគ្នា ឬឈ្មោះថ្នាក់ដូចគ្នាក៏ដោយ។
     </div>
 
