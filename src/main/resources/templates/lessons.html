@@ -55,15 +55,30 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap !important;
+            white-space: nowrap;
         }
-
+        .progress-label {
+            font-size: clamp(0.78rem, 2.7vw, 0.9rem);
+            white-space: nowrap !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+        .progress-badge {
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            font-size: clamp(0.82rem, 2.8vw, 0.95rem) !important;
+        }
         .audio-player {
             width: 100%;
             margin-top: 8px;
             border-radius: 8px;
             outline: none;
         }
-
         /* Transcript Tabs & Cards */
         .transcript-container {
             margin-top: 15px;
@@ -71,6 +86,11 @@
             border: 1px solid #cbd5e1;
             border-radius: 10px;
             padding: 15px;
+        }
+        .transcript-header-title {
+            white-space: nowrap !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
         }
         .transcript-item {
             background: white;
@@ -80,7 +100,6 @@
             margin-bottom: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-
         /* Khmer Translation Box */
         .khmer-translation-box {
             display: none;
@@ -95,14 +114,13 @@
             color: #064e3b;
             white-space: pre-wrap;
         }
-
         .btn-translate {
             background: #e0e7ff;
             color: #3730a3;
             border: 1px solid #c7d2fe;
             padding: 5px 12px;
             border-radius: 6px;
-            font-size: 0.85rem;
+            font-size: clamp(0.74rem, 2.5vw, 0.85rem) !important;
             font-weight: bold;
             cursor: pointer;
             display: inline-flex;
@@ -110,9 +128,41 @@
             gap: 5px;
             margin-top: 8px;
             transition: all 0.2s;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
         }
         .btn-translate:hover {
             background: #c7d2fe;
+        }
+        .btn-add-lesson {
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px;
+            font-size: clamp(0.75rem, 2.7vw, 0.95rem) !important;
+        }
+        @media screen and (max-width: 768px) {
+            .btn-add-lesson {
+                font-size: 0.82rem !important;
+                padding: 6px 10px !important;
+            }
+            .btn-translate {
+                font-size: 0.76rem !important;
+                padding: 4px 8px !important;
+            }
+        }
+        @media screen and (max-width: 480px) {
+            .btn-add-lesson {
+                font-size: 0.76rem !important;
+                padding: 5px 8px !important;
+            }
+            .progress-label {
+                font-size: 0.78rem !important;
+            }
+            .progress-badge {
+                font-size: 0.82rem !important;
+            }
         }
 
         .modal {
@@ -269,10 +319,10 @@
                 </form>
 
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <a href="/certificate" class="btn" style="background: #0f172a; color: white; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; border: 1px solid #334155;">
+                    <a href="/certificate" class="btn" style="white-space: nowrap !important; flex-shrink: 0; background: #0f172a; color: white; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; border: 1px solid #334155;">
                         <span>🎓 មើលទម្រង់វិញ្ញាបនបត្រ</span>
                     </a>
-                    <button class="btn btn-primary" onclick="openAddModal()">➕ បង្កើតមេរៀនថ្មី (មាន Transcripts ៣-៤)</button>
+                    <button class="btn btn-primary btn-add-lesson" onclick="openAddModal()" style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap !important; flex-shrink: 0; font-size: clamp(0.75rem, 2.7vw, 0.95rem); padding: 8px 14px;"><span>➕ បង្កើតមេរៀនថ្មី (មាន Transcripts ៣-៤)</span></button>
                 </div>
             </div>
 
@@ -320,9 +370,40 @@
                 </div>
             </div>
 
+            <!-- Student Step-by-Step Lesson Stepper Tracker -->
+            <div th:if="${isStudent and !#lists.isEmpty(lessons)}" id="studentLessonStepper" style="background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-weight: 800; color: #0f172a; font-size: clamp(0.88rem, 2.8vw, 1.05rem); white-space: nowrap;">
+                            📚 មេរៀនសិក្សាតាមលំដាប់លំដោយ៖
+                        </span>
+                        <span id="activeLessonCounterBadge" style="background: #e0f2fe; color: #0284c7; padding: 3px 10px; border-radius: 20px; font-weight: bold; font-size: 0.82rem; white-space: nowrap;">
+                            មេរៀនទី 1 នៃ <span th:text="${totalLessonsCount}">1</span>
+                        </span>
+                    </div>
+                    <span id="activeLessonStatusPill" style="font-size: 0.82rem; font-weight: bold; padding: 3px 10px; border-radius: 20px; background: #e0f2fe; color: #0284c7; white-space: nowrap;">
+                        📖 កំពុងរៀន
+                    </span>
+                </div>
+                <!-- Horizontal scrollable pills for lessons -->
+                <div id="lessonStepperTabs" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch;">
+                    <button th:each="l, stat : ${lessons}"
+                            type="button"
+                            th:id="'stepper-tab-' + ${stat.index}"
+                            class="stepper-tab"
+                            th:data-index="${stat.index}"
+                            th:data-id="${l.id}"
+                            th:onclick="'onStepperTabClick(' + ${stat.index} + ')'"
+                            style="border: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; cursor: pointer; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; font-family: inherit; transition: all 0.2s;">
+                        <span class="tab-icon">📖</span>
+                        <span th:text="'មេរៀនទី ' + ${stat.count}">មេរៀនទី ១</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Lessons List -->
             <div id="lessonsList">
-                <div th:each="lesson, lessonStat : ${lessons}" class="lesson-card" th:id="'lesson-card-' + ${lesson.id}">
+                <div th:each="lesson, lessonStat : ${lessons}" class="lesson-card" th:id="'lesson-card-' + ${lesson.id}" th:data-lesson-index="${lessonStat.index}" th:data-lesson-id="${lesson.id}" th:data-completed="${completedMap.get(lesson.id) ? 'true' : 'false'}">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
                         <div>
                             <span class="badge badge-class" th:text="${lesson.className}">ថ្នាក់</span>
@@ -349,9 +430,10 @@
                     <!-- Progress Percentage Display -->
                     <div style="margin-top: 15px;">
                         <div class="progress-text">
-                            <span>ភាគរយរៀនសូត្រ (Study Progress):</span>
-                            <span th:id="'progress-badge-' + ${lesson.id}" 
-                                  style="color: var(--primary); font-size: 1rem;" 
+                            <span class="progress-label">ភាគរយរៀនសូត្រ (Study Progress):</span>
+                            <span th:id="'progress-badge-' + ${lesson.id}"
+                                  class="progress-badge"
+                                  style="color: var(--primary); font-size: clamp(0.82rem, 2.8vw, 0.95rem); font-weight: bold; white-space: nowrap !important; flex-shrink: 0 !important; display: inline-flex; align-items: center;"
                                   th:text="${progressMap.get(lesson.id)} + '% ' + (${completedMap.get(lesson.id)} ? '✅ រៀនចប់' : 'កំពុងរៀន')">
                                 0%
                             </span>
@@ -367,7 +449,7 @@
                         <label style="font-weight: bold; font-size: 0.9rem; color: #475569; display: flex; align-items: center; gap: 6px;">
                             🎵 សំឡេងមេរៀនទូទៅ (Main MP3 Audio):
                         </label>
-                        <audio class="audio-player" controls preload="metadata" th:data-lesson-id="${lesson.id}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
+                        <audio class="audio-player" controls preload="metadata" th:data-lesson-id="${lesson.id}" th:data-lesson-index="${lessonStat.index}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
                             <source th:src="${lesson.audioUrl}" type="audio/mpeg">
                         </audio>
                     </div>
@@ -379,15 +461,16 @@
 
                         <!-- Translate Button for Main Content -->
                         <button class="btn-translate" th:data-khmer="${lesson.khmerContent != null ? lesson.khmerContent : ''}" th:onclick="'toggleKhmerTranslation(\'main-content-text-' + ${lesson.id} + '\', \'khmer-box-main-' + ${lesson.id} + '\', this)'">
-                            🌐 បកប្រែជាភាសាខ្មែរ (Translate to Khmer)
+                            <span>🌐 បកប្រែជាភាសាខ្មែរ (Translate to Khmer)</span>
                         </button>
                         <div th:id="'khmer-box-main-' + ${lesson.id}" class="khmer-translation-box"></div>
                     </div>
 
                     <!-- Multiple Transcripts Section (3 to 4 Transcripts) -->
                     <div th:if="${transcriptsMap.get(lesson.id) != null and !#lists.isEmpty(transcriptsMap.get(lesson.id))}" class="transcript-container">
-                        <h4 style="margin: 0 0 12px 0; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-                            🎙️ Transcripts / អត្ថបទស្ដាប់ (<span th:text="${#lists.size(transcriptsMap.get(lesson.id))}">3</span> អត្ថបទ):
+                        <h4 class="transcript-header-title" style="margin: 0 0 12px 0; color: #0f172a; display: flex; align-items: center; gap: 6px; white-space: nowrap !important; overflow: hidden; font-size: clamp(0.78rem, 2.7vw, 1.05rem); line-height: 1.4;">
+                            <span style="flex-shrink: 0;">🎙️</span>
+                            <span style="white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis;">Transcripts / អត្ថបទស្ដាប់ (<span th:text="${#lists.size(transcriptsMap.get(lesson.id))}">3</span> អត្ថបទ):</span>
                         </h4>
 
                         <div th:each="ts, stat : ${transcriptsMap.get(lesson.id)}" class="transcript-item">
@@ -398,7 +481,7 @@
 
                             <!-- Audio Player for this Transcript -->
                             <div th:if="${ts.audioUrl != null and !ts.audioUrl.isEmpty()}" style="margin-bottom: 10px;">
-                                <audio class="audio-player" controls preload="metadata" th:data-lesson-id="${lesson.id}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
+                                <audio class="audio-player" controls preload="metadata" th:data-lesson-id="${lesson.id}" th:data-lesson-index="${lessonStat.index}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
                                     <source th:src="${ts.audioUrl}" type="audio/mpeg">
                                 </audio>
                             </div>
@@ -410,7 +493,7 @@
 
                                 <!-- Translate Button for Transcript -->
                                 <button class="btn-translate" th:data-khmer="${ts.khmerContent != null ? ts.khmerContent : ''}" th:onclick="'toggleKhmerTranslation(\'ts-content-text-' + ${ts.id} + '\', \'khmer-box-ts-' + ${ts.id} + '\', this)'">
-                                    🌐 បកប្រែជាភាសាខ្មែរ (Translate to Khmer)
+                                    <span>🌐 បកប្រែជាភាសាខ្មែរ (Translate to Khmer)</span>
                                 </button>
                                 <div th:id="'khmer-box-ts-' + ${ts.id}" class="khmer-translation-box"></div>
                             </div>
@@ -420,16 +503,28 @@
                     <!-- Action Buttons & Lesson Navigation -->
                     <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                         <div>
-                            <button th:if="${!lessonStat.first}" class="btn btn-secondary" style="background-color: #64748b; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" th:onclick="'navigateToLesson(' + (${lessonStat.index} - 1) + ')'">
-                                👈 មេរៀនមុន (Previous Lesson)
+                            <button th:if="${!lessonStat.first}"
+                                    type="button"
+                                    class="btn btn-secondary btn-prev-lesson"
+                                    style="background-color: #64748b; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap !important; font-size: clamp(0.78rem, 2.7vw, 0.92rem);"
+                                    th:onclick="'goToLesson(' + (${lessonStat.index} - 1) + ')'">
+                                <span>👈 មេរៀនមុន (Previous Lesson)</span>
                             </button>
                         </div>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button class="btn btn-success" style="background-color: var(--success); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;" th:onclick="'markCompleted(' + ${lesson.id} + ', ' + ${lessonStat.index} + ')'">
-                                ✅ រៀនចប់ ១០០% (Mark Complete)
+                            <button type="button"
+                                    class="btn btn-success btn-mark-complete"
+                                    style="background-color: var(--success); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap !important; font-size: clamp(0.78rem, 2.7vw, 0.92rem);"
+                                    th:onclick="'markCompleted(' + ${lesson.id} + ', ' + ${lessonStat.index} + ')'">
+                                <span>✅ រៀនចប់ ១០០% (Mark Complete)</span>
                             </button>
-                            <button th:if="${!lessonStat.last}" class="btn btn-primary" style="background-color: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" th:onclick="'navigateToLesson(' + (${lessonStat.index} + 1) + ')'">
-                                ⏭️ មេរៀនបន្ត (Next Lesson)
+                            <button th:if="${!lessonStat.last}"
+                                    type="button"
+                                    th:id="'next-btn-' + ${lessonStat.index}"
+                                    class="btn-next-lesson"
+                                    th:onclick="'handleNextClick(' + ${lessonStat.index} + ')'"
+                                    style="padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap !important; font-size: clamp(0.78rem, 2.7vw, 0.92rem); font-family: inherit; transition: all 0.2s;">
+                                <span th:id="'next-btn-text-' + ${lessonStat.index}">⏭️ មេរៀនបន្ទាប់ (Next Lesson)</span>
                             </button>
                         </div>
                     </div>
@@ -852,23 +947,214 @@
             }
         }
 
+        // Sequential Lesson Controller & Locked Progression for Students
+        let currentLessonIdx = 0;
+        const lessonCards = document.querySelectorAll('.lesson-card');
+        const totalLessons = lessonCards.length;
+        const completionStatus = [];
+        const isStudentUser = document.getElementById('studentLessonStepper') !== null;
+
+        lessonCards.forEach((card, idx) => {
+            const isDone = card.getAttribute('data-completed') === 'true';
+            completionStatus[idx] = isDone;
+        });
+
+        // Initialize sequential single lesson view for students
+        if (isStudentUser && totalLessons > 0) {
+            let firstUnfinished = 0;
+            let found = false;
+            for (let i = 0; i < totalLessons; i++) {
+                if (!completionStatus[i]) {
+                    firstUnfinished = i;
+                    found = true;
+                    break;
+                }
+            }
+            currentLessonIdx = found ? firstUnfinished : 0;
+            updateLessonDisplay();
+        } else {
+            // Teacher view: initialize next button styles
+            for (let i = 0; i < totalLessons; i++) {
+                updateNextButtonState(i);
+            }
+        }
+
+        function updateLessonDisplay() {
+            if (!isStudentUser) return;
+
+            lessonCards.forEach((card, idx) => {
+                if (idx === currentLessonIdx) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+                updateNextButtonState(idx);
+            });
+
+            updateStepperTabs();
+        }
+
+        function updateNextButtonState(idx) {
+            const nextBtn = document.getElementById('next-btn-' + idx);
+            const nextText = document.getElementById('next-btn-text-' + idx);
+            if (!nextBtn) return;
+
+            const isCompleted = completionStatus[idx];
+
+            if (isStudentUser) {
+                if (isCompleted) {
+                    nextBtn.style.backgroundColor = '#3b82f6';
+                    nextBtn.style.color = '#ffffff';
+                    nextBtn.style.border = 'none';
+                    nextBtn.style.cursor = 'pointer';
+                    nextBtn.style.opacity = '1';
+                    if (nextText) nextText.innerHTML = '⏭️ មេរៀនបន្ទាប់ (Next Lesson)';
+                } else {
+                    nextBtn.style.backgroundColor = '#94a3b8';
+                    nextBtn.style.color = '#f1f5f9';
+                    nextBtn.style.border = '1px solid #cbd5e1';
+                    nextBtn.style.cursor = 'not-allowed';
+                    nextBtn.style.opacity = '0.8';
+                    if (nextText) nextText.innerHTML = '🔒 មេរៀនបន្ទាប់ (ត្រូវរៀនចប់ ១០០%)';
+                }
+            } else {
+                nextBtn.style.backgroundColor = '#3b82f6';
+                nextBtn.style.color = '#ffffff';
+                nextBtn.style.border = 'none';
+                nextBtn.style.cursor = 'pointer';
+                if (nextText) nextText.innerHTML = '⏭️ មេរៀនបន្ទាប់ (Next Lesson)';
+            }
+        }
+
+        function handleNextClick(fromIndex) {
+            if (isStudentUser) {
+                const isCompleted = completionStatus[fromIndex];
+                if (!isCompleted) {
+                    Swal.fire({
+                        title: 'សូមរង់ចាំ! 🔒',
+                        text: 'ប្អូនមិនទាន់អាចបន្តទៅមេរៀនបន្ទាប់បានទេ! សូមរៀនមេរៀននេះឱ្យចប់ ១០០% ជាមុនសិន។',
+                        icon: 'warning',
+                        confirmButtonText: 'យល់ព្រម',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                    return;
+                }
+            }
+            goToLesson(fromIndex + 1);
+        }
+
+        function goToLesson(targetIndex) {
+            if (targetIndex < 0 || targetIndex >= totalLessons) return;
+
+            if (isStudentUser && targetIndex > currentLessonIdx) {
+                for (let i = 0; i < targetIndex; i++) {
+                    if (!completionStatus[i]) {
+                        Swal.fire({
+                            title: 'មេរៀនជាប់សោ 🔒',
+                            text: 'សូមប្អូនរៀនបញ្ចប់មេរៀនទី ' + (i + 1) + ' ឱ្យបាន ១០០% ជាមុនសិន ទើបអាចបើកមេរៀនបន្តបាន!',
+                            icon: 'warning',
+                            confirmButtonText: 'យល់ព្រម',
+                            confirmButtonColor: '#3b82f6'
+                        });
+                        return;
+                    }
+                }
+            }
+
+            currentLessonIdx = targetIndex;
+            if (isStudentUser) {
+                updateLessonDisplay();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                navigateToLesson(targetIndex);
+            }
+        }
+
+        function onStepperTabClick(tabIndex) {
+            goToLesson(tabIndex);
+        }
+
+        function updateStepperTabs() {
+            const counterBadge = document.getElementById('activeLessonCounterBadge');
+            if (counterBadge) {
+                counterBadge.innerHTML = 'មេរៀនទី ' + (currentLessonIdx + 1) + ' នៃ ' + totalLessons;
+            }
+
+            const statusPill = document.getElementById('activeLessonStatusPill');
+            if (statusPill) {
+                const isDone = completionStatus[currentLessonIdx];
+                if (isDone) {
+                    statusPill.style.background = '#dcfce7';
+                    statusPill.style.color = '#15803d';
+                    statusPill.innerText = '✅ រៀនចប់ ១០០%';
+                } else {
+                    statusPill.style.background = '#e0f2fe';
+                    statusPill.style.color = '#0284c7';
+                    statusPill.innerText = '📖 កំពុងរៀន';
+                }
+            }
+
+            for (let i = 0; i < totalLessons; i++) {
+                const tab = document.getElementById('stepper-tab-' + i);
+                if (!tab) continue;
+
+                const isCompleted = completionStatus[i];
+                const isActive = i === currentLessonIdx;
+                let isLocked = false;
+                for (let p = 0; p < i; p++) {
+                    if (!completionStatus[p]) {
+                        isLocked = true;
+                        break;
+                    }
+                }
+
+                const iconSpan = tab.querySelector('.tab-icon');
+                if (isActive) {
+                    tab.style.background = '#3b82f6';
+                    tab.style.color = '#ffffff';
+                    tab.style.border = 'none';
+                    tab.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.4)';
+                    if (iconSpan) iconSpan.innerText = isCompleted ? '✅' : '📖';
+                } else if (isCompleted) {
+                    tab.style.background = '#f0fdf4';
+                    tab.style.color = '#166534';
+                    tab.style.border = '1px solid #bbf7d0';
+                    tab.style.boxShadow = 'none';
+                    if (iconSpan) iconSpan.innerText = '✅';
+                } else if (isLocked) {
+                    tab.style.background = '#f1f5f9';
+                    tab.style.color = '#94a3b8';
+                    tab.style.border = '1px solid #e2e8f0';
+                    tab.style.boxShadow = 'none';
+                    if (iconSpan) iconSpan.innerText = '🔒';
+                } else {
+                    tab.style.background = '#f8fafc';
+                    tab.style.color = '#334155';
+                    tab.style.border = '1px solid #cbd5e1';
+                    tab.style.boxShadow = 'none';
+                    if (iconSpan) iconSpan.innerText = '📖';
+                }
+            }
+        }
+
         // Automatic Progress calculation when student listens to MP3 Audio
         function handleAudioProgress(audio) {
             const lessonId = audio.getAttribute('data-lesson-id');
+            const lessonIndex = parseInt(audio.getAttribute('data-lesson-index') || 0);
             if (!audio.duration || isNaN(audio.duration)) return;
 
             const percentage = Math.floor((audio.currentTime / audio.duration) * 100);
-            
             const lastSaved = audioProgressMap[lessonId] || 0;
             if (percentage - lastSaved >= 10 || percentage >= 100) {
                 audioProgressMap[lessonId] = percentage;
-                updateProgressOnServer(lessonId, percentage);
+                updateProgressOnServer(lessonId, percentage, percentage >= 100, lessonIndex);
             }
         }
 
         function handleAudioEnded(audio) {
             const lessonId = audio.getAttribute('data-lesson-id');
-            updateProgressOnServer(lessonId, 100);
+            const lessonIndex = parseInt(audio.getAttribute('data-lesson-index') || 0);
+            updateProgressOnServer(lessonId, 100, true, lessonIndex);
         }
 
         function navigateToLesson(index) {
@@ -906,25 +1192,32 @@
 
                     if (bar) bar.style.width = data.progressPercentage + '%';
                     if (badge) {
-                        badge.innerText = data.progressPercentage + '% ' + (data.completed ? '✅ រៀនចប់' : 'កំពុងរៀន');
+                        badge.innerHTML = '<span style="white-space: nowrap !important; display: inline-block;">' + data.progressPercentage + '% ' + (data.completed ? '✅ រៀនចប់' : 'កំពុងរៀន') + '</span>';
+                    }
+
+                    if (lessonIndex !== undefined && data.completed) {
+                        completionStatus[lessonIndex] = true;
+                        const card = lessonCards[lessonIndex];
+                        if (card) card.setAttribute('data-completed', 'true');
+                        updateNextButtonState(lessonIndex);
+                        if (isStudentUser) updateStepperTabs();
                     }
 
                     if (showAlert && data.completed) {
-                        const cards = document.querySelectorAll('.lesson-card');
-                        const hasNext = lessonIndex !== undefined && lessonIndex < cards.length - 1;
+                        const hasNext = lessonIndex !== undefined && lessonIndex < totalLessons - 1;
 
                         Swal.fire({
                             title: 'អបអរសាទរ! 🎉',
                             text: 'អ្នកបានរៀនចេះ និងរៀនចប់មេរៀននេះ ១០០% ហើយ!',
                             icon: 'success',
                             showCancelButton: hasNext,
-                            confirmButtonText: hasNext ? '⏭️ ទៅមេរៀនបន្ត (Next Lesson)' : 'យល់ព្រម',
+                            confirmButtonText: hasNext ? '⏭️ ទៅមេរៀនបន្ទាប់ (Next Lesson)' : 'យល់ព្រម',
                             cancelButtonText: 'នៅទីនេះដដែល',
                             confirmButtonColor: '#3b82f6',
                             cancelButtonColor: '#64748b'
                         }).then((result) => {
                             if (result.isConfirmed && hasNext) {
-                                navigateToLesson(lessonIndex + 1);
+                                goToLesson(lessonIndex + 1);
                             }
                         });
                     }
