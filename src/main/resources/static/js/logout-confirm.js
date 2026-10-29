@@ -106,6 +106,14 @@
         document.head.appendChild(script);
     }
 
+    // 2b. ធានាថា mobile-nav.js ត្រូវបានផ្ទុកដំណើរការលើគ្រប់ទំព័រ (Auto-Fit Android & iOS)
+    if (!document.getElementById('mobileNavScript') && !document.querySelector('script[src*="mobile-nav.js"]')) {
+        var navScript = document.createElement('script');
+        navScript.id = 'mobileNavScript';
+        navScript.src = '/js/mobile-nav.js';
+        document.head.appendChild(navScript);
+    }
+
     // 3. អនុវត្តការបង្ហាញផ្ទាំងបញ្ជាក់នៅពេលចុច Logout
     function triggerLogoutConfirm(logoutUrl) {
         ensureSweetAlert(function() {

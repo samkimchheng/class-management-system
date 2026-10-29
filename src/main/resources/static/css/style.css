@@ -343,3 +343,226 @@ input[type="checkbox"] {
     height: 18px;
     cursor: pointer;
 }
+
+/* ==========================================================================
+   Mobile Responsive & Auto-Fit (Android & iOS)
+   ========================================================================== */
+
+/* Smooth momentum scrolling & eliminate tap delay/highlight */
+html, body {
+    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent iOS Safari from automatically zooming into inputs when focused */
+@media screen and (max-width: 768px) {
+    input, select, textarea, .form-control {
+        font-size: 16px !important;
+    }
+}
+
+/* Mobile & Tablet Auto-Fit (<= 992px) */
+@media screen and (max-width: 992px) {
+    body {
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* Off-canvas collapsible sidebar */
+    .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 280px !important;
+        max-width: 85vw !important;
+        height: 100vh !important;
+        height: 100dvh !important; /* Dynamic viewport height for Android Chrome & iOS Safari */
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        z-index: 1050 !important;
+        box-shadow: 4px 0 25px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0) !important;
+    }
+
+    /* Main content takes full screen width */
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    /* Mobile dark backdrop */
+    .mobile-sidebar-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1040;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .mobile-sidebar-backdrop.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Mobile Hamburger Menu Toggle Button */
+    .mobile-menu-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        height: 40px;
+        padding: 0 10px;
+        background: #f1f5f9;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        color: #0f172a;
+        font-size: 1.35rem;
+        cursor: pointer;
+        margin-right: 10px;
+        user-select: none;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-menu-btn:active {
+        background: #e2e8f0;
+        transform: scale(0.95);
+    }
+
+    /* Close button inside sidebar for mobile */
+    .mobile-sidebar-close {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        background: #334155;
+        border: 1px solid #475569;
+        border-radius: 8px;
+        color: white;
+        font-size: 1.1rem;
+        cursor: pointer;
+        position: absolute;
+        top: 18px;
+        right: 16px;
+    }
+
+    /* Topbar Layout adjustments */
+    .topbar {
+        padding: 12px 14px !important;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .topbar h3 {
+        font-size: 1.12rem !important;
+        line-height: 1.3 !important;
+    }
+
+    .topbar > div {
+        flex-wrap: wrap;
+        gap: 8px !important;
+    }
+
+    .academic-year-badge {
+        font-size: 0.85rem !important;
+        padding: 4px 10px !important;
+    }
+
+    /* Content padding on mobile */
+    .content {
+        padding: 14px 10px !important;
+    }
+
+    /* Card Grid auto-fits single column on mobile */
+    .card-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .card {
+        padding: 16px 18px !important;
+    }
+
+    .card .value {
+        font-size: 1.8rem !important;
+    }
+
+    /* Action headers and filters */
+    .header-action {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .header-action select,
+    .header-action input,
+    .header-action .btn,
+    .header-action a.btn,
+    .header-action > div {
+        width: 100% !important;
+        text-align: center;
+        justify-content: center;
+    }
+
+    /* Tables scrollable horizontally with smooth touch momentum */
+    .table-container {
+        padding: 14px 10px !important;
+        border-radius: 10px !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        position: relative;
+    }
+
+    table {
+        min-width: 580px; /* Keeps column proportions intact so text isn't squashed */
+    }
+
+    th, td {
+        padding: 10px 8px !important;
+        font-size: 0.88rem !important;
+    }
+
+    /* Forms & grids */
+    .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    /* Modal Dialogs */
+    #editAccountModal > div {
+        width: 95% !important;
+        padding: 18px !important;
+        margin: 10px !important;
+    }
+}
+
+/* iPhone Notch and Home Bar Safe Areas */
+@supports (padding: max(0px)) {
+    @media screen and (max-width: 992px) {
+        .sidebar {
+            padding-top: max(15px, env(safe-area-inset-top));
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            padding-left: max(0px, env(safe-area-inset-left));
+        }
+        .topbar {
+            padding-top: max(12px, env(safe-area-inset-top));
+        }
+        .content {
+            padding-bottom: max(30px, env(safe-area-inset-bottom));
+        }
+    }
+}
