@@ -37,6 +37,21 @@
         tbody tr:hover .sticky-col {
             background-color: #f8fafc;
         }
+    
+        /* Mobile Sticky Override */
+        @media screen and (max-width: 768px) {
+            .sticky-col, thead th.sticky-col, tbody td.sticky-col {
+                position: static !important;
+                left: auto !important;
+                right: auto !important;
+                box-shadow: none !important;
+            }
+            .table-container, div[style*="overflow: auto"] {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+        }
+    
     </style>
 </head>
 <body>

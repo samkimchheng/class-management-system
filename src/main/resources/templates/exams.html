@@ -134,6 +134,23 @@
             margin-right: 4px;
             margin-bottom: 2px;
         }
+    
+        .exam-list-title {
+            white-space: nowrap !important;
+            overflow-x: auto !important;
+        }
+        @media screen and (max-width: 768px) {
+            .exam-list-title {
+                font-size: 0.95rem !important;
+                white-space: nowrap !important;
+            }
+            .exam-th {
+                font-size: 0.88rem !important;
+                padding: 8px 6px !important;
+                white-space: nowrap !important;
+            }
+        }
+    
     </style>
 </head>
 <body>
@@ -284,12 +301,12 @@
                     <table class="table" style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="background: #e2e8f0; border-bottom: 2px solid #94a3b8; text-align: left;">
-                                <th style="padding: 14px 10px; width: 60px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">ល.រ</th>
-                                <th style="padding: 14px 10px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">ខែ / ឆមាស</th>
-                                <th style="padding: 14px 10px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">មុខវិជ្ជា</th>
-                                <th style="padding: 14px 10px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">ថ្នាក់រៀនដែលអាចប្រឡងបាន</th>
-                                <th style="padding: 14px 10px; text-align: center; width: 100px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">ចំនួនសំណួរ</th>
-                                <th style="padding: 14px 10px; text-align: center; width: 160px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">សកម្មភាព</th>
+                                <th class="exam-th" style="padding: 10px 8px; width: 60px; font-weight: 700; color: #0f172a; white-space: nowrap;">ល.រ</th>
+                                <th class="exam-th" style="padding: 10px 8px; font-weight: 700; color: #0f172a; white-space: nowrap;">ខែ / ឆមាស</th>
+                                <th class="exam-th" style="padding: 10px 8px; font-weight: 700; color: #0f172a; white-space: nowrap;">មុខវិជ្ជា</th>
+                                <th class="exam-th" style="padding: 10px 8px; font-weight: 700; color: #0f172a; white-space: nowrap;">ថ្នាក់រៀនដែលអាចប្រឡងបាន</th>
+                                <th class="exam-th" style="padding: 10px 8px; text-align: center; width: 100px; font-weight: 700; color: #0f172a; white-space: nowrap;">ចំនួនសំណួរ</th>
+                                <th class="exam-th" style="padding: 10px 8px; text-align: center; width: 160px; font-weight: 700; color: #0f172a; white-space: nowrap;">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody id="examListTableBody">

@@ -2,6 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
     <title>គ្រប់គ្រងបញ្ជីថ្នាក់រៀន</title>
     <style>
         :root {
@@ -22,12 +25,12 @@
             padding: 0;
             background-color: #f4f7fb;
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         
         /* Sidebar */
-        .sidebar { width: 260px; background-color: #1e293b; border-right: none; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.2); position: fixed; height: 100vh; z-index: 100; color: white; }
+        .sidebar { width: 260px; background-color: #1e293b; border-right: none; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.2); position: fixed; min-height: 100vh; z-index: 100; color: white; }
         .sidebar-header { padding: 25px 20px; text-align: center; background-color: #0f172a; border-bottom: 1px solid #334155; }
         .sidebar-header h2 { margin: 0; font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; color: #38bdf8; text-shadow: 0 0 8px rgba(56, 189, 248, 0.6); }
         .sidebar-header div span, .sidebar-header div b { color: #a5b4fc !important; text-shadow: 0 0 5px rgba(165, 180, 252, 0.4); }
@@ -160,20 +163,21 @@
         <div class="content">
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-                    <h4 style="margin: 0;">បន្ថែមថ្នាក់រៀនថ្មី (ឆ្នាំសិក្សា <span style="color: var(--primary);" th:text="${currentAcademicYear}">២០២៦-២០២៧</span>)</h4>
+                    <h4 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b;">បន្ថែមថ្នាក់រៀនថ្មី (ឆ្នាំសិក្សា <span style="color: var(--primary);" th:text="${currentAcademicYear}">២០២៦-២០២៧</span>)</h4>
                     <button class="btn" onclick="copyClassesFromPrevYear()" style="background-color: #475569; display: inline-flex; align-items: center; gap: 6px; font-size: 0.95rem;">
                         📥 ចម្លងថ្នាក់រៀនពីឆ្នាំមុន
                     </button>
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <input type="text" id="classNameInput" class="form-control" placeholder="ឧទាហរណ៍៖ ៧A, ១២B..." style="width: 300px;">
+                    <input type="text" id="classNameInput" class="form-control" placeholder="ឧទាហរណ៍៖ ៧A, ១២B..." style="width: 100%; max-width: 320px;">
                     <button class="btn btn-primary" onclick="addClass()">+ បង្កើតថ្នាក់</button>
                 </div>
                 <div id="alertMsg" style="margin-top: 15px; display: none; padding: 10px; border-radius: 4px;"></div>
             </div>
 
             <div class="card">
-                <h4 style="margin-top: 0;">បញ្ជីថ្នាក់រៀនដែលខ្ញុំបង្រៀន</h4>
+                <h4 style="margin-top: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b;">📋 បញ្ជីថ្នាក់រៀនដែលខ្ញុំបង្រៀន</h4>
+                <div class="table-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
                 <table>
                     <thead>
                         <tr>
@@ -197,6 +201,7 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -277,6 +282,7 @@
         }
     </script>
     <script src="/js/academic-year.js"></script>
+    <script src="/js/mobile-nav.js"></script>
     <script src="/js/logout-confirm.js"></script>
 </body>
 </html>

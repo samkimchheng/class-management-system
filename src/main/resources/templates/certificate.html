@@ -440,6 +440,16 @@
 
         /* PRINT STYLING - High precision A4 Landscape */
         @media print {
+            #certScaleContainer {
+                height: auto !important;
+                overflow: visible !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+            }
+            .certificate-wrapper {
+                transform: none !important;
+            }
             .no-print {
                 display: none !important;
             }
@@ -566,40 +576,46 @@
                 </div>
             </form>
 
-            <!-- Action Buttons for Teacher: Always active -->
-            <div style="display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap;">
+            <!-- Action Buttons for Teacher: Stacked vertically on mobile -->
+            <div class="cert-sig-actions" style="display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap;">
                 <!-- 1. Teacher Signature -->
-                <input type="file" id="teacherSigFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this, 'teacher')">
-                <button type="button" class="btn-action" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: 1px solid #38bdf8;" onclick="document.getElementById('teacherSigFileInput').click()" title="បញ្ចូលហត្ថលេខាគ្រូជាឯកសារ .png">
-                    ✍️ បញ្ចូលហត្ថលេខាគ្រូ (.png)
-                </button>
-                <button type="button" id="btnRemoveTeacherSig" class="btn-action"
-                        th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'display: inline-flex; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);' : 'display: none; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);'"
-                        onclick="removeSignature('teacher')" title="លុបហត្ថលេខាគ្រូចេញ">
-                    ❌ លុប
-                </button>
+                <div class="sig-action-group" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <input type="file" id="teacherSigFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this, 'teacher')">
+                    <button type="button" class="btn-action" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: 1px solid #38bdf8; white-space: nowrap;" onclick="document.getElementById('teacherSigFileInput').click()" title="បញ្ចូលហត្ថលេខាគ្រូជាឯកសារ .png">
+                        ✍️ បញ្ចូលហត្ថលេខាគ្រូ (.png)
+                    </button>
+                    <button type="button" id="btnRemoveTeacherSig" class="btn-action"
+                            th:style="${teacherSignature != null and !#strings.isEmpty(teacherSignature)} ? 'display: inline-flex; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);' : 'display: none; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);'"
+                            onclick="removeSignature('teacher')" title="លុបហត្ថលេខាគ្រូចេញ">
+                        ❌ លុប
+                    </button>
+                </div>
 
                 <!-- 2. Principal Signature -->
-                <input type="file" id="principalSigFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this, 'principal')">
-                <button type="button" class="btn-action" style="background: linear-gradient(135deg, #4f46e5, #4338ca); color: white; border: 1px solid #818cf8;" onclick="document.getElementById('principalSigFileInput').click()" title="បញ្ចូលហត្ថលេខានាយកជាឯកសារ .png">
-                    ✍️ បញ្ចូលហត្ថលេខានាយក (.png)
-                </button>
-                <button type="button" id="btnRemovePrincipalSig" class="btn-action"
-                        th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'display: inline-flex; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);' : 'display: none; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);'"
-                        onclick="removeSignature('principal')" title="លុបហត្ថលេខានាយកចេញ">
-                    ❌ លុប
-                </button>
+                <div class="sig-action-group" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <input type="file" id="principalSigFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this, 'principal')">
+                    <button type="button" class="btn-action" style="background: linear-gradient(135deg, #4f46e5, #4338ca); color: white; border: 1px solid #818cf8; white-space: nowrap;" onclick="document.getElementById('principalSigFileInput').click()" title="បញ្ចូលហត្ថលេខានាយកជាឯកសារ .png">
+                        ✍️ បញ្ចូលហត្ថលេខានាយក (.png)
+                    </button>
+                    <button type="button" id="btnRemovePrincipalSig" class="btn-action"
+                            th:style="${principalSignature != null and !#strings.isEmpty(principalSignature)} ? 'display: inline-flex; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);' : 'display: none; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);'"
+                            onclick="removeSignature('principal')" title="លុបហត្ថលេខានាយកចេញ">
+                        ❌ លុប
+                    </button>
+                </div>
 
                 <!-- 3. School Stamp -->
-                <input type="file" id="stampFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this, 'stamp')">
-                <button type="button" class="btn-action" style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border: 1px solid #f87171;" onclick="document.getElementById('stampFileInput').click()" title="បញ្ចូលត្រាសាលាជាឯកសារ .png">
-                    🔴 បញ្ចូលត្រាសាលា (.png)
-                </button>
-                <button type="button" id="btnRemoveStamp" class="btn-action"
-                        th:style="${schoolStamp != null and !#strings.isEmpty(schoolStamp)} ? 'display: inline-flex; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);' : 'display: none; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);'"
-                        onclick="removeSignature('stamp')" title="លុបត្រាសាលាចេញ">
-                    ❌ លុប
-                </button>
+                <div class="sig-action-group" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <input type="file" id="stampFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="uploadSignature(this, 'stamp')">
+                    <button type="button" class="btn-action" style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border: 1px solid #f87171; white-space: nowrap;" onclick="document.getElementById('stampFileInput').click()" title="បញ្ចូលត្រាសាលាជាឯកសារ .png">
+                        🔴 បញ្ចូលត្រាសាលា (.png)
+                    </button>
+                    <button type="button" id="btnRemoveStamp" class="btn-action"
+                            th:style="${schoolStamp != null and !#strings.isEmpty(schoolStamp)} ? 'display: inline-flex; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);' : 'display: none; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);'"
+                            onclick="removeSignature('stamp')" title="លុបត្រាសាលាចេញ">
+                        ❌ លុប
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -689,6 +705,7 @@
     </div>
 
     <!-- MAIN CERTIFICATE CANVAS -->
+    <div id="certScaleContainer" class="cert-scale-wrapper" style="width: 100%; display: flex; justify-content: center; overflow: hidden; margin: 0 auto 30px auto;">
     <div class="certificate-wrapper" id="certificateNode">
         <div class="cert-outer-border">
 
@@ -830,6 +847,7 @@
             </div>
         </div>
     </div>
+    </div> <!-- close certScaleContainer -->
 
     <!-- Certificate Download & Init Script -->
     <script>
@@ -1039,6 +1057,31 @@
             }
         });
 
+        
+        // Auto-scale Certificate to fit any phone screen (Android & iOS)
+        function autoScaleCertificate() {
+            const certWrapper = document.getElementById('certificateNode');
+            const container = document.getElementById('certScaleContainer');
+            if (!certWrapper || !container) return;
+
+            const winWidth = window.innerWidth;
+            const availableWidth = Math.min(winWidth - 20, 1122);
+            if (availableWidth < 1122) {
+                const scale = Math.max(0.28, availableWidth / 1122);
+                certWrapper.style.transform = 'scale(' + scale + ')';
+                certWrapper.style.transformOrigin = 'top center';
+                container.style.height = Math.ceil(793 * scale + 10) + 'px';
+            } else {
+                certWrapper.style.transform = 'none';
+                certWrapper.style.transformOrigin = 'top center';
+                container.style.height = 'auto';
+            }
+        }
+        window.addEventListener('resize', autoScaleCertificate);
+        window.addEventListener('orientationchange', autoScaleCertificate);
+        document.addEventListener('DOMContentLoaded', autoScaleCertificate);
+        setTimeout(autoScaleCertificate, 150);
+
         function downloadCertificateAsImage() {
             if (isLockedForStudent) {
                 alert('⚠️ មិនអនុញ្ញាតិឱ្យទាញយកទេ! ប្អូនត្រូវរៀនបញ្ចប់មេរៀនឱ្យបាន ១០០% ជាមុនសិន ទើបអាចទាញយកវិញ្ញាបនបត្របាន!');
@@ -1054,6 +1097,9 @@
             }
 
             const certNode = document.getElementById('certificateNode');
+            const origTransform = certNode.style.transform;
+            const origOrigin = certNode.style.transformOrigin;
+            certNode.style.transform = 'none';
             const studentName = "[[${student.name}]]" || "Student";
 
             // Temporarily hide placeholder hints so they are not captured
@@ -1076,6 +1122,8 @@
                 useCORS: true,
                 backgroundColor: '#fffdf9'
             }).then(canvas => {
+                certNode.style.transform = origTransform;
+                certNode.style.transformOrigin = origOrigin;
                 if (hint) hint.style.display = origHintDisplay;
                 if (pHint) pHint.style.display = origPHintDisplay;
 
@@ -1090,6 +1138,8 @@
                 if (hint) hint.style.display = origHintDisplay;
                 if (pHint) pHint.style.display = origPHintDisplay;
 
+                certNode.style.transform = origTransform;
+                certNode.style.transformOrigin = origOrigin;
                 alert('មានបញ្ហាក្នុងការទាញយកជារូបភាព សូមសាកល្បងចុច Print រួច Save as PDF!');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
