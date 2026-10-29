@@ -289,6 +289,32 @@ public class DataInitializer {
                 }
             }
 
+            // 2d. Ensure default schedule exists for Sam Kimchheng if empty
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                boolean hasSched = false;
+                try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM schedule WHERE account_id = 97 AND subject_name != '-' AND subject_name IS NOT NULL")) {
+                    if (rs.next() && rs.getInt(1) > 0) hasSched = true;
+                } catch (Exception ignored) {}
+
+                if (!hasSched) {
+                    System.out.println(">>> [DataInitializer] Seeding default weekly schedule for samkimchheng...");
+                    String[] subjects = {
+                        "10F", "11F", "10E", "11G", "-", "-",
+                        "10F", "11F", "10E", "11G", "-", "-",
+                        "10G", "11G", "10F", "11F", "-", "-",
+                        "10G", "11G", "10F", "11F", "-", "-",
+                        "-", "-", "-", "-", "-", "-",
+                        "10E", "-", "-", "-", "10G", "-",
+                        "10E", "-", "-", "-", "10G", "-",
+                        "-", "-", "-", "-", "-", "-"
+                    };
+                    for (int i = 0; i < subjects.length; i++) {
+                        stmt.executeUpdate("INSERT INTO schedule (account_id, block_index, class_name, subject_name) VALUES (97, " + i + ", 'WEEKLY', '" + subjects[i] + "')");
+                    }
+                }
+            } catch (Exception ignored) {}
+
             // 3. Ensure all lessons are set to គ្រប់ថ្នាក់ so all classes can access them
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
