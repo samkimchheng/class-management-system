@@ -21,7 +21,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Battambang', Arial, sans-serif;
+    font-family: 'Kantumruy Pro', 'Battambang', Arial, sans-serif;
 }
 
 body {
@@ -529,6 +529,12 @@ html, body {
 
     table {
         min-width: 580px; /* Keeps column proportions intact so text isn't squashed */
+    }
+
+    table.classrooms-table,
+    table.table-fit {
+        min-width: 100% !important;
+        width: 100% !important;
     }
 
     th, td {

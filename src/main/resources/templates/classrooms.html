@@ -1,158 +1,312 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>គ្រប់គ្រងបញ្ជីថ្នាក់រៀន - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន ២០២៧</title>
+    <!-- Google Fonts for Khmer -->
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
-    <title>គ្រប់គ្រងបញ្ជីថ្នាក់រៀន</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary: #4f46e5;
+            --primary-hover: #4338ca;
             --secondary: #f1f5f9;
             --dark: #1e293b;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
             --light: #f8fafc;
-            --radius: 8px;
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --radius: 10px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
         }
 
         body {
-            font-family: 'Kantumruy Pro', 'Hanuman', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f4f7fb;
+            color: #1e293b;
             display: flex;
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
 
-        
-        /* Sidebar */
-        .sidebar { width: 260px; background-color: #1e293b; border-right: none; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.2); position: fixed; min-height: 100vh; z-index: 100; color: white; }
-        .sidebar-header { padding: 25px 20px; text-align: center; background-color: #0f172a; border-bottom: 1px solid #334155; }
-        .sidebar-header h2 { margin: 0; font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; color: #38bdf8; text-shadow: 0 0 8px rgba(56, 189, 248, 0.6); }
-        .sidebar-header div span, .sidebar-header div b { color: #a5b4fc !important; text-shadow: 0 0 5px rgba(165, 180, 252, 0.4); }
-        .nav-menu { list-style: none; padding: 0; margin: 0; flex: 1; overflow-y: auto; }
+        /* Sidebar styling */
+        .sidebar {
+            width: 260px;
+            background-color: #1e293b;
+            border-right: none;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            color: white;
+        }
+        .sidebar-header {
+            padding: 22px 20px;
+            text-align: center;
+            background-color: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #38bdf8;
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+        }
+        .sidebar-header div span, .sidebar-header div b {
+            color: #a5b4fc !important;
+        }
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+            overflow-y: auto;
+        }
         .nav-menu::-webkit-scrollbar { width: 5px; }
         .nav-menu::-webkit-scrollbar-track { background: transparent; }
         .nav-menu::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        .nav-item { border-bottom: 1px solid #334155; margin-bottom: 0; }
-        .nav-link { display: block; padding: 15px 20px; color: #cbd5e1; text-decoration: none; border-radius: 0; transition: all 0.3s ease; font-weight: 600; font-size: 1rem; border-left: 4px solid transparent; }
-        .nav-link:hover { background-color: #334155; color: white; transform: none; }
-        .nav-item.active .nav-link { background-color: #334155; color: white; border-left: 4px solid #6366f1; box-shadow: none; }
-        
+        .nav-item {
+            border-bottom: 1px solid #334155;
+            margin-bottom: 0;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 20px;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 4px solid transparent;
+        }
+        .nav-link:hover {
+            background-color: #334155;
+            color: white;
+        }
+        .nav-item.active .nav-link {
+            background-color: #334155;
+            color: white;
+            border-left: 4px solid #6366f1;
+            font-weight: 600;
+        }
+
         /* Main Content */
-        .main-content { margin-left: 260px;
+        .main-content {
+            margin-left: 260px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            min-height: 100vh;
+            background-color: #f4f7fb;
         }
         .topbar {
             background-color: white;
-            padding: 15px 30px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 14px 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px solid #e2e8f0;
         }
         .topbar h3 {
             margin: 0;
-            color: var(--dark);
+            color: #0f172a;
+            font-size: 1.2rem;
+            font-weight: 700;
         }
         .content {
-            padding: 30px;
-            overflow-y: auto;
+            padding: 24px;
             flex-grow: 1;
+            max-width: 900px;
+            width: 100%;
         }
 
         .card {
             background: white;
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            border: 1px solid #e2e8f0;
+            padding: 22px;
             margin-bottom: 20px;
         }
 
         .form-control {
-            padding: 10px 15px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
+            padding: 10px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
             font-family: inherit;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            color: #0f172a;
+            outline: none;
+            transition: border-color 0.2s;
         }
+        .form-control:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-family: inherit;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
             transition: all 0.2s;
             color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
         }
-        .btn-primary { background-color: var(--primary); }
-        .btn-primary:hover { background-color: #4338ca; }
-        .btn-danger { background-color: var(--danger); }
-        .btn-danger:hover { background-color: #dc2626; }
-        
-        table {
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4338ca, #3730a3);
+            transform: translateY(-1px);
+        }
+        .btn-danger {
+            background-color: #ef4444;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        /* Responsive Classroom Table */
+        .classrooms-table-wrapper {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 12px 15px;
+            overflow-x: auto;
+            border-radius: 8px;
             border: 1px solid #e2e8f0;
-            text-align: left;
+            margin-top: 15px;
+            background: white;
         }
-        th { background-color: #e2e8f0; color: #0f172a; font-size: 1.05rem; font-weight: 800; border-bottom: 2px solid #94a3b8; }
+        table.classrooms-table {
+            width: 100% !important;
+            min-width: 100% !important;
+            border-collapse: collapse;
+            margin: 0;
+        }
+        table.classrooms-table th, table.classrooms-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+        table.classrooms-table th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+            letter-spacing: 0.3px;
+        }
+        table.classrooms-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .swal2-popup {
+            font-family: 'Kantumruy Pro', sans-serif !important;
+            border-radius: 14px !important;
+        }
+
+        /* Mobile Adjustments (<= 768px) */
+        @media screen and (max-width: 768px) {
+            .content {
+                padding: 14px 12px !important;
+            }
+            .card {
+                padding: 16px 14px !important;
+                border-radius: 10px !important;
+                margin-bottom: 14px !important;
+            }
+            .topbar {
+                padding: 12px 14px !important;
+            }
+            .topbar h3 {
+                font-size: 1.05rem !important;
+            }
+            .class-input-group {
+                flex-direction: row !important;
+                gap: 6px !important;
+            }
+            .class-input-group input {
+                font-size: 0.92rem !important;
+                padding: 10px 12px !important;
+            }
+            .class-input-group button {
+                padding: 10px 14px !important;
+                font-size: 0.92rem !important;
+                white-space: nowrap !important;
+            }
+            table.classrooms-table th, table.classrooms-table td {
+                padding: 10px 8px !important;
+                font-size: 0.88rem !important;
+            }
+        }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>.swal2-popup { font-family: 'Kantumruy Pro', 'Hanuman', sans-serif !important; }</style>
 </head>
 <body>
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
-            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
+            <div style="margin-top: 10px; font-size: 0.92rem; color: #a5b4fc; text-align: center;">
                 <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
             </div>
         </div>
         <ul class="nav-menu">
-            <li class="nav-item"><a href="/" class="nav-link">ទំព័រដើម</a></li>
-            <li class="nav-item"><a href="/profile" class="nav-link">បំពេញព័ត៌មានផ្ទាល់ខ្លួន</a></li>
-            <li class="nav-item"><a href="/certificate" class="nav-link">វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</a></li>
-            <li class="nav-item active"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
-            <li class="nav-item"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
-            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីអវត្តមាន</a></li>
-            <li class="nav-item"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
-            <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
-            <li class="nav-item"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
-            <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន</a></li>
-            <li class="nav-item"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
-            <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍</a></li>
-            <li class="nav-item"><a href="/feedback" class="nav-link" style="display: flex; align-items: center; gap: 8px;"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
-            <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">✈️ ទាក់ទងខ្ញុំ (Telegram)</a></li>
-          </ul>
-          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
-              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
-                  
-            <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
-            <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
-              </ul>
-          </div>
+            <li class="nav-item"><a href="/" class="nav-link"><span>🏠</span> <span>ទំព័រដើម</span></a></li>
+            <li class="nav-item"><a href="/profile" class="nav-link"><span>👤</span> <span>បំពេញព័ត៌មានផ្ទាល់ខ្លួន</span></a></li>
+            <li class="nav-item"><a href="/certificate" class="nav-link"><span>📜</span> <span>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span></a></li>
+            <li class="nav-item active"><a href="/classrooms" class="nav-link"><span>🏫</span> <span>បញ្ជីថ្នាក់រៀនខ្ញុំ</span></a></li>
+            <li class="nav-item"><a href="/students" class="nav-link"><span>👥</span> <span>បញ្ជីឈ្មោះសិស្ស</span></a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link"><span>📅</span> <span>បញ្ជីអវត្តមាន</span></a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link"><span>📊</span> <span>បញ្ជីពិន្ទុ</span></a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link"><span>📈</span> <span>ស្ថិតិសិស្ស</span></a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
+            <li class="nav-item"><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
+            <li class="nav-item"><a href="/feedback" class="nav-link"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
+            <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8;"><span>✈️</span> <span>ទាក់ទងខ្ញុំ (Telegram)</span></a></li>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);"><span>🔒</span> <span>ផ្ទាំង Admin</span></a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
+            </ul>
+        </div>
     </div>
 
+    <!-- Main Content -->
     <div class="main-content">
+        <!-- Topbar -->
         <div class="topbar">
             <h3>គ្រប់គ្រងបញ្ជីថ្នាក់រៀន (Classrooms)</h3>
-            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: #eef2ff; color: #3730a3; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid #c7d2fe;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; color: #3730a3; padding: 5px 12px; border-radius: 20px; font-weight: 600; font-size: 0.88rem; border: 1px solid #c7d2fe;">
                     <span>📅 ឆ្នាំសិក្សា៖</span>
-                    <select id="academicYearSelect" onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.95rem; font-family: inherit;">
+                    <select id="academicYearSelect" onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: 700; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.88rem; font-family: inherit;">
                         <option th:each="yr : ${availableAcademicYears}" th:value="${yr}" th:text="${yr}" th:selected="${yr == currentAcademicYear}"></option>
                         <option value="__NEW__">➕ បន្ថែមឆ្នាំសិក្សាថ្មី...</option>
                     </select>
@@ -161,46 +315,73 @@
         </div>
 
         <div class="content">
+            <!-- Card 1: Add New Classroom -->
             <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-                    <h4 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b;">បន្ថែមថ្នាក់រៀនថ្មី (ឆ្នាំសិក្សា <span style="color: var(--primary);" th:text="${currentAcademicYear}">២០២៦-២០២៧</span>)</h4>
-                    <button class="btn" onclick="copyClassesFromPrevYear()" style="background-color: #475569; display: inline-flex; align-items: center; gap: 6px; font-size: 0.95rem;">
-                        📥 ចម្លងថ្នាក់រៀនពីឆ្នាំមុន
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                    <div>
+                        <h4 style="margin: 0; font-size: 1.05rem; font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                            <span>➕</span> <span>បន្ថែមថ្នាក់រៀនថ្មី</span>
+                        </h4>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 3px;">
+                            សម្រាប់ឆ្នាំសិក្សា <b style="color: #4f46e5;" th:text="${currentAcademicYear}">២០២៦-២០២៧</b>
+                        </div>
+                    </div>
+                    <button type="button" class="btn" onclick="copyClassesFromPrevYear()" style="background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; font-size: 0.85rem; padding: 7px 12px; border-radius: 8px; font-weight: 500;">
+                        <span>📥</span> <span>ចម្លងថ្នាក់ពីឆ្នាំមុន</span>
                     </button>
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <input type="text" id="classNameInput" class="form-control" placeholder="ឧទាហរណ៍៖ ៧A, ១២B..." style="width: 100%; max-width: 320px;">
-                    <button class="btn btn-primary" onclick="addClass()">+ បង្កើតថ្នាក់</button>
+
+                <!-- Input Group: Clean inline alignment on both mobile & desktop -->
+                <div class="class-input-group" style="display: flex; gap: 8px; align-items: stretch; width: 100%; max-width: 450px;">
+                    <input type="text" id="classNameInput" class="form-control" placeholder="វាយឈ្មោះថ្នាក់ (ឧ. ៧A, ១២B...)" style="flex: 1; min-width: 0;" onkeydown="if(event.key==='Enter') addClass()">
+                    <button class="btn btn-primary" onclick="addClass()" style="white-space: nowrap; flex-shrink: 0;">
+                        <span>+</span> <span>បង្កើតថ្នាក់</span>
+                    </button>
                 </div>
-                <div id="alertMsg" style="margin-top: 15px; display: none; padding: 10px; border-radius: 4px;"></div>
+                <div id="alertMsg" style="margin-top: 12px; display: none; padding: 10px 14px; border-radius: 8px; font-size: 0.9rem;"></div>
             </div>
 
+            <!-- Card 2: Classroom List Table -->
             <div class="card">
-                <h4 style="margin-top: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b;">📋 បញ្ជីថ្នាក់រៀនដែលខ្ញុំបង្រៀន</h4>
-                <div class="table-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 80px; text-align: center;">ល.រ</th>
-                            <th>ឈ្មោះថ្នាក់</th>
-                            <th style="width: 150px; text-align: center;">សកម្មភាព</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="c, iter : ${myClassrooms}">
-                            <td style="text-align: center;" th:text="${iter.count}">1</td>
-                            <td th:text="${c.className}" style="font-weight: bold; color: var(--dark);">7A</td>
-                            <td style="text-align: center;">
-                                <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9rem;" th:onclick="'deleteClass(' + ${c.id} + ')'">លុបចោល</button>
-                            </td>
-                        </tr>
-                        <tr th:if="${#lists.isEmpty(myClassrooms)}">
-                            <td colspan="3" style="text-align: center; padding: 30px; color: #64748b;">
-                                លោកគ្រូ/អ្នកគ្រូមិនទាន់បានបង្កើតថ្នាក់រៀនណាមួយនៅឡើយទេ។<br>សូមបញ្ចូលឈ្មោះថ្នាក់នៅប្រអប់ខាងលើ!
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <h4 style="margin: 0; font-size: 1.05rem; font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                        <span>📋</span>
+                        <span>បញ្ជីថ្នាក់រៀនដែលខ្ញុំបង្រៀន</span>
+                        <span th:if="${myClassrooms != null}" style="background: #e0e7ff; color: #4338ca; font-size: 0.8rem; padding: 2px 8px; border-radius: 12px; font-weight: 600;" th:text="${myClassrooms.size()} + ' ថ្នាក់'">1 ថ្នាក់</span>
+                    </h4>
+                </div>
+
+                <!-- Responsive Table specifically configured to fit 100% of mobile screen -->
+                <div class="classrooms-table-wrapper">
+                    <table class="classrooms-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 55px; text-align: center; white-space: nowrap;">ល.រ</th>
+                                <th style="white-space: nowrap;">ឈ្មោះថ្នាក់</th>
+                                <th style="width: 100px; text-align: center; white-space: nowrap;">សកម្មភាព</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="c, iter : ${myClassrooms}">
+                                <td style="text-align: center; color: #64748b; font-weight: 600;" th:text="${iter.count}">1</td>
+                                <td>
+                                    <span th:text="${c.className}" style="font-weight: 600; color: #0f172a; font-size: 0.98rem;">7A</span>
+                                </td>
+                                <td style="text-align: center; white-space: nowrap;">
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; font-weight: 500;" th:onclick="'deleteClass(' + ${c.id} + ')'">
+                                        <span>🗑️</span> <span>លុប</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(myClassrooms)}">
+                                <td colspan="3" style="text-align: center; padding: 35px 20px; color: #64748b; font-size: 0.92rem;">
+                                    <div style="font-size: 2rem; margin-bottom: 8px;">🏫</div>
+                                    លោកគ្រូ/អ្នកគ្រូមិនទាន់បានបង្កើតថ្នាក់រៀនណាមួយនៅឡើយទេ។<br>
+                                    <span style="font-size: 0.85rem; color: #94a3b8;">សូមវាយបញ្ចូលឈ្មោះថ្នាក់នៅប្រអប់ខាងលើ រួចចុច «+ បង្កើតថ្នាក់»</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -216,7 +397,7 @@
                 alertMsg.style.display = 'block';
                 alertMsg.style.backgroundColor = '#fee2e2';
                 alertMsg.style.color = '#b91c1c';
-                alertMsg.innerText = 'សូមវាយបញ្ចូលឈ្មោះថ្នាក់រៀន!';
+                alertMsg.innerText = '⚠️ សូមវាយបញ្ចូលឈ្មោះថ្នាក់រៀន!';
                 return;
             }
 
@@ -234,22 +415,55 @@
                 if (res.ok && data.success) {
                     alertMsg.style.backgroundColor = '#dcfce3';
                     alertMsg.style.color = '#15803d';
-                    alertMsg.innerText = data.message;
+                    alertMsg.innerText = '✅ ' + data.message;
                     input.value = '';
-                    setTimeout(() => window.location.reload(), 1000);
+                    setTimeout(() => window.location.reload(), 800);
                 } else {
                     alertMsg.style.backgroundColor = '#fee2e2';
                     alertMsg.style.color = '#b91c1c';
-                    alertMsg.innerText = data.message || 'បរាជ័យ';
+                    alertMsg.innerText = '❌ ' + (data.message || 'បរាជ័យ');
                 }
             } catch (e) {
                 console.error(e);
             }
         }
 
+        async function copyClassesFromPrevYear() {
+            const result = await Swal.fire({
+                title: 'ចម្លងថ្នាក់រៀនពីឆ្នាំមុន?',
+                text: 'ប្រព័ន្ធនឹងស្វែងរក និងចម្លងបញ្ជីថ្នាក់រៀនពីឆ្នាំសិក្សាមុនចូលក្នុងឆ្នាំនេះដោយស្វ័យប្រវត្តិ។',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#4f46e5',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'យល់ព្រមចម្លង',
+                cancelButtonText: 'បោះបង់'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const res = await fetch('/api/classrooms/copy-prev-year', { method: 'POST' });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        Swal.fire({
+                            title: 'ជោគជ័យ!',
+                            text: data.message,
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => window.location.reload());
+                    } else {
+                        Swal.fire('មិនអាចចម្លងបាន!', data.message || 'មិនមានថ្នាក់រៀនពីឆ្នាំមុនទេ។', 'info');
+                    }
+                } catch (e) {
+                    Swal.fire('បរាជ័យ!', 'មានបញ្ហាក្នុងការតភ្ជាប់។', 'error');
+                }
+            }
+        }
+
         async function deleteClass(id) {
             const result = await Swal.fire({
-                title: 'តើអ្នកពិតជាចង់លុបថ្នាក់នេះមែនទេ?',
+                title: 'តើលោកគ្រូ-អ្នកគ្រូចង់លុបថ្នាក់នេះមែនទេ?',
                 text: "ទិន្នន័យពាក់ព័ន្ធអាចនឹងនៅរក្សាទុក តែថ្នាក់នេះនឹងបាត់ពីបញ្ជី។",
                 icon: 'warning',
                 showCancelButton: true,
@@ -266,7 +480,7 @@
                         Swal.fire({
                             title: 'បានលុបជោគជ័យ!',
                             icon: 'success',
-                            timer: 1500,
+                            timer: 1200,
                             showConfirmButton: false
                         }).then(() => {
                             window.location.reload();
