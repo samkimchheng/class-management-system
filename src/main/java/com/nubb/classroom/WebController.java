@@ -243,6 +243,16 @@ public class WebController {
         return Map.of("success", true, "message", "បានចម្លងថ្នាក់រៀនចំនួន " + count + " ពីឆ្នាំសិក្សា " + fromYear + " ដោយជោគជ័យ!", "count", count);
     }
 
+    @ModelAttribute("teacherAccount")
+    public Account getTeacherAccount(jakarta.servlet.http.HttpSession session) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId != null) {
+            if (accountId == 1L) accountId = 97L;
+            return accountRepository.findById(accountId).orElse(null);
+        }
+        return null;
+    }
+
     @ModelAttribute("myClassrooms")
     public List<Classroom> getMyClassrooms(jakarta.servlet.http.HttpSession session) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");

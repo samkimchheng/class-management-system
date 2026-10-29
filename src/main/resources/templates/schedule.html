@@ -3,58 +3,917 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>កាលវិភាគសិក្សា - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <title>កាលវិភាគបង្រៀន - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029h}" href="../static/css/style.css?v=20261029h">
+    <!-- Main Style -->
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029i}" href="../static/css/style.css?v=20261029i">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- html2pdf for direct PDF export -->
+    <script src="/js/html2pdf.bundle.min.js"></script>
     <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a0ca3;
+            --primary-light: #4895ef;
+            --success: #2ec4b6;
+            --danger: #e71d36;
+            --warning: #ff9f1c;
+            --sched-border: #e2e8f0;
+            --sched-bg: #f8fafc;
+            --sched-header-bg: #f1f5f9;
+            --sched-text: #0f172a;
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .main-content {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .topbar h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .content {
+            padding: 18px 20px;
+            max-width: 1300px;
+            width: 100%;
+            margin: 0 auto;
+            min-width: 0;
+        }
+
+        /* Hero / Header Card */
+        .schedule-hero {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #ffffff;
+            border-radius: 16px;
+            padding: 18px 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .schedule-hero-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .schedule-hero-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+
+        .schedule-hero-title {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .schedule-hero-sub {
+            margin: 4px 0 0 0;
+            font-size: 0.88rem;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        /* KPI Stat Cards (Compact on Mobile: 3 columns with minmax(0,1fr)) */
+        .schedule-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .stat-card-sched {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .stat-card-sched:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+        }
+
+        .stat-icon-wrapper {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon-blue { background: #eff6ff; color: #2563eb; }
+        .stat-icon-green { background: #ecfdf5; color: #059669; }
+        .stat-icon-purple { background: #faf5ff; color: #7c3aed; }
+
+        .stat-info-text {
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .stat-info-text .stat-val {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .stat-info-text .stat-lbl {
+            font-size: 0.78rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Toolbar */
+        .schedule-toolbar {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .view-switch-group {
+            display: inline-flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 10px;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .view-switch-btn {
+            border: none;
+            background: transparent;
+            color: #64748b;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .view-switch-btn.active {
+            background: #ffffff;
+            color: #2563eb;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .toolbar-action-buttons {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+        .btn-sched {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 15px;
+            border-radius: 9px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            font-family: inherit;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .btn-sched-primary {
+            background: #2563eb;
+            color: #ffffff;
+        }
+        .btn-sched-primary:hover {
+            background: #1d4ed8;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-sched-secondary {
+            background: #f8fafc;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+        .btn-sched-secondary:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .btn-sched-success {
+            background: #059669;
+            color: #ffffff;
+        }
+        .btn-sched-success:hover {
+            background: #047857;
+        }
+
+        .btn-sched-outline {
+            background: #ffffff;
+            color: #2563eb;
+            border-color: #bfdbfe;
+        }
+        .btn-sched-outline:hover {
+            background: #eff6ff;
+        }
+
+        /* Quick-Stamp Classroom Bar */
+        .quick-stamp-bar {
+            background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            animation: fadeIn 0.3s ease;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .quick-stamp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .quick-stamp-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stamp-chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .stamp-chip {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #1e293b;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stamp-chip:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .stamp-chip.active {
+            background: #2563eb !important;
+            color: #ffffff !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+
+        .stamp-chip.chip-clear {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #fca5a5;
+        }
+        .stamp-chip.chip-clear.active {
+            background: #dc2626 !important;
+            color: #ffffff !important;
+            border-color: #dc2626 !important;
+        }
+
+        /* Weekly Grid Table Container */
+        .schedule-table-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            margin-bottom: 24px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .table-responsive-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            table-layout: fixed;
+            min-width: 780px;
+        }
+
         .schedule-table th, .schedule-table td {
             text-align: center;
             vertical-align: middle;
-            border: 1px solid #cbd5e1;
-        }
-        .schedule-table th {
-            background-color: #e2e8f0;
-            color: #0f172a;
-            font-size: 1.05rem;
-            font-weight: 800;
-            padding: 12px 10px;
-            border-bottom: 2px solid #94a3b8;
-        }
-        .subject-block {
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-            padding: 10px;
-            border-radius: 5px;
-            font-weight: bold;
+            border: 1px solid #e2e8f0;
+            padding: 10px 8px;
+            position: relative;
         }
 
-        /* Print styles for clean printing */
+        .schedule-table th {
+            background: #f8fafc;
+            color: #1e293b;
+            font-size: 0.96rem;
+            font-weight: 700;
+            padding: 12px 10px;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        .schedule-table th.th-time {
+            width: 180px;
+            min-width: 170px;
+            background: #f1f5f9;
+            color: #334155;
+            position: sticky;
+            left: 0;
+            z-index: 2;
+        }
+
+        .schedule-table td.td-time {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.88rem;
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            border-right: 2px solid #cbd5e1;
+            white-space: nowrap;
+        }
+
+        .td-time .time-slot-num {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #334155;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 4px;
+        }
+
+        /* Section Banner Rows */
+        .section-header-row td {
+            background: linear-gradient(90deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
+            color: #166534;
+            font-weight: 700;
+            font-size: 0.92rem;
+            padding: 8px 12px;
+            text-align: left;
+            border-top: 2px solid #bbf7d0;
+            border-bottom: 2px solid #bbf7d0;
+        }
+
+        .section-afternoon-row td {
+            background: linear-gradient(90deg, #eff6ff 0%, #dbeafe 50%, #eff6ff 100%);
+            color: #1e40af;
+            border-top: 2px solid #bfdbfe;
+            border-bottom: 2px solid #bfdbfe;
+        }
+
+        .break-row td {
+            background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 50%, #fffbeb 100%);
+            color: #92400e;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 12px;
+            border-top: 2px solid #fde68a;
+            border-bottom: 2px solid #fde68a;
+        }
+
+        /* Subject Badges / Pills */
+        .subject-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            letter-spacing: 0.2px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            max-width: 95%;
+            word-break: break-word;
+            cursor: default;
+            white-space: nowrap;
+        }
+
+        .subject-pill:hover {
+            transform: scale(1.04);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Dynamic Palette Classes */
+        .pill-indigo { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+        .pill-emerald { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .pill-amber { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .pill-rose { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+        .pill-cyan { background: #ecfeff; color: #0e7490; border: 1px solid #a5f3fc; }
+        .pill-purple { background: #faf5ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+        .pill-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .pill-slate { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+
+        .empty-dash {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            font-weight: 300;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        /* Edit Mode In Cell */
+        .editing-cell {
+            background-color: #f0fdf4 !important;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .editing-cell:hover {
+            background-color: #dcfce7 !important;
+        }
+        .cell-input {
+            width: 95%;
+            padding: 6px 8px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1e293b;
+            border: 2px solid #2563eb;
+            border-radius: 8px;
+            outline: none;
+            background: #ffffff;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+            font-family: inherit;
+        }
+        .cell-input:focus {
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+        }
+
+        /* Day-by-Day Mobile View */
+        .day-view-container {
+            display: none;
+            animation: fadeIn 0.3s ease;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .day-tabs-scroll {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .day-tab-pill {
+            padding: 7px 12px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.84rem;
+            color: #334155;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            font-family: inherit;
+        }
+
+        .day-tab-pill.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+        }
+
+        .day-tab-pill .today-indicator {
+            background: #ef4444;
+            color: #ffffff;
+            font-size: 0.62rem;
+            padding: 1px 4px;
+            border-radius: 6px;
+            font-weight: 800;
+        }
+
+        .day-timeline-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            margin-bottom: 16px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .timeline-section-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 10px 0;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .day-slot-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+            margin-bottom: 6px;
+            gap: 6px;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .day-slot-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .day-slot-item.has-class {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .day-slot-time {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        .day-slot-badge {
+            flex-shrink: 0;
+        }
+
+        .day-break-banner {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.84rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin: 10px 0;
+            width: 100%;
+            min-width: 0;
+        }
+
+        /* Printable Official Layout (Hidden on Screen) */
+        .print-official-container {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Print Styles */
         @media print {
-            .sidebar, .topbar, .sidebar-bottom, .no-print, #editScheduleBtn, #scheduleMsg {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 10pt !important;
+            }
+            .sidebar, .topbar, .sidebar-bottom, .no-print, .schedule-hero, .schedule-stats-grid, .schedule-toolbar, .quick-stamp-bar, .day-view-container {
                 display: none !important;
             }
-            .main-content {
+            .main-content, .content {
                 margin: 0 !important;
                 padding: 0 !important;
                 width: 100% !important;
+                max-width: 100% !important;
             }
-            .content {
-                padding: 0 !important;
-            }
-            .table-container {
+            .table-container, .schedule-table-card {
                 box-shadow: none !important;
                 border: none !important;
                 padding: 0 !important;
+                margin: 0 !important;
+            }
+            .print-official-container {
+                display: block !important;
+                margin-bottom: 12px;
+            }
+            .print-header-grid {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 14px;
+                padding-bottom: 8px;
+                border-bottom: 1.5px solid #000000;
+            }
+            .print-left-inst {
+                text-align: left;
+                line-height: 1.4;
+            }
+            .print-left-inst .inst-ministry {
+                font-size: 10.5pt;
+                font-weight: bold;
+            }
+            .print-left-inst .inst-school {
+                font-size: 11pt;
+                font-weight: bold;
+            }
+            .print-left-inst .inst-loc {
+                font-size: 9.5pt;
+            }
+            .print-right-nat {
+                text-align: center;
+                line-height: 1.4;
+            }
+            .print-right-nat .nat-motto-1 {
+                font-size: 11.5pt;
+                font-weight: bold;
+            }
+            .print-right-nat .nat-motto-2 {
+                font-size: 10.5pt;
+                font-weight: bold;
+                letter-spacing: 1px;
+            }
+            .print-title-center {
+                text-align: center;
+                margin: 10px 0 14px 0;
+            }
+            .print-title-center h2 {
+                font-size: 14.5pt;
+                font-weight: bold;
+                margin: 0;
+                text-transform: uppercase;
+            }
+            .print-title-center .print-academic-year {
+                font-size: 10.5pt;
+                font-weight: bold;
+                margin-top: 2px;
+            }
+            .print-meta-bar {
+                display: flex;
+                justify-content: space-between;
+                font-size: 9.5pt;
+                background: #f1f5f9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                border: 1px solid #94a3b8;
+                padding: 6px 12px;
+                border-radius: 6px;
+                margin-bottom: 10px;
+                font-weight: 600;
+            }
+            .schedule-table {
+                min-width: 100% !important;
+                border: 1.5px solid #000000 !important;
+            }
+            .schedule-table th, .schedule-table td {
+                border: 1px solid #000000 !important;
+                padding: 6px 4px !important;
+                font-size: 9pt !important;
+            }
+            .schedule-table th {
+                background: #e2e8f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-weight: bold !important;
+            }
+            .subject-pill {
+                box-shadow: none !important;
+                border: 1px solid #000000 !important;
+                padding: 4px 8px !important;
+                font-size: 9.5pt !important;
+                font-weight: bold !important;
+                background: transparent !important;
+                color: #000000 !important;
+            }
+            .break-row td {
+                background: #f8fafc !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-weight: bold !important;
+                font-size: 9.5pt !important;
+                padding: 5px !important;
+            }
+            .section-header-row td {
+                background: #eef2ff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-size: 9pt !important;
+                font-weight: bold !important;
+                padding: 4px 8px !important;
+            }
+            .print-signatures-area {
+                display: flex !important;
+                justify-content: space-between;
+                margin-top: 18px;
+                page-break-inside: avoid;
+            }
+            .print-sig-col {
+                text-align: center;
+                width: 260px;
+                line-height: 1.5;
+            }
+            .print-sig-col .sig-space {
+                height: 55px;
             }
             @page {
                 size: A4 landscape;
-                margin: 1cm;
+                margin: 8mm 10mm;
+            }
+        }
+
+        /* Mobile Adjustments (< 600px) */
+        @media (max-width: 600px) {
+            .content {
+                padding: 10px;
+            }
+            .schedule-hero {
+                padding: 14px;
+            }
+            .schedule-hero-title {
+                font-size: 1.15rem;
+            }
+            .schedule-stats-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 6px;
+            }
+            .stat-card-sched {
+                flex-direction: column;
+                text-align: center;
+                padding: 8px 4px;
+                gap: 4px;
+            }
+            .stat-icon-wrapper {
+                width: 32px;
+                height: 32px;
+                font-size: 1.1rem;
+            }
+            .stat-info-text .stat-val {
+                font-size: 0.88rem;
+                white-space: normal;
+                line-height: 1.1;
+            }
+            .stat-info-text .stat-lbl {
+                font-size: 0.68rem;
+            }
+            .schedule-toolbar {
+                padding: 8px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .view-switch-group {
+                width: 100%;
+                display: flex;
+            }
+            .view-switch-btn {
+                flex: 1;
+                justify-content: center;
+                font-size: 0.82rem;
+                padding: 6px 4px;
+            }
+            .toolbar-action-buttons {
+                width: 100%;
+                display: flex;
+                gap: 6px;
+            }
+            .toolbar-action-buttons .btn-sched {
+                flex: 1;
+                font-size: 0.78rem;
+                padding: 7px 4px;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
-        <!-- Sidebar -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
@@ -86,231 +945,824 @@
         </div>
     </div>
 
+    <!-- Main Content -->
     <div class="main-content">
+        <!-- Topbar -->
         <div class="topbar">
             <div class="topbar-left">
-                <h3>កាលវិភាគបង្រៀន</h3>
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    <span>កាលវិភាគបង្រៀន</span>
+                </h3>
             </div>
-        
-<div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: #eef2ff; color: #3730a3; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid #c7d2fe;">
+            <div class="topbar-right" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; color: #3730a3; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.88rem; border: 1px solid #c7d2fe; white-space: nowrap;">
                     <span>📅<span class="year-label-text"> ឆ្នាំសិក្សា៖</span></span>
-                    <select id="academicYearSelect" onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.95rem; font-family: inherit;">
+                    <select id="academicYearSelect" onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.88rem; font-family: inherit;">
                         <option th:each="yr : ${availableAcademicYears}" th:value="${yr}" th:text="${yr}" th:selected="${yr == currentAcademicYear}"></option>
                         <option value="__NEW__">➕ បន្ថែមឆ្នាំសិក្សាថ្មី...</option>
                     </select>
                 </div>
-</div></div>
+            </div>
+        </div>
 
         <div class="content">
-            <div class="table-container">
-                <div class="header-action">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span class="badge" style="background: rgba(67, 97, 238, 0.1); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid rgba(67, 97, 238, 0.25); display: inline-flex; align-items: center; gap: 8px;">
-                            📅 កាលវិភាគរួមប្រចាំសប្តាហ៍
-                        </span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span id="scheduleMsg" style="color: var(--success); font-weight: bold; margin-right: 10px; display: none;">ជោគជ័យ!</span>
-                        <button id="editScheduleBtn" class="btn btn-primary">កែប្រែកាលវិភាគ</button>
-                        <button onclick="window.print()" class="btn btn-secondary no-print" style="display: inline-flex; align-items: center; gap: 6px;">🖨️ បោះពុម្ព</button>
+            <!-- Hero Header Banner -->
+            <div class="schedule-hero">
+                <div class="schedule-hero-info">
+                    <div class="schedule-hero-icon">🗓️</div>
+                    <div style="min-width: 0;">
+                        <h2 class="schedule-hero-title">កាលវិភាគបង្រៀនប្រចាំសប្តាហ៍</h2>
+                        <p class="schedule-hero-sub">
+                            គ្រូបង្រៀន៖ <b style="color: #ffffff;" th:text="${teacherAccount != null and teacherAccount.fullName != null ? teacherAccount.fullName : (session.ACCOUNT_NAME != null ? session.ACCOUNT_NAME : 'សំ គឹមឆេង')}">សំ គឹមឆេង</b> 
+                            <span th:if="${teacherAccount != null and teacherAccount.subject != null and !teacherAccount.subject.isEmpty()}"> • មុខវិជ្ជា៖ <b style="color: #38bdf8;" th:text="${teacherAccount.subject}">គណិតវិទ្យា</b></span>
+                            <span th:if="${teacherAccount != null and teacherAccount.schoolName != null and !teacherAccount.schoolName.isEmpty()}"> • សាលា៖ <b style="color: #a7f3d0;" th:text="${teacherAccount.schoolName}">វិទ្យាល័យពោធិ៍សាត់</b></span>
+                        </p>
                     </div>
                 </div>
-                
-                <table class="schedule-table">
-                    <thead>
-                        <tr>
-                            <th>ម៉ោង/ថ្ងៃ</th>
-                            <th>ច័ន្ទ</th>
-                            <th>អង្គារ</th>
-                            <th>ពុធ</th>
-                            <th>ព្រហស្បតិ៍</th>
-                            <th>សុក្រ</th>
-                            <th>សៅរ៍</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Morning -->
-                        <tr>
-                            <td>ម៉ោង 7:00 - 8:00 ព្រឹក</td>
-                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-                        </tr>
-                        <tr>
-                            <td>ម៉ោង 8:00 - 9:00 ព្រឹក</td>
-                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-                        </tr>
-                        <tr>
-                            <td>ម៉ោង 9:00 - 10:00 ព្រឹក</td>
-                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-                        </tr>
-                        <tr>
-                            <td>ម៉ោង 10:00 - 11:00 ព្រឹក</td>
-                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-                        </tr>
-
-                        <!-- Break -->
-                        <tr>
-                            <td colspan="7" style="background-color: #f8f9fa; font-weight: bold; color: var(--primary);">ម៉ោងសម្រាកថ្ងៃត្រង់ (Lunch Break)</td>
-                        </tr>
-
-                        <!-- Afternoon -->
-                        <tr>
-                            <td>ម៉ោង 1:00 - 2:00 រសៀល</td>
-                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-                        </tr>
-                        <tr>
-                            <td>ម៉ោង 2:00 - 3:00 រសៀល</td>
-                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-                        </tr>
-                        <tr>
-                            <td>ម៉ោង 3:00 - 4:00 រសៀល</td>
-                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-                        </tr>
-                        <tr>
-                            <td>ម៉ោង 4:00 - 5:00 រសៀល</td>
-                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="no-print">
+                    <span class="badge" style="background: rgba(255,255,255,0.15); color: #ffffff; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.88rem; border: 1px solid rgba(255,255,255,0.25); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+                        <span>✨ ឆ្នាំសិក្សា</span> <span id="currentYearDisplay" th:text="${currentAcademicYear}">២០២៦-២០២៧</span>
+                    </span>
+                </div>
             </div>
+
+            <!-- KPI Statistics Cards -->
+            <div class="schedule-stats-grid">
+                <div class="stat-card-sched">
+                    <div class="stat-icon-wrapper stat-icon-blue">⏱️</div>
+                    <div class="stat-info-text">
+                        <div class="stat-val"><span id="statTotalHours">0</span> ម៉ោង</div>
+                        <div class="stat-lbl">បង្រៀនសរុប/សប្តាហ៍</div>
+                    </div>
+                </div>
+                <div class="stat-card-sched">
+                    <div class="stat-icon-wrapper stat-icon-green">🏫</div>
+                    <div class="stat-info-text">
+                        <div class="stat-val"><span id="statTotalClasses">0</span> ថ្នាក់</div>
+                        <div class="stat-lbl" id="statClassesBadges">ទទួលបន្ទុកបង្រៀន</div>
+                    </div>
+                </div>
+                <div class="stat-card-sched">
+                    <div class="stat-icon-wrapper stat-icon-purple">📅</div>
+                    <div class="stat-info-text">
+                        <div class="stat-val"><span id="statActiveDays">0</span> ថ្ងៃ</div>
+                        <div class="stat-lbl" id="statFreeDaysInfo">ថ្ងៃបង្រៀនសកម្ម</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar & Controls -->
+            <div class="schedule-toolbar">
+                <!-- View Switcher -->
+                <div class="view-switch-group">
+                    <button type="button" class="view-switch-btn active" id="btnViewGrid" onclick="switchScheduleView('grid')">
+                        <span>📅</span> <span>តារាងសប្តាហ៍</span>
+                    </button>
+                    <button type="button" class="view-switch-btn" id="btnViewDay" onclick="switchScheduleView('day')">
+                        <span>📱</span> <span>តាមថ្ងៃ</span>
+                    </button>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="toolbar-action-buttons">
+                    <button id="editScheduleBtn" class="btn-sched btn-sched-primary">
+                        <span id="editBtnIcon">✏️</span> <span id="editBtnText">កែប្រែ</span>
+                    </button>
+                    <button onclick="window.print()" class="btn-sched btn-sched-secondary no-print">
+                        <span>🖨️</span> <span>បោះពុម្ព</span>
+                    </button>
+                    <button onclick="downloadSchedulePdf()" class="btn-sched btn-sched-outline no-print" title="ទាញយកជាឯកសារ PDF">
+                        <span>📥</span> <span>ទាញយក PDF</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick-Stamp Classroom Bar (Visible in Edit Mode) -->
+            <div id="quickStampBar" class="quick-stamp-bar" style="display: none;">
+                <div class="quick-stamp-header">
+                    <div class="quick-stamp-title">
+                        <span>⚡ <b>ជ្រើសរើសថ្នាក់រហ័ស (Quick Stamp)៖</b> ចុចលើថ្នាក់ខាងក្រោម រួចចុចលើក្រឡាក្នុងតារាង</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <button type="button" onclick="clearActiveStamp()" class="btn-sched btn-sched-secondary" style="padding: 3px 8px; font-size: 0.78rem;">✕ ឈប់ជ្រើស</button>
+                        <button type="button" onclick="clearAllScheduleCells()" class="btn-sched btn-sched-secondary" style="padding: 3px 8px; font-size: 0.78rem; color: #dc2626;">🧹 សម្អាតទាំងអស់</button>
+                    </div>
+                </div>
+                <div class="stamp-chips-container" id="stampChipsContainer">
+                    <!-- Dynamic chips populated via JS -->
+                </div>
+            </div>
+
+            <!-- VIEW 1: Weekly Grid View (Desktop & Full Table) -->
+            <div id="gridScheduleView" class="schedule-table-card">
+                <div class="table-responsive-wrapper">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th class="th-time">ម៉ោង / ពេល</th>
+                                <th>ច័ន្ទ</th>
+                                <th>អង្គារ</th>
+                                <th>ពុធ</th>
+                                <th>ព្រហស្បតិ៍</th>
+                                <th>សុក្រ</th>
+                                <th>សៅរ៍</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Morning Shift Divider -->
+                            <tr class="section-header-row">
+                                <td colspan="7">☀️ វេនព្រឹក (Morning Shift: 07:00 - 11:00 ព្រឹក)</td>
+                            </tr>
+                            <tr data-slot="0">
+                                <td class="td-time"><span class="time-slot-num">១</span> 07:00 - 08:00 ព្រឹក</td>
+                                <td data-col="0">-</td><td data-col="1">-</td><td data-col="2">-</td><td data-col="3">-</td><td data-col="4">-</td><td data-col="5">-</td>
+                            </tr>
+                            <tr data-slot="1">
+                                <td class="td-time"><span class="time-slot-num">២</span> 08:00 - 09:00 ព្រឹក</td>
+                                <td data-col="0">-</td><td data-col="1">-</td><td data-col="2">-</td><td data-col="3">-</td><td data-col="4">-</td><td data-col="5">-</td>
+                            </tr>
+                            <tr data-slot="2">
+                                <td class="td-time"><span class="time-slot-num">៣</span> 09:00 - 10:00 ព្រឹក</td>
+                                <td data-col="0">-</td><td data-col="1">-</td><td data-col="2">-</td><td data-col="3">-</td><td data-col="4">-</td><td data-col="5">-</td>
+                            </tr>
+                            <tr data-slot="3">
+                                <td class="td-time"><span class="time-slot-num">៤</span> 10:00 - 11:00 ព្រឹក</td>
+                                <td data-col="0">-</td><td data-col="1">-</td><td data-col="2">-</td><td data-col="3">-</td><td data-col="4">-</td><td data-col="5">-</td>
+                            </tr>
+
+                            <!-- Lunch Break Row -->
+                            <tr class="break-row">
+                                <td colspan="7">☕ ម៉ោងសម្រាកថ្ងៃត្រង់ (Lunch Break: 11:00 ព្រឹក - 01:00 រសៀល)</td>
+                            </tr>
+
+                            <!-- Afternoon Shift Divider -->
+                            <tr class="section-header-row section-afternoon-row">
+                                <td colspan="7">⛅ វេនរសៀល (Afternoon Shift: 01:00 - 05:00 រសៀល)</td>
+                            </tr>
+                            <tr data-slot="4">
+                                <td class="td-time"><span class="time-slot-num">៥</span> 01:00 - 02:00 រសៀល</td>
+                                <td data-col="0">-</td><td data-col="1">-</td><td data-col="2">-</td><td data-col="3">-</td><td data-col="4">-</td><td data-col="5">-</td>
+                            </tr>
+                            <tr data-slot="5">
+                                <td class="td-time"><span class="time-slot-num">៦</span> 02:00 - 03:00 រសៀល</td>
+                                <td data-col="0">-</td><td data-col="1">-</td><td data-col="2">-</td><td data-col="3">-</td><td data-col="4">-</td><td data-col="5">-</td>
+                            </tr>
+                            <tr data-slot="6">
+                                <td class="td-time"><span class="time-slot-num">៧</span> 03:00 - 04:00 រសៀល</td>
+                                <td data-col="0">-</td><td data-col="1">-</td><td data-col="2">-</td><td data-col="3">-</td><td data-col="4">-</td><td data-col="5">-</td>
+                            </tr>
+                            <tr data-slot="7">
+                                <td class="td-time"><span class="time-slot-num">៨</span> 04:00 - 05:00 រសៀល</td>
+                                <td data-col="0">-</td><td data-col="1">-</td><td data-col="2">-</td><td data-col="3">-</td><td data-col="4">-</td><td data-col="5">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VIEW 2: Day-by-Day View (Mobile & Targeted Day) -->
+            <div id="dayScheduleView" class="day-view-container">
+                <!-- Day Selector Tabs -->
+                <div class="day-tabs-scroll">
+                    <button type="button" class="day-tab-pill active" data-day="0" onclick="selectDayView(0)">
+                        <span>ច័ន្ទ</span>
+                    </button>
+                    <button type="button" class="day-tab-pill" data-day="1" onclick="selectDayView(1)">
+                        <span>អង្គារ</span>
+                    </button>
+                    <button type="button" class="day-tab-pill" data-day="2" onclick="selectDayView(2)">
+                        <span>ពុធ</span>
+                    </button>
+                    <button type="button" class="day-tab-pill" data-day="3" onclick="selectDayView(3)">
+                        <span>ព្រហស្បតិ៍</span>
+                    </button>
+                    <button type="button" class="day-tab-pill" data-day="4" onclick="selectDayView(4)">
+                        <span>សុក្រ</span>
+                    </button>
+                    <button type="button" class="day-tab-pill" data-day="5" onclick="selectDayView(5)">
+                        <span>សៅរ៍</span>
+                    </button>
+                </div>
+
+                <!-- Day Timeline Content Card -->
+                <div class="day-timeline-card">
+                    <h4 class="timeline-section-title" id="dayTimelineTitle">
+                        <span>📅</span> <span id="currentDayNameText">កាលវិភាគថ្ងៃច័ន្ទ</span>
+                        <span id="currentDayStatsBadge" style="margin-left: auto; font-size: 0.78rem; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 10px; font-weight: 700;">សរុប ០ ម៉ោង</span>
+                    </h4>
+
+                    <!-- Morning Shift -->
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 0.84rem; font-weight: 700; color: #166534; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+                            <span>☀️</span> <span>វេនព្រឹក (07:00 - 11:00 ព្រឹក)</span>
+                        </div>
+                        <div id="dayMorningSlotsContainer">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Lunch Break Banner -->
+                    <div class="day-break-banner">
+                        <span>☕</span> <span>ម៉ោងសម្រាកថ្ងៃត្រង់ (11:00 ព្រឹក - 01:00 រសៀល)</span>
+                    </div>
+
+                    <!-- Afternoon Shift -->
+                    <div>
+                        <div style="font-size: 0.84rem; font-weight: 700; color: #1e40af; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+                            <span>⛅</span> <span>វេនរសៀល (01:00 - 05:00 រសៀល)</span>
+                        </div>
+                        <div id="dayAfternoonSlotsContainer">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OFFICIAL PRINTABLE CONTAINER (Only visible during print / PDF export) -->
+            <div id="officialPrintDocument" class="print-official-container">
+                <div class="print-header-grid">
+                    <div class="print-left-inst">
+                        <div class="inst-ministry">ក្រសួងអប់រំ យុវជន និងកីឡា</div>
+                        <div class="inst-school" th:text="${teacherAccount != null and teacherAccount.schoolName != null and !teacherAccount.schoolName.isEmpty() ? teacherAccount.schoolName : 'វិទ្យាល័យពោធិ៍សាត់'}">វិទ្យាល័យពោធិ៍សាត់</div>
+                        <div class="inst-loc" th:text="${teacherAccount != null and teacherAccount.province != null and !teacherAccount.province.isEmpty() ? teacherAccount.province : 'ខេត្តពោធិ៍សាត់'}">ខេត្តពោធិ៍សាត់</div>
+                    </div>
+                    <div class="print-right-nat">
+                        <div class="nat-motto-1">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                        <div class="nat-motto-2">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                        <div style="font-size: 8pt; letter-spacing: 2px;">❖ ❖ ❖</div>
+                    </div>
+                </div>
+
+                <div class="print-title-center">
+                    <h2>កាលវិភាគបង្រៀនប្រចាំសប្តាហ៍</h2>
+                    <div class="print-academic-year" th:text="'ឆ្នាំសិក្សា ' + ${currentAcademicYear}">ឆ្នាំសិក្សា ២០២៦-២០២៧</div>
+                </div>
+
+                <div class="print-meta-bar">
+                    <div><b>លោកគ្រូ/អ្នកគ្រូ៖</b> <span th:text="${teacherAccount != null and teacherAccount.fullName != null ? teacherAccount.fullName : (session.ACCOUNT_NAME != null ? session.ACCOUNT_NAME : 'សំ គឹមឆេង')}">សំ គឹមឆេង</span></div>
+                    <div><b>មុខវិជ្ជា៖</b> <span th:text="${teacherAccount != null and teacherAccount.subject != null and !teacherAccount.subject.isEmpty() ? teacherAccount.subject : 'គណិតវិទ្យា'}">គណិតវិទ្យា</span></div>
+                    <div><b>បន្ទុកបង្រៀនសរុប៖</b> <span id="printTotalHoursBadge">0 ម៉ោង/សប្តាហ៍</span></div>
+                </div>
+
+                <div id="printTableContainer">
+                    <!-- Cloned from grid table dynamically when printing -->
+                </div>
+
+                <div class="print-signatures-area">
+                    <div class="print-sig-col">
+                        <div>បានឃើញ និងឯកភាព</div>
+                        <div><b>នាយកសាលា</b></div>
+                        <div class="sig-space"></div>
+                        <div><b th:text="${teacherAccount != null and teacherAccount.principalName != null and !teacherAccount.principalName.isEmpty() ? teacherAccount.principalName : 'ជា ប៊ុនហេង'}">ជា ប៊ុនហេង</b></div>
+                    </div>
+                    <div class="print-sig-col">
+                        <div>ថ្ងៃ................... ខែ......... ឆ្នាំ២០២...</div>
+                        <div><b>គ្រូបង្រៀន</b></div>
+                        <div class="sig-space"></div>
+                        <div><b th:text="${teacherAccount != null and teacherAccount.fullName != null ? teacherAccount.fullName : (session.ACCOUNT_NAME != null ? session.ACCOUNT_NAME : 'សំ គឹមឆេង')}">សំ គឹមឆេង</b></div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
+    <!-- Hidden data storage for registered classrooms -->
+    <div id="serverClassroomsData" style="display: none;">
+        <span th:each="c : ${myClassrooms}" th:data-name="${c.className}"></span>
+    </div>
+
+    <!-- Core Scripts -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const editBtn = document.getElementById('editScheduleBtn');
-            const msg = document.getElementById('scheduleMsg');
-            let isEditing = false;
+        // Days and Times configuration
+        const DAYS_KH = ["ច័ន្ទ", "អង្គារ", "ពុធ", "ព្រហស្បតិ៍", "សុក្រ", "សៅរ៍"];
+        const TIME_SLOTS = [
+            { num: "១", time: "07:00 - 08:00 ព្រឹក", shift: "morning" },
+            { num: "២", time: "08:00 - 09:00 ព្រឹក", shift: "morning" },
+            { num: "៣", time: "09:00 - 10:00 ព្រឹក", shift: "morning" },
+            { num: "៤", time: "10:00 - 11:00 ព្រឹក", shift: "morning" },
+            { num: "៥", time: "01:00 - 02:00 រសៀល", shift: "afternoon" },
+            { num: "៦", time: "02:00 - 03:00 រសៀល", shift: "afternoon" },
+            { num: "៧", time: "03:00 - 04:00 រសៀល", shift: "afternoon" },
+            { num: "៨", time: "04:00 - 05:00 រសៀល", shift: "afternoon" }
+        ];
+
+        // State
+        let scheduleData = new Array(48).fill('-');
+        let isEditing = false;
+        let activeStampValue = null;
+        let selectedDayIndex = 0;
+
+        // Dynamic Badge Palette
+        function getBadgeClass(val) {
+            if (!val || val === '-') return '';
+            const normalized = val.trim().toUpperCase();
             
-            // 1. Load existing data from API
-            async function loadSchedule() {
-                try {
-                    const res = await fetch('/api/schedule/get');
-                    if (res.ok) {
-                        const data = await res.json();
-                        const rows = document.querySelectorAll('.schedule-table tbody tr');
+            // Fixed mappings for common classrooms
+            if (normalized.includes('10F') || normalized.includes('១០F')) return 'pill-indigo';
+            if (normalized.includes('10E') || normalized.includes('១០E')) return 'pill-emerald';
+            if (normalized.includes('10G') || normalized.includes('១០G')) return 'pill-amber';
+            if (normalized.includes('11F') || normalized.includes('១១F')) return 'pill-purple';
+            if (normalized.includes('11G') || normalized.includes('១១G')) return 'pill-rose';
+            if (normalized.includes('11E') || normalized.includes('១១E')) return 'pill-cyan';
+            if (normalized.includes('12') || normalized.includes('១២')) return 'pill-blue';
+
+            // Hash algorithm for consistent palette across any arbitrary text
+            let hash = 0;
+            for (let i = 0; i < normalized.length; i++) {
+                hash = normalized.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const palettes = ['pill-indigo', 'pill-emerald', 'pill-amber', 'pill-rose', 'pill-cyan', 'pill-purple', 'pill-blue', 'pill-slate'];
+            return palettes[Math.abs(hash) % palettes.length];
+        }
+
+        // Initialize Stamp Chips
+        function initStampChips() {
+            const container = document.getElementById('stampChipsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            // Read classrooms registered on server
+            const serverClasses = [];
+            document.querySelectorAll('#serverClassroomsData span').forEach(el => {
+                const name = el.getAttribute('data-name');
+                if (name && !serverClasses.includes(name)) serverClasses.push(name);
+            });
+
+            // Default suggestions if none
+            const defaults = serverClasses.length > 0 ? serverClasses : ['10E', '10F', '10G', '11F', '11G'];
+            
+            // Add classrooms
+            defaults.forEach(cls => {
+                const chip = document.createElement('div');
+                chip.className = 'stamp-chip';
+                chip.innerHTML = '<span>🏫</span> <span>' + cls + '</span>';
+                chip.onclick = () => selectStamp(cls, chip);
+                container.appendChild(chip);
+            });
+
+            // Add Administrative Duties / Meeting
+            const adminChip = document.createElement('div');
+            adminChip.className = 'stamp-chip';
+            adminChip.innerHTML = '<span>📋</span> <span>កិច្ចការរដ្ឋបាល</span>';
+            adminChip.onclick = () => selectStamp('កិច្ចការរដ្ឋបាល', adminChip);
+            container.appendChild(adminChip);
+
+            // Add Clear / Free Chip
+            const clearChip = document.createElement('div');
+            clearChip.className = 'stamp-chip chip-clear';
+            clearChip.innerHTML = '<span>🧹</span> <span>ទំនេរ (-)</span>';
+            clearChip.onclick = () => selectStamp('-', clearChip);
+            container.appendChild(clearChip);
+        }
+
+        function selectStamp(val, chipElement) {
+            document.querySelectorAll('.stamp-chip').forEach(c => c.classList.remove('active'));
+            if (activeStampValue === val) {
+                // Toggle off
+                activeStampValue = null;
+            } else {
+                activeStampValue = val;
+                if (chipElement) chipElement.classList.add('active');
+            }
+        }
+
+        function clearActiveStamp() {
+            activeStampValue = null;
+            document.querySelectorAll('.stamp-chip').forEach(c => c.classList.remove('active'));
+        }
+
+        // Fetch & Load Schedule
+        async function loadSchedule() {
+            try {
+                const res = await fetch('/api/schedule/get');
+                if (res.ok) {
+                    const data = await res.json();
+                    scheduleData = new Array(48).fill('-');
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            if (item.blockIndex >= 0 && item.blockIndex < 48) {
+                                scheduleData[item.blockIndex] = (item.subjectName && item.subjectName.trim() !== '') ? item.subjectName.trim() : '-';
+                            }
+                        });
+                    }
+                    renderGridTable();
+                    renderDayView();
+                    updateKPIStatistics();
+                }
+            } catch (e) {
+                console.error('Error fetching schedule:', e);
+            }
+        }
+
+        // Render Table Grid
+        function renderGridTable() {
+            const rows = document.querySelectorAll('#gridScheduleView .schedule-table tbody tr[data-slot]');
+            rows.forEach(row => {
+                const slotIndex = parseInt(row.getAttribute('data-slot'), 10);
+                for (let col = 0; col < 6; col++) {
+                    const blockIdx = (slotIndex * 6) + col;
+                    const cell = row.cells[col + 1]; // cell 0 is time
+                    const val = scheduleData[blockIdx] || '-';
+
+                    if (isEditing) {
+                        cell.classList.add('editing-cell');
+                        cell.onclick = () => handleCellClick(blockIdx, cell);
                         
-                        if (data && data.length > 0) {
-                            let index = 0;
-                            // Sort by blockIndex to ensure correct order
-                            data.sort((a, b) => a.blockIndex - b.blockIndex);
-                            
-                            rows.forEach(row => {
-                                if (row.cells.length === 1) return; // Skip recess row
-                                for(let i = 1; i < row.cells.length; i++) {
-                                    const val = data.find(s => s.blockIndex === index)?.subjectName || '-';
-                                    if (val && val !== '-') {
-                                        row.cells[i].innerHTML = '<div class="subject-block">' + val + '</div>';
-                                    } else {
-                                        row.cells[i].innerHTML = '-';
-                                    }
-                                    index++;
-                                }
-                            });
+                        let displayVal = val === '-' ? '' : val;
+                        cell.innerHTML = '<input type="text" class="cell-input" value="' + displayVal + '" placeholder="-" data-block="' + blockIdx + '">';
+                        
+                        const input = cell.querySelector('input');
+                        input.oninput = (e) => {
+                            const v = e.target.value.trim();
+                            scheduleData[blockIdx] = v || '-';
+                            updateKPIStatistics();
+                        };
+                        input.onclick = (e) => e.stopPropagation();
+                    } else {
+                        cell.classList.remove('editing-cell');
+                        cell.onclick = null;
+                        if (val && val !== '-') {
+                            cell.innerHTML = '<div class="subject-pill ' + getBadgeClass(val) + '">' + val + '</div>';
                         } else {
-                            // Reset to empty if no data found in DB
-                            rows.forEach(row => {
-                                if (row.cells.length === 1) return;
-                                for(let i = 1; i < row.cells.length; i++) {
-                                    row.cells[i].innerHTML = '-';
-                                }
-                            });
+                            cell.innerHTML = '<span class="empty-dash">—</span>';
                         }
                     }
-                } catch(e) {
-                    console.error('Error fetching schedule', e);
+                }
+            });
+        }
+
+        function handleCellClick(blockIdx, cell) {
+            if (!isEditing) return;
+            if (activeStampValue !== null) {
+                scheduleData[blockIdx] = activeStampValue;
+                const input = cell.querySelector('input');
+                if (input) {
+                    input.value = activeStampValue === '-' ? '' : activeStampValue;
+                }
+                updateKPIStatistics();
+            }
+        }
+
+        // Render Day-by-Day View
+        function renderDayView() {
+            const morningContainer = document.getElementById('dayMorningSlotsContainer');
+            const afternoonContainer = document.getElementById('dayAfternoonSlotsContainer');
+            const titleText = document.getElementById('currentDayNameText');
+            const statsBadge = document.getElementById('currentDayStatsBadge');
+
+            if (!morningContainer || !afternoonContainer) return;
+            morningContainer.innerHTML = '';
+            afternoonContainer.innerHTML = '';
+
+            const dayName = DAYS_KH[selectedDayIndex];
+            titleText.textContent = 'កាលវិភាគថ្ងៃ' + dayName;
+
+            let dayHours = 0;
+
+            TIME_SLOTS.forEach((slot, slotIdx) => {
+                const blockIdx = (slotIdx * 6) + selectedDayIndex;
+                const val = scheduleData[blockIdx] || '-';
+                const hasClass = val && val !== '-';
+
+                if (hasClass) dayHours++;
+
+                const slotEl = document.createElement('div');
+                slotEl.className = 'day-slot-item ' + (hasClass ? 'has-class' : '');
+
+                let contentHtml = '<div class="day-slot-time">';
+                contentHtml += '<span class="time-slot-num">' + slot.num + '</span>';
+                contentHtml += '<span>' + slot.time + '</span>';
+                contentHtml += '</div>';
+
+                contentHtml += '<div class="day-slot-badge">';
+                if (hasClass) {
+                    contentHtml += '<div class="subject-pill ' + getBadgeClass(val) + '">' + val + '</div>';
+                } else {
+                    contentHtml += '<span style="color: #94a3b8; font-size: 0.8rem;">☕ ម៉ោងទំនេរ</span>';
+                }
+                contentHtml += '</div>';
+
+                slotEl.innerHTML = contentHtml;
+
+                if (slot.shift === 'morning') {
+                    morningContainer.appendChild(slotEl);
+                } else {
+                    afternoonContainer.appendChild(slotEl);
+                }
+            });
+
+            statsBadge.textContent = 'សរុប ' + dayHours + ' ម៉ោង';
+        }
+
+        function selectDayView(dayIndex) {
+            selectedDayIndex = dayIndex;
+            document.querySelectorAll('.day-tab-pill').forEach((pill, idx) => {
+                if (idx === dayIndex) pill.classList.add('active');
+                else pill.classList.remove('active');
+            });
+            renderDayView();
+        }
+
+        // Update KPI Statistics
+        function updateKPIStatistics() {
+            let totalHours = 0;
+            let morningHours = 0;
+            let afternoonHours = 0;
+            const uniqueClasses = new Set();
+            const activeDays = new Set();
+
+            for (let slot = 0; slot < 8; slot++) {
+                for (let day = 0; day < 6; day++) {
+                    const blockIdx = (slot * 6) + day;
+                    const val = scheduleData[blockIdx];
+                    if (val && val !== '-' && val.trim() !== '') {
+                        totalHours++;
+                        if (slot < 4) morningHours++;
+                        else afternoonHours++;
+
+                        uniqueClasses.add(val.trim());
+                        activeDays.add(day);
+                    }
                 }
             }
 
-            function toggleEditMode() {
-                const rows = document.querySelectorAll('.schedule-table tbody tr');
-                if (!isEditing) {
-                    // SWITCH TO EDIT MODE
-                    isEditing = true;
-                    editBtn.textContent = 'រក្សាទុកកាលវិភាគ';
-                    editBtn.style.backgroundColor = 'var(--success)';
-                    
-                    rows.forEach(row => {
-                        if (row.cells.length === 1) return; // Skip recess row
-                        for(let i = 1; i < row.cells.length; i++) {
-                            const cell = row.cells[i];
-                            let val = cell.innerText.trim();
-                            if (val === '-') val = '';
-                            cell.innerHTML = '<input type="text" class="form-control" style="width: 100%; text-align: center; font-weight: bold; border-color: var(--primary);" value="' + val + '">';
-                        }
+            // Update DOM
+            const elTotal = document.getElementById('statTotalHours');
+            const elClasses = document.getElementById('statTotalClasses');
+            const elBadges = document.getElementById('statClassesBadges');
+            const elDays = document.getElementById('statActiveDays');
+            const elFreeDays = document.getElementById('statFreeDaysInfo');
+            const printBadge = document.getElementById('printTotalHoursBadge');
+
+            if (elTotal) elTotal.textContent = totalHours;
+            if (printBadge) printBadge.textContent = totalHours + ' ម៉ោង/សប្តាហ៍';
+
+            if (elClasses) elClasses.textContent = uniqueClasses.size;
+            if (elBadges) {
+                if (uniqueClasses.size > 0) {
+                    elBadges.textContent = Array.from(uniqueClasses).join(' • ');
+                } else {
+                    elBadges.textContent = 'ថ្នាក់ទទួលបន្ទុក';
+                }
+            }
+
+            if (elDays) elDays.textContent = activeDays.size;
+            if (elFreeDays) {
+                const freeCount = 6 - activeDays.size;
+                elFreeDays.textContent = freeCount > 0 ? 'ទំនេរ ' + freeCount + ' ថ្ងៃ/សប្តាហ៍' : 'ពេញ ៦ ថ្ងៃ';
+            }
+        }
+
+        // View Mode Switcher
+        function switchScheduleView(mode) {
+            const btnGrid = document.getElementById('btnViewGrid');
+            const btnDay = document.getElementById('btnViewDay');
+            const gridView = document.getElementById('gridScheduleView');
+            const dayView = document.getElementById('dayScheduleView');
+
+            if (mode === 'grid') {
+                btnGrid.classList.add('active');
+                btnDay.classList.remove('active');
+                gridView.style.display = 'block';
+                dayView.style.display = 'none';
+            } else {
+                btnDay.classList.add('active');
+                btnGrid.classList.remove('active');
+                gridView.style.display = 'none';
+                dayView.style.display = 'block';
+                renderDayView();
+            }
+        }
+
+        // Toggle Edit Mode
+        function toggleEditMode() {
+            const editBtn = document.getElementById('editScheduleBtn');
+            const icon = document.getElementById('editBtnIcon');
+            const text = document.getElementById('editBtnText');
+            const quickBar = document.getElementById('quickStampBar');
+
+            if (!isEditing) {
+                // Switch to edit mode
+                isEditing = true;
+                switchScheduleView('grid'); // Always edit in grid view
+                document.getElementById('btnViewDay').disabled = true;
+
+                editBtn.className = 'btn-sched btn-sched-success';
+                icon.textContent = '💾';
+                text.textContent = 'រក្សាទុក';
+
+                quickBar.style.display = 'block';
+                renderGridTable();
+
+                Swal.fire({
+                    icon: 'info',
+                    title: 'របៀបកែប្រែកាលវិភាគ',
+                    text: 'លោកគ្រូ អ្នកគ្រូអាចជ្រើសរើសថ្នាក់រហ័សខាងលើ រួចចុចលើក្រឡាក្នុងតារាង ឬវាយបញ្ចូលដោយផ្ទាល់!',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            } else {
+                // Save data
+                saveScheduleData();
+            }
+        }
+
+        // Save Schedule via API
+        async function saveScheduleData() {
+            const editBtn = document.getElementById('editScheduleBtn');
+            const icon = document.getElementById('editBtnIcon');
+            const text = document.getElementById('editBtnText');
+            const quickBar = document.getElementById('quickStampBar');
+
+            // Collect all inputs from the table
+            document.querySelectorAll('.cell-input').forEach(input => {
+                const blockIdx = parseInt(input.getAttribute('data-block'), 10);
+                const val = input.value.trim();
+                scheduleData[blockIdx] = val || '-';
+            });
+
+            editBtn.disabled = true;
+            icon.textContent = '⏳';
+            text.textContent = 'រក្សាទុក...';
+
+            try {
+                const res = await fetch('/api/schedule/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        className: 'WEEKLY',
+                        subjects: scheduleData
+                    })
+                });
+
+                if (res.ok) {
+                    isEditing = false;
+                    document.getElementById('btnViewDay').disabled = false;
+                    editBtn.className = 'btn-sched btn-sched-primary';
+                    icon.textContent = '✏️';
+                    text.textContent = 'កែប្រែ';
+                    quickBar.style.display = 'none';
+                    clearActiveStamp();
+
+                    renderGridTable();
+                    renderDayView();
+                    updateKPIStatistics();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'រក្សាទុករួចរាល់!',
+                        text: 'កាលវិភាគបង្រៀនត្រូវបានរក្សាទុកដោយជោគជ័យ។',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
                     });
                 } else {
-                    // SAVE DATA
-                    isEditing = false;
-                    editBtn.textContent = 'កំពុងរក្សាទុក...';
-                    editBtn.style.backgroundColor = '';
-                    editBtn.disabled = true;
-                    
-                    const scheduleArray = [];
-                    let index = 0;
-                    
-                    rows.forEach(row => {
-                        if (row.cells.length === 1) return; // Skip recess row
-                        for(let i = 1; i < row.cells.length; i++) {
-                            const cell = row.cells[i];
-                            const input = cell.querySelector('input');
-                            if (input) {
-                                const val = input.value.trim();
-                                scheduleArray.push(val || '-');
-                            }
-                            index++;
-                        }
-                    });
+                    throw new Error('Failed to save');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'បរាជ័យ',
+                    text: 'មានបញ្ហាក្នុងការរក្សាទុកកាលវិភាគ សូមព្យាយាមម្តងទៀត!'
+                });
+            } finally {
+                editBtn.disabled = false;
+            }
+        }
 
-                    // Save to API
-                    fetch('/api/schedule/save', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            className: 'WEEKLY',
-                            subjects: scheduleArray
-                        })
-                    }).then(res => {
-                        if (res.ok) {
-                            msg.style.display = 'inline-block';
-                            setTimeout(() => { msg.style.display = 'none'; }, 3000);
-                        }
-                    }).catch(e => {
-                        alert('មានបញ្ហាក្នុងការរក្សាទុក!');
-                    }).finally(() => {
-                        editBtn.disabled = false;
-                        editBtn.textContent = 'កែប្រែកាលវិភាគ';
-                        // Refresh display
-                        loadSchedule();
+        // Clear all cells
+        function clearAllScheduleCells() {
+            Swal.fire({
+                title: 'តើលោកគ្រូពិតជាចង់សម្អាតទាំងអស់?',
+                text: 'ក្រឡាទាំងអស់ក្នុងកាលវិភាគនឹងប្រែជាទទេ (ទំនេរ)។',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'បាទ/ចាស, សម្អាតទាំងអស់',
+                cancelButtonText: 'បោះបង់'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    scheduleData.fill('-');
+                    renderGridTable();
+                    updateKPIStatistics();
+                }
+            });
+        }
+
+        // Prepare Print Table
+        window.onbeforeprint = function() {
+            const tableClone = document.querySelector('#gridScheduleView .schedule-table').cloneNode(true);
+            const container = document.getElementById('printTableContainer');
+            container.innerHTML = '';
+            container.appendChild(tableClone);
+        };
+
+        // Download Schedule PDF
+        async function downloadSchedulePdf() {
+            const printDoc = document.getElementById('officialPrintDocument');
+            const tableClone = document.querySelector('#gridScheduleView .schedule-table').cloneNode(true);
+            const container = document.getElementById('printTableContainer');
+            container.innerHTML = '';
+            container.appendChild(tableClone);
+
+            printDoc.style.display = 'block';
+
+            const opt = {
+                margin: [8, 10, 8, 10],
+                filename: 'កាលវិភាគបង្រៀន_សំគឹមឆេង.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            Swal.fire({
+                title: 'កំពុងបង្កើតឯកសារ PDF...',
+                text: 'សូមរង់ចាំមួយភ្លែត ប្រព័ន្ធកំពុងដំណើរការទាញយកកាលវិភាគ',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                if (window.html2pdf) {
+                    await html2pdf().set(opt).from(printDoc).save();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ទាញយកបានជោគជ័យ!',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
                     });
+                } else {
+                    window.print();
+                    Swal.close();
+                }
+            } catch (err) {
+                console.error(err);
+                window.print();
+                Swal.close();
+            } finally {
+                printDoc.style.display = 'none';
+            }
+        }
+
+        // Detect Today's Day of Week
+        function detectToday() {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0: Sun, 1: Mon, ... 6: Sat
+            if (dayOfWeek >= 1 && dayOfWeek <= 6) {
+                selectedDayIndex = dayOfWeek - 1; // 0 for Mon
+                const pills = document.querySelectorAll('.day-tab-pill');
+                if (pills[selectedDayIndex]) {
+                    const badge = document.createElement('span');
+                    badge.className = 'today-indicator';
+                    badge.textContent = 'ថ្ងៃនេះ';
+                    pills[selectedDayIndex].appendChild(badge);
                 }
             }
-            
-            // 2. Handle button click
-            editBtn.addEventListener('click', toggleEditMode);
-            
-            // Initial load
-            loadSchedule();
-        });
-    </script>
-<script>
-function switchAcademicYear(year) {
-    if (year === '__NEW__') {
-        const customYear = prompt("សូមបញ្ចូលឆ្នាំសិក្សាថ្មី (ឧទាហរណ៍៖ ២០២៧-២០២៨ ឬ ២០២៨-២០២៩)៖");
-        if (customYear && customYear.trim()) {
-            window.location.href = '/switch-academic-year?year=' + encodeURIComponent(customYear.trim()) + '&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
-        } else {
-            location.reload();
         }
-        return;
-    }
-    if (year) {
-        window.location.href = '/switch-academic-year?year=' + encodeURIComponent(year) + '&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
-    }
-}
-</script>
 
+        // Initialize on DOM Ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initStampChips();
+            detectToday();
+            loadSchedule();
+
+            const editBtn = document.getElementById('editScheduleBtn');
+            if (editBtn) editBtn.addEventListener('click', toggleEditMode);
+
+            // Auto-switch to Day view if on mobile screen
+            if (window.innerWidth <= 768) {
+                switchScheduleView('day');
+            }
+        });
+
+        // Academic Year Switcher
+        function switchAcademicYear(year) {
+            if (year === '__NEW__') {
+                const customYear = prompt("សូមបញ្ចូលឆ្នាំសិក្សាថ្មី (ឧទាហរណ៍៖ ២០២៧-២០២៨ ឬ ២០២៨-២០២៩)៖");
+                if (customYear && customYear.trim()) {
+                    window.location.href = '/switch-academic-year?year=' + encodeURIComponent(customYear.trim()) + '&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                } else {
+                    location.reload();
+                }
+                return;
+            }
+            if (year) {
+                window.location.href = '/switch-academic-year?year=' + encodeURIComponent(year) + '&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+            }
+        }
+    </script>
     <script src="/js/logout-confirm.js"></script>
-    <script src="/js/mobile-nav.js?v=20261029h"></script>
+    <script src="/js/mobile-nav.js?v=20261029i"></script>
 </body>
 </html>
