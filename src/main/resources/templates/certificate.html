@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
     <title>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន ២០២៧</title>
     <!-- Khmer Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Battambang:wght@400;700&family=Moul&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
@@ -86,8 +87,14 @@
 
         /* The Main Certificate Container (A4 Landscape Proportions) */
         .certificate-wrapper {
-            width: 1122px;
-            height: 793px;
+            width: 1122px !important;
+            min-width: 1122px !important;
+            max-width: 1122px !important;
+            height: 793px !important;
+            min-height: 793px !important;
+            max-height: 793px !important;
+            box-sizing: border-box !important;
+            flex-shrink: 0 !important;
             background-color: var(--cert-bg);
             padding: 24px;
             position: relative;
@@ -438,6 +445,149 @@
             100% { transform: scale(1.03); box-shadow: 0 8px 22px rgba(202, 138, 4, 0.6); }
         }
 
+        
+        /* Container for responsive certificate scaling */
+        #certScaleContainer {
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+            position: relative;
+            margin: 10px auto 30px auto;
+        }
+
+        /* ==========================================================================
+           Mobile & Tablet Responsive Auto-Fit (Android & iOS)
+           ========================================================================== */
+        @media screen and (max-width: 992px) {
+            html, body {
+                width: 100% !important;
+                max-width: 100vw !important;
+                overflow-x: hidden !important;
+                padding: 10px 8px !important;
+            }
+
+            .toolbar {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 14px 12px !important;
+                border-radius: 10px !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Toolbar Row 1: Nav links & Title */
+            .toolbar-row-1 {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+            }
+            .toolbar-nav-group {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+                width: 100% !important;
+            }
+            .toolbar-nav-group .btn-action {
+                flex: 1 1 auto !important;
+                text-align: center !important;
+                justify-content: center !important;
+                padding: 8px 12px !important;
+                font-size: 0.88rem !important;
+            }
+            .toolbar-title-group {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+                width: 100% !important;
+            }
+
+            /* Toolbar Row 2: Selectors Form & Signature Upload Buttons */
+            .toolbar-row-2 {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 12px !important;
+                width: 100% !important;
+            }
+
+            #certFilterForm {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 8px !important;
+            }
+            .cert-filter-item {
+                display: flex !important;
+                width: 100% !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                box-sizing: border-box !important;
+            }
+            .cert-filter-item select {
+                flex: 1 !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
+
+            /* The 3 Signature Buttons: Stacked vertically 1 below another */
+            .cert-sig-actions {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 10px !important;
+                margin-top: 6px !important;
+            }
+            .cert-sig-actions .sig-action-group {
+                display: flex !important;
+                width: 100% !important;
+                gap: 8px !important;
+                align-items: center !important;
+            }
+            .cert-sig-actions .sig-action-group .btn-action:first-of-type {
+                flex: 1 !important;
+                width: auto !important;
+                justify-content: center !important;
+                text-align: center !important;
+                padding: 10px 14px !important;
+                font-size: 0.92rem !important;
+                white-space: nowrap !important;
+            }
+            .cert-sig-actions .sig-action-group .btn-action:last-of-type {
+                padding: 10px 14px !important;
+                white-space: nowrap !important;
+                flex-shrink: 0 !important;
+            }
+
+            /* Toolbar Row 3: Print & Download */
+            .toolbar-row-3 {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+                width: 100% !important;
+            }
+            .toolbar-row-3 .btn-group {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 8px !important;
+            }
+            .toolbar-row-3 .btn-group button {
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 11px 18px !important;
+                font-size: 0.95rem !important;
+            }
+
+            /* Certificate Canvas Container */
+            #certScaleContainer {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow: hidden !important;
+                position: relative !important;
+                margin: 10px 0 25px 0 !important;
+            }
+        }
+
         /* PRINT STYLING - High precision A4 Landscape */
         @media print {
             #certScaleContainer {
@@ -494,8 +644,8 @@
     <!-- 1. Teacher Toolbar (.no-print) -->
     <div th:if="${isTeacher}" class="toolbar no-print">
         <!-- Row 1: Navigation Links & Page Title -->
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <div class="toolbar-row-1" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+            <div class="toolbar-nav-group" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <a href="/" class="btn-action btn-back">
                     &larr; ទំព័រដើម
                 </a>
@@ -506,7 +656,7 @@
                     មេរៀន
                 </a>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div class="toolbar-title-group" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); color: #a5b4fc; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.2);">
                     <span style="color: #e0e7ff;">📅 ឆ្នាំសិក្សា៖</span>
                     <select id="academicYearSelect" onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #ffffff; cursor: pointer; outline: none; font-size: 0.9rem; font-family: inherit;">
@@ -521,11 +671,11 @@
         </div>
 
         <!-- Row 2: Filter Selectors (Left) & Action Buttons Aligned Together on the Same Row (Right) -->
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%;">
+        <div class="toolbar-row-2" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%;">
             <!-- Subject, Classroom & Student Selectors -->
             <form id="certFilterForm" action="/certificate" method="get" style="display: inline-flex; align-items: center; gap: 8px; margin: 0; flex-wrap: wrap;">
                 <!-- 1. Subject Selector (at the left of Classroom) -->
-                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
+                <div class="cert-filter-item" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
                     <label for="selectSubjectFilter" style="color: #cbd5e1; font-size: 0.88rem; font-weight: 500; margin: 0; white-space: nowrap;">
                         មុខវិជ្ជា៖
                     </label>
@@ -541,7 +691,7 @@
                 </div>
 
                 <!-- 2. Classroom Selector -->
-                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
+                <div class="cert-filter-item" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
                     <label for="selectClassFilter" style="color: #cbd5e1; font-size: 0.88rem; font-weight: 500; margin: 0; white-space: nowrap;">
                         ថ្នាក់រៀន៖
                     </label>
@@ -559,7 +709,7 @@
                 </div>
 
                 <!-- 3. Student Selector -->
-                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
+                <div class="cert-filter-item" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);">
                     <label for="selectStudentFilter" style="color: #cbd5e1; font-size: 0.88rem; font-weight: 500; margin: 0; white-space: nowrap;">
                         សិស្ស៖
                     </label>
@@ -620,11 +770,11 @@
         </div>
 
         <!-- Row 3: Print & Download Actions (ទម្លាក់មកជួរក្រោម) -->
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px; margin-top: 12px;">
+        <div class="toolbar-row-3" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px; margin-top: 12px;">
             <div style="color: #cbd5e1; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
                 <span>📄 វិញ្ញាបនបត្រទំហំ A4 ស្តង់ដាផ្លូវការ អាចបោះពុម្ព ឬទាញយកជារូបភាព (PNG)</span>
             </div>
-            <div style="display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <div class="btn-group" style="display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <button class="btn-action btn-print" onclick="window.print()" style="padding: 10px 22px; font-size: 0.95rem; font-weight: bold; background: #3b82f6; color: white; border: 1px solid #60a5fa;">
                     🖨️ បោះពុម្ព / Save as PDF
                 </button>
@@ -1064,23 +1214,41 @@
             const container = document.getElementById('certScaleContainer');
             if (!certWrapper || !container) return;
 
-            const winWidth = window.innerWidth;
-            const availableWidth = Math.min(winWidth - 20, 1122);
+            // Measure available viewport width accurately
+            const screenWidth = Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth);
+            const availableWidth = screenWidth - 16; // 8px breathing space on each side
+            
             if (availableWidth < 1122) {
-                const scale = Math.max(0.28, availableWidth / 1122);
-                certWrapper.style.transform = 'scale(' + scale + ')';
+                const scale = availableWidth / 1122;
+                const scaledHeight = Math.ceil(793 * scale);
+
+                certWrapper.style.position = 'absolute';
+                certWrapper.style.top = '0';
+                certWrapper.style.left = '50%';
+                certWrapper.style.transform = 'translateX(-50%) scale(' + scale + ')';
                 certWrapper.style.transformOrigin = 'top center';
-                container.style.height = Math.ceil(793 * scale + 10) + 'px';
+
+                container.style.position = 'relative';
+                container.style.height = (scaledHeight + 10) + 'px';
+                container.style.width = '100%';
             } else {
+                certWrapper.style.position = 'relative';
+                certWrapper.style.top = 'auto';
+                certWrapper.style.left = 'auto';
                 certWrapper.style.transform = 'none';
                 certWrapper.style.transformOrigin = 'top center';
+
+                container.style.position = 'relative';
                 container.style.height = 'auto';
+                container.style.width = 'auto';
             }
         }
         window.addEventListener('resize', autoScaleCertificate);
         window.addEventListener('orientationchange', autoScaleCertificate);
         document.addEventListener('DOMContentLoaded', autoScaleCertificate);
-        setTimeout(autoScaleCertificate, 150);
+        setTimeout(autoScaleCertificate, 50);
+        setTimeout(autoScaleCertificate, 200);
+        setTimeout(autoScaleCertificate, 500);
 
         function downloadCertificateAsImage() {
             if (isLockedForStudent) {
@@ -1099,7 +1267,13 @@
             const certNode = document.getElementById('certificateNode');
             const origTransform = certNode.style.transform;
             const origOrigin = certNode.style.transformOrigin;
+            const origPosition = certNode.style.position;
+            const origLeft = certNode.style.left;
+            const origTop = certNode.style.top;
             certNode.style.transform = 'none';
+            certNode.style.position = 'static';
+            certNode.style.left = 'auto';
+            certNode.style.top = 'auto';
             const studentName = "[[${student.name}]]" || "Student";
 
             // Temporarily hide placeholder hints so they are not captured
@@ -1124,6 +1298,9 @@
             }).then(canvas => {
                 certNode.style.transform = origTransform;
                 certNode.style.transformOrigin = origOrigin;
+                certNode.style.position = origPosition;
+                certNode.style.left = origLeft;
+                certNode.style.top = origTop;
                 if (hint) hint.style.display = origHintDisplay;
                 if (pHint) pHint.style.display = origPHintDisplay;
 
@@ -1140,6 +1317,9 @@
 
                 certNode.style.transform = origTransform;
                 certNode.style.transformOrigin = origOrigin;
+                certNode.style.position = origPosition;
+                certNode.style.left = origLeft;
+                certNode.style.top = origTop;
                 alert('មានបញ្ហាក្នុងការទាញយកជារូបភាព សូមសាកល្បងចុច Print រួច Save as PDF!');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
