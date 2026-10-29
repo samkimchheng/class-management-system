@@ -1249,7 +1249,48 @@ return "scores";
         return "schedule";
     }
 
-        @GetMapping("/statistics")
+            private double computeDefaultMaxScoreForClass(String className, String subjectName, Long accountId, String academicYear) {
+        if (className == null || className.trim().isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className)) {
+            return 100.0;
+        }
+        String track = "ទូទៅ";
+        List<Classroom> found = classroomRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, academicYear);
+        if (found != null && !found.isEmpty()) {
+            track = found.get(0).getTrack();
+        } else {
+            Classroom dummy = new Classroom();
+            dummy.setClassName(className);
+            track = dummy.getTrack();
+        }
+
+        String sub = (subjectName != null) ? subjectName.trim() : "";
+
+        if ("វិទ្យាសាស្ត្រ".equals(track)) {
+            if ("គណិតវិទ្យា".equals(sub)) {
+                return 125.0;
+            } else if ("រូបវិទ្យា".equals(sub) || "គីមីវិទ្យា".equals(sub) || "ជីវវិទ្យា".equals(sub) || "ជីវៈវិទ្យា".equals(sub) || "ភាសាខ្មែរ".equals(sub)) {
+                return 75.0;
+            } else if ("ភាសាអង់គ្លេស".equals(sub) || "ភាសាបារាំង".equals(sub) || "ប្រវត្តិវិទ្យា".equals(sub)) {
+                return 50.0;
+            }
+            return 100.0;
+        } else if ("វិទ្យាសាស្ត្រសង្គម".equals(track)) {
+            if ("ភាសាខ្មែរ".equals(sub) || "អក្សរសិល្ប៍".equals(sub)) {
+                return 125.0;
+            } else if ("គណិតវិទ្យា".equals(sub) || "ប្រវត្តិវិទ្យា".equals(sub) || "ភូមិវិទ្យា".equals(sub) || 
+                       "សីលធម៌".equals(sub) || "សីលធម៌-ពលរដ្ឋ".equals(sub) || "សីលធម៌-ពលរដ្ឋវិជ្ជា".equals(sub) || "ពលរដ្ឋវិទ្យា".equals(sub) || 
+                       "ផែនដីវិទ្យា".equals(sub) || "ផែនដី".equals(sub) || "ផែនដី និងបរិស្ថានវិទ្យា".equals(sub)) {
+                return 75.0;
+            } else if ("ភាសាអង់គ្លេស".equals(sub) || "ភាសាបារាំង".equals(sub)) {
+                return 50.0;
+            }
+            return 100.0;
+        }
+
+        return 100.0;
+    }
+
+    @GetMapping("/statistics")
     public String statistics(@org.springframework.web.bind.annotation.RequestParam(required = false) String month, 
                              @org.springframework.web.bind.annotation.RequestParam(required = false) String className,
                              @org.springframework.web.bind.annotation.RequestParam(required = false) String subjectName,
@@ -1260,6 +1301,20 @@ return "scores";
         }
         
         String currentYear = getCurrentAcademicYear();
+        // Determine track for selected classroom
+        String selectedClassTrack = "ទូទៅ";
+        if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
+            List<Classroom> found = classroomRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear);
+            if (found != null && !found.isEmpty()) {
+                selectedClassTrack = found.get(0).getTrack();
+            } else {
+                Classroom dummy = new Classroom();
+                dummy.setClassName(className);
+                selectedClassTrack = dummy.getTrack();
+            }
+        }
+        model.addAttribute("selectedClassTrack", selectedClassTrack);
+
         // Get enrolled students for this class or all classes
         List<com.nubb.classroom.model.Student> enrolledStudents;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
@@ -1328,7 +1383,7 @@ return "scores";
                 double max = rule.getMaxMonthlyScore() + rule.getMaxAttendanceScore() + rule.getMaxAssignmentScore();
                 if (max > 0) return max;
             }
-            return 100.0;
+            return computeDefaultMaxScoreForClass(cls, subj, accountId, currentYear);
         };
 
         // Group scores by subject for the summary table
@@ -1503,12 +1558,12 @@ return "scores";
         if (subjectName != null && !subjectName.equals("គ្រប់មុខវិជ្ជា") && className != null) {
             double max = getMaxTotal.apply(className, subjectName);
             if (max > 0 && max != 100.0) {
-                rangeA = String.format("%.0f - %.0f", Math.ceil(max * 0.90), max);
-                rangeB = String.format("%.0f - %.0f", Math.ceil(max * 0.80), Math.ceil(max * 0.90) - 1);
-                rangeC = String.format("%.0f - %.0f", Math.ceil(max * 0.70), Math.ceil(max * 0.80) - 1);
-                rangeD = String.format("%.0f - %.0f", Math.ceil(max * 0.60), Math.ceil(max * 0.70) - 1);
-                rangeE = String.format("%.0f - %.0f", Math.ceil(max * 0.50), Math.ceil(max * 0.60) - 1);
-                rangeF = String.format("ក្រោម %.0f", Math.ceil(max * 0.50));
+                rangeA = toKhmerNumber((int) Math.ceil(max * 0.90)) + " - " + toKhmerNumber((int) max);
+                rangeB = toKhmerNumber((int) Math.ceil(max * 0.80)) + " - " + toKhmerNumber((int) (Math.ceil(max * 0.90) - 1));
+                rangeC = toKhmerNumber((int) Math.ceil(max * 0.70)) + " - " + toKhmerNumber((int) (Math.ceil(max * 0.80) - 1));
+                rangeD = toKhmerNumber((int) Math.ceil(max * 0.60)) + " - " + toKhmerNumber((int) (Math.ceil(max * 0.70) - 1));
+                rangeE = toKhmerNumber((int) Math.ceil(max * 0.50)) + " - " + toKhmerNumber((int) (Math.ceil(max * 0.60) - 1));
+                rangeF = "ក្រោម " + toKhmerNumber((int) Math.ceil(max * 0.50));
             }
         }
         
@@ -1540,14 +1595,30 @@ return "scores";
         model.addAttribute("fPercent", fPercent);
         
         // Sort by standard academic subject order
-        List<String> standardOrder = java.util.Arrays.asList(
-            "ភាសាខ្មែរ", "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", "ជីវៈវិទ្យា",
-            "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា", "ពលរដ្ឋវិទ្យា", "សីលធម៌", "សីលធម៌-ពលរដ្ឋវិជ្ជា",
-            "ផែនដីវិទ្យា", "ផែនដី", "ផែនដី និងបរិស្ថានវិទ្យា",
-            "ភាសាអង់គ្លេស", "ភាសាបារាំង", "ព័ត៌មានវិទ្យា/កុំព្យូទ័រ", "កុំព្យូទ័រ", "ព័ត៌មានវិទ្យា (ICT)",
-            "កីឡា", "អក្សរសិល្ប៍"
-        );
-
+        List<String> standardOrder;
+        if ("វិទ្យាសាស្ត្រ".equals(selectedClassTrack)) {
+            standardOrder = java.util.Arrays.asList(
+                "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", "ជីវៈវិទ្យា",
+                "ភាសាខ្មែរ", "ភាសាអង់គ្លេស", "ភាសាបារាំង", "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា",
+                "ពលរដ្ឋវិទ្យា", "សីលធម៌", "សីលធម៌-ពលរដ្ឋវិជ្ជា", "ផែនដីវិទ្យា", "ផែនដី", "ផែនដី និងបរិស្ថានវិទ្យា",
+                "ព័ត៌មានវិទ្យា/កុំព្យូទ័រ", "កុំព្យូទ័រ", "ព័ត៌មានវិទ្យា (ICT)", "កីឡា"
+            );
+        } else if ("វិទ្យាសាស្ត្រសង្គម".equals(selectedClassTrack)) {
+            standardOrder = java.util.Arrays.asList(
+                "ភាសាខ្មែរ", "អក្សរសិល្ប៍", "គណិតវិទ្យា", "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា",
+                "ពលរដ្ឋវិទ្យា", "សីលធម៌", "សីលធម៌-ពលរដ្ឋវិជ្ជា", "ផែនដីវិទ្យា", "ផែនដី", "ផែនដី និងបរិស្ថានវិទ្យា",
+                "ភាសាអង់គ្លេស", "ភាសាបារាំង", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", "ជីវៈវិទ្យា",
+                "ព័ត៌មានវិទ្យា/កុំព្យូទ័រ", "កុំព្យូទ័រ", "ព័ត៌មានវិទ្យា (ICT)", "កីឡា"
+            );
+        } else {
+            standardOrder = java.util.Arrays.asList(
+                "ភាសាខ្មែរ", "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", "ជីវៈវិទ្យា",
+                "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា", "ពលរដ្ឋវិទ្យា", "សីលធម៌", "សីលធម៌-ពលរដ្ឋវិជ្ជា",
+                "ផែនដីវិទ្យា", "ផែនដី", "ផែនដី និងបរិស្ថានវិទ្យា",
+                "ភាសាអង់គ្លេស", "ភាសាបារាំង", "ព័ត៌មានវិទ្យា/កុំព្យូទ័រ", "កុំព្យូទ័រ", "ព័ត៌មានវិទ្យា (ICT)",
+                "កីឡា", "អក្សរសិល្ប៍"
+            );
+        }
         List<SubjectStat> subjectStatList = new java.util.ArrayList<>(subjectStatMap.values());
         subjectStatList.sort((s1, s2) -> {
             int idx1 = standardOrder.indexOf(s1.getSubjectName());

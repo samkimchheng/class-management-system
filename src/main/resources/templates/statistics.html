@@ -196,21 +196,78 @@
 
         <div class="content">
             <div class="print-header">
-                <h4 th:text="'របាយការណ៍ស្ថិតិ ' + ${selectedClass} + ' (' + ${selectedMonth} + ') - ' + (${selectedSubject} != null ? ${selectedSubject} : 'គ្រប់មុខវិជ្ជា')">របាយការណ៍ស្ថិតិ</h4>
+                <h4 th:text="'របាយការណ៍ស្ថិតិ ' + ${selectedClass} + (${selectedClassTrack != null and selectedClassTrack != 'ទូទៅ' and selectedClass != 'ថ្នាក់រៀនទាំងអស់'} ? ' (ផ្នែក' + ${selectedClassTrack} + ')' : '') + ' (' + ${selectedMonth} + ') - ' + (${selectedSubject} != null ? ${selectedSubject} : 'គ្រប់មុខវិជ្ជា')">របាយការណ៍ស្ថិតិ</h4>
             </div>
             
-            <form method="GET" action="/statistics" class="header-action" style="display: flex; gap: 10px; align-items: center; justify-content: flex-start; margin-bottom: 20px;">
+            <form method="GET" action="/statistics" class="header-action" style="display: flex; gap: 10px; align-items: center; justify-content: flex-start; margin-bottom: 20px; flex-wrap: wrap;">
                 <select name="month" class="form-control" style="width: auto;" onchange="this.form.submit()">
                     <option th:each="m : ${monthsList}" th:value="${m}" th:text="${m}" th:selected="${selectedMonth == m}"></option>
                 </select>
                 
-                <select name="className" class="form-control" style="width: auto;" onchange="this.form.submit()">
-                    <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == 'ថ្នាក់រៀនទាំងអស់' || selectedClass == null}">ថ្នាក់រៀនទាំងអស់</option>
-                    <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
-                </select>
-                <select name="subjectName" class="form-control" style="width: auto; margin-left:10px;" onchange="this.form.submit()">
-                    <option value="គ្រប់មុខវិជ្ជា" th:selected="${selectedSubject == null or selectedSubject == 'គ្រប់មុខវិជ្ជា'}">គ្រប់មុខវិជ្ជា</option>
-                    <option th:each="s : ${subjectsList}" th:value="${s}" th:text="${s}" th:selected="${selectedSubject == s}"></option>
+                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                    <select name="className" class="form-control" style="width: auto;" onchange="this.form.submit()">
+                        <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == 'ថ្នាក់រៀនទាំងអស់' || selectedClass == null}">ថ្នាក់រៀនទាំងអស់</option>
+                        <option th:each="c : ${myClassrooms}" th:value="${c.className}" 
+                                th:text="${c.track == 'វិទ្យាសាស្ត្រ' ? '🔬 ' + c.className : (c.track == 'វិទ្យាសាស្ត្រសង្គម' ? '📚 ' + c.className : c.className)}" 
+                                th:selected="${selectedClass == c.className}"></option>
+                    </select>
+                    <span th:if="${selectedClassTrack == 'វិទ្យាសាស្ត្រ'}" class="badge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 700; padding: 7px 12px; border-radius: 20px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 4px;">🔬 ថ្នាក់វិទ្យាសាស្ត្រ</span>
+                    <span th:if="${selectedClassTrack == 'វិទ្យាសាស្ត្រសង្គម'}" class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-weight: 700; padding: 7px 12px; border-radius: 20px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 4px;">📚 ថ្នាក់វិទ្យាសាស្ត្រសង្គម</span>
+                </div>
+
+                <select name="subjectName" class="form-control" style="width: auto;" onchange="this.form.submit()">
+                    <option value="គ្រប់មុខវិជ្ជា" th:selected="${selectedSubject == null or selectedSubject == 'គ្រប់មុខវិជ្ជា'}">គ្រប់មុខវិជ្ជា (មធ្យមភាគសរុប)</option>
+                    
+                    <!-- Science Track -->
+                    <th:block th:if="${selectedClassTrack == 'វិទ្យាសាស្ត្រ'}">
+                        <optgroup label="🔬 មុខវិជ្ជាស្នូល (វិទ្យាសាស្ត្រ)">
+                            <option value="គណិតវិទ្យា" th:selected="${selectedSubject == 'គណិតវិទ្យា'}">គណិតវិទ្យា (ពិន្ទុពេញ ១២៥)</option>
+                            <option value="រូបវិទ្យា" th:selected="${selectedSubject == 'រូបវិទ្យា'}">រូបវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                            <option value="គីមីវិទ្យា" th:selected="${selectedSubject == 'គីមីវិទ្យា'}">គីមីវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                            <option value="ជីវវិទ្យា" th:selected="${selectedSubject == 'ជីវវិទ្យា' or selectedSubject == 'ជីវៈវិទ្យា'}">ជីវវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                        </optgroup>
+                        <optgroup label="📖 មុខវិជ្ជាទូទៅ & ភាសា">
+                            <option value="ភាសាខ្មែរ" th:selected="${selectedSubject == 'ភាសាខ្មែរ'}">ភាសាខ្មែរ (ពិន្ទុពេញ ៧៥)</option>
+                            <option value="ភាសាអង់គ្លេស" th:selected="${selectedSubject == 'ភាសាអង់គ្លេស'}">ភាសាអង់គ្លេស (ពិន្ទុពេញ ៥០)</option>
+                            <option value="ភាសាបារាំង" th:selected="${selectedSubject == 'ភាសាបារាំង'}">ភាសាបារាំង (ពិន្ទុពេញ ៥០)</option>
+                            <option value="ប្រវត្តិវិទ្យា" th:selected="${selectedSubject == 'ប្រវត្តិវិទ្យា'}">ប្រវត្តិវិទ្យា (ពិន្ទុពេញ ៥០)</option>
+                            <option value="ព័ត៌មានវិទ្យា/កុំព្យូទ័រ" th:selected="${selectedSubject == 'ព័ត៌មានវិទ្យា/កុំព្យូទ័រ' or selectedSubject == 'កុំព្យូទ័រ'}">ព័ត៌មានវិទ្យា/កុំព្យូទ័រ</option>
+                            <option value="កីឡា" th:selected="${selectedSubject == 'កីឡា'}">កីឡា</option>
+                            <th:block th:each="s : ${subjectsList}">
+                                <option th:if="${s != 'គណិតវិទ្យា' and s != 'រូបវិទ្យា' and s != 'គីមីវិទ្យា' and s != 'ជីវវិទ្យា' and s != 'ជីវៈវិទ្យា' and s != 'ភាសាខ្មែរ' and s != 'ភាសាអង់គ្លេស' and s != 'ភាសាបារាំង' and s != 'ប្រវត្តិវិទ្យា' and s != 'ព័ត៌មានវិទ្យា/កុំព្យូទ័រ' and s != 'កុំព្យូទ័រ' and s != 'កីឡា'}"
+                                        th:value="${s}" th:text="${s}" th:selected="${selectedSubject == s}"></option>
+                            </th:block>
+                        </optgroup>
+                    </th:block>
+
+                    <!-- Social Track -->
+                    <th:block th:if="${selectedClassTrack == 'វិទ្យាសាស្ត្រសង្គម'}">
+                        <optgroup label="📚 មុខវិជ្ជាស្នូល (វិទ្យាសាស្ត្រសង្គម)">
+                            <option value="ភាសាខ្មែរ" th:selected="${selectedSubject == 'ភាសាខ្មែរ' or selectedSubject == 'អក្សរសិល្ប៍'}">ភាសាខ្មែរ (ពិន្ទុពេញ ១២៥)</option>
+                            <option value="គណិតវិទ្យា" th:selected="${selectedSubject == 'គណិតវិទ្យា'}">គណិតវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                            <option value="ប្រវត្តិវិទ្យា" th:selected="${selectedSubject == 'ប្រវត្តិវិទ្យា'}">ប្រវត្តិវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                            <option value="ភូមិវិទ្យា" th:selected="${selectedSubject == 'ភូមិវិទ្យា'}">ភូមិវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                            <option value="សីលធម៌" th:selected="${selectedSubject == 'សីលធម៌' or selectedSubject == 'សីលធម៌-ពលរដ្ឋ' or selectedSubject == 'សីលធម៌-ពលរដ្ឋវិជ្ជា' or selectedSubject == 'ពលរដ្ឋវិទ្យា'}">សីលធម៌-ពលរដ្ឋវិជ្ជា (ពិន្ទុពេញ ៧៥)</option>
+                            <option value="ផែនដីវិទ្យា" th:selected="${selectedSubject == 'ផែនដីវិទ្យា' or selectedSubject == 'ផែនដី'}">ផែនដីវិទ្យា (ពិន្ទុពេញ ៧៥)</option>
+                        </optgroup>
+                        <optgroup label="📖 មុខវិជ្ជាទូទៅ & ភាសា">
+                            <option value="ភាសាអង់គ្លេស" th:selected="${selectedSubject == 'ភាសាអង់គ្លេស'}">ភាសាអង់គ្លេស (ពិន្ទុពេញ ៥០)</option>
+                            <option value="ភាសាបារាំង" th:selected="${selectedSubject == 'ភាសាបារាំង'}">ភាសាបារាំង (ពិន្ទុពេញ ៥០)</option>
+                            <option value="ព័ត៌មានវិទ្យា/កុំព្យូទ័រ" th:selected="${selectedSubject == 'ព័ត៌មានវិទ្យា/កុំព្យូទ័រ' or selectedSubject == 'កុំព្យូទ័រ'}">ព័ត៌មានវិទ្យា/កុំព្យូទ័រ</option>
+                            <option value="កីឡា" th:selected="${selectedSubject == 'កីឡា'}">កីឡា</option>
+                            <th:block th:each="s : ${subjectsList}">
+                                <option th:if="${s != 'ភាសាខ្មែរ' and s != 'អក្សរសិល្ប៍' and s != 'គណិតវិទ្យា' and s != 'ប្រវត្តិវិទ្យា' and s != 'ភូមិវិទ្យា' and s != 'សីលធម៌' and s != 'សីលធម៌-ពលរដ្ឋ' and s != 'សីលធម៌-ពលរដ្ឋវិជ្ជា' and s != 'ពលរដ្ឋវិទ្យា' and s != 'ផែនដីវិទ្យា' and s != 'ផែនដី' and s != 'ភាសាអង់គ្លេស' and s != 'ភាសាបារាំង' and s != 'ព័ត៌មានវិទ្យា/កុំព្យូទ័រ' and s != 'កុំព្យូទ័រ' and s != 'កីឡា'}"
+                                        th:value="${s}" th:text="${s}" th:selected="${selectedSubject == s}"></option>
+                            </th:block>
+                        </optgroup>
+                    </th:block>
+
+                    <!-- General Track -->
+                    <th:block th:if="${selectedClassTrack != 'វិទ្យាសាស្ត្រ' and selectedClassTrack != 'វិទ្យាសាស្ត្រសង្គម'}">
+                        <optgroup label="📖 មុខវិជ្ជាទូទៅ (ពិន្ទុពេញ ១០០)">
+                            <option th:each="s : ${subjectsList}" th:value="${s}" th:text="${s}" th:selected="${selectedSubject == s}"></option>
+                        </optgroup>
+                    </th:block>
                 </select>
                 
                 <div style="margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -230,11 +287,11 @@
                 <div id="pdfHeader" style="display: none; text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #0f172a;">
                     <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 4px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
                     <div style="font-size: 1.05rem; font-weight: bold; margin-bottom: 12px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
-                    <h3 th:text="'របាយការណ៍ស្ថិតិសិស្ស ' + ${selectedClass} + ' (' + ${selectedMonth} + ') - ' + (${selectedSubject} != null ? ${selectedSubject} : 'គ្រប់មុខវិជ្ជា')" style="font-size: 1.3rem; font-weight: bold; color: #1e3a8a; margin: 0 0 6px 0;">របាយការណ៍ស្ថិតិសិស្ស</h3>
+                    <h3 th:text="'របាយការណ៍ស្ថិតិសិស្ស ' + ${selectedClass} + (${selectedClassTrack != null and selectedClassTrack != 'ទូទៅ' and selectedClass != 'ថ្នាក់រៀនទាំងអស់'} ? ' (ផ្នែក' + ${selectedClassTrack} + ')' : '') + ' (' + ${selectedMonth} + ') - ' + (${selectedSubject} != null ? ${selectedSubject} : 'គ្រប់មុខវិជ្ជា')" style="font-size: 1.3rem; font-weight: bold; color: #1e3a8a; margin: 0 0 6px 0;">របាយការណ៍ស្ថិតិសិស្ស</h3>
                     <div style="font-size: 0.95rem; color: #475569;" th:text="'ឆ្នាំសិក្សា៖ ' + (${currentAcademicYear} ?: '២០២៦-២០២៧')">ឆ្នាំសិក្សា៖ ២០២៦-២០២៧</div>
                 </div>
 
-                <div class="card-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
                 <div class="stat-card">
                     <h3>ចំនួនសិស្ស</h3>
                     <div class="stat-circle" style="background: conic-gradient(var(--primary) 100%, #eee 0);">
@@ -317,7 +374,11 @@
             <div class="table-container" style="margin-top: 30px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                     <div>
-                        <h3 style="margin: 0; color: var(--dark);">តារាងស្ថិតិតាមមុខវិជ្ជានីមួយៗ</h3>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <h3 style="margin: 0; color: var(--dark);">តារាងស្ថិតិតាមមុខវិជ្ជានីមួយៗ</h3>
+                            <span th:if="${selectedClassTrack == 'វិទ្យាសាស្ត្រ'}" class="badge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 700; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;">🔬 ផ្នែកវិទ្យាសាស្ត្រ</span>
+                            <span th:if="${selectedClassTrack == 'វិទ្យាសាស្ត្រសង្គម'}" class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-weight: 700; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;">📚 ផ្នែកវិទ្យាសាស្ត្រសង្គម</span>
+                        </div>
                         <span style="font-size: 0.9rem; color: #64748b;" th:text="'ប្រចាំខែ៖ ' + (${selectedMonth} ?: 'តេស្តដើមឆ្នាំ') + ' | ថ្នាក់៖ ' + (${selectedClass} ?: 'ថ្នាក់រៀនទាំងអស់')"></span>
                     </div>
                 </div>
