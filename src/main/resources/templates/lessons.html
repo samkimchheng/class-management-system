@@ -6,7 +6,7 @@
     <title>ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន - មើលមេរៀន</title>
     <!-- Google Fonts for Khmer OS Battambang -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029c}" href="../static/css/style.css?v=20261029c">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -210,7 +210,9 @@
     <div class="main-content">
         <!-- Teacher Topbar -->
         <div class="topbar" th:if="${!isStudent}">
-            <h3>មើលមេរៀន (Study Lessons)</h3>
+            <div class="topbar-left">
+                <h3>មើលមេរៀន</h3>
+            </div>
             <div>
                 <span>អ្នកប្រើប្រាស់: គ្រូបង្រៀន</span>
             </div>
@@ -950,6 +952,6 @@ function switchAcademicYear(year) {
 </script>
 
     <script src="/js/logout-confirm.js"></script>
-    <script src="/js/mobile-nav.js"></script>
+    <script src="/js/mobile-nav.js?v=20261029c"></script>
 </body>
 </html>

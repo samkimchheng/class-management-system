@@ -15,9 +15,19 @@
         marker.style.display = 'none';
         document.body.appendChild(marker);
 
-        // 1. Create Hamburger button in topbar and dock it tightly with the page title on the left
-        if (!topbar.querySelector('.mobile-menu-btn')) {
-            var menuBtn = document.createElement('button');
+        // 1. Ensure .topbar-left exists and contains [menuBtn] + [titleEl] tightly docked together on the left
+        var leftWrapper = topbar.querySelector('.topbar-left');
+        var titleEl = topbar.querySelector('h3, h2');
+
+        if (!leftWrapper) {
+            leftWrapper = document.createElement('div');
+            leftWrapper.className = 'topbar-left';
+            topbar.insertBefore(leftWrapper, topbar.firstChild);
+        }
+
+        var menuBtn = topbar.querySelector('.mobile-menu-btn');
+        if (!menuBtn) {
+            menuBtn = document.createElement('button');
             menuBtn.type = 'button';
             menuBtn.className = 'mobile-menu-btn';
             menuBtn.setAttribute('aria-label', 'បើកម៉ឺនុយ');
@@ -28,28 +38,19 @@
                 e.stopPropagation();
                 toggleSidebar(true);
             });
+        }
 
-            // Find title element in topbar (h3 or h2)
-            var titleEl = topbar.querySelector('h3, h2');
-            if (titleEl) {
-                var titleParent = titleEl.parentElement;
-                if (titleParent === topbar) {
-                    var leftWrapper = document.createElement('div');
-                    leftWrapper.className = 'topbar-left';
-                    topbar.insertBefore(leftWrapper, titleEl);
-                    leftWrapper.appendChild(menuBtn);
-                    leftWrapper.appendChild(titleEl);
-                } else {
-                    titleParent.classList.add('topbar-left');
-                    titleParent.insertBefore(menuBtn, titleParent.firstChild);
-                }
-            } else {
-                var firstChild = topbar.firstElementChild;
-                if (firstChild) {
-                    topbar.insertBefore(menuBtn, firstChild);
-                } else {
-                    topbar.appendChild(menuBtn);
-                }
+        // Always ensure menuBtn is the FIRST child inside leftWrapper
+        if (menuBtn.parentElement !== leftWrapper || leftWrapper.firstChild !== menuBtn) {
+            leftWrapper.insertBefore(menuBtn, leftWrapper.firstChild);
+        }
+
+        // Always ensure titleEl is inside leftWrapper right next to menuBtn
+        if (titleEl && titleEl.parentElement !== leftWrapper) {
+            var oldParent = titleEl.parentElement;
+            leftWrapper.appendChild(titleEl);
+            if (oldParent && oldParent !== topbar && oldParent.children.length === 0) {
+                oldParent.remove();
             }
         }
 
