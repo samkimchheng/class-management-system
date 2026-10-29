@@ -138,16 +138,49 @@
         .exam-list-title {
             white-space: nowrap !important;
             overflow-x: auto !important;
+            font-size: clamp(0.72rem, 2.7vw, 1.15rem) !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        #questionCountBadge,
+        .question-count-badge {
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+        }
+        .btn-create-exam {
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px;
         }
         @media screen and (max-width: 768px) {
+            .exam-section {
+                padding: 14px 12px !important;
+            }
             .exam-list-title {
-                font-size: 0.95rem !important;
+                font-size: clamp(0.7rem, 2.6vw, 0.95rem) !important;
                 white-space: nowrap !important;
             }
             .exam-th {
                 font-size: 0.88rem !important;
                 padding: 8px 6px !important;
                 white-space: nowrap !important;
+            }
+            .btn-create-exam,
+            .topbar .btn-primary {
+                white-space: nowrap !important;
+                flex-shrink: 0 !important;
+                font-size: 0.82rem !important;
+                padding: 5px 10px !important;
+            }
+        }
+        @media screen and (max-width: 480px) {
+            .btn-create-exam,
+            .topbar .btn-primary {
+                font-size: 0.78rem !important;
+                padding: 4px 8px !important;
             }
         }
     
@@ -191,19 +224,19 @@
             <div class="topbar-left">
                 <h3>វិញ្ញាសាប្រឡង</h3>
             </div>
-            <button type="button" class="btn btn-primary" onclick="resetNewExam()" style="display: inline-flex; align-items: center; gap: 6px;">
-                ➕ បង្កើតវិញ្ញាសាថ្មី
-            </button>
-        
-<div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: #eef2ff; color: #3730a3; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid #c7d2fe;">
+            <div class="topbar-right" style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                <button type="button" class="btn btn-primary btn-create-exam" onclick="resetNewExam()" style="display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; font-size: clamp(0.78rem, 2.8vw, 0.92rem); padding: 6px 12px;">
+                    <span>➕ បង្កើតវិញ្ញាសាថ្មី</span>
+                </button>
+                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; color: #3730a3; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.88rem; border: 1px solid #c7d2fe; flex-shrink: 0;">
                     <span>📅<span class="year-label-text"> ឆ្នាំសិក្សា៖</span></span>
-                    <select id="academicYearSelect" onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.95rem; font-family: inherit;">
+                    <select id="academicYearSelect" onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.88rem; font-family: inherit;">
                         <option th:each="yr : ${availableAcademicYears}" th:value="${yr}" th:text="${yr}" th:selected="${yr == currentAcademicYear}"></option>
                         <option value="__NEW__">➕ បន្ថែមឆ្នាំសិក្សាថ្មី...</option>
                     </select>
                 </div>
-</div></div>
+            </div>
+        </div>
 
         <div class="content">
             <div id="alertMsg" style="display:none; background-color: var(--success); color: white; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; font-weight: bold; text-align: center;">
@@ -285,9 +318,9 @@
 
             <!-- Exam Questions Section -->
             <div class="exam-section" style="border-left-color: #3b82f6;" id="section-general">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h4 style="margin: 0;">ផ្នែកទី១៖ សំណួរពហុជ្រើសរើស (Multiple Choice Questions)</h4>
-                    <span id="questionCountBadge" style="background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">0 សំណួរ</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 8px; flex-wrap: nowrap;">
+                    <h4 style="margin: 0; font-size: clamp(0.82rem, 3vw, 1.15rem); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;">ផ្នែកទី១៖ សំណួរពហុជ្រើសរើស (MCQ)</h4>
+                    <span id="questionCountBadge" class="question-count-badge" style="background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; white-space: nowrap !important; flex-shrink: 0 !important; display: inline-flex; align-items: center;">0 សំណួរ</span>
                 </div>
                 <div class="q-container"></div>
                 <button type="button" class="add-q-btn" onclick="addQuestion('general')">➕ បន្ថែមសំណួរ</button>
@@ -295,8 +328,9 @@
 
             <!-- Existing Exams List / Overview -->
             <div class="exam-section" style="border-left-color: #10b981;">
-                <h4 style="margin: 0 0 15px 0; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-                    📋 បញ្ជីវិញ្ញាសាប្រឡងទាំងអស់ដែលបានបង្កើតរួចរាល់
+                <h4 class="exam-list-title" style="margin: 0 0 15px 0; color: #0f172a; display: flex; align-items: center; gap: 6px; white-space: nowrap !important; overflow: hidden; font-size: clamp(0.72rem, 2.7vw, 1.15rem); line-height: 1.4;">
+                    <span style="flex-shrink: 0;">📋</span>
+                    <span style="white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis;">បញ្ជីវិញ្ញាសាប្រឡងទាំងអស់ដែលបានបង្កើតរួចរាល់</span>
                 </h4>
                 <div style="overflow-x: auto;">
                     <table class="table" style="width: 100%; border-collapse: collapse;">
@@ -348,7 +382,10 @@
 
         function updateQuestionBadge() {
             const count = document.querySelectorAll('.question-card').length;
-            document.getElementById('questionCountBadge').textContent = `${count} សំណួរ`;
+            const badge = document.getElementById('questionCountBadge');
+            if (badge) {
+                badge.innerHTML = `<span style="white-space: nowrap !important; display: inline-block;">${count} សំណួរ</span>`;
+            }
         }
 
         function createQuestionCard(skillType, qData = null) {
@@ -649,8 +686,8 @@
                                 <td style="padding: 12px 10px; font-weight: 600; color: #1e293b;">${escapeHtml(item.month)}</td>
                                 <td style="padding: 12px 10px; color: var(--primary); font-weight: bold;">${escapeHtml(item.subjectName)}</td>
                                 <td style="padding: 12px 10px;">${classBadges || '<span style="color:#ef4444;">មិនទាន់មានថ្នាក់</span>'}</td>
-                                <td style="padding: 12px 10px; text-align: center;">
-                                    <span style="background: #ecfdf5; color: #059669; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 0.85rem;">
+                                <td style="padding: 12px 10px; text-align: center; white-space: nowrap;">
+                                    <span class="question-count-badge" style="background: #ecfdf5; color: #059669; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 0.85rem; white-space: nowrap !important; display: inline-block;">
                                         ${item.questionCount} សំណួរ
                                     </span>
                                 </td>
