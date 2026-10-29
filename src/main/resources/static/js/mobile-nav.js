@@ -15,7 +15,7 @@
         marker.style.display = 'none';
         document.body.appendChild(marker);
 
-        // 1. Create Hamburger button in topbar if not already present
+        // 1. Create Hamburger button in topbar and dock it tightly with the page title on the left
         if (!topbar.querySelector('.mobile-menu-btn')) {
             var menuBtn = document.createElement('button');
             menuBtn.type = 'button';
@@ -24,17 +24,33 @@
             menuBtn.innerHTML = '☰';
             menuBtn.title = 'បើកម៉ឺនុយ';
 
-            var firstChild = topbar.firstElementChild;
-            if (firstChild) {
-                topbar.insertBefore(menuBtn, firstChild);
-            } else {
-                topbar.appendChild(menuBtn);
-            }
-
             menuBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 toggleSidebar(true);
             });
+
+            // Find title element in topbar (h3 or h2)
+            var titleEl = topbar.querySelector('h3, h2');
+            if (titleEl) {
+                var titleParent = titleEl.parentElement;
+                if (titleParent === topbar) {
+                    var leftWrapper = document.createElement('div');
+                    leftWrapper.className = 'topbar-left';
+                    topbar.insertBefore(leftWrapper, titleEl);
+                    leftWrapper.appendChild(menuBtn);
+                    leftWrapper.appendChild(titleEl);
+                } else {
+                    titleParent.classList.add('topbar-left');
+                    titleParent.insertBefore(menuBtn, titleParent.firstChild);
+                }
+            } else {
+                var firstChild = topbar.firstElementChild;
+                if (firstChild) {
+                    topbar.insertBefore(menuBtn, firstChild);
+                } else {
+                    topbar.appendChild(menuBtn);
+                }
+            }
         }
 
         // 2. Create Backdrop overlay
