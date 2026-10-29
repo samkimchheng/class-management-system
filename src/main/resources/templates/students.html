@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>បញ្ជីឈ្មោះសិស្ស - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029d}" href="../static/css/style.css?v=20261029d">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029e}" href="../static/css/style.css?v=20261029e">
     <style>
         .sticky-col {
             position: sticky;
@@ -121,9 +121,9 @@
                 <table style="border-collapse: separate; border-spacing: 0;">
                     <thead>
                         <tr>
-                            <th class="sticky-col" style="width: 50px; min-width: 50px; left: 0px; white-space: nowrap;">ល.រ</th>
-                            <th class="sticky-col" style="width: 180px; min-width: 180px; left: 50px; white-space: nowrap;">ឈ្មោះសិស្ស</th>
-                            <th class="sticky-col last-sticky" style="width: 70px; min-width: 70px; left: 230px; white-space: nowrap;">ភេទ</th>
+                            <th class="sticky-col-1">ល.រ</th>
+                            <th class="sticky-col-2">ឈ្មោះសិស្ស</th>
+                            <th style="min-width: 60px; text-align: center; white-space: nowrap;">ភេទ</th>
                             <th style="min-width: 100px; white-space: nowrap;">ថ្នាក់ទី</th>
                             <th style="min-width: 120px; white-space: nowrap;">ភូមិ</th>
                             <th style="min-width: 120px; white-space: nowrap;">ឃុំ</th>
@@ -140,9 +140,9 @@
                     </thead>
                     <tbody>
                         <tr th:each="student, iterStat : ${students}">
-                            <td class="sticky-col" style="left: 0px;" th:text="${iterStat.count}">១</td>
-                            <td class="sticky-col" style="left: 50px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${student.name}">ឈ្មោះសិស្ស</td>
-                            <td class="sticky-col last-sticky" style="left: 230px;" th:text="${student.gender}">ភេទ</td>
+                            <td class="sticky-col-1" th:text="${iterStat.count}">១</td>
+                            <td class="sticky-col-2" th:text="${student.name}">ឈ្មោះសិស្ស</td>
+                            <td style="text-align: center;" th:text="${student.gender}">ភេទ</td>
                             <td th:text="${student.className}" style="white-space: nowrap;">ថ្នាក់ទី</td>
                             <td th:text="${student.village}"></td>
                             <td th:text="${student.commune}"></td>
@@ -172,7 +172,7 @@
     </div>
     <script src="/js/academic-year.js"></script>
     <script src="/js/logout-confirm.js"></script>
-    <script src="/js/mobile-nav.js?v=20261029d"></script>
+    <script src="/js/mobile-nav.js?v=20261029e"></script>
 </body>
 </html>
 

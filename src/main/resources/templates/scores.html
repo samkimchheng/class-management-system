@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>បញ្ជីស្រង់ពិន្ទុ - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029d}" href="../static/css/style.css?v=20261029d">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029e}" href="../static/css/style.css?v=20261029e">
     <style>
         .scrollable-table-wrapper {
             overflow-x: auto;
@@ -199,9 +199,9 @@
                 <table style="min-width: 900px;">
                     <thead style="background-color: #e2e8f0;">
                         <tr>
-                            <th style="text-align: center; width: 60px;">ល.រ</th>
-                            <th style="white-space: nowrap;">ឈ្មោះសិស្ស</th>
-                            <th style="width: 80px;">ភេទ</th>
+                            <th class="sticky-col-1">ល.រ</th>
+                            <th class="sticky-col-2">ឈ្មោះសិស្ស</th>
+                            <th style="width: 60px; text-align: center;">ភេទ</th>
                             <th style="text-align: center; white-space: nowrap;">ពិន្ទុប្រចាំខែ</th>
                             <th style="text-align: center; white-space: nowrap;">ពិន្ទុវត្តមាន</th>
                             <th style="text-align: center; white-space: nowrap;">កិច្ចការស្រាវជ្រាវ</th>
@@ -212,9 +212,9 @@
                     </thead>
                     <tbody>
                         <tr th:each="student, iterStat : ${students}" th:data-student-id="${student.id}" style="transition: all 0.3s ease;">
-                            <td th:text="${iterStat.count}" style="text-align: center; font-weight: bold; color: var(--text-muted);">១</td>
-                            <td  th:text="${student.name}" style="font-weight: bold; color: var(--dark); white-space: nowrap;">ឈ្មោះសិស្ស</td>
-                            <td th:text="${student.gender}">ភេទ</td>
+                            <td class="sticky-col-1" th:text="${iterStat.count}">១</td>
+                            <td class="sticky-col-2" th:text="${student.name}">ឈ្មោះសិស្ស</td>
+                            <td style="text-align: center;" th:text="${student.gender}">ភេទ</td>
                             <td style="text-align: center;">
                                 <input type="number" class="form-control score-input" name="monthlyScore" max="100" min="0" placeholder="0" style="width: 70px; text-align: center; margin: 0 auto; padding: 8px;">
                             </td>
@@ -674,7 +674,7 @@
     </script>
     <script src="/js/academic-year.js"></script>
     <script src="/js/logout-confirm.js"></script>
-    <script src="/js/mobile-nav.js?v=20261029d"></script>
+    <script src="/js/mobile-nav.js?v=20261029e"></script>
 </body>
 </html>
 

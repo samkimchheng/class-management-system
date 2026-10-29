@@ -687,28 +687,227 @@ html, body {
    Mobile Auto-Fit & Touch Responsive Enhancements (Android & iOS)
    ========================================================================== */
 
-/* 1. Mobile Table Scrolling: Remove sticky column locks on small screens so full right-side data is visible on swipe */
-@media screen and (max-width: 768px) {
-    .sticky-col,
-    thead th.sticky-col,
-    tbody td.sticky-col,
-    th[style*="position: sticky"],
-    td[style*="position: sticky"] {
-        position: static !important;
-        left: auto !important;
-        right: auto !important;
-        box-shadow: none !important;
+/* 1. Sticky Columns for Tables (ល.រ and ឈ្មោះសិស្ស stay fixed; ភេទ and right-side data scroll) */
+.table-container,
+.attendance-table-wrapper,
+.scrollable-table-wrapper,
+.table-responsive,
+div[style*="overflow: auto"],
+div[style*="overflow-x: auto"] {
+    position: relative !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+.sticky-col-1 {
+    position: sticky !important;
+    left: 0px !important;
+    width: 45px !important;
+    min-width: 45px !important;
+    max-width: 45px !important;
+    text-align: center !important;
+    z-index: 6 !important;
+    background-color: #ffffff !important;
+    border-right: 1px solid #cbd5e1 !important;
+}
+
+thead th.sticky-col-1,
+th.sticky-col-1 {
+    z-index: 16 !important;
+    background-color: #e2e8f0 !important;
+    color: #0f172a !important;
+    border-bottom: 2px solid #94a3b8 !important;
+}
+
+.sticky-col-2 {
+    position: sticky !important;
+    left: 45px !important;
+    width: 140px !important;
+    min-width: 140px !important;
+    max-width: 140px !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    z-index: 6 !important;
+    background-color: #ffffff !important;
+    border-right: 2px solid #94a3b8 !important;
+    box-shadow: 3px 0 6px -2px rgba(0, 0, 0, 0.15) !important;
+}
+
+thead th.sticky-col-2,
+th.sticky-col-2 {
+    z-index: 16 !important;
+    background-color: #e2e8f0 !important;
+    color: #0f172a !important;
+    border-bottom: 2px solid #94a3b8 !important;
+}
+
+tbody tr:hover .sticky-col-1,
+tbody tr:hover .sticky-col-2 {
+    background-color: #f1f5f9 !important;
+}
+
+/* Ensure Column 3 (ភេទ) and subsequent columns are NOT sticky on mobile or desktop */
+.sticky-col.last-sticky,
+td.last-sticky,
+th.last-sticky {
+    position: static !important;
+    left: auto !important;
+    box-shadow: none !important;
+}
+
+/* Attendance Controls */
+.attendance-filter-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.attendance-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.attendance-filter-group .filter-select {
+    width: auto;
+    min-width: 170px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+    box-sizing: border-box;
+    margin: 0 !important;
+}
+
+.attendance-btn-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-print-att,
+.btn-save-att {
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-weight: 600;
+}
+
+@media screen and (max-width: 640px) {
+    .attendance-filter-controls {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
     }
 
-    .table-container,
-    .attendance-table-wrapper,
-    .scrollable-table-wrapper,
-    .table-responsive,
-    div[style*="overflow: auto"],
-    div[style*="overflow-x: auto"] {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        max-width: 100vw !important;
+    .attendance-filter-group {
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .attendance-filter-group .filter-select {
+        width: 100% !important;
+        min-width: 100% !important;
+        margin: 0 !important;
+        text-align: center !important;
+        text-align-last: center !important;
+        box-sizing: border-box !important;
+    }
+
+    .attendance-btn-group {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .btn-print-att,
+    .btn-save-att {
+        flex: 1 1 0 !important;
+        font-size: 0.82rem !important;
+        padding: 10px 6px !important;
+        white-space: nowrap !important;
+        text-align: center !important;
+        justify-content: center !important;
+        letter-spacing: -0.2px;
+    }
+}
+
+/* Attendance Legend Box */
+.attendance-legend-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 14px 0 14px 0;
+}
+
+.legend-header {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.legend-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.legend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.legend-badge.badge-perm {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.legend-badge.badge-unex {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #ef4444;
+}
+
+.legend-badge.badge-norm {
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+@media screen and (max-width: 480px) {
+    .attendance-legend-box {
+        padding: 8px 10px;
+    }
+    .legend-badge {
+        font-size: 0.78rem;
+        padding: 3px 8px;
     }
 }
 

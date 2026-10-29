@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>បញ្ជីអវត្តមាន - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029d}" href="../static/css/style.css?v=20261029d">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029e}" href="../static/css/style.css?v=20261029e">
     <style>
         .sticky-col {
             position: sticky;
@@ -201,34 +201,38 @@
 
             <div class="table-container" style="overflow-x: auto;">
                 <form th:action="@{/attendance/save}" method="post">
-                <div class="header-action" style="flex-wrap: wrap; gap: 15px;">
-                    <div>
-                        <select name="month" id="monthSelect" class="form-control" style="width: auto; display: inline-block;">
+                <div class="attendance-filter-controls">
+                    <div class="attendance-filter-group">
+                        <select name="month" id="monthSelect" class="form-control filter-select">
                             <option th:each="m : ${monthsList}" th:value="${m}" th:text="${m}" th:selected="${selectedMonth == m}"></option>
                         </select>
-                        <select name="className" id="classSelect" class="form-control" style="width: auto; display: inline-block; margin-left: 10px;">
+                        <select name="className" id="classSelect" class="form-control filter-select">
                             <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
                             <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
                         </select>
                     </div>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <button type="button" class="btn btn-secondary" onclick="window.print()">🖨️ បោះពុម្ពរបាយការណ៍</button>
-                        <button type="submit" class="btn btn-primary" th:if="${!isYearly and !isSemester1 and !isSemester2}">💾 រក្សាទុកទិន្នន័យ</button>
+                    <div class="attendance-btn-group">
+                        <button type="button" class="btn btn-secondary btn-print-att" onclick="window.print()">🖨️ បោះពុម្ពរបាយការណ៍</button>
+                        <button type="submit" class="btn btn-primary btn-save-att" th:if="${!isYearly and !isSemester1 and !isSemester2}">💾 រក្សាទុកទិន្នន័យ</button>
                     </div>
                 </div>
 
-                <!-- Legend -->
-                <div style="display: flex; gap: 15px; align-items: center; margin: 15px 0 10px 0; flex-wrap: wrap;">
-                    <span style="font-size: 0.9rem; font-weight: bold; color: #475569;">កំណត់សម្គាល់៖</span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; background: #fef3c7; color: #92400e; font-size: 0.82rem; font-weight: bold; border: 1px solid #f59e0b;">
-                        🟡 ច្បាប់ (មានច្បាប់អនុញ្ញាត - ច)
-                    </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; background: #fee2e2; color: #991b1b; font-size: 0.82rem; font-weight: bold; border: 1px solid #ef4444;">
-                        🔴 គ្មានច្បាប់ (អវត្តមានឥតច្បាប់ - គ)
-                    </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; background: #f8fafc; color: #64748b; font-size: 0.82rem; border: 1px solid #cbd5e1;">
-                        ⚪ - (វត្តមានធម្មតា)
-                    </span>
+                <!-- Clean Modern Attendance Legend -->
+                <div class="attendance-legend-box">
+                    <div class="legend-header">
+                        <span>📌 កំណត់សម្គាល់វត្តមាន៖</span>
+                    </div>
+                    <div class="legend-badges">
+                        <span class="legend-badge badge-perm">
+                            <span>🟡</span> <b>ច្បាប់</b> (មានច្បាប់អនុញ្ញាត - ច)
+                        </span>
+                        <span class="legend-badge badge-unex">
+                            <span>🔴</span> <b>គ្មានច្បាប់</b> (អវត្តមានឥតច្បាប់ - គ)
+                        </span>
+                        <span class="legend-badge badge-norm">
+                            <span>⚪</span> <b>-</b> (វត្តមានធម្មតា)
+                        </span>
+                    </div>
                 </div>
                 
                 <!-- 1. ANNUAL / SEMESTER SUMMARY TABLE (Shown when 'ប្រចាំឆ្នាំ' or 'ឆមាស' is selected) -->
@@ -236,8 +240,8 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background-color: #0f172a; color: white;">
-                            <th rowspan="2" style="width: 50px; text-align: center; padding: 10px 8px; font-size: 1.05rem; font-weight: 800;">ល.រ</th>
-                            <th rowspan="2" style="min-width: 170px; padding: 10px 8px; text-align: left; font-size: 1.05rem; font-weight: 800;">ឈ្មោះសិស្ស</th>
+                            <th rowspan="2" class="sticky-col-1" style="font-size: 1.05rem; font-weight: 800;">ល.រ</th>
+                            <th rowspan="2" class="sticky-col-2" style="font-size: 1.05rem; font-weight: 800;">ឈ្មោះសិស្ស</th>
                             <th rowspan="2" style="width: 60px; text-align: center; padding: 10px 8px; font-size: 1.05rem; font-weight: 800;">ភេទ</th>
                             <th rowspan="2" style="min-width: 80px; text-align: center; padding: 10px 8px; font-size: 1.05rem; font-weight: 800;">ថ្នាក់រៀន</th>
                             
@@ -279,8 +283,8 @@
                     </thead>
                     <tbody>
                         <tr th:each="row, iterStat : ${yearlyAbsences}">
-                            <td style="text-align: center; font-weight: bold; color: var(--text-muted); padding: 8px;" th:text="${iterStat.count}">១</td>
-                            <td style="font-weight: bold; color: var(--dark); padding: 8px; white-space: nowrap;" th:text="${row.student.name}">ឈ្មោះសិស្ស</td>
+                            <td class="sticky-col-1" th:text="${iterStat.count}">១</td>
+                            <td class="sticky-col-2" th:text="${row.student.name}">ឈ្មោះសិស្ស</td>
                             <td style="text-align: center; padding: 8px;" th:text="${row.student.gender}">ភេទ</td>
                             <td style="text-align: center; padding: 8px;" th:text="${row.student.className}">ថ្នាក់រៀន</td>
                             
@@ -367,9 +371,9 @@
                 <table>
                     <thead>
                         <tr style="border-bottom: 2px solid #94a3b8;">
-                            <th class="sticky-col" style="width: 50px; min-width: 50px; max-width: 50px; left: 0px; white-space: nowrap; text-align: center; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">ល.រ</th>
-                            <th class="sticky-col" style="width: 180px; min-width: 180px; max-width: 180px; left: 50px; white-space: nowrap; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">ឈ្មោះសិស្ស</th>
-                            <th class="sticky-col last-sticky" style="width: 70px; min-width: 70px; max-width: 70px; left: 230px; white-space: nowrap; text-align: center; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">ភេទ</th>
+                            <th class="sticky-col-1">ល.រ</th>
+                            <th class="sticky-col-2">ឈ្មោះសិស្ស</th>
+                            <th style="min-width: 60px; text-align: center; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">ភេទ</th>
                             <!-- Days 1 to 31 -->
                             <th th:each="i : ${#numbers.sequence(1, 31)}" th:text="${i}" th:attr="data-day=${i}" class="day-cell" style="min-width: 65px; text-align: center; padding: 8px 2px; font-size: 1.02rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">1</th>
                             
@@ -381,9 +385,9 @@
                     </thead>
                     <tbody>
                         <tr th:each="student, iterStat : ${students}">
-                            <td class="sticky-col" style="width: 50px; min-width: 50px; max-width: 50px; left: 0px; text-align: center;" th:text="${iterStat.count}">១</td>
-                            <td class="sticky-col" style="width: 180px; min-width: 180px; max-width: 180px; left: 50px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;" th:text="${student.name}">ឈ្មោះសិស្ស</td>
-                            <td class="sticky-col last-sticky" style="width: 70px; min-width: 70px; max-width: 70px; left: 230px; text-align: center;" th:text="${student.gender}">ភេទ</td>
+                            <td class="sticky-col-1" th:text="${iterStat.count}">១</td>
+                            <td class="sticky-col-2" th:text="${student.name}">ឈ្មោះសិស្ស</td>
+                            <td style="text-align: center;" th:text="${student.gender}">ភេទ</td>
                             <!-- Days 1 to 31 -->
                             <td th:each="i : ${#numbers.sequence(1, 31)}" th:attr="data-day=${i}" class="day-cell" style="text-align: center; padding: 2px;">
                                 <select name="attendanceData" 
@@ -534,6 +538,6 @@
     </script>
     <script src="/js/academic-year.js"></script>
     <script src="/js/logout-confirm.js"></script>
-    <script src="/js/mobile-nav.js?v=20261029d"></script>
+    <script src="/js/mobile-nav.js?v=20261029e"></script>
 </body>
 </html>
