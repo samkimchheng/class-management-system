@@ -6,7 +6,7 @@
     <title>គ្រប់គ្រងបញ្ជីថ្នាក់រៀន - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន ២០២៧</title>
     <!-- Google Fonts for Khmer -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css?v=20261029h">
+    <link rel="stylesheet" href="/css/style.css?v=20261029i">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
@@ -18,7 +18,7 @@
             --warning: #f59e0b;
             --danger: #ef4444;
             --light: #f8fafc;
-            --radius: 10px;
+            --radius: 12px;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
@@ -112,6 +112,7 @@
             flex-direction: column;
             min-height: 100vh;
             background-color: #f4f7fb;
+            width: calc(100% - 260px);
         }
         .topbar {
             background-color: white;
@@ -131,9 +132,9 @@
             font-weight: 700;
         }
         .content {
-            padding: 24px;
+            padding: 22px 24px;
             flex-grow: 1;
-            max-width: 900px;
+            max-width: 1050px;
             width: 100%;
         }
 
@@ -162,7 +163,7 @@
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 10px 18px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -175,6 +176,7 @@
             align-items: center;
             gap: 6px;
             text-decoration: none;
+            white-space: nowrap;
         }
         .btn-primary {
             background: linear-gradient(135deg, #4f46e5, #4338ca);
@@ -191,13 +193,153 @@
             background-color: #dc2626;
         }
 
+        /* Stream Guide / Banner Card */
+        .stream-info-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08);
+        }
+        .stream-info-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .stream-info-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0369a1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .stream-grid-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .stream-box {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+        }
+        .stream-box.sci {
+            border-left: 4px solid #2563eb;
+        }
+        .stream-box.soc {
+            border-left: 4px solid #d97706;
+        }
+        .stream-box-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .stream-box.sci .stream-box-title { color: #1d4ed8; }
+        .stream-box.soc .stream-box-title { color: #b45309; }
+        .stream-box-desc {
+            font-size: 0.85rem;
+            color: #475569;
+            line-height: 1.45;
+        }
+
+        /* Filter Tabs */
+        .track-filter-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            margin-top: 14px;
+            margin-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .track-tab-btn {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+        .track-tab-btn:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        .track-tab-btn.active {
+            background: #4f46e5;
+            color: #ffffff;
+            border-color: #4f46e5;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+        }
+
+        /* Badges */
+        .track-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .track-badge:hover {
+            transform: scale(1.04);
+        }
+        .track-badge.track-sci {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+        .track-badge.track-soc {
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+        .track-badge.track-gen {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .grade-badge {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            font-size: 0.76rem;
+            padding: 2px 7px;
+            border-radius: 8px;
+            font-weight: 700;
+            margin-right: 6px;
+        }
+
         /* Responsive Classroom Table */
         .classrooms-table-wrapper {
             width: 100%;
             overflow-x: auto;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid #e2e8f0;
-            margin-top: 15px;
+            margin-top: 10px;
             background: white;
         }
         table.classrooms-table {
@@ -211,12 +353,13 @@
             border-bottom: 1px solid #f1f5f9;
             text-align: left;
             font-size: 0.95rem;
+            vertical-align: middle;
         }
         table.classrooms-table th {
             background-color: #f8fafc;
             color: #475569;
             font-size: 0.9rem;
-            font-weight: 600;
+            font-weight: 700;
             border-bottom: 2px solid #e2e8f0;
             letter-spacing: 0.3px;
         }
@@ -229,8 +372,41 @@
             border-radius: 14px !important;
         }
 
+        /* Quick Suggestions Chips */
+        .quick-suggest-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+            align-items: center;
+        }
+        .suggest-chip {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .suggest-chip:hover {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            color: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
         /* Mobile Adjustments (<= 768px) */
         @media screen and (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
             .content {
                 padding: 14px 12px !important;
             }
@@ -245,18 +421,16 @@
             .topbar h3 {
                 font-size: 1.05rem !important;
             }
-            .class-input-group {
-                flex-direction: row !important;
-                gap: 6px !important;
+            .class-input-form-row {
+                flex-direction: column !important;
+                gap: 8px !important;
             }
-            .class-input-group input {
-                font-size: 0.92rem !important;
-                padding: 10px 12px !important;
+            .class-input-form-row .form-control {
+                width: 100% !important;
             }
-            .class-input-group button {
-                padding: 10px 14px !important;
-                font-size: 0.92rem !important;
-                white-space: nowrap !important;
+            .class-input-form-row .btn {
+                width: 100% !important;
+                justify-content: center !important;
             }
             table.classrooms-table th, table.classrooms-table td {
                 padding: 10px 8px !important;
@@ -271,7 +445,7 @@
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
             <div style="margin-top: 10px; font-size: 0.92rem; color: #a5b4fc; text-align: center;">
-                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${teacherAccount != null ? teacherAccount.fullName : session.ACCOUNT_NAME}">គ្រូ</b></span>
             </div>
         </div>
         <ul class="nav-menu">
@@ -317,6 +491,73 @@
         </div>
 
         <div class="content">
+            <!-- Educational Guide: Science vs. Social Sciences for Grade 11 & 12 -->
+            <div class="stream-info-card">
+                <div class="stream-info-header">
+                    <div class="stream-info-title">
+                        <span>💡</span> <span>ការបែងចែកថ្នាក់រៀនសម្រាប់ ថ្នាក់ទី១១ និងទី១២ (វិទ្យាសាស្ត្រ & សង្គម)</span>
+                    </div>
+                    <button type="button" onclick="toggleStreamDetails()" class="btn" style="background: rgba(255,255,255,0.85); color: #0284c7; border: 1px solid #7dd3fc; font-size: 0.82rem; padding: 5px 10px; border-radius: 8px;">
+                        <span id="toggleStreamText">📖 មើលការប្រៀបធៀបមុខវិជ្ជា</span>
+                    </button>
+                </div>
+                <div style="font-size: 0.9rem; color: #334155; line-height: 1.5;">
+                    យោងតាមកម្មវិធីអប់រំមធ្យមសិក្សាទុតិយភូមិរបស់ក្រសួងអប់រំ យុវជន និងកីឡា (MoEYS) សិស្សថ្នាក់ទី១១ និងទី១២ ត្រូវបានជ្រើសរើសរៀនតាម ២ ផ្នែកសំខាន់ៗ៖
+                </div>
+                
+                <div class="stream-grid-summary">
+                    <div class="stream-box sci">
+                        <div class="stream-box-title">
+                            <span>🔬</span> <span>ថ្នាក់វិទ្យាសាស្ត្រ (Science Track)</span>
+                        </div>
+                        <div class="stream-box-desc">
+                            <b>មុខវិជ្ជាស្នូល៖</b> គណិតវិទ្យា (កម្រិតខ្ពស់ - មេគុណធំ), រូបវិទ្យា, គីមីវិទ្យា, ជីវវិទ្យា។<br>
+                            <span style="color: #64748b;">(សមស្របសម្រាប់សិស្សបន្តជំនាញ វិស្វកម្ម, ពេទ្យ, បច្ចេកវិទ្យា ICT...)</span>
+                        </div>
+                    </div>
+                    <div class="stream-box soc">
+                        <div class="stream-box-title">
+                            <span>📚</span> <span>ថ្នាក់វិទ្យាសាស្ត្រសង្គម (Social Track)</span>
+                        </div>
+                        <div class="stream-box-desc">
+                            <b>មុខវិជ្ជាស្នូល៖</b> ភាសាខ្មែរ (កម្រិតខ្ពស់ - មេគុណធំ), ប្រវត្តិវិទ្យា, ភូមិវិទ្យា, សីលធម៌-ពលរដ្ឋវិជ្ជា, ផែនដីវិទ្យា។<br>
+                            <span style="color: #64748b;">(សមស្របសម្រាប់សិស្សបន្តជំនាញ ច្បាប់, សេដ្ឋកិច្ច, គ្រប់គ្រង, អក្សរសាស្ត្រ...)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Collapsible Comparison Table -->
+                <div id="streamDetailsSection" style="display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #7dd3fc;">
+                    <h5 style="margin: 0 0 8px 0; font-size: 0.92rem; color: #0369a1;">📊 តារាងប្រៀបធៀបពិន្ទុ និងមុខវិជ្ជាប្រឡងសញ្ញាបត្របាក់ឌុប (BacII)៖</h5>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1;">
+                            <thead>
+                                <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                                    <th style="padding: 8px 10px; text-align: left;">ផ្នែក / Track</th>
+                                    <th style="padding: 8px 10px; text-align: left;">មុខវិជ្ជាស្នូល (ពិន្ទុពេញខ្ពស់)</th>
+                                    <th style="padding: 8px 10px; text-align: left;">មុខវិជ្ជាផ្សេងៗ</th>
+                                    <th style="padding: 8px 10px; text-align: center;">ពិន្ទុពេញសរុប</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 8px 10px; font-weight: bold; color: #1d4ed8;">🔬 វិទ្យាសាស្ត្រ</td>
+                                    <td style="padding: 8px 10px;">គណិតវិទ្យា (១២៥ពិន្ទុ), រូប (៧៥), គីមី (៧៥), ជីវ (៧៥)</td>
+                                    <td style="padding: 8px 10px;">ភាសាខ្មែរ (៧៥), ភាសាបរទេស (៥០), ប្រវត្តិ (៥០)</td>
+                                    <td style="padding: 8px 10px; text-align: center; font-weight: bold;">៥០០ ពិន្ទុ</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 10px; font-weight: bold; color: #b45309;">📚 វិទ្យាសាស្ត្រសង្គម</td>
+                                    <td style="padding: 8px 10px;">ភាសាខ្មែរ (១២៥ពិន្ទុ), គណិត (៧៥), ប្រវត្តិ (៧៥), ភូមិ (៧៥), សីលធម៌ (៧៥), ផែនដី (៧៥)</td>
+                                    <td style="padding: 8px 10px;">ភាសាបរទេស (៥០)</td>
+                                    <td style="padding: 8px 10px; text-align: center; font-weight: bold;">៥០០ ពិន្ទុ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Card 1: Add New Classroom -->
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
@@ -333,13 +574,31 @@
                     </button>
                 </div>
 
-                <!-- Input Group: Clean inline alignment on both mobile & desktop -->
-                <div class="class-input-group" style="display: flex; gap: 8px; align-items: stretch; width: 100%; max-width: 450px;">
-                    <input type="text" id="classNameInput" class="form-control" placeholder="វាយឈ្មោះថ្នាក់ (ឧ. ៧A, ១២B...)" style="flex: 1; min-width: 0;" onkeydown="if(event.key==='Enter') addClass()">
+                <!-- Input Form: Class Name + Track Selector + Add Button -->
+                <div class="class-input-form-row" style="display: flex; gap: 8px; align-items: stretch; width: 100%; max-width: 680px; flex-wrap: wrap;">
+                    <input type="text" id="classNameInput" class="form-control" placeholder="វាយឈ្មោះថ្នាក់ (ឧ. ១១ វិទ្យាសាស្ត្រ ១, ១១ សង្គម ១, ១២A...)" style="flex: 2; min-width: 200px;" oninput="handleClassNameInput(this.value)" onkeydown="if(event.key==='Enter') addClass()">
+                    
+                    <select id="classTrackSelect" class="form-control" style="flex: 1.4; min-width: 170px; font-weight: 600; cursor: pointer;">
+                        <option value="AUTO">✨ ស្វ័យប្រវត្តิตាមឈ្មោះ</option>
+                        <option value="វិទ្យាសាស្ត្រ">🔬 ថ្នាក់វិទ្យាសាស្ត្រ</option>
+                        <option value="វិទ្យាសាស្ត្រសង្គម">📚 ថ្នាក់វិទ្យាសាស្ត្រសង្គម</option>
+                        <option value="ទូទៅ">📖 ថ្នាក់ទូទៅ (ទី៧-១០)</option>
+                    </select>
+
                     <button class="btn btn-primary" onclick="addClass()" style="white-space: nowrap; flex-shrink: 0;">
                         <span>+</span> <span>បង្កើតថ្នាក់</span>
                     </button>
                 </div>
+
+                <!-- Quick Suggestion Chips for Grade 11 & 12 -->
+                <div id="quickSuggestContainer" class="quick-suggest-chips" style="display: none;">
+                    <span style="font-size: 0.8rem; color: #64748b; margin-right: 2px;">💡 គំរូពេញនិយម៖</span>
+                    <span class="suggest-chip" onclick="applyClassSuggestion('១១ វិទ្យាសាស្ត្រ ១', 'វិទ្យាសាស្ត្រ')">🔬 ១១ វិទ្យាសាស្ត្រ ១</span>
+                    <span class="suggest-chip" onclick="applyClassSuggestion('១១ សង្គម ១', 'វិទ្យាសាស្ត្រសង្គម')">📚 ១១ សង្គម ១</span>
+                    <span class="suggest-chip" onclick="applyClassSuggestion('១២ វិទ្យាសាស្ត្រ ១', 'វិទ្យាសាស្ត្រ')">🔬 ១២ វិទ្យាសាស្ត្រ ១</span>
+                    <span class="suggest-chip" onclick="applyClassSuggestion('១២ សង្គម ១', 'វិទ្យាសាស្ត្រសង្គម')">📚 ១២ សង្គម ១</span>
+                </div>
+
                 <div id="alertMsg" style="margin-top: 12px; display: none; padding: 10px 14px; border-radius: 8px; font-size: 0.9rem;"></div>
             </div>
 
@@ -349,34 +608,68 @@
                     <h4 style="margin: 0; font-size: 1.05rem; font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 8px;">
                         <span>📋</span>
                         <span>បញ្ជីថ្នាក់រៀនដែលខ្ញុំបង្រៀន</span>
-                        <span th:if="${myClassrooms != null}" style="background: #e0e7ff; color: #4338ca; font-size: 0.8rem; padding: 2px 8px; border-radius: 12px; font-weight: 600;" th:text="${myClassrooms.size()} + ' ថ្នាក់'">1 ថ្នាក់</span>
+                        <span th:if="${myClassrooms != null}" id="totalClassCountBadge" style="background: #e0e7ff; color: #4338ca; font-size: 0.8rem; padding: 2px 8px; border-radius: 12px; font-weight: 600;" th:text="${myClassrooms.size()} + ' ថ្នាក់'">1 ថ្នាក់</span>
                     </h4>
+                </div>
+
+                <!-- Filter Tabs: All, Science, Social, General -->
+                <div class="track-filter-bar">
+                    <button type="button" class="track-tab-btn active" data-filter="ALL" onclick="filterClassrooms('ALL', this)">
+                        <span>🔍 ទាំងអស់</span>
+                    </button>
+                    <button type="button" class="track-tab-btn" data-filter="SCI" onclick="filterClassrooms('SCI', this)">
+                        <span>🔬 ថ្នាក់វិទ្យាសាស្ត្រ</span>
+                    </button>
+                    <button type="button" class="track-tab-btn" data-filter="SOC" onclick="filterClassrooms('SOC', this)">
+                        <span>📚 ថ្នាក់វិទ្យាសាស្ត្រសង្គម</span>
+                    </button>
+                    <button type="button" class="track-tab-btn" data-filter="GEN" onclick="filterClassrooms('GEN', this)">
+                        <span>📖 ថ្នាក់ទូទៅ</span>
+                    </button>
                 </div>
 
                 <!-- Responsive Table specifically configured to fit 100% of mobile screen -->
                 <div class="classrooms-table-wrapper">
-                    <table class="classrooms-table">
+                    <table class="classrooms-table" id="classroomsTable">
                         <thead>
                             <tr>
-                                <th style="width: 55px; text-align: center; white-space: nowrap;">ល.រ</th>
+                                <th style="width: 50px; text-align: center; white-space: nowrap;">ល.រ</th>
                                 <th style="white-space: nowrap;">ឈ្មោះថ្នាក់</th>
-                                <th style="width: 100px; text-align: center; white-space: nowrap;">សកម្មភាព</th>
+                                <th style="width: 170px; text-align: center; white-space: nowrap;">ផ្នែក / ប្រភេទថ្នាក់</th>
+                                <th style="width: 90px; text-align: center; white-space: nowrap;">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="c, iter : ${myClassrooms}">
+                            <tr th:each="c, iter : ${myClassrooms}" th:data-track="${c.track}" th:data-name="${c.className}">
                                 <td style="text-align: center; color: #64748b; font-weight: 600;" th:text="${iter.count}">1</td>
                                 <td>
-                                    <span th:text="${c.className}" style="font-weight: 600; color: #0f172a; font-size: 0.98rem;">7A</span>
+                                    <!-- Grade badge -->
+                                    <span class="grade-badge" th:if="${c.className.contains('12') or c.className.contains('១២')}">ថ្នាក់ទី១២</span>
+                                    <span class="grade-badge" th:if="${c.className.contains('11') or c.className.contains('១១')}">ថ្នាក់ទី១១</span>
+                                    <span class="grade-badge" th:if="${c.className.contains('10') or c.className.contains('១០')}">ថ្នាក់ទី១០</span>
+                                    
+                                    <b th:text="${c.className}" style="color: #0f172a; font-size: 0.98rem;">11A</b>
                                 </td>
                                 <td style="text-align: center; white-space: nowrap;">
-                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; font-weight: 500;" th:onclick="'deleteClass(' + ${c.id} + ')'">
+                                    <!-- Track badge with click-to-change capability -->
+                                    <span th:if="${c.track == 'វិទ្យាសាស្ត្រ'}" class="track-badge track-sci" th:onclick="'promptChangeTrack(' + ${c.id} + ', \'' + ${c.className} + '\', \'' + ${c.track} + '\')'" title="ចុចដើម្បីប្តូរប្រភេទថ្នាក់">
+                                        <span>🔬 វិទ្យាសាស្ត្រ</span> <span>✎</span>
+                                    </span>
+                                    <span th:if="${c.track == 'វិទ្យាសាស្ត្រសង្គម'}" class="track-badge track-soc" th:onclick="'promptChangeTrack(' + ${c.id} + ', \'' + ${c.className} + '\', \'' + ${c.track} + '\')'" title="ចុចដើម្បីប្តូរប្រភេទថ្នាក់">
+                                        <span>📚 សង្គម</span> <span>✎</span>
+                                    </span>
+                                    <span th:if="${c.track != 'វិទ្យាសាស្ត្រ' and c.track != 'វិទ្យាសាស្ត្រសង្គម'}" class="track-badge track-gen" th:onclick="'promptChangeTrack(' + ${c.id} + ', \'' + ${c.className} + '\', \'' + ${c.track} + '\')'" title="ចុចដើម្បីប្តូរប្រភេទថ្នាក់">
+                                        <span>📖 ទូទៅ</span> <span>✎</span>
+                                    </span>
+                                </td>
+                                <td style="text-align: center; white-space: nowrap;">
+                                    <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.82rem; border-radius: 6px; font-weight: 500;" th:onclick="'deleteClass(' + ${c.id} + ')'">
                                         <span>🗑️</span> <span>លុប</span>
                                     </button>
                                 </td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(myClassrooms)}">
-                                <td colspan="3" style="text-align: center; padding: 35px 20px; color: #64748b; font-size: 0.92rem;">
+                                <td colspan="4" style="text-align: center; padding: 35px 20px; color: #64748b; font-size: 0.92rem;">
                                     <div style="font-size: 2rem; margin-bottom: 8px;">🏫</div>
                                     លោកគ្រូ/អ្នកគ្រូមិនទាន់បានបង្កើតថ្នាក់រៀនណាមួយនៅឡើយទេ។<br>
                                     <span style="font-size: 0.85rem; color: #94a3b8;">សូមវាយបញ្ចូលឈ្មោះថ្នាក់នៅប្រអប់ខាងលើ រួចចុច «+ បង្កើតថ្នាក់»</span>
@@ -390,9 +683,49 @@
     </div>
 
     <script>
+        function toggleStreamDetails() {
+            const sec = document.getElementById('streamDetailsSection');
+            const txt = document.getElementById('toggleStreamText');
+            if (sec.style.display === 'none') {
+                sec.style.display = 'block';
+                txt.textContent = '▲ បិទការប្រៀបធៀប';
+            } else {
+                sec.style.display = 'none';
+                txt.textContent = '📖 មើលការប្រៀបធៀបមុខវិជ្ជា';
+            }
+        }
+
+        function handleClassNameInput(val) {
+            const trimmed = val.trim();
+            const suggestCont = document.getElementById('quickSuggestContainer');
+            const select = document.getElementById('classTrackSelect');
+
+            // Show suggestions if Grade 11 or 12
+            if (trimmed.includes('11') || trimmed.includes('១១') || trimmed.includes('12') || trimmed.includes('១២')) {
+                suggestCont.style.display = 'flex';
+            } else {
+                suggestCont.style.display = 'none';
+            }
+
+            // Auto-detect stream
+            if (trimmed.includes('សង្គម') || trimmed.toUpperCase().includes('SOC')) {
+                select.value = 'វិទ្យាសាស្ត្រសង្គម';
+            } else if (trimmed.includes('វិទ្យា') || trimmed.toUpperCase().includes('SCI')) {
+                select.value = 'វិទ្យាសាស្ត្រ';
+            }
+        }
+
+        function applyClassSuggestion(className, track) {
+            document.getElementById('classNameInput').value = className;
+            document.getElementById('classTrackSelect').value = track;
+            document.getElementById('classNameInput').focus();
+        }
+
         async function addClass() {
             const input = document.getElementById('classNameInput');
+            const select = document.getElementById('classTrackSelect');
             const name = input.value.trim();
+            const track = select.value;
             const alertMsg = document.getElementById('alertMsg');
             
             if (!name) {
@@ -406,6 +739,8 @@
             try {
                 const params = new URLSearchParams();
                 params.append('className', name);
+                params.append('track', track);
+
                 const res = await fetch('/api/classrooms/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -419,7 +754,7 @@
                     alertMsg.style.color = '#15803d';
                     alertMsg.innerText = '✅ ' + data.message;
                     input.value = '';
-                    setTimeout(() => window.location.reload(), 800);
+                    setTimeout(() => window.location.reload(), 600);
                 } else {
                     alertMsg.style.backgroundColor = '#fee2e2';
                     alertMsg.style.color = '#b91c1c';
@@ -428,6 +763,82 @@
             } catch (e) {
                 console.error(e);
             }
+        }
+
+        // Quick update classroom track (Science vs Social vs General)
+        async function promptChangeTrack(classId, className, currentTrack) {
+            const { value: newTrack } = await Swal.fire({
+                title: 'ផ្លាស់ប្តូរផ្នែក / ប្រភេទថ្នាក់',
+                html: `កំណត់ប្រភេទសម្រាប់ថ្នាក់ <b>${className}</b>៖`,
+                input: 'radio',
+                inputOptions: {
+                    'វិទ្យាសាស្ត្រ': '🔬 ថ្នាក់វិទ្យាសាស្ត្រ (Science Track)',
+                    'វិទ្យាសាស្ត្រសង្គម': '📚 ថ្នាក់វិទ្យាសាស្ត្រសង្គម (Social Track)',
+                    'ទូទៅ': '📖 ថ្នាក់ទូទៅ (General Track)'
+                },
+                inputValue: currentTrack,
+                showCancelButton: true,
+                confirmButtonColor: '#4f46e5',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'ផ្លាស់ប្តូរ (Save)',
+                cancelButtonText: 'បោះបង់'
+            });
+
+            if (newTrack && newTrack !== currentTrack) {
+                try {
+                    const params = new URLSearchParams();
+                    params.append('id', classId);
+                    params.append('track', newTrack);
+
+                    const res = await fetch('/api/classrooms/update-track', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ជោគជ័យ!',
+                            text: data.message,
+                            timer: 1200,
+                            showConfirmButton: false
+                        }).then(() => window.location.reload());
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        // Filter classrooms by track
+        function filterClassrooms(type, btn) {
+            document.querySelectorAll('.track-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const rows = document.querySelectorAll('#classroomsTable tbody tr[data-track]');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const track = row.getAttribute('data-track');
+                let match = false;
+                if (type === 'ALL') {
+                    match = true;
+                } else if (type === 'SCI' && track === 'វិទ្យាសាស្ត្រ') {
+                    match = true;
+                } else if (type === 'SOC' && track === 'វិទ្យាសាស្ត្រសង្គម') {
+                    match = true;
+                } else if (type === 'GEN' && (track !== 'វិទ្យាសាស្ត្រ' && track !== 'វិទ្យាសាស្ត្រសង្គម')) {
+                    match = true;
+                }
+
+                if (match) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
         }
 
         async function copyClassesFromPrevYear() {
@@ -498,7 +909,7 @@
         }
     </script>
     <script src="/js/academic-year.js"></script>
-    <script src="/js/mobile-nav.js?v=20261029h"></script>
+    <script src="/js/mobile-nav.js?v=20261029i"></script>
     <script src="/js/logout-confirm.js"></script>
 </body>
 </html>
