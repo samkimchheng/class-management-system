@@ -37,100 +37,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Sidebar styling */
-        .sidebar {
-            width: 260px;
-            background-color: #1e293b;
-            border-right: none;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-            position: fixed;
-            height: 100vh;
-            z-index: 100;
-            color: white;
-        }
-        .sidebar-header {
-            padding: 22px 20px;
-            text-align: center;
-            background-color: #0f172a;
-            border-bottom: 1px solid #334155;
-        }
-        .sidebar-header h2 {
-            margin: 0;
-            font-size: 1.3rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: #38bdf8;
-            text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
-        }
-        .sidebar-header div span, .sidebar-header div b {
-            color: #a5b4fc !important;
-        }
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            flex: 1;
-            overflow-y: auto;
-        }
-        .nav-menu::-webkit-scrollbar { width: 5px; }
-        .nav-menu::-webkit-scrollbar-track { background: transparent; }
-        .nav-menu::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        .nav-item {
-            border-bottom: 1px solid #334155;
-            margin-bottom: 0;
-        }
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 13px 20px;
-            color: #cbd5e1;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            font-size: 0.95rem;
-            border-left: 4px solid transparent;
-        }
-        .nav-link:hover {
-            background-color: #334155;
-            color: white;
-        }
-        .nav-item.active .nav-link {
-            background-color: #334155;
-            color: white;
-            border-left: 4px solid #6366f1;
-            font-weight: 600;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 260px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background-color: #f4f7fb;
-            width: calc(100% - 260px);
-        }
-        .topbar {
-            background-color: white;
-            padding: 14px 25px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .topbar h3 {
-            margin: 0;
-            color: #0f172a;
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
+        /* Main Layout specific overrides */
         .content {
             padding: 22px 24px;
             flex-grow: 1;
@@ -398,15 +305,8 @@
             transform: translateY(-1px);
         }
 
-        /* Mobile Adjustments (<= 768px) */
-        @media screen and (max-width: 768px) {
-            .sidebar {
-                display: none;
-            }
-            .main-content {
-                margin-left: 0 !important;
-                width: 100% !important;
-            }
+        /* Mobile Adjustments */
+        @media screen and (max-width: 992px) {
             .content {
                 padding: 14px 12px !important;
             }
@@ -414,12 +314,6 @@
                 padding: 16px 14px !important;
                 border-radius: 10px !important;
                 margin-bottom: 14px !important;
-            }
-            .topbar {
-                padding: 12px 14px !important;
-            }
-            .topbar h3 {
-                font-size: 1.05rem !important;
             }
             .class-input-form-row {
                 flex-direction: column !important;
@@ -445,7 +339,7 @@
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
             <div style="margin-top: 10px; font-size: 0.92rem; color: #a5b4fc; text-align: center;">
-                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${teacherAccount != null ? teacherAccount.fullName : session.ACCOUNT_NAME}">គ្រូ</b></span>
+                <span th:if="${session != null and session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${teacherAccount != null ? teacherAccount.fullName : (session != null ? session.ACCOUNT_NAME : '')}">គ្រូ</b></span>
             </div>
         </div>
         <ul class="nav-menu">
@@ -466,7 +360,7 @@
         </ul>
         <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
             <ul class="nav-menu" style="overflow-y: visible; flex: none;">
-                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);"><span>🔒</span> <span>ផ្ទាំង Admin</span></a></li>
+                <li class="nav-item" th:if="${session != null and session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);"><span>🔒</span> <span>ផ្ទាំង Admin</span></a></li>
                 <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
             </ul>
         </div>
@@ -644,26 +538,33 @@
                                 <td style="text-align: center; color: #64748b; font-weight: 600;" th:text="${iter.count}">1</td>
                                 <td>
                                     <!-- Grade badge -->
-                                    <span class="grade-badge" th:if="${c.className.contains('12') or c.className.contains('១២')}">ថ្នាក់ទី១២</span>
-                                    <span class="grade-badge" th:if="${c.className.contains('11') or c.className.contains('១១')}">ថ្នាក់ទី១១</span>
-                                    <span class="grade-badge" th:if="${c.className.contains('10') or c.className.contains('១០')}">ថ្នាក់ទី១០</span>
+                                    <span class="grade-badge" th:if="${c.className != null and (c.className.contains('12') or c.className.contains('១២'))}">ថ្នាក់ទី១២</span>
+                                    <span class="grade-badge" th:if="${c.className != null and (c.className.contains('11') or c.className.contains('១១'))}">ថ្នាក់ទី១១</span>
+                                    <span class="grade-badge" th:if="${c.className != null and (c.className.contains('10') or c.className.contains('១០'))}">ថ្នាក់ទី១០</span>
                                     
                                     <b th:text="${c.className}" style="color: #0f172a; font-size: 0.98rem;">11A</b>
                                 </td>
                                 <td style="text-align: center; white-space: nowrap;">
-                                    <!-- Track badge with click-to-change capability -->
-                                    <span th:if="${c.track == 'វិទ្យាសាស្ត្រ'}" class="track-badge track-sci" th:onclick="'promptChangeTrack(' + ${c.id} + ', \'' + ${c.className} + '\', \'' + ${c.track} + '\')'" title="ចុចដើម្បីប្តូរប្រភេទថ្នាក់">
+                                    <!-- Track badge with click-to-change capability (using data-* to comply with Thymeleaf security) -->
+                                    <span th:if="${c.track == 'វិទ្យាសាស្ត្រ'}" class="track-badge track-sci"
+                                          th:data-id="${c.id}" th:data-name="${c.className}" th:data-track="${c.track}"
+                                          onclick="promptChangeTrack(this)" title="ចុចដើម្បីប្តូរប្រភេទថ្នាក់">
                                         <span>🔬 វិទ្យាសាស្ត្រ</span> <span>✎</span>
                                     </span>
-                                    <span th:if="${c.track == 'វិទ្យាសាស្ត្រសង្គម'}" class="track-badge track-soc" th:onclick="'promptChangeTrack(' + ${c.id} + ', \'' + ${c.className} + '\', \'' + ${c.track} + '\')'" title="ចុចដើម្បីប្តូរប្រភេទថ្នាក់">
+                                    <span th:if="${c.track == 'វិទ្យាសាស្ត្រសង្គម'}" class="track-badge track-soc"
+                                          th:data-id="${c.id}" th:data-name="${c.className}" th:data-track="${c.track}"
+                                          onclick="promptChangeTrack(this)" title="ចុចដើម្បីប្តូរប្រភេទថ្នាក់">
                                         <span>📚 សង្គម</span> <span>✎</span>
                                     </span>
-                                    <span th:if="${c.track != 'វិទ្យាសាស្ត្រ' and c.track != 'វិទ្យាសាស្ត្រសង្គម'}" class="track-badge track-gen" th:onclick="'promptChangeTrack(' + ${c.id} + ', \'' + ${c.className} + '\', \'' + ${c.track} + '\')'" title="ចុចដើម្បីប្តូរប្រភេទថ្នាក់">
+                                    <span th:if="${c.track != 'វិទ្យាសាស្ត្រ' and c.track != 'វិទ្យាសាស្ត្រសង្គម'}" class="track-badge track-gen"
+                                          th:data-id="${c.id}" th:data-name="${c.className}" th:data-track="${c.track}"
+                                          onclick="promptChangeTrack(this)" title="ចុចដើម្បីប្តូរប្រភេទថ្នាក់">
                                         <span>📖 ទូទៅ</span> <span>✎</span>
                                     </span>
                                 </td>
                                 <td style="text-align: center; white-space: nowrap;">
-                                    <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.82rem; border-radius: 6px; font-weight: 500;" th:onclick="'deleteClass(' + ${c.id} + ')'">
+                                    <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.82rem; border-radius: 6px; font-weight: 500;"
+                                            th:data-id="${c.id}" onclick="deleteClass(this.getAttribute('data-id'))">
                                         <span>🗑️</span> <span>លុប</span>
                                     </button>
                                 </td>
@@ -766,7 +667,18 @@
         }
 
         // Quick update classroom track (Science vs Social vs General)
-        async function promptChangeTrack(classId, className, currentTrack) {
+        async function promptChangeTrack(target, maybeClassName, maybeTrack) {
+            let classId, className, currentTrack;
+            if (target && typeof target === 'object' && target.getAttribute) {
+                classId = target.getAttribute('data-id');
+                className = target.getAttribute('data-name');
+                currentTrack = target.getAttribute('data-track');
+            } else {
+                classId = target;
+                className = maybeClassName;
+                currentTrack = maybeTrack;
+            }
+            if (!currentTrack) currentTrack = 'ទូទៅ';
             const { value: newTrack } = await Swal.fire({
                 title: 'ផ្លាស់ប្តូរផ្នែក / ប្រភេទថ្នាក់',
                 html: `កំណត់ប្រភេទសម្រាប់ថ្នាក់ <b>${className}</b>៖`,
