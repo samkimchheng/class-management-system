@@ -36,7 +36,8 @@
 
             menuBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                toggleSidebar(true);
+                var isOpen = sidebar.classList.contains('mobile-open');
+                toggleSidebar(!isOpen);
             });
         }
 
@@ -65,21 +66,11 @@
             });
         }
 
-        // 3. Create Close button inside sidebar-header for mobile
-        var header = sidebar.querySelector('.sidebar-header');
-        if (header && !header.querySelector('.mobile-sidebar-close')) {
-            header.style.position = 'relative';
-            var closeBtn = document.createElement('button');
-            closeBtn.type = 'button';
-            closeBtn.className = 'mobile-sidebar-close';
-            closeBtn.innerHTML = '&times;';
-            closeBtn.setAttribute('aria-label', 'បិទម៉ឺនុយ');
-            closeBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                toggleSidebar(false);
-            });
-            header.appendChild(closeBtn);
-        }
+        // 3. Remove any Close button inside sidebar-header to keep header clean and prevent [x] mark
+        var existingCloseButtons = sidebar.querySelectorAll('.mobile-sidebar-close');
+        existingCloseButtons.forEach(function(btn) {
+            btn.remove();
+        });
 
         function toggleSidebar(open) {
             if (open) {

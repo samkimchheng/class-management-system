@@ -470,22 +470,7 @@ html, body {
     }
 
     /* Close button inside sidebar for mobile */
-    .mobile-sidebar-close {
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        width: 34px;
-        height: 34px;
-        background: #334155;
-        border: 1px solid #475569;
-        border-radius: 8px;
-        color: white;
-        font-size: 1.1rem;
-        cursor: pointer;
-        position: absolute;
-        top: 18px;
-        right: 16px;
-    }
+    .mobile-sidebar-close { display: none !important; visibility: hidden !important; pointer-events: none !important; }
 
     /* Mobile Topbar & Header - Sleek Single Row */
     .topbar {
