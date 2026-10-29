@@ -35,6 +35,15 @@
             display: flex;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow-x: hidden;
         }
 
         /* Main Layout specific overrides */
@@ -305,8 +314,220 @@
             transform: translateY(-1px);
         }
 
+        /* Modal: Change Classroom Stream / Track */
+        .track-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            z-index: 9999;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
+            animation: modalFadeIn 0.2s ease;
+        }
+
+        .track-modal-container {
+            background: #ffffff;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 530px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            padding: 22px 24px;
+            border: 1px solid #e2e8f0;
+            box-sizing: border-box;
+            animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(16px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .track-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .track-modal-title {
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .track-modal-close {
+            background: #f1f5f9;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1.25rem;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+        .track-modal-close:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .track-modal-subtitle {
+            font-size: 0.92rem;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+        .track-modal-subtitle b {
+            color: #4f46e5;
+            background: #eef2ff;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 0.96rem;
+        }
+
+        .track-modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .track-modal-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .track-modal-card:hover {
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .track-modal-card.selected.sci {
+            border-color: #2563eb;
+            background: #eff6ff;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
+        }
+        .track-modal-card.selected.soc {
+            border-color: #d97706;
+            background: #fffbeb;
+            box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12);
+        }
+        .track-modal-card.selected.gen {
+            border-color: #4f46e5;
+            background: #f5f3ff;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.12);
+        }
+
+        .track-card-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .track-card-content {
+            flex: 1 1 0;
+            min-width: 0;
+            overflow: hidden;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        .track-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+        .track-card-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .track-modal-card.selected.sci .track-card-name { color: #1d4ed8; }
+        .track-modal-card.selected.soc .track-card-name { color: #b45309; }
+        .track-modal-card.selected.gen .track-card-name { color: #4338ca; }
+
+        .track-card-pill {
+            font-size: 0.74rem;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .track-modal-card.selected.sci .track-card-pill { background: #dbeafe; color: #1e40af; }
+        .track-modal-card.selected.soc .track-card-pill { background: #fef3c7; color: #92400e; }
+        .track-modal-card.selected.gen .track-card-pill { background: #ede9fe; color: #5b21b6; }
+
+        .track-card-details {
+            font-size: 0.82rem;
+            color: #64748b;
+            line-height: 1.4;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .track-check-circle {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            color: white;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            background: #ffffff;
+        }
+        .track-check-circle .check-icon { display: none; font-weight: bold; }
+        .track-modal-card.selected.sci .track-check-circle { background: #2563eb; border-color: #2563eb; }
+        .track-modal-card.selected.soc .track-check-circle { background: #d97706; border-color: #d97706; }
+        .track-modal-card.selected.gen .track-check-circle { background: #4f46e5; border-color: #4f46e5; }
+        .track-modal-card.selected .track-check-circle .check-icon { display: block; }
+
+        .track-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+        }
+
         /* Mobile Adjustments */
         @media screen and (max-width: 992px) {
+            .stream-grid-summary {
+                grid-template-columns: 1fr !important;
+            }
             .content {
                 padding: 14px 12px !important;
             }
@@ -329,6 +550,39 @@
             table.classrooms-table th, table.classrooms-table td {
                 padding: 10px 8px !important;
                 font-size: 0.88rem !important;
+            }
+            .track-modal-overlay {
+                padding: 10px;
+            }
+            .track-modal-container {
+                padding: 16px 14px;
+                border-radius: 14px;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box;
+            }
+            .track-modal-title { font-size: 1.05rem; }
+            .track-modal-card {
+                padding: 10px 10px;
+                gap: 10px;
+                box-sizing: border-box;
+            }
+            .track-card-icon { font-size: 1.35rem; }
+            .track-card-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 3px;
+            }
+            .track-card-name { font-size: 0.88rem; }
+            .track-card-pill { font-size: 0.68rem; padding: 2px 6px; }
+            .track-card-details { font-size: 0.75rem; word-break: break-word; overflow-wrap: break-word; }
+            .track-modal-footer {
+                flex-direction: column-reverse;
+                gap: 8px;
+            }
+            .track-modal-footer .btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -473,7 +727,7 @@
                     <input type="text" id="classNameInput" class="form-control" placeholder="វាយឈ្មោះថ្នាក់ (ឧ. ១១ វិទ្យាសាស្ត្រ ១, ១១ សង្គម ១, ១២A...)" style="flex: 2; min-width: 200px;" oninput="handleClassNameInput(this.value)" onkeydown="if(event.key==='Enter') addClass()">
                     
                     <select id="classTrackSelect" class="form-control" style="flex: 1.4; min-width: 170px; font-weight: 600; cursor: pointer;">
-                        <option value="AUTO">✨ ស្វ័យប្រវត្តิตាមឈ្មោះ</option>
+                        <option value="AUTO">ស្វ័យប្រវត្តិតាមឈ្មោះ</option>
                         <option value="វិទ្យាសាស្ត្រ">🔬 ថ្នាក់វិទ្យាសាស្ត្រ</option>
                         <option value="វិទ្យាសាស្ត្រសង្គម">📚 ថ្នាក់វិទ្យាសាស្ត្រសង្គម</option>
                         <option value="ទូទៅ">📖 ថ្នាក់ទូទៅ (ទី៧-១០)</option>
@@ -583,6 +837,83 @@
         </div>
     </div>
 
+    <!-- Modal Dialog: ផ្លាស់ប្តូរផ្នែក / ប្រភេទថ្នាក់ (Stream Change) -->
+    <div id="trackChangeModal" class="track-modal-overlay" style="display: none;" onclick="if(event.target===this) closeTrackModal()">
+        <div class="track-modal-container" role="dialog" aria-modal="true" aria-labelledby="trackModalTitle">
+            <div class="track-modal-header">
+                <div class="track-modal-title" id="trackModalTitle">
+                    <span>🏷️</span>
+                    <span>ផ្លាស់ប្តូរផ្នែក / ប្រភេទថ្នាក់</span>
+                </div>
+                <button type="button" class="track-modal-close" onclick="closeTrackModal()" aria-label="បិទ">&times;</button>
+            </div>
+            
+            <div class="track-modal-subtitle">
+                កំណត់ប្រភេទមុខវិជ្ជាសម្រាប់ថ្នាក់ <b id="modalTargetClassName">--</b> ៖
+            </div>
+
+            <input type="hidden" id="modalTargetClassId" value="">
+            <input type="hidden" id="modalSelectedTrack" value="">
+
+            <div class="track-modal-options">
+                <!-- Option 1: Science Track -->
+                <div class="track-modal-card sci" id="optSci" onclick="selectTrackOption('វិទ្យាសាស្ត្រ')">
+                    <div class="track-card-icon">🔬</div>
+                    <div class="track-card-content">
+                        <div class="track-card-top">
+                            <span class="track-card-name">ថ្នាក់វិទ្យាសាស្ត្រ (Science)</span>
+                            <span class="track-card-pill">គណិតខ្ពស់ • រូប • គីមី • ជីវ</span>
+                        </div>
+                        <div class="track-card-details">
+                            សម្រាប់សិស្សបន្តជំនាញ វិស្វកម្ម, វេជ្ជសាស្ត្រ, បច្ចេកវិទ្យា ICT
+                        </div>
+                    </div>
+                    <div class="track-check-circle"><span class="check-icon">✓</span></div>
+                </div>
+
+                <!-- Option 2: Social Track -->
+                <div class="track-modal-card soc" id="optSoc" onclick="selectTrackOption('វិទ្យាសាស្ត្រសង្គម')">
+                    <div class="track-card-icon">📚</div>
+                    <div class="track-card-content">
+                        <div class="track-card-top">
+                            <span class="track-card-name">ថ្នាក់វិទ្យាសាស្ត្រសង្គម (Social)</span>
+                            <span class="track-card-pill">ខ្មែរខ្ពស់ • ប្រវត្តិ • ភូមិ • សីលធម៌</span>
+                        </div>
+                        <div class="track-card-details">
+                            សម្រាប់សិស្សបន្តជំនាញ ច្បាប់, សេដ្ឋកិច្ច, គ្រប់គ្រង, អក្សរសាស្ត្រ
+                        </div>
+                    </div>
+                    <div class="track-check-circle"><span class="check-icon">✓</span></div>
+                </div>
+
+                <!-- Option 3: General Track -->
+                <div class="track-modal-card gen" id="optGen" onclick="selectTrackOption('ទូទៅ')">
+                    <div class="track-card-icon">📖</div>
+                    <div class="track-card-content">
+                        <div class="track-card-top">
+                            <span class="track-card-name">ថ្នាក់ទូទៅ (General Track)</span>
+                            <span class="track-card-pill">ថ្នាក់ទី៧ - ទី១០ • កម្មវិធីរួម</span>
+                        </div>
+                        <div class="track-card-details">
+                            សម្រាប់កម្រិតអនុវិទ្យាល័យ ឬថ្នាក់រៀនដែលមិនទាន់បែងចែកផ្នែក
+                        </div>
+                    </div>
+                    <div class="track-check-circle"><span class="check-icon">✓</span></div>
+                </div>
+            </div>
+
+            <div class="track-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeTrackModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 9px 18px; border-radius: 9px; font-weight: 600; cursor: pointer;">
+                    បោះបង់
+                </button>
+                <button type="button" class="btn btn-primary" id="btnSaveTrackChange" onclick="confirmSaveTrack()" style="background: #4f46e5; color: #ffffff; border: none; padding: 9px 20px; border-radius: 9px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    <span>💾</span>
+                    <span>រក្សាទុកការផ្លាស់ប្តូរ</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function toggleStreamDetails() {
             const sec = document.getElementById('streamDetailsSection');
@@ -667,7 +998,10 @@
         }
 
         // Quick update classroom track (Science vs Social vs General)
-        async function promptChangeTrack(target, maybeClassName, maybeTrack) {
+        let currentModalTargetClassId = null;
+        let currentModalInitialTrack = null;
+
+        function promptChangeTrack(target, maybeClassName, maybeTrack) {
             let classId, className, currentTrack;
             if (target && typeof target === 'object' && target.getAttribute) {
                 classId = target.getAttribute('data-id');
@@ -679,49 +1013,113 @@
                 currentTrack = maybeTrack;
             }
             if (!currentTrack) currentTrack = 'ទូទៅ';
-            const { value: newTrack } = await Swal.fire({
-                title: 'ផ្លាស់ប្តូរផ្នែក / ប្រភេទថ្នាក់',
-                html: `កំណត់ប្រភេទសម្រាប់ថ្នាក់ <b>${className}</b>៖`,
-                input: 'radio',
-                inputOptions: {
-                    'វិទ្យាសាស្ត្រ': '🔬 ថ្នាក់វិទ្យាសាស្ត្រ (Science Track)',
-                    'វិទ្យាសាស្ត្រសង្គម': '📚 ថ្នាក់វិទ្យាសាស្ត្រសង្គម (Social Track)',
-                    'ទូទៅ': '📖 ថ្នាក់ទូទៅ (General Track)'
-                },
-                inputValue: currentTrack,
-                showCancelButton: true,
-                confirmButtonColor: '#4f46e5',
-                cancelButtonColor: '#94a3b8',
-                confirmButtonText: 'ផ្លាស់ប្តូរ (Save)',
-                cancelButtonText: 'បោះបង់'
-            });
 
-            if (newTrack && newTrack !== currentTrack) {
-                try {
-                    const params = new URLSearchParams();
-                    params.append('id', classId);
-                    params.append('track', newTrack);
+            currentModalTargetClassId = classId;
+            currentModalInitialTrack = currentTrack;
 
-                    const res = await fetch('/api/classrooms/update-track', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: params
-                    });
-                    const data = await res.json();
-                    if (res.ok && data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'ជោគជ័យ!',
-                            text: data.message,
-                            timer: 1200,
-                            showConfirmButton: false
-                        }).then(() => window.location.reload());
-                    }
-                } catch (e) {
-                    console.error(e);
+            document.getElementById('modalTargetClassId').value = classId;
+            document.getElementById('modalTargetClassName').textContent = className || '--';
+            
+            selectTrackOption(currentTrack);
+
+            const modal = document.getElementById('trackChangeModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function selectTrackOption(trackVal) {
+            document.getElementById('modalSelectedTrack').value = trackVal;
+
+            const optSci = document.getElementById('optSci');
+            const optSoc = document.getElementById('optSoc');
+            const optGen = document.getElementById('optGen');
+
+            if (optSci) optSci.classList.remove('selected');
+            if (optSoc) optSoc.classList.remove('selected');
+            if (optGen) optGen.classList.remove('selected');
+
+            if (trackVal === 'វិទ្យាសាស្ត្រ') {
+                if (optSci) optSci.classList.add('selected');
+            } else if (trackVal === 'វិទ្យាសាស្ត្រសង្គម') {
+                if (optSoc) optSoc.classList.add('selected');
+            } else {
+                if (optGen) optGen.classList.add('selected');
+            }
+        }
+
+        function closeTrackModal() {
+            const modal = document.getElementById('trackChangeModal');
+            if (modal) modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        async function confirmSaveTrack() {
+            const classId = document.getElementById('modalTargetClassId').value;
+            const newTrack = document.getElementById('modalSelectedTrack').value;
+            const saveBtn = document.getElementById('btnSaveTrackChange');
+
+            if (!classId || !newTrack) {
+                closeTrackModal();
+                return;
+            }
+
+            if (newTrack === currentModalInitialTrack) {
+                closeTrackModal();
+                return;
+            }
+
+            try {
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.innerHTML = '<span>⏳</span> <span>កំពុងរក្សាទុក...</span>';
+                }
+
+                const params = new URLSearchParams();
+                params.append('id', classId);
+                params.append('track', newTrack);
+
+                const res = await fetch('/api/classrooms/update-track', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+                const data = await res.json();
+                
+                closeTrackModal();
+
+                if (res.ok && data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ជោគជ័យ!',
+                        text: data.message,
+                        timer: 1300,
+                        showConfirmButton: false
+                    }).then(() => window.location.reload());
+                } else {
+                    Swal.fire('មិនអាចផ្លាស់ប្តូរបាន!', data.message || 'មានបញ្ហាបច្ចេកទេស', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                closeTrackModal();
+                Swal.fire('បរាជ័យ!', 'មានបញ្ហាក្នុងការតភ្ជាប់បណ្តាញ។', 'error');
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<span>💾</span> <span>រក្សាទុកការផ្លាស់ប្តូរ</span>';
                 }
             }
         }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('trackChangeModal');
+                if (modal && modal.style.display !== 'none') {
+                    closeTrackModal();
+                }
+            }
+        });
 
         // Filter classrooms by track
         function filterClassrooms(type, btn) {
