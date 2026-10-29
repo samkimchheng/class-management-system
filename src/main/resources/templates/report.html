@@ -263,8 +263,11 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <a href="/download/teacher-guide" style="display: inline-flex; align-items: center; gap: 8px; background: #0f172a; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 12px rgba(15,23,42,0.2); transition: all 0.2s;">
-                        <span>📥 ទាញយកសៀវភៅណែនាំ (.pdf)</span>
+                    <a href="/docs/teacher-guide.pdf" style="display: inline-flex; align-items: center; gap: 8px; background: #0284c7; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 12px rgba(2,132,199,0.2); transition: all 0.2s;">
+                        <span>📖 មើលសៀវភៅណែនាំ (.pdf)</span>
+                    </a>
+                    <a href="/download/teacher-guide" onclick="downloadGuideSmart(event, this)" style="display: inline-flex; align-items: center; gap: 8px; background: #0f172a; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 12px rgba(15,23,42,0.2); transition: all 0.2s;">
+                        <span>📥 ទាញយក (.pdf)</span>
                     </a>
                     <a href="https://t.me/Kimchheng12" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: #0284c7; color: white; padding: 12px 22px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1rem; box-shadow: 0 4px 12px rgba(2,132,199,0.3); transition: all 0.2s;">
                         <span>✈️ ផ្ញើសារតាម Telegram (@Kimchheng12)</span>
@@ -435,5 +438,39 @@
     </script>
     <script src="/js/logout-confirm.js"></script>
     <script src="/js/mobile-nav.js?v=20261029g"></script>
+
+    <script>
+        async function downloadGuideSmart(e, btn) {
+            if (e) e.preventDefault();
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳ កំពុងទាញយក...</span>';
+            btn.style.pointerEvents = 'none';
+            try {
+                const response = await fetch('/docs/teacher-guide.pdf');
+                if (!response.ok) throw new Error('Network error: ' + response.status);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'សៀវភៅណែនាំ_ការប្រើប្រាស់ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន_២០២៧.pdf';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    if (a.parentNode) document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    btn.innerHTML = originalText;
+                    btn.style.pointerEvents = 'auto';
+                }, 1500);
+            } catch (err) {
+                console.warn('Smart blob download fallback:', err);
+                window.location.href = '/download/teacher-guide';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.pointerEvents = 'auto';
+                }, 2000);
+            }
+        }
+    </script>
 </body>
 </html>

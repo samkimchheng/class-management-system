@@ -274,7 +274,25 @@ public class WebController {
 
 
     
-    @GetMapping({"/download/teacher-guide", "/download/teacher-guide-pdf", "/docs/teacher-guide.pdf"})
+    @GetMapping({"/docs/teacher-guide.pdf", "/docs/guide.pdf"})
+    @ResponseBody
+    public ResponseEntity<Resource> viewTeacherGuidePdf(
+            @RequestParam(value = "download", defaultValue = "false") boolean download) {
+        Resource resource = new ClassPathResource("static/docs/teacher-guide.pdf");
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        String khmerFilename = "សៀវភៅណែនាំ_ការប្រើប្រាស់ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន_២០២៧.pdf";
+        String encodedFilename = URLEncoder.encode(khmerFilename, StandardCharsets.UTF_8).replace("+", "%20");
+        String disposition = download ? "attachment" : "inline";
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition + "; filename=\"teacher-guide.pdf\"; filename*=UTF-8''" + encodedFilename)
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .body(resource);
+    }
+
+    @GetMapping({"/download/teacher-guide", "/download/teacher-guide-pdf"})
     @ResponseBody
     public ResponseEntity<Resource> downloadTeacherGuidePdf() {
         Resource resource = new ClassPathResource("static/docs/teacher-guide.pdf");
