@@ -1051,3 +1051,180 @@ th.last-sticky {
         font-size: 0.74rem !important;
     }
 }
+
+
+/* Scores Controls & Max Score Badge */
+.scores-filter-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.scores-filter-group {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.scores-filter-group .filter-select {
+    flex: 1 1 180px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+    box-sizing: border-box;
+    outline: none;
+    margin: 0 !important;
+}
+
+.scores-actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.scores-btn-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-print-score,
+.btn-save-score {
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-weight: 600 !important;
+    padding: 9px 16px !important;
+    border-radius: 8px !important;
+    height: 42px !important;
+    box-sizing: border-box !important;
+}
+
+.scores-max-config-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.max-score-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    border: 1.5px solid #f59e0b !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 0.92rem !important;
+    padding: 9px 14px !important;
+    white-space: nowrap !important;
+    height: 42px !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0;
+}
+
+.btn-config-score {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    background-color: #f59e0b !important;
+    color: #ffffff !important;
+    border: 1.5px solid #d97706 !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 0.92rem !important;
+    padding: 9px 14px !important;
+    white-space: nowrap !important;
+    height: 42px !important;
+    box-sizing: border-box !important;
+    cursor: pointer !important;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+.btn-config-score:hover {
+    background-color: #d97706 !important;
+}
+.btn-config-score:active {
+    transform: scale(0.98);
+}
+
+@media screen and (max-width: 640px) {
+    .scores-filter-controls {
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .scores-filter-group {
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .scores-filter-group .filter-select {
+        width: 100% !important;
+        min-width: 100% !important;
+        text-align: center !important;
+        text-align-last: center !important;
+        margin: 0 !important;
+        padding: 9px 10px !important;
+        font-size: 0.92rem !important;
+    }
+
+    .scores-actions-bar {
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .scores-btn-group {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .btn-print-score,
+    .btn-save-score {
+        flex: 1 1 0 !important;
+        font-size: 0.82rem !important;
+        padding: 8px 4px !important;
+        white-space: nowrap !important;
+        text-align: center !important;
+        justify-content: center !important;
+        height: 40px !important;
+    }
+
+    .scores-max-config-group {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        width: 100% !important;
+        align-items: center !important;
+    }
+
+    .max-score-badge,
+    .btn-config-score {
+        flex: 1 1 0 !important;
+        font-size: 0.82rem !important;
+        padding: 0 4px !important;
+        white-space: nowrap !important;
+        text-align: center !important;
+        justify-content: center !important;
+        height: 40px !important;
+    }
+}

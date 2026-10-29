@@ -135,7 +135,7 @@ public class ScoreApiController {
         defaultRule.setAccountId(accountId);
         defaultRule.setClassName(className);
         defaultRule.setSubjectName(subjectName);
-        defaultRule.setMaxMonthlyScore(0);
+        defaultRule.setMaxMonthlyScore(100);
         defaultRule.setMaxAttendanceScore(0);
         defaultRule.setMaxAssignmentScore(0);
         return ResponseEntity.ok(defaultRule);

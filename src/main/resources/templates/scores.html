@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>បញ្ជីស្រង់ពិន្ទុ - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029e}" href="../static/css/style.css?v=20261029e">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029f" href="../static/css/style.css?v=20261029f">
     <style>
         .scrollable-table-wrapper {
             overflow-x: auto;
@@ -154,45 +154,47 @@
 
             <div class="table-container" style="overflow-x: auto;">
                 <form id="scoreForm" onsubmit="return false;">
-                <div class="header-action" style="flex-direction: column; align-items: flex-start; gap: 15px;">
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
-                        <select name="month" class="form-control" style="width: auto;">
-                            <option th:each="m : ${monthsList}" th:value="${m}" th:text="${m}"></option>
-                        </select>
-                        <select name="className" class="form-control" style="width: auto; display: inline-block;" onchange="window.location.href = '/scores?className=' + encodeURIComponent(this.value);">
-                            <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
-                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
-                        </select>
-                        <select name="subjectName" class="form-control" style="width: auto; display: inline-block;">
-                            <option value="គណិតវិទ្យា">គណិតវិទ្យា</option>
-                            <option value="ភាសាខ្មែរ">ភាសាខ្មែរ</option>
-                            <option value="រូបវិទ្យា">រូបវិទ្យា</option>
-                            <option value="គីមីវិទ្យា">គីមីវិទ្យា</option>
-                            <option value="ជីវវិទ្យា">ជីវវិទ្យា</option>
-                            <option value="ជីវៈវិទ្យា">ជីវៈវិទ្យា</option>
-                            <option value="ប្រវត្តិវិទ្យា">ប្រវត្តិវិទ្យា</option>
-                            <option value="ភូមិវិទ្យា">ភូមិវិទ្យា</option>
-                            <option value="ពលរដ្ឋវិទ្យា">ពលរដ្ឋវិទ្យា</option>
-                            <option value="សីលធម៌">សីលធម៌</option>
-                            <option value="ផែនដីវិទ្យា">ផែនដីវិទ្យា</option>
-                            <option value="ផែនដី">ផែនដី</option>
-                            <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស</option>
-                            <option value="ភាសាបារាំង">ភាសាបារាំង</option>
-                            <option value="ព័ត៌មានវិទ្យា/កុំព្យូទ័រ">ព័ត៌មានវិទ្យា/កុំព្យូទ័រ</option>
-                            <option value="កីឡា">កីឡា</option>
-                            <option value="អក្សរសិល្ប៍">អក្សរសិល្ប៍</option>
-                        </select>
-                    </div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%; align-items: center;">
-                        <button type="button" class="btn btn-secondary" onclick="window.print()">បោះពុម្ពរបាយការណ៍</button>
-                        <button type="button" id="btnSaveScores" class="btn btn-primary" onclick="window.submitScoresForm()">💾 រក្សាទុកពិន្ទុ</button>
-                        <span id="draftNotice" style="display: none; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 6px 14px; border-radius: 8px; font-weight: bold; font-size: 0.88rem; align-items: center; gap: 6px;"></span>
-                        
-                        <div style="display: flex; gap: 8px; align-items: center; margin-left: auto; flex-wrap: nowrap; overflow-x: auto;">
-                            <span id="currentMaxScoreDisplay" style="font-weight: 600; color: #1f2937; background-color: #e5e7eb; border: 1px solid #d1d5db; padding: 8px 14px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: auto; white-space: nowrap !important; flex-shrink: 0;"></span>
-										        <button type="button" class="btn btn-warning" style="background-color: #f59e0b; color: white; white-space: nowrap !important; flex-shrink: 0;" onclick="configureScores()">⚙️ កំណត់ពិន្ទុពេញ</button>
-                        </div>
-                    </div>
+                <div class="scores-filter-controls">
+                    <div class="scores-filter-group">
+                        <select name="month" class="form-control filter-select">
+                            <option th:each="m : ${monthsList}" th:value="${m}" th:text="${m}"></option>
+                        </select>
+                        <select name="className" class="form-control filter-select" onchange="window.location.href = '/scores?className=' + encodeURIComponent(this.value);">
+                            <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
+                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                        </select>
+                        <select name="subjectName" class="form-control filter-select">
+                            <option value="គណិតវិទ្យា">គណិតវិទ្យា</option>
+                            <option value="ភាសាខ្មែរ">ភាសាខ្មែរ</option>
+                            <option value="រូបវិទ្យា">រូបវិទ្យា</option>
+                            <option value="គីមីវិទ្យា">គីមីវិទ្យា</option>
+                            <option value="ជីវវិទ្យា">ជីវវិទ្យា</option>
+                            <option value="ជីវៈវិទ្យា">ជីវៈវិទ្យា</option>
+                            <option value="ប្រវត្តិវិទ្យា">ប្រវត្តិវិទ្យា</option>
+                            <option value="ភូមិវិទ្យា">ភូមិវិទ្យា</option>
+                            <option value="ពលរដ្ឋវិទ្យា">ពលរដ្ឋវិទ្យា</option>
+                            <option value="សីលធម៌">សីលធម៌</option>
+                            <option value="ផែនដីវិទ្យា">ផែនដីវិទ្យា</option>
+                            <option value="ផែនដី">ផែនដី</option>
+                            <option value="ភាសាអង់គ្លេស">ភាសាអង់គ្លេស</option>
+                            <option value="ភាសាបារាំង">ភាសាបារាំង</option>
+                            <option value="ព័ត៌មានវិទ្យា/កុំព្យូទ័រ">ព័ត៌មានវិទ្យា/កុំព្យូទ័រ</option>
+                            <option value="កីឡា">កីឡា</option>
+                            <option value="អក្សរសិល្ប៍">អក្សរសិល្ប៍</option>
+                        </select>
+                    </div>
+                    <div class="scores-actions-bar">
+                        <div class="scores-btn-group">
+                            <button type="button" class="btn btn-secondary btn-print-score" onclick="window.print()">🖨️ បោះពុម្ពរបាយការណ៍</button>
+                            <button type="button" id="btnSaveScores" class="btn btn-primary btn-save-score" onclick="window.submitScoresForm()">💾 រក្សាទុកពិន្ទុ</button>
+                            <span id="draftNotice" style="display: none; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 6px 14px; border-radius: 8px; font-weight: bold; font-size: 0.88rem; align-items: center; gap: 6px;"></span>
+                        </div>
+                        
+                        <div class="scores-max-config-group">
+                            <span id="currentMaxScoreDisplay" class="max-score-badge">🎯 ពិន្ទុពេញ៖ <b>100</b></span>
+                            <button type="button" class="btn btn-warning btn-config-score" onclick="configureScores()">⚙️ កំណត់ពិន្ទុពេញ</button>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="scrollable-table-wrapper">
@@ -249,65 +251,86 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            let currentScoreRule = { maxMonthlyScore: 0, maxAttendanceScore: 0, maxAssignmentScore: 0 };
+            let currentScoreRule = { maxMonthlyScore: 100, maxAttendanceScore: 0, maxAssignmentScore: 0 };
 
-            window.configureScores = function() {
-                const className = document.querySelector('select[name="className"]').value;
-                const subjectName = document.querySelector('select[name="subjectName"]').value;
-                
-                Swal.fire({
-                    title: 'កំណត់ពិន្ទុពេញ',
-                    html: `
-                        <div style="text-align: left; margin-bottom: 15px;">
-                            <b>ថ្នាក់៖</b> ${className} <br>
-                            <b>មុខវិជ្ជា៖</b> ${subjectName}
-                        </div>
-                        <label style="display:block;text-align:left;margin-top:10px;">ពិន្ទុប្រចាំខែ (Monthly Score)</label>
-                        <input id="swal-input1" type="number" class="swal2-input" value="${currentScoreRule.maxMonthlyScore}">
-                        <label style="display:block;text-align:left;margin-top:10px;">ពិន្ទុវត្តមាន (Attendance Score)</label>
-                        <input id="swal-input2" type="number" class="swal2-input" value="${currentScoreRule.maxAttendanceScore}">
-                        <label style="display:block;text-align:left;margin-top:10px;">កិច្ចការស្រាវជ្រាវ (Assignment Score)</label>
-                        <input id="swal-input3" type="number" class="swal2-input" value="${currentScoreRule.maxAssignmentScore}">
-                    `,
-                    focusConfirm: false,
-                    showCancelButton: true,
-                    confirmButtonText: 'រក្សាទុក',
-                    cancelButtonText: 'បោះបង់',
-                    preConfirm: () => {
-                        return [
-                            document.getElementById('swal-input1').value,
-                            document.getElementById('swal-input2').value,
-                            document.getElementById('swal-input3').value
-                        ]
-                    }
-                }).then(async (result) => {
-                    if (result.isConfirmed) {
-                        const values = result.value;
-                        const payload = {
-                            className: className,
-                            subjectName: subjectName,
-                            maxMonthlyScore: parseFloat(values[0]) || 100,
-                            maxAttendanceScore: parseFloat(values[1]) || 0,
-                            maxAssignmentScore: parseFloat(values[2]) || 0
-                        };
-                        
-                        try {
-                            const res = await fetch('/api/scores/rules', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(payload)
-                            });
-                            if (res.ok) {
-                                Swal.fire('ជោគជ័យ!', 'កំណត់ពិន្ទុពេញបានរក្សាទុករួចរាល់។', 'success');
-                                currentScoreRule = payload;
-                                updateInputMaxes();
-                                document.querySelectorAll('tbody tr').forEach(row => calculateScoreForRow(row));
-                            }
-                        } catch(e) {
-                            Swal.fire('បរាជ័យ!', 'មានបញ្ហាក្នុងការរក្សាទុក។', 'error');
-                        }
-                    }
-                });
+            window.configureScores = function() {
+                const className = document.querySelector('select[name="className"]').value;
+                const subjectName = document.querySelector('select[name="subjectName"]').value;
+                
+                let curMonthly = currentScoreRule.maxMonthlyScore;
+                let curAtt = currentScoreRule.maxAttendanceScore;
+                let curAssign = currentScoreRule.maxAssignmentScore;
+                if ((curMonthly == null || curMonthly === 0) && (curAtt == null || curAtt === 0) && (curAssign == null || curAssign === 0)) {
+                    curMonthly = 100;
+                    curAtt = 0;
+                    curAssign = 0;
+                }
+                
+                Swal.fire({
+                    title: '🎯 កំណត់ពិន្ទុពេញ',
+                    html: `
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; text-align: left; margin-bottom: 16px; font-size: 0.95rem;">
+                            <div style="margin-bottom: 4px;"><b>🏫 ថ្នាក់៖</b> <span style="color: #4361ee; font-weight: bold;">${className}</span></div>
+                            <div><b>📚 មុខវិជ្ជា៖</b> <span style="color: #4361ee; font-weight: bold;">${subjectName}</span></div>
+                        </div>
+                        <div style="text-align: left;">
+                            <label style="display:block; font-weight:600; color:#334155; margin-bottom: 5px; font-size:0.92rem;">ពិន្ទុប្រចាំខែ (Monthly Score)</label>
+                            <input id="swal-input1" type="number" class="swal2-input" value="${curMonthly}" style="width: 100%; box-sizing: border-box; margin: 0 0 12px 0; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; font-family: inherit;">
+                            
+                            <label style="display:block; font-weight:600; color:#334155; margin-bottom: 5px; font-size:0.92rem;">ពិន្ទុវត្តមាន (Attendance Score)</label>
+                            <input id="swal-input2" type="number" class="swal2-input" value="${curAtt}" style="width: 100%; box-sizing: border-box; margin: 0 0 12px 0; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; font-family: inherit;">
+                            
+                            <label style="display:block; font-weight:600; color:#334155; margin-bottom: 5px; font-size:0.92rem;">កិច្ចការស្រាវជ្រាវ (Assignment Score)</label>
+                            <input id="swal-input3" type="number" class="swal2-input" value="${curAssign}" style="width: 100%; box-sizing: border-box; margin: 0 0 4px 0; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; font-family: inherit;">
+                        </div>
+                    `,
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: '💾 រក្សាទុក',
+                    cancelButtonText: '❌ បោះបង់',
+                    confirmButtonColor: '#4361ee',
+                    cancelButtonColor: '#94a3b8',
+                    preConfirm: () => {
+                        return [
+                            document.getElementById('swal-input1').value,
+                            document.getElementById('swal-input2').value,
+                            document.getElementById('swal-input3').value
+                        ]
+                    }
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const values = result.value;
+                        let mScore = parseFloat(values[0]) || 0;
+                        let attScore = parseFloat(values[1]) || 0;
+                        let assignScore = parseFloat(values[2]) || 0;
+                        if (mScore + attScore + assignScore === 0) {
+                            mScore = 100;
+                        }
+                        const payload = {
+                            className: className,
+                            subjectName: subjectName,
+                            maxMonthlyScore: mScore,
+                            maxAttendanceScore: attScore,
+                            maxAssignmentScore: assignScore
+                        };
+                        
+                        try {
+                            const res = await fetch('/api/scores/rules', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                            if (res.ok) {
+                                Swal.fire('ជោគជ័យ!', 'កំណត់ពិន្ទុពេញបានរក្សាទុករួចរាល់។', 'success');
+                                currentScoreRule = payload;
+                                updateInputMaxes();
+                                document.querySelectorAll('tbody tr').forEach(row => calculateScoreForRow(row));
+                            }
+                        } catch(e) {
+                            Swal.fire('បរាជ័យ!', 'មានបញ្ហាក្នុងការរក្សាទុក។', 'error');
+                        }
+                    }
+                });
             };
 
             async function fetchScoreRule() {
@@ -339,7 +362,8 @@
                 let maxTotal = parseFloat(currentScoreRule.maxMonthlyScore || 0) + parseFloat(currentScoreRule.maxAttendanceScore || 0) + parseFloat(currentScoreRule.maxAssignmentScore || 0);
                 const displaySpan = document.getElementById('currentMaxScoreDisplay');
                 if (displaySpan) {
-                    displaySpan.innerHTML = '<i class="fas fa-bullseye" style="color:#f59e0b;"></i> ពិន្ទុពេញ៖ ' + maxTotal;
+                    if (maxTotal <= 0) { maxTotal = 100; }
+                    displaySpan.innerHTML = '🎯 ពិន្ទុពេញ៖ <b>' + maxTotal + '</b>';
                 }
             }
 
