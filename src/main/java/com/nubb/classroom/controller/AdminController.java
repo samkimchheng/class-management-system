@@ -50,7 +50,18 @@ public class AdminController {
 
     @GetMapping("/accounts")
     public String accounts(Model model) {
-        model.addAttribute("accounts", accountRepository.findAll());
+        List<Account> accounts = accountRepository.findAll();
+        model.addAttribute("accounts", accounts);
+
+        long totalTeachers = accounts.stream()
+                .filter(a -> !"ADMIN".equalsIgnoreCase(a.getRole()))
+                .count();
+        long activeTeachers = accounts.stream()
+                .filter(a -> !"ADMIN".equalsIgnoreCase(a.getRole()) && (a.getActive() == null || a.getActive()))
+                .count();
+        model.addAttribute("totalTeachers", totalTeachers);
+        model.addAttribute("activeTeachers", activeTeachers);
+
         long pendingFb = 0;
         try {
             pendingFb = feedbackRepository.countByStatus("PENDING");
@@ -138,6 +149,38 @@ public class AdminController {
             String statusText = acc.getActive() ? "បើកដំណើរការ" : "បិទដំណើរការ";
             redirectAttributes.addFlashAttribute("successMessage", "បាន" + statusText + "គណនី «" + acc.getFullName() + "» ដោយជោគជ័យ!");
         }
+        return "redirect:/admin/accounts";
+    }
+
+    @PostMapping("/accounts/toggle-all")
+    public String toggleAllTeachers(
+            @RequestParam(value = "active", required = false) Boolean active,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        Long myId = (Long) session.getAttribute("ACCOUNT_ID");
+        List<Account> allAccounts = accountRepository.findAll();
+
+        if (active == null) {
+            boolean anyActive = allAccounts.stream()
+                    .filter(a -> !"ADMIN".equalsIgnoreCase(a.getRole()) && (myId == null || !myId.equals(a.getId())))
+                    .anyMatch(a -> a.getActive() == null || a.getActive());
+            active = !anyActive;
+        }
+
+        int affectedCount = 0;
+        for (Account acc : allAccounts) {
+            // Never disable Admin accounts or current user
+            if ("ADMIN".equalsIgnoreCase(acc.getRole()) || (myId != null && myId.equals(acc.getId()))) {
+                continue;
+            }
+            acc.setActive(active);
+            accountRepository.save(acc);
+            affectedCount++;
+        }
+
+        String actionText = active ? "បើកដំណើរការ" : "បិទដំណើរការ";
+        redirectAttributes.addFlashAttribute("successMessage", 
+                "បាន" + actionText + "គណនីគ្រូបង្រៀនទាំងអស់ (ចំនួន " + affectedCount + " គណនី) ដោយជោគជ័យ!");
         return "redirect:/admin/accounts";
     }
 

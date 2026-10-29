@@ -170,13 +170,45 @@
             
             <!-- Accounts List Panel -->
             <div class="panel">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <h3 style="margin: 0; color: #0f172a; font-size: 1.25rem; font-weight: 800;">បញ្ជីគណនីទាំងអស់</h3>
+                        <h3 style="margin: 0; color: #0f172a; font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                            <span>👥 បញ្ជីគណនីទាំងអស់</span>
+                        </h3>
                         <span style="font-size: 0.9rem; color: #64748b;">(គ្រប់គ្រង កែប្រែឈ្មោះ លេខសម្ងាត់ មុខវិជ្ជា ឬបិទ/បើកសិទ្ធិចូលប្រើប្រាស់របស់គ្រូនីមួយៗ)</span>
                     </div>
-                    <div style="background: #f1f5f9; padding: 6px 14px; border-radius: 8px; font-weight: 700; color: #334155; font-size: 0.95rem; border: 1px solid #cbd5e1;">
-                        <span>សរុប៖ <b th:text="${#lists.size(accounts)}">0</b> គណនី</span>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <!-- Summary Badges -->
+                        <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 8px; font-weight: 700; color: #334155; font-size: 0.9rem; border: 1px solid #cbd5e1; display: flex; align-items: center; gap: 6px;">
+                            <span>សរុប៖ <b th:text="${#lists.size(accounts)}">0</b></span>
+                            <span style="color: #94a3b8;">|</span>
+                            <span>សកម្ម៖ <b style="color: #166534;" th:text="${activeTeachers != null ? activeTeachers : 0}">0</b>/<span th:text="${totalTeachers != null ? totalTeachers : 0}">0</span> នាក់</span>
+                        </div>
+
+                        <!-- Master Action Button Group (ប៊ូតុងបិទ/បើក គណនីគ្រូទាំងអស់) -->
+                        <div style="display: inline-flex; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.08); border: 1px solid #cbd5e1;">
+                            <!-- ប៊ូតុង បើកគ្រូទាំងអស់ -->
+                            <form th:action="@{/admin/accounts/toggle-all}" method="post" style="margin:0;"
+                                  onsubmit="return confirmBulkAction(event, this, 'បើកដំណើរការគ្រូទាំងអស់', 'តើអ្នកពិតជាចង់បើកដំណើរការគណនីគ្រូបង្រៀនទាំងអស់ឡើងវិញមែនទេ? គ្រូទាំងអស់នឹងអាចចូលប្រើប្រព័ន្ធបានជាធម្មតា។', '#10b981');">
+                                <input type="hidden" name="active" value="true">
+                                <button type="submit" style="background: #10b981; color: white; border: none; padding: 8px 15px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; transition: background 0.2s;"
+                                        onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'"
+                                        title="បើកដំណើរការគណនីគ្រូទាំងអស់">
+                                    <span>🔓 បើកគ្រូទាំងអស់</span>
+                                </button>
+                            </form>
+                            <div style="width: 1px; background: rgba(255,255,255,0.4);"></div>
+                            <!-- ប៊ូតុង បិទគ្រូទាំងអស់ -->
+                            <form th:action="@{/admin/accounts/toggle-all}" method="post" style="margin:0;"
+                                  onsubmit="return confirmBulkAction(event, this, 'បិទដំណើរការគ្រូទាំងអស់', 'តើអ្នកពិតជាចង់បិទដំណើរការគណនីគ្រូបង្រៀនទាំងអស់ជាបណ្តោះអាសន្នមែនទេ? (គណនី Admin នឹងមិនត្រូវបានបិទឡើយ)', '#ef4444');">
+                                <input type="hidden" name="active" value="false">
+                                <button type="submit" style="background: #ef4444; color: white; border: none; padding: 8px 15px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; transition: background 0.2s;"
+                                        onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'"
+                                        title="ផ្អាកដំណើរការគណនីគ្រូទាំងអស់ជាបណ្តោះអាសន្ន">
+                                    <span>🔒 បិទគ្រូទាំងអស់</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
@@ -420,6 +452,25 @@
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#94a3b8',
                 confirmButtonText: 'បាទ/ចាស, លុបចេញ!',
+                cancelButtonText: 'បោះបង់'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+            return false;
+        }
+
+        function confirmBulkAction(event, form, actionText, msg, confirmColor) {
+            event.preventDefault();
+            Swal.fire({
+                title: actionText + '?',
+                text: msg,
+                icon: actionText.includes('បិទ') ? 'warning' : 'question',
+                showCancelButton: true,
+                confirmButtonColor: confirmColor || '#3b82f6',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'យល់ព្រម, ' + actionText + '!',
                 cancelButtonText: 'បោះបង់'
             }).then((result) => {
                 if (result.isConfirmed) {
