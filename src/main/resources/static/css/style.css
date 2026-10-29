@@ -90,15 +90,18 @@ body {
     margin-bottom: 0;
 }
 
-.nav-link {
-    display: block;
-    padding: 15px 20px;
-    color: #cbd5e1;
-    text-decoration: none;
-    border-radius: 0;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    font-size: 1rem;
+.nav-link, .nav-item a {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 13px 20px !important;
+    color: #cbd5e1 !important;
+    text-decoration: none !important;
+    border-radius: 0 !important;
+    transition: all 0.2s ease !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+    border-left: 4px solid transparent !important;
 }
 
 .nav-link:hover {

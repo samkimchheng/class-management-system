@@ -85,23 +85,27 @@
     </style>
 </head>
 <body>
+        <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>ផ្ទាំងគ្រប់គ្រង Admin</h2>
+            <h2>អ្នកគ្រប់គ្រងប្រព័ន្ធ</h2>
+            <div style="margin-top: 10px; font-size: 0.92rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">Admin</b></span>
+            </div>
         </div>
         <ul class="nav-menu">
-            <li class="nav-item"><a href="/admin">Dashboard ទូទៅ</a></li>
-            <li class="nav-item"><a href="/admin/accounts">គ្រប់គ្រងគណនីគ្រូ</a></li>
-            <li class="nav-item active"><a href="/admin/feedbacks" style="display: flex; justify-content: space-between; align-items: center;">
-                <span>💬 មតិកែលម្អពីគ្រូៗ</span>
-                <span th:if="${pendingCount > 0}" style="background: #ef4444; color: white; font-size: 0.75rem; padding: 2px 7px; border-radius: 10px; font-weight: bold;" th:text="${pendingCount}">1</span>
+            <li class="nav-item "><a href="/admin" class="nav-link"><span>📊</span> <span>Dashboard ទូទៅ</span></a></li>
+            <li class="nav-item "><a href="/admin/accounts" class="nav-link"><span>👥</span> <span>គ្រប់គ្រងគណនីគ្រូ</span></a></li>
+            <li class="nav-item active"><a href="/admin/feedbacks" class="nav-link" style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="display: flex; align-items: center; gap: 10px;"><span>💬</span> <span>មតិកែលម្អពីគ្រូៗ</span></span>
+                <span th:if="${pendingFeedbacks > 0}" style="background: #ef4444; color: white; font-size: 0.75rem; padding: 2px 7px; border-radius: 10px; font-weight: bold;" th:text="${pendingFeedbacks}">1</span>
             </a></li>
-            <li class="nav-item"><a href="/" target="_blank">ទៅកាន់ផ្ទាំងសាលារៀន &nearr;</a></li>
-            <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">ជំនួយបច្ចេកទេស (Telegram)</a></li>
+            <li class="nav-item"><a href="/" target="_blank" class="nav-link"><span>🏫</span> <span>ចូលមើលទំព័រសាលា &nearr;</span></a></li>
+            <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8;"><span>✈️</span> <span>ទាក់ទងខ្ញុំ (Telegram)</span></a></li>
         </ul>
         <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
             <ul class="nav-menu" style="overflow-y: visible; flex: none;">
-                <li class="nav-item"><a href="/logout" style="color: var(--danger);">ចាកចេញ (Logout)</a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
             </ul>
         </div>
     </div>
@@ -268,5 +272,6 @@
         }
     </script>
     <script src="/js/logout-confirm.js"></script>
+    <script src="/js/mobile-nav.js"></script>
 </body>
 </html>

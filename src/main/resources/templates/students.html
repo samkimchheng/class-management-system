@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>បញ្ជីឈ្មោះសិស្ស - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
-    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}" href="../static/css/style.css">
     <style>
         .sticky-col {
@@ -55,36 +55,36 @@
     </style>
 </head>
 <body>
+        <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
-            <div style="margin-top: 10px; font-size: 0.95rem; color: #a5b4fc; text-align: center;">
-                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">គ្រូ</b></span>
+            <div style="margin-top: 10px; font-size: 0.92rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b id="sidebarTeacherName" th:text="${teacherAccount != null ? teacherAccount.fullName : session.ACCOUNT_NAME}">គ្រូ</b></span>
             </div>
         </div>
         <ul class="nav-menu">
-            <li class="nav-item"><a href="/" class="nav-link">ទំព័រដើម</a></li>
-            <li class="nav-item"><a href="/profile" class="nav-link">បំពេញព័ត៌មានផ្ទាល់ខ្លួន</a></li>
-            <li class="nav-item"><a href="/certificate" class="nav-link">វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</a></li>
-            <li class="nav-item"><a href="/classrooms" class="nav-link">បញ្ជីថ្នាក់រៀនខ្ញុំ</a></li>
-            <li class="nav-item active"><a href="/students" class="nav-link">បញ្ជីឈ្មោះសិស្ស</a></li>
-            <li class="nav-item"><a href="/attendance" class="nav-link">បញ្ជីអវត្តមាន</a></li>
-            <li class="nav-item"><a href="/scores" class="nav-link">បញ្ជីពិន្ទុ</a></li>
-            <li class="nav-item"><a href="/statistics" class="nav-link">ស្ថិតិសិស្ស</a></li>
-            <li class="nav-item"><a href="/exams" class="nav-link">វិញ្ញាសាប្រឡង</a></li>
-            <li class="nav-item"><a href="/lessons" class="nav-link">មើលមេរៀន</a></li>
-            <li class="nav-item"><a href="/schedule" class="nav-link">កាលវិភាគ</a></li>
-            <li class="nav-item"><a href="/report" class="nav-link">របាយការណ៍</a></li>
-            <li class="nav-item"><a href="/feedback" class="nav-link" style="display: flex; align-items: center; gap: 8px;"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
-            <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8; display: flex; align-items: center; gap: 8px;">✈️ ទាក់ទងខ្ញុំ (Telegram)</a></li>
-          </ul>
-          <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
-              <ul class="nav-menu" style="overflow-y: visible; flex: none;">
-                  
-            <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);">ផ្ទាំង Admin 🔒</a></li>
-            <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);">ចាកចេញ (Logout) 🚪</a></li>
-              </ul>
-          </div>
+            <li class="nav-item "><a href="/" class="nav-link"><span>🏠</span> <span>ទំព័រដើម</span></a></li>
+            <li class="nav-item "><a href="/profile" class="nav-link"><span>👤</span> <span>បំពេញព័ត៌មានផ្ទាល់ខ្លួន</span></a></li>
+            <li class="nav-item "><a href="/certificate" class="nav-link"><span>📜</span> <span>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span></a></li>
+            <li class="nav-item "><a href="/classrooms" class="nav-link"><span>🏫</span> <span>បញ្ជីថ្នាក់រៀនខ្ញុំ</span></a></li>
+            <li class="nav-item active"><a href="/students" class="nav-link"><span>👥</span> <span>បញ្ជីឈ្មោះសិស្ស</span></a></li>
+            <li class="nav-item "><a href="/attendance" class="nav-link"><span>📅</span> <span>បញ្ជីអវត្តមាន</span></a></li>
+            <li class="nav-item "><a href="/scores" class="nav-link"><span>📊</span> <span>បញ្ជីពិន្ទុ</span></a></li>
+            <li class="nav-item "><a href="/statistics" class="nav-link"><span>📈</span> <span>ស្ថិតិសិស្ស</span></a></li>
+            <li class="nav-item "><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
+            <li class="nav-item "><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
+            <li class="nav-item "><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
+            <li class="nav-item "><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
+            <li class="nav-item "><a href="/feedback" class="nav-link"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
+            <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8;"><span>✈️</span> <span>ទាក់ទងខ្ញុំ (Telegram)</span></a></li>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);"><span>🔒</span> <span>ផ្ទាំង Admin</span></a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
+            </ul>
+        </div>
     </div>
 
     <div class="main-content">
@@ -170,6 +170,7 @@
     </div>
     <script src="/js/academic-year.js"></script>
     <script src="/js/logout-confirm.js"></script>
+    <script src="/js/mobile-nav.js"></script>
 </body>
 </html>
 
