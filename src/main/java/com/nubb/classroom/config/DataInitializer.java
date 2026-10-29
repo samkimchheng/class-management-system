@@ -257,6 +257,11 @@ public class DataInitializer {
                             "VALUES (33, 'Teacher1001', 'techercl@%21', 'teachercl21@mitpukae.com', 'TEACHER', 'ស៊ឹង សុមុនី', true, 'ស្រី', 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត', 'ខេត្តពោធិ៍សាត់', 'គ្រូបង្រៀន', 'លី ប៊ុនថេង', '២០២៦-២០២៧') " +
                             "ON CONFLICT (id) DO NOTHING");
 
+                    // Seed Demo Teacher (ID: 98) if not present
+                    stmt.executeUpdate("INSERT INTO account (id, username, password, email, role, full_name, active, gender, school_name, province, position, teaching_classes, principal_name, current_academic_year) " +
+                            "VALUES (98, 'demo', 'demo@1234', 'demo@mitpukae.com', 'TEACHER', 'គ្រូបង្រៀន (គណនីសាកល្បង)', true, 'ប្រុស', 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត', 'ខេត្តពោធិ៍សាត់', 'គ្រូបង្រៀន (សាកល្បង)', 'ថ្នាក់សាកល្បង', 'លី ប៊ុនថេង', '២០២៦-២០២៧') " +
+                            "ON CONFLICT (id) DO NOTHING");
+
                     // Align sequence so newly registered teacher accounts get clean auto-increment IDs without conflict
                     try {
                         stmt.execute("SELECT setval(pg_get_serial_sequence('account', 'id'), (SELECT COALESCE(MAX(id), 1) FROM account))");
@@ -383,7 +388,7 @@ public class DataInitializer {
                 String[] studentTables = {"students", "\"STUDENTS\""};
                 for (String stTable : studentTables) {
                     try {
-                        String stSub = "SELECT id FROM " + stTable + " WHERE student_code IN (" + codesIn + ") OR name IN (" + namesIn + ")";
+                        String stSub = "SELECT id FROM " + stTable + " WHERE account_id != 98 AND (student_code IN (" + codesIn + ") OR name IN (" + namesIn + "))";
                         try { stmt.executeUpdate("DELETE FROM score WHERE student_id IN (" + stSub + ")"); } catch (Exception ignored) {}
                         try { stmt.executeUpdate("DELETE FROM \"SCORE\" WHERE student_id IN (" + stSub + ")"); } catch (Exception ignored) {}
 
@@ -393,7 +398,7 @@ public class DataInitializer {
                         try { stmt.executeUpdate("DELETE FROM certificate_records WHERE student_id IN (" + stSub + ")"); } catch (Exception ignored) {}
                         try { stmt.executeUpdate("DELETE FROM \"CERTIFICATE_RECORDS\" WHERE student_id IN (" + stSub + ")"); } catch (Exception ignored) {}
 
-                        stmt.executeUpdate("DELETE FROM " + stTable + " WHERE student_code IN (" + codesIn + ") OR name IN (" + namesIn + ")");
+                        stmt.executeUpdate("DELETE FROM " + stTable + " WHERE account_id != 98 AND (student_code IN (" + codesIn + ") OR name IN (" + namesIn + "))");
                     } catch (Exception ignored) {}
                 }
             } catch (Exception ignored) {}
@@ -594,6 +599,44 @@ public class DataInitializer {
                 }
             } catch (Exception e) {
                 System.err.println(">>> [DataInitializer] Notice seeding students: " + e.getMessage());
+            }
+
+            // 12. Ensure Demo Teacher Account (ID: 98) and sample data exist
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                // Ensure account 98 exists
+                stmt.executeUpdate("INSERT INTO account (id, username, password, email, role, full_name, active, gender, school_name, province, position, teaching_classes, principal_name, current_academic_year) " +
+                        "VALUES (98, 'demo', 'demo@1234', 'demo@mitpukae.com', 'TEACHER', 'គ្រូបង្រៀន (គណនីសាកល្បង)', true, 'ប្រុស', 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត', 'ខេត្តពោធិ៍សាត់', 'គ្រូបង្រៀន (សាកល្បង)', 'ថ្នាក់សាកល្បង', 'លី ប៊ុនថេង', '២០២៦-២០២៧') " +
+                        "ON CONFLICT (id) DO NOTHING");
+
+                // Ensure classroom exists
+                stmt.execute("INSERT INTO classroom (account_id, class_name, academic_year) " +
+                        "SELECT 98, 'ថ្នាក់សាកល្បង', '២០២៦-២០២៧' " +
+                        "WHERE NOT EXISTS (SELECT 1 FROM classroom WHERE account_id = 98 AND class_name = 'ថ្នាក់សាកល្បង')");
+
+                // Ensure demo students exist
+                String[][] demoStudents = {
+                    {"DM-01", "ចាន់ ធីតា", "ស្រី", "10មករា"},
+                    {"DM-02", "សុខ សាន្ត", "ប្រុស", "ពុទ្ទ្រាម"},
+                    {"DM-03", "មាស សុវណ្ណ", "ប្រុស", "ថ្គោលអណ្តែត"},
+                    {"DM-04", "កែវ និមល", "ស្រី", "ឈើទាល"},
+                    {"DM-05", "រិទ្ធី ពិសិដ្ឋ", "ប្រុស", "10មករា"}
+                };
+                for (String[] st : demoStudents) {
+                    stmt.execute("INSERT INTO students (account_id, student_code, name, gender, class_name, academic_year, village, province, status) " +
+                            "SELECT 98, '" + st[0] + "', '" + st[1] + "', '" + st[2] + "', 'ថ្នាក់សាកល្បង', '២០២៦-២០២៧', '" + st[3] + "', 'ខេត្តពោធិ៍សាត់', 'កំពុងសិក្សា' " +
+                            "WHERE NOT EXISTS (SELECT 1 FROM students WHERE account_id = 98 AND student_code = '" + st[0] + "')");
+                }
+
+                // Ensure demo score rules exist
+                String[] demoSubjects = {"អក្សរសាស្ត្រខ្មែរ", "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា"};
+                for (String subj : demoSubjects) {
+                    stmt.execute("INSERT INTO score_rule (account_id, class_name, subject_name, max_monthly_score, max_attendance_score, max_assignment_score) " +
+                            "SELECT 98, 'ថ្នាក់សាកល្បង', '" + subj + "', 60, 20, 20 " +
+                            "WHERE NOT EXISTS (SELECT 1 FROM score_rule WHERE account_id = 98 AND class_name = 'ថ្នាក់សាកល្បង' AND subject_name = '" + subj + "')");
+                }
+            } catch (Exception e) {
+                System.err.println(">>> [DataInitializer] Notice initializing demo account: " + e.getMessage());
             }
         };
     }
