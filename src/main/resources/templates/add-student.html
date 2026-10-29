@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>បន្ថែមសិស្សថ្មី - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029c}" href="../../static/css/style.css?v=20261029c">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029d}" href="../../static/css/style.css?v=20261029d">
 </head>
 <body>
         <!-- Sidebar -->
@@ -47,7 +47,7 @@
             </div>
             <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                 <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: #eef2ff; color: #3730a3; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid #c7d2fe;">
-                    <span>📅 ឆ្នាំសិក្សា៖</span>
+                    <span>📅<span class="year-label-text"> ឆ្នាំសិក្សា៖</span></span>
                     <select id="academicYearSelect" onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.95rem; font-family: inherit;">
                         <option th:each="yr : ${availableAcademicYears}" th:value="${yr}" th:text="${yr}" th:selected="${yr == currentAcademicYear}"></option>
                         <option value="__NEW__">➕ បន្ថែមឆ្នាំសិក្សាថ្មី...</option>
@@ -60,7 +60,7 @@
             <div class="table-container" style="max-width: 600px; margin: 0 auto;">
                 <form th:action="@{/student/add}" th:object="${student}" method="post">
                     <div style="margin-bottom: 15px; background: #e0e7ff; color: #3730a3; padding: 10px 14px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                        <span>📅 ឆ្នាំសិក្សា៖ </span>
+                        <span>📅<span class="year-label-text"> ឆ្នាំសិក្សា៖</span></span>
                         <span th:text="${currentAcademicYear}">២០២៦-២០២៧</span>
                         <input type="hidden" name="academicYear" th:value="${currentAcademicYear}">
                     </div>
@@ -159,7 +159,7 @@
     </div>
     <script src="/js/academic-year.js"></script>
     <script src="/js/logout-confirm.js"></script>
-    <script src="/js/mobile-nav.js?v=20261029c"></script>
+    <script src="/js/mobile-nav.js?v=20261029d"></script>
 </body>
 </html>
 

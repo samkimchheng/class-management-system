@@ -487,29 +487,30 @@ html, body {
         right: 16px;
     }
 
-    /* Mobile Topbar & Header */
+    /* Mobile Topbar & Header - Sleek Single Row */
     .topbar {
-        padding: 10px 14px !important;
+        padding: 8px 12px !important;
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: wrap !important;
+        flex-wrap: nowrap !important; /* STRICTLY 1 ROW on mobile */
         justify-content: space-between !important;
         align-items: center !important;
-        gap: 8px 12px !important;
+        gap: 8px !important;
+        height: 52px !important;
         min-height: 52px !important;
+        max-height: 52px !important;
     }
 
     .topbar-left {
         display: inline-flex !important;
         flex-direction: row !important;
         align-items: center !important;
-        flex-wrap: nowrap !important; /* CRITICAL: Never ever wrap hamburger button and title! */
-        gap: 10px !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
         margin: 0 !important;
         padding: 0 !important;
         flex-shrink: 0 !important;
-        flex-grow: 0 !important;
-        max-width: 100% !important;
+        min-width: 0 !important;
     }
 
     .topbar-left h2,
@@ -518,13 +519,13 @@ html, body {
     .topbar h2 {
         margin: 0 !important;
         padding: 0 !important;
-        font-size: 1.08rem !important;
+        font-size: 0.96rem !important;
         font-weight: 700 !important;
         color: #0f172a !important;
         white-space: nowrap !important;
         overflow: visible !important;
         text-overflow: clip !important;
-        line-height: 1.25 !important;
+        line-height: 1.2 !important;
         display: inline-block !important;
     }
 
@@ -533,10 +534,10 @@ html, body {
         align-items: center !important;
         justify-content: center !important;
         margin: 0 !important;
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        font-size: 1.3rem !important;
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        font-size: 1.25rem !important;
         padding: 0 !important;
         border-radius: 8px !important;
         background: #f1f5f9 !important;
@@ -561,19 +562,31 @@ html, body {
         flex-wrap: nowrap !important;
     }
 
+    /* Hide secondary user labels on mobile so topbar stays strictly 1 row */
+    .topbar-right > span:not(.academic-year-badge span),
+    .topbar > div:not(.topbar-left) > span:not(.academic-year-badge span) {
+        display: none !important;
+    }
+
     .academic-year-badge {
-        font-size: 0.82rem !important;
-        padding: 4px 10px !important;
-        border-radius: 16px !important;
+        font-size: 0.8rem !important;
+        padding: 4px 8px !important;
+        border-radius: 14px !important;
         white-space: nowrap !important;
         flex-shrink: 0 !important;
         display: inline-flex !important;
         align-items: center !important;
-        gap: 6px !important;
+        gap: 4px !important;
     }
 
     .academic-year-badge select {
-        font-size: 0.82rem !important;
+        font-size: 0.8rem !important;
+        max-width: 92px !important;
+        padding: 0 !important;
+    }
+
+    .year-label-text {
+        display: none !important;
     }
 
     /* Content padding on mobile */
@@ -776,34 +789,66 @@ html, body {
 
 @media screen and (max-width: 480px) {
     .topbar {
-        padding: 8px 10px !important;
-        gap: 6px 10px !important;
+        padding: 6px 10px !important;
+        gap: 6px !important;
+        height: 50px !important;
+        min-height: 50px !important;
     }
 
     .topbar-left {
-        gap: 8px !important;
+        gap: 6px !important;
     }
 
     .topbar-left h2,
     .topbar-left h3,
     .topbar h3,
     .topbar h2 {
-        font-size: 1.02rem !important;
+        font-size: 0.92rem !important;
     }
 
     .mobile-menu-btn {
-        width: 36px !important;
-        height: 36px !important;
-        min-width: 36px !important;
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
         font-size: 1.2rem !important;
     }
 
     .academic-year-badge {
         font-size: 0.78rem !important;
-        padding: 3px 8px !important;
+        padding: 3px 6px !important;
+        gap: 3px !important;
     }
 
     .academic-year-badge select {
         font-size: 0.78rem !important;
+    }
+}
+
+@media screen and (max-width: 360px) {
+    .topbar {
+        padding: 6px 8px !important;
+    }
+
+    .topbar-left h2,
+    .topbar-left h3,
+    .topbar h3,
+    .topbar h2 {
+        font-size: 0.86rem !important;
+    }
+
+    .mobile-menu-btn {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        font-size: 1.1rem !important;
+    }
+
+    .academic-year-badge {
+        font-size: 0.74rem !important;
+        padding: 2px 5px !important;
+    }
+
+    .academic-year-badge select {
+        font-size: 0.74rem !important;
     }
 }
