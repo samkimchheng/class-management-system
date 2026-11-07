@@ -187,9 +187,9 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
+            boolean needRestore = false;
             if (!isPostgres) {
                 // Local H2 mode: check if samkimchheng exists, if not restore from data_dump.sql
-                boolean needRestore = false;
                 try (Connection conn = dataSource.getConnection();
                      Statement stmt = conn.createStatement()) {
                     try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM account WHERE username = 'samkimchheng'")) {
@@ -271,8 +271,8 @@ public class DataInitializer {
                 }
             }
 
-            // 2c. Ensure lessons and transcripts are seeded if empty
-            if (lessonRepository.count() == 0) {
+            // 2c. Ensure lessons and transcripts are seeded if empty ONLY on initial database restore
+            if (needRestore && lessonRepository.count() == 0) {
                 System.out.println(">>> [DataInitializer] Seeding official lessons and transcripts from lessons_insert.sql...");
                 try {
                     ResourceDatabasePopulator pop = new ResourceDatabasePopulator();
@@ -320,10 +320,10 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
-            // 3. Ensure all lessons are set to គ្រប់ថ្នាក់ so all classes can access them
+            // 3. Keep lessons class names as assigned by the teacher
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
-                stmt.executeUpdate("UPDATE lessons SET class_name = 'គ្រប់ថ្នាក់' WHERE class_name = '១០A' OR class_name = '10A'");
+                // Do not force overwrite class names to allow teacher customizations
             } catch (Exception ignored) {}
 
             // 4. Update any default 'Administrator' or generic names to real teacher 'សំ គឹមឆេង'

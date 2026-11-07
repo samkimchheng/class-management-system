@@ -26,6 +26,9 @@ public class LessonController {
     private LessonRepository lessonRepository;
 
     @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
     private LessonTranscriptRepository lessonTranscriptRepository;
 
     @Autowired
@@ -46,6 +49,47 @@ public class LessonController {
         return new ArrayList<>();
     }
 
+    public static boolean isClassMatching(String lessonClass, String studentClass) {
+        if (lessonClass == null || studentClass == null) return false;
+        String lTrim = lessonClass.trim();
+        String sTrim = studentClass.trim();
+        if (lTrim.isEmpty() || sTrim.isEmpty()) return false;
+
+        // 1. Universal class matching
+        if (lTrim.equals("គ្រប់ថ្នាក់") || lTrim.equals("ថ្នាក់រៀនទាំងអស់") || lTrim.equalsIgnoreCase("ALL")) {
+            return true;
+        }
+
+        String normStudent = normalizeClass(sTrim);
+        String[] parts = lTrim.split("[,;]+");
+        for (String part : parts) {
+            String normPart = normalizeClass(part.trim());
+            if (normPart.equalsIgnoreCase(normStudent)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String normalizeClass(String cls) {
+        if (cls == null) return "";
+        return cls.trim()
+                .replace("០", "0")
+                .replace("១", "1")
+                .replace("២", "2")
+                .replace("៣", "3")
+                .replace("៤", "4")
+                .replace("៥", "5")
+                .replace("៦", "6")
+                .replace("៧", "7")
+                .replace("៨", "8")
+                .replace("៩", "9")
+                .replace("ថ្នាក់ទី", "")
+                .replace("ថ្នាក់", "")
+                .replaceAll("\\s+", "")
+                .toLowerCase();
+    }
+
     @GetMapping("/lessons")
     public String viewLessons(
             @RequestParam(required = false) String className,
@@ -55,21 +99,61 @@ public class LessonController {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         Student student = (Student) session.getAttribute("loggedInStudent");
 
-        List<Lesson> lessons;
+        List<Lesson> lessons = new ArrayList<>();
         if (student != null) {
-            lessons = lessonRepository.findByClassNameForStudent(student.getClassName());
-        } else if (accountId != null) {
-            if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
-                if (subjectName != null && !subjectName.isEmpty() && !"មុខវិជ្ជាទាំងអស់".equals(subjectName)) {
-                    lessons = lessonRepository.findByClassNameAndSubjectNameAndAccountId(className, subjectName, accountId);
-                } else {
-                    lessons = lessonRepository.findByClassNameAndAccountId(className, accountId);
+            // Keep student entity fresh from database in case class or account was updated
+            if (student.getId() != null) {
+                student = studentRepository.findById(student.getId()).orElse(student);
+                session.setAttribute("loggedInStudent", student);
+            }
+
+            Long studentAccountId = student.getAccountId();
+            String studentClassName = student.getClassName();
+
+            // Fetch eligible lessons for student's account
+            List<Lesson> eligibleLessons;
+            if (studentAccountId != null) {
+                eligibleLessons = lessonRepository.findLessonsForStudent(studentAccountId);
+            } else {
+                eligibleLessons = lessonRepository.findAll();
+            }
+
+            // Filter using robust isClassMatching (Khmer/Arabic numerals, prefixes, comma-separated, universal)
+            if (studentClassName != null && !studentClassName.trim().isEmpty()) {
+                for (Lesson l : eligibleLessons) {
+                    if (isClassMatching(l.getClassName(), studentClassName)) {
+                        lessons.add(l);
+                    }
                 }
             } else {
-                lessons = lessonRepository.findByAccountIdOrderByIdAsc(accountId);
+                lessons = eligibleLessons;
             }
-        } else {
-            lessons = new ArrayList<>();
+        } else if (accountId != null) {
+            List<Lesson> accountLessons = (accountId == 1L)
+                    ? lessonRepository.findAll()
+                    : lessonRepository.findByAccountIdOrderByIdAsc(accountId);
+
+            if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
+                for (Lesson l : accountLessons) {
+                    if (isClassMatching(l.getClassName(), className)) {
+                        if (subjectName != null && !subjectName.isEmpty() && !"មុខវិជ្ជាទាំងអស់".equals(subjectName)) {
+                            if (com.nubb.classroom.WebController.isSameSubject(l.getSubjectName(), subjectName)) {
+                                lessons.add(l);
+                            }
+                        } else {
+                            lessons.add(l);
+                        }
+                    }
+                }
+            } else if (subjectName != null && !subjectName.isEmpty() && !"មុខវិជ្ជាទាំងអស់".equals(subjectName)) {
+                for (Lesson l : accountLessons) {
+                    if (com.nubb.classroom.WebController.isSameSubject(l.getSubjectName(), subjectName)) {
+                        lessons.add(l);
+                    }
+                }
+            } else {
+                lessons = accountLessons;
+            }
         }
 
         if (lessons != null && !lessons.isEmpty()) {
@@ -159,6 +243,10 @@ public class LessonController {
             lesson.setAccountId(accountId);
         }
 
+        if (lesson.getAccountId() == null) {
+            lesson.setAccountId(accountId != null ? accountId : 97L);
+        }
+
         lesson.setTitle(title);
         lesson.setClassName(className);
         lesson.setSubjectName(subjectName);
@@ -223,7 +311,12 @@ public class LessonController {
             return ResponseEntity.status(401).body(Map.of("error", "សូមចូលប្រើប្រាស់ប្រព័ន្ធ"));
         }
 
-        lessonTranscriptRepository.deleteByLessonId(id);
+        try {
+            lessonProgressRepository.deleteByLessonId(id);
+        } catch (Exception ignored) {}
+        try {
+            lessonTranscriptRepository.deleteByLessonId(id);
+        } catch (Exception ignored) {}
         lessonRepository.deleteById(id);
         return ResponseEntity.ok(Map.of("success", true));
     }
