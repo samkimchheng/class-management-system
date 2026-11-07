@@ -299,10 +299,19 @@ public class CertificateController {
             model.addAttribute("availableClasses", teacherClasses);
 
 // Verify lesson completion for the student safely
-            List<Lesson> classLessons = (student.getClassName() != null && !student.getClassName().trim().isEmpty())
-                    ? lessonRepository.findByClassNameForStudent(student.getClassName())
-                    : Collections.emptyList();
-            int totalLessons = classLessons != null ? classLessons.size() : 0;
+            List<Lesson> classLessons = new java.util.ArrayList<>();
+            if (student.getClassName() != null && !student.getClassName().trim().isEmpty()) {
+                Long studentAccountId = student.getAccountId();
+                List<Lesson> candidateLessons = (studentAccountId != null)
+                        ? lessonRepository.findLessonsForStudent(studentAccountId)
+                        : lessonRepository.findAll();
+                for (Lesson l : candidateLessons) {
+                    if (com.nubb.classroom.controller.LessonController.isClassMatching(l.getClassName(), student.getClassName())) {
+                        classLessons.add(l);
+                    }
+                }
+            }
+            int totalLessons = classLessons.size();
 
             List<LessonProgress> progressList = (student.getId() != null)
                     ? lessonProgressRepository.findByUserKey("STUDENT_" + student.getId())
