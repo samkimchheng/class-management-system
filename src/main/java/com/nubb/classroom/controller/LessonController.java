@@ -2,6 +2,7 @@ package com.nubb.classroom.controller;
 
 import com.nubb.classroom.model.*;
 import com.nubb.classroom.repository.*;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,37 @@ public class LessonController {
     public List<Classroom> getMyClassrooms() {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId != null) {
-            return classroomRepository.findByAccountId(accountId);
+            List<Classroom> list = new ArrayList<>();
+            Set<String> seen = new LinkedHashSet<>();
+            List<Classroom> dbClasses = classroomRepository.findByAccountId(accountId);
+            if ((dbClasses == null || dbClasses.isEmpty()) && accountId != 98L) {
+                dbClasses = classroomRepository.findByAccountId(97L);
+            }
+            if (dbClasses != null) {
+                for (Classroom c : dbClasses) {
+                    if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
+                        String norm = normalizeClass(c.getClassName());
+                        if (seen.add(norm)) {
+                            list.add(c);
+                        }
+                    }
+                }
+            }
+            List<Student> dbStudents = studentRepository.findByAccountId(accountId);
+            if (dbStudents != null) {
+                for (Student s : dbStudents) {
+                    if (s.getClassName() != null && !s.getClassName().trim().isEmpty()) {
+                        String norm = normalizeClass(s.getClassName());
+                        if (seen.add(norm)) {
+                            Classroom extra = new Classroom();
+                            extra.setAccountId(accountId);
+                            extra.setClassName(s.getClassName().trim());
+                            list.add(extra);
+                        }
+                    }
+                }
+            }
+            return list;
         }
         return new ArrayList<>();
     }
@@ -60,12 +91,81 @@ public class LessonController {
             return true;
         }
 
+        return isExplicitClassMatching(lTrim, sTrim);
+    }
+
+    public static boolean isExplicitClassMatching(String lessonClass, String studentClass) {
+        if (lessonClass == null || studentClass == null) return false;
+        String lTrim = lessonClass.trim();
+        String sTrim = studentClass.trim();
+        if (lTrim.isEmpty() || sTrim.isEmpty()) return false;
+        if (lTrim.equals("គ្រប់ថ្នាក់") || lTrim.equals("ថ្នាក់រៀនទាំងអស់") || lTrim.equalsIgnoreCase("ALL")) {
+            return false;
+        }
+
         String normStudent = normalizeClass(sTrim);
+        if (normStudent.isEmpty()) return false;
         String[] parts = lTrim.split("[,;]+");
         for (String part : parts) {
             String normPart = normalizeClass(part.trim());
-            if (normPart.equalsIgnoreCase(normStudent)) {
+            if (!normPart.isEmpty() && normPart.equalsIgnoreCase(normStudent)) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    public static List<Lesson> resolveLessonsForStudent(LessonRepository lessonRepository, Student student) {
+        if (student == null) return new ArrayList<>();
+        Long studentAccountId = student.getAccountId();
+        String studentClassName = student.getClassName();
+        List<Lesson> allLessons = lessonRepository.findAll();
+        List<Lesson> result = new ArrayList<>();
+
+        for (Lesson l : allLessons) {
+            boolean sameAccountPool;
+            if (studentAccountId == null) {
+                sameAccountPool = (l.getAccountId() == null || l.getAccountId() != 98L);
+            } else if (studentAccountId == 98L) {
+                sameAccountPool = Objects.equals(l.getAccountId(), 98L);
+            } else if (studentAccountId == 1L || studentAccountId == 97L) {
+                sameAccountPool = (l.getAccountId() == null || l.getAccountId() == 1L || l.getAccountId() == 97L);
+            } else {
+                sameAccountPool = Objects.equals(l.getAccountId(), studentAccountId);
+            }
+
+            if (studentClassName != null && !studentClassName.trim().isEmpty()) {
+                if (sameAccountPool && isClassMatching(l.getClassName(), studentClassName)) {
+                    result.add(l);
+                } else if ((studentAccountId == null || studentAccountId != 98L)
+                        && (l.getAccountId() == null || l.getAccountId() != 98L)
+                        && isExplicitClassMatching(l.getClassName(), studentClassName)) {
+                    result.add(l);
+                }
+            } else if (sameAccountPool) {
+                result.add(l);
+            }
+        }
+
+        result.sort(Comparator.comparing(Lesson::getId));
+        return result;
+    }
+
+    private boolean isLessonVisibleToTeacher(Lesson l, Long accountId, List<Classroom> myClassrooms) {
+        if (accountId == null) return false;
+        if (accountId == 1L) return true;
+        if (accountId == 98L) return Objects.equals(l.getAccountId(), 98L);
+        if (Objects.equals(l.getAccountId(), accountId)) return true;
+        if (accountId == 97L && (l.getAccountId() == null || l.getAccountId() == 1L || l.getAccountId() == 97L)) {
+            return true;
+        }
+        if (l.getAccountId() == null || l.getAccountId() != 98L) {
+            if (myClassrooms != null) {
+                for (Classroom c : myClassrooms) {
+                    if (c.getClassName() != null && isExplicitClassMatching(l.getClassName(), c.getClassName())) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
@@ -94,44 +194,48 @@ public class LessonController {
     public String viewLessons(
             @RequestParam(required = false) String className,
             @RequestParam(required = false) String subjectName,
+            HttpServletResponse response,
             Model model) {
+
+        if (response != null) {
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setDateHeader("Expires", 0);
+        }
 
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         Student student = (Student) session.getAttribute("loggedInStudent");
+        String activeMode = (String) session.getAttribute("ACTIVE_USER_MODE");
+        boolean useStudentMode = (student != null) && !(accountId != null && "TEACHER".equals(activeMode));
 
         List<Lesson> lessons = new ArrayList<>();
-        if (student != null) {
-            // Keep student entity fresh from database in case class or account was updated
+        if (useStudentMode) {
+            // Keep student entity fresh from database in case class or account was updated or re-created
+            Student freshStudent = null;
             if (student.getId() != null) {
-                student = studentRepository.findById(student.getId()).orElse(student);
+                freshStudent = studentRepository.findById(student.getId()).orElse(null);
+            }
+            if (freshStudent == null && student.getStudentCode() != null) {
+                String cleanCode = student.getStudentCode().trim();
+                freshStudent = studentRepository.findAll().stream()
+                        .filter(s -> s.getStudentCode() != null && s.getStudentCode().trim().equalsIgnoreCase(cleanCode))
+                        .max(Comparator.comparing(Student::getId, Comparator.nullsFirst(Comparator.naturalOrder())))
+                        .orElse(null);
+            }
+            if (freshStudent != null) {
+                student = freshStudent;
                 session.setAttribute("loggedInStudent", student);
             }
 
-            Long studentAccountId = student.getAccountId();
-            String studentClassName = student.getClassName();
-
-            // Fetch eligible lessons for student's account
-            List<Lesson> eligibleLessons;
-            if (studentAccountId != null) {
-                eligibleLessons = lessonRepository.findLessonsForStudent(studentAccountId);
-            } else {
-                eligibleLessons = lessonRepository.findAll();
-            }
-
-            // Filter using robust isClassMatching (Khmer/Arabic numerals, prefixes, comma-separated, universal)
-            if (studentClassName != null && !studentClassName.trim().isEmpty()) {
-                for (Lesson l : eligibleLessons) {
-                    if (isClassMatching(l.getClassName(), studentClassName)) {
-                        lessons.add(l);
-                    }
-                }
-            } else {
-                lessons = eligibleLessons;
-            }
+            lessons = resolveLessonsForStudent(lessonRepository, student);
         } else if (accountId != null) {
-            List<Lesson> accountLessons = (accountId == 1L)
-                    ? lessonRepository.findAll()
-                    : lessonRepository.findByAccountIdOrderByIdAsc(accountId);
+            List<Classroom> myClasses = getMyClassrooms();
+            List<Lesson> accountLessons = new ArrayList<>();
+            for (Lesson l : lessonRepository.findAll()) {
+                if (isLessonVisibleToTeacher(l, accountId, myClasses)) {
+                    accountLessons.add(l);
+                }
+            }
 
             if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
                 for (Lesson l : accountLessons) {
@@ -160,7 +264,7 @@ public class LessonController {
             lessons.sort(java.util.Comparator.comparing(Lesson::getId));
         }
 
-        String userKey = getUserKey();
+        String userKey = useStudentMode ? ("STUDENT_" + student.getId()) : (accountId != null ? ("TEACHER_" + accountId) : null);
         Map<Long, Integer> progressMap = new HashMap<>();
         Map<Long, Boolean> completedMap = new HashMap<>();
         Map<Long, List<LessonTranscript>> transcriptsMap = new HashMap<>();
@@ -191,7 +295,7 @@ public class LessonController {
         model.addAttribute("transcriptsMap", transcriptsMap);
         model.addAttribute("selectedClass", className);
         model.addAttribute("selectedSubject", subjectName);
-        model.addAttribute("isStudent", student != null);
+        model.addAttribute("isStudent", useStudentMode);
         model.addAttribute("totalLessonsCount", totalLessonsCount);
         model.addAttribute("completedLessonsCount", completedLessonsCount);
         model.addAttribute("isAllCompleted", isAllCompleted);
@@ -299,6 +403,7 @@ public class LessonController {
             }
         }
 
+        lessonRepository.flush();
         return ResponseEntity.ok(Map.of("success", true, "message", "រក្សាទុកមេរៀន និង Transcripts ជោគជ័យ"));
     }
 
@@ -311,13 +416,12 @@ public class LessonController {
             return ResponseEntity.status(401).body(Map.of("error", "សូមចូលប្រើប្រាស់ប្រព័ន្ធ"));
         }
 
-        try {
-            lessonProgressRepository.deleteByLessonId(id);
-        } catch (Exception ignored) {}
-        try {
-            lessonTranscriptRepository.deleteByLessonId(id);
-        } catch (Exception ignored) {}
-        lessonRepository.deleteById(id);
+        lessonProgressRepository.deleteByLessonId(id);
+        lessonTranscriptRepository.deleteByLessonId(id);
+        if (lessonRepository.existsById(id)) {
+            lessonRepository.deleteById(id);
+            lessonRepository.flush();
+        }
         return ResponseEntity.ok(Map.of("success", true));
     }
 
@@ -377,11 +481,13 @@ public class LessonController {
     }
 
     private String getUserKey() {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         Student student = (Student) session.getAttribute("loggedInStudent");
-        if (student != null) {
+        String activeMode = (String) session.getAttribute("ACTIVE_USER_MODE");
+        boolean useStudentMode = (student != null) && !(accountId != null && "TEACHER".equals(activeMode));
+        if (useStudentMode) {
             return "STUDENT_" + student.getId();
         }
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId != null) {
             return "TEACHER_" + accountId;
         }

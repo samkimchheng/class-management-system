@@ -25,19 +25,7 @@ public class ExamApiController {
     private QuestionRepository questionRepository;
 
     public static boolean classMatches(String examClassName, String targetClass) {
-        if (examClassName == null || targetClass == null) return false;
-        String trimmedTarget = targetClass.trim();
-        if (trimmedTarget.isEmpty()) return false;
-        if (examClassName.trim().equals("ថ្នាក់រៀនទាំងអស់") || examClassName.trim().equalsIgnoreCase("ALL")) {
-            return true;
-        }
-        String[] parts = examClassName.split("[,;]+");
-        for (String part : parts) {
-            if (part.trim().equalsIgnoreCase(trimmedTarget)) {
-                return true;
-            }
-        }
-        return false;
+        return LessonController.isClassMatching(examClassName, targetClass);
     }
 
     public static boolean hasCommonClass(String classStr1, String classStr2) {

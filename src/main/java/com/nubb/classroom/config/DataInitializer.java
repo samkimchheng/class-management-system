@@ -271,28 +271,26 @@ public class DataInitializer {
                 }
             }
 
-            // 2c. Ensure lessons and transcripts are seeded if empty ONLY on initial database restore
-            if (needRestore && lessonRepository.count() == 0) {
-                System.out.println(">>> [DataInitializer] Seeding official lessons and transcripts from lessons_insert.sql...");
-                try {
-                    ResourceDatabasePopulator pop = new ResourceDatabasePopulator();
-                    pop.addScript(new ClassPathResource("lessons_insert.sql"));
-                    pop.setContinueOnError(true);
-                    pop.execute(dataSource);
-                    System.out.println(">>> [DataInitializer] Lessons and transcripts successfully seeded!");
-
-                    if (isPostgres) {
-                        try (Connection connPost = dataSource.getConnection();
-                             Statement stmtPost = connPost.createStatement()) {
-                            stmtPost.execute("SELECT setval(pg_get_serial_sequence('lessons', 'id'), (SELECT COALESCE(MAX(id), 1) FROM lessons))");
-                            stmtPost.execute("SELECT setval(pg_get_serial_sequence('lesson_transcripts', 'id'), (SELECT COALESCE(MAX(id), 1) FROM lesson_transcripts))");
-                            stmtPost.execute("SELECT setval(pg_get_serial_sequence('lesson_progress', 'id'), (SELECT COALESCE(MAX(id), 1) FROM lesson_progress))");
-                        } catch (Exception ignored) {}
-                    }
-                } catch (Exception e) {
-                    System.err.println(">>> [DataInitializer] Notice seeding lessons: " + e.getMessage());
+            // 2c. Clean up legacy pre-seeded sample lessons (IDs 33, 65, 97, 98, 99) that the teacher deleted
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                String[] oldLessonCleanups = {
+                    "DELETE FROM lesson_progress WHERE lesson_id IN (SELECT id FROM lessons WHERE id IN (33, 65, 97, 98, 99) AND (title LIKE 'Unit1%' OR title LIKE 'Unit2%' OR title LIKE 'Unit3%' OR title LIKE 'Unit4%' OR title LIKE 'Unit5%'))",
+                    "DELETE FROM \"LESSON_PROGRESS\" WHERE \"LESSON_ID\" IN (SELECT \"ID\" FROM \"LESSONS\" WHERE \"ID\" IN (33, 65, 97, 98, 99) AND (\"TITLE\" LIKE 'Unit1%' OR \"TITLE\" LIKE 'Unit2%' OR \"TITLE\" LIKE 'Unit3%' OR \"TITLE\" LIKE 'Unit4%' OR \"TITLE\" LIKE 'Unit5%'))",
+                    "DELETE FROM lesson_transcripts WHERE lesson_id IN (SELECT id FROM lessons WHERE id IN (33, 65, 97, 98, 99) AND (title LIKE 'Unit1%' OR title LIKE 'Unit2%' OR title LIKE 'Unit3%' OR title LIKE 'Unit4%' OR title LIKE 'Unit5%'))",
+                    "DELETE FROM \"LESSON_TRANSCRIPTS\" WHERE \"LESSON_ID\" IN (SELECT \"ID\" FROM \"LESSONS\" WHERE \"ID\" IN (33, 65, 97, 98, 99) AND (\"TITLE\" LIKE 'Unit1%' OR \"TITLE\" LIKE 'Unit2%' OR \"TITLE\" LIKE 'Unit3%' OR \"TITLE\" LIKE 'Unit4%' OR \"TITLE\" LIKE 'Unit5%'))",
+                    "DELETE FROM lessons WHERE id IN (33, 65, 97, 98, 99) AND (title LIKE 'Unit1%' OR title LIKE 'Unit2%' OR title LIKE 'Unit3%' OR title LIKE 'Unit4%' OR title LIKE 'Unit5%')",
+                    "DELETE FROM \"LESSONS\" WHERE \"ID\" IN (33, 65, 97, 98, 99) AND (\"TITLE\" LIKE 'Unit1%' OR \"TITLE\" LIKE 'Unit2%' OR \"TITLE\" LIKE 'Unit3%' OR \"TITLE\" LIKE 'Unit4%' OR \"TITLE\" LIKE 'Unit5%')"
+                };
+                for (String q : oldLessonCleanups) {
+                    try { stmt.executeUpdate(q); } catch (Exception ignored) {}
                 }
-            }
+                if (isPostgres) {
+                    try { stmt.execute("SELECT setval(pg_get_serial_sequence('lessons', 'id'), GREATEST((SELECT COALESCE(MAX(id), 100) FROM lessons), 100))"); } catch (Exception ignored) {}
+                    try { stmt.execute("SELECT setval(pg_get_serial_sequence('lesson_transcripts', 'id'), GREATEST((SELECT COALESCE(MAX(id), 100) FROM lesson_transcripts), 100))"); } catch (Exception ignored) {}
+                    try { stmt.execute("SELECT setval(pg_get_serial_sequence('lesson_progress', 'id'), GREATEST((SELECT COALESCE(MAX(id), 100) FROM lesson_progress), 100))"); } catch (Exception ignored) {}
+                }
+            } catch (Exception ignored) {}
 
             // 2d. Ensure default schedule exists for Sam Kimchheng if empty
             try (Connection conn = dataSource.getConnection();

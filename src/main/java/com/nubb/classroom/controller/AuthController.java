@@ -91,6 +91,17 @@ public class AuthController {
             // Successful login: reset rate limiter
             loginRateLimiter.recordSuccess(clientIp);
 
+            // Clear any previous student session or cookie on the same browser
+            session.removeAttribute("loggedInStudent");
+            session.setAttribute("ACTIVE_USER_MODE", "TEACHER");
+            ResponseCookie clearStudentCookie = ResponseCookie.from("REMEMBER_STUDENT_ID", "")
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(0)
+                    .sameSite("Lax")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, clearStudentCookie.toString());
+
             session.setAttribute("ACCOUNT_ID", acc.getId());
             session.setAttribute("ACCOUNT_ROLE", acc.getRole());
             session.setAttribute("ACCOUNT_NAME", acc.getFullName());
@@ -128,7 +139,7 @@ public class AuthController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session, HttpServletResponse response) {
-        // Clear persistent cookie
+        // Clear persistent cookies
         ResponseCookie cookie = ResponseCookie.from("REMEMBER_ACCOUNT_ID", "")
                 .httpOnly(true)
                 .path("/")
@@ -136,6 +147,14 @@ public class AuthController {
                 .sameSite("Lax")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        ResponseCookie studentCookie = ResponseCookie.from("REMEMBER_STUDENT_ID", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, studentCookie.toString());
 
         session.invalidate();
         return "redirect:/login";

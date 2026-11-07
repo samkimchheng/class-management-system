@@ -103,7 +103,9 @@ public class CertificateController {
             }
 
             Student loggedInStudent = (Student) session.getAttribute("loggedInStudent");
-            boolean isStudent = (loggedInStudent != null);
+            String activeMode = (String) session.getAttribute("ACTIVE_USER_MODE");
+            boolean isStudent = (loggedInStudent != null) && !(accountId != null && "TEACHER".equals(activeMode));
+            if (!isStudent) { loggedInStudent = null; }
             boolean isTeacher = (accountId != null && !isStudent);
             Account currentTeacherAcc = (accountId != null) ? accountRepository.findById(accountId).orElse(null) : null;
 
@@ -299,8 +301,8 @@ public class CertificateController {
             model.addAttribute("availableClasses", teacherClasses);
 
 // Verify lesson completion for the student safely
-            List<Lesson> classLessons = new java.util.ArrayList<>();
-            if (student.getClassName() != null && !student.getClassName().trim().isEmpty()) {
+            List<Lesson> classLessons = com.nubb.classroom.controller.LessonController.resolveLessonsForStudent(lessonRepository, student);
+            if (classLessons.isEmpty() && student.getClassName() != null && !student.getClassName().trim().isEmpty()) {
                 Long studentAccountId = student.getAccountId();
                 List<Lesson> candidateLessons = (studentAccountId != null)
                         ? lessonRepository.findLessonsForStudent(studentAccountId)

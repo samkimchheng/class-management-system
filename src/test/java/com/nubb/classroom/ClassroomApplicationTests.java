@@ -80,32 +80,20 @@ class ClassroomApplicationTests {
         Student s = studentRepository.findByStudentCode("10E-01").orElse(null);
         assertNotNull(s);
 
-        // 1. Verify initial eligible lessons
-        List<Lesson> eligible = lessonRepository.findLessonsForStudent(s.getAccountId());
-        List<Lesson> studentLessonsInitial = new java.util.ArrayList<>();
-        for (Lesson l : eligible) {
-            if (LessonController.isClassMatching(l.getClassName(), s.getClassName())) {
-                studentLessonsInitial.add(l);
-            }
-        }
+        // 1. Verify initial eligible lessons via resolveLessonsForStudent
+        List<Lesson> studentLessonsInitial = LessonController.resolveLessonsForStudent(lessonRepository, s);
         int initialCount = studentLessonsInitial.size();
 
-        // 2. Teacher creates new lesson with Arabic numerals "10E"
+        // 2. Teacher (account 97 or 33) creates new lesson with Arabic numerals "10E"
         Lesson newL = new Lesson();
         newL.setTitle("Lesson Unit Test 10E");
         newL.setClassName("10E");
         newL.setSubjectName("ភាសាអង់គ្លេស");
-        newL.setAccountId(97L);
+        newL.setAccountId(33L);
         lessonRepository.save(newL);
 
-        // 3. Student immediately sees the new lesson (even though student className is in Khmer numerals "១០E")
-        List<Lesson> eligibleWithNew = lessonRepository.findLessonsForStudent(s.getAccountId());
-        List<Lesson> studentLessonsWithNew = new java.util.ArrayList<>();
-        for (Lesson l : eligibleWithNew) {
-            if (LessonController.isClassMatching(l.getClassName(), s.getClassName())) {
-                studentLessonsWithNew.add(l);
-            }
-        }
+        // 3. Student immediately sees the new lesson (even though student className is in Khmer numerals "១០E" and account is 97)
+        List<Lesson> studentLessonsWithNew = LessonController.resolveLessonsForStudent(lessonRepository, s);
         assertEquals(initialCount + 1, studentLessonsWithNew.size());
         assertTrue(studentLessonsWithNew.stream().anyMatch(l -> l.getTitle().equals("Lesson Unit Test 10E")));
 
@@ -113,13 +101,7 @@ class ClassroomApplicationTests {
         lessonRepository.delete(newL);
 
         // 5. Student immediately no longer sees the deleted lesson
-        List<Lesson> eligibleAfterDelete = lessonRepository.findLessonsForStudent(s.getAccountId());
-        List<Lesson> studentLessonsAfterDelete = new java.util.ArrayList<>();
-        for (Lesson l : eligibleAfterDelete) {
-            if (LessonController.isClassMatching(l.getClassName(), s.getClassName())) {
-                studentLessonsAfterDelete.add(l);
-            }
-        }
+        List<Lesson> studentLessonsAfterDelete = LessonController.resolveLessonsForStudent(lessonRepository, s);
         assertEquals(initialCount, studentLessonsAfterDelete.size());
         assertFalse(studentLessonsAfterDelete.stream().anyMatch(l -> l.getTitle().equals("Lesson Unit Test 10E")));
     }

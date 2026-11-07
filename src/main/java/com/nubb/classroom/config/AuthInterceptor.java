@@ -110,6 +110,9 @@ public class AuthInterceptor implements HandlerInterceptor {
                 response.sendRedirect("/test");
                 return false;
             }
+            if (session.getAttribute("loggedInStudent") != null) {
+                session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+            }
             return true;
         }
 
@@ -118,8 +121,8 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // Allow /lessons for logged in students as well as teachers
-        if (path.startsWith("/lessons") || path.startsWith("/api/lessons")) {
+        // Allow /lessons and /certificate for logged in students as well as teachers
+        if (path.startsWith("/lessons") || path.startsWith("/api/lessons") || path.equals("/certificate")) {
             if (session.getAttribute("ACCOUNT_ID") == null && session.getAttribute("loggedInStudent") == null) {
                 response.sendRedirect("/login");
                 return false;
@@ -136,6 +139,11 @@ public class AuthInterceptor implements HandlerInterceptor {
                 response.sendRedirect("/login");
             }
             return false;
+        }
+
+        // When navigating teacher-only dashboard routes (not /certificate which is shared), mark active mode as TEACHER
+        if (!path.startsWith("/certificate") && !path.startsWith("/api/certificate")) {
+            session.setAttribute("ACTIVE_USER_MODE", "TEACHER");
         }
 
         // Verify account is still active (not disabled by admin)

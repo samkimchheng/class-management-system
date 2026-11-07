@@ -1,5 +1,5 @@
-INSERT INTO lessons (id, account_id, audio_url, class_name, content, created_at, subject_name, title, khmer_content) VALUES (33, 97, NULL, 'គ្រប់ថ្នាក់', 'Unit1 Aims :  Hold a conversation where people greet  each other ,exchange information about name (with spelling) age, and telephone number', TIMESTAMP '2026-09-28 22:35:09.805189', 'ភាសាអង់គ្លេស', 'Unit1 : MY PERSONAL INFORMATION', 'Unit1 គោលបំណង៖ ធ្វើការសន្ទនាដែលមនុស្សស្វាគមន៍គ្នាទៅវិញទៅមកផ្លាស់ប្តូរព័ត៌មានអំពីឈ្មោះ (ជាមួយនឹងអក្ខរាវិរុទ្ធ) អាយុ និងលេខទូរស័ព្ទ') ON CONFLICT (id) DO NOTHING;
-INSERT INTO lessons (id, account_id, audio_url, class_name, content, created_at, subject_name, title, khmer_content) VALUES (65, 97, NULL, 'គ្រប់ថ្នាក់', 'Aims
+INSERT INTO lessons (id, account_id, audio_url, class_name, content, created_at, subject_name, title, khmer_content) VALUES (33, 97, NULL, '១០E, ១០F, ១០G', 'Unit1 Aims :  Hold a conversation where people greet  each other ,exchange information about name (with spelling) age, and telephone number', TIMESTAMP '2026-09-28 22:35:09.805189', 'ភាសាអង់គ្លេស', 'Unit1 : MY PERSONAL INFORMATION', 'Unit1 គោលបំណង៖ ធ្វើការសន្ទនាដែលមនុស្សស្វាគមន៍គ្នាទៅវិញទៅមកផ្លាស់ប្តូរព័ត៌មានអំពីឈ្មោះ (ជាមួយនឹងអក្ខរាវិរុទ្ធ) អាយុ និងលេខទូរស័ព្ទ') ON CONFLICT (id) DO NOTHING;
+INSERT INTO lessons (id, account_id, audio_url, class_name, content, created_at, subject_name, title, khmer_content) VALUES (65, 97, NULL, '១០E, ១០F, ១០G', 'Aims
 Identify some countries and tell and ask other people where they are from and their nationalities
 Forms
 Where are you from?
@@ -12,13 +12,13 @@ They''re from Thailand.', TIMESTAMP '2026-09-29 22:14:12.966506', 'ភាសា�
 តើអ្នកមកពីប្រទេសចិនទេ? 
 នាងមិនមែនជាជនជាតិខ្មែរទេ។ 
 ពួកគេមកពីប្រទេសថៃ។') ON CONFLICT (id) DO NOTHING;
-INSERT INTO lessons (id, account_id, audio_url, class_name, content, created_at, subject_name, title, khmer_content) VALUES (97, 97, NULL, 'គ្រប់ថ្នាក់', 'Aims: Describe the position of things around them and what they look like
+INSERT INTO lessons (id, account_id, audio_url, class_name, content, created_at, subject_name, title, khmer_content) VALUES (97, 97, NULL, '១០E, ១០F, ១០G', 'Aims: Describe the position of things around them and what they look like
 Forms: There is a bag on the TV in the living room. There aren''t any cupboards in the kitchen.
 Vocabulary: sofa, closet, cupboard, desk, mirror, drawers, bookshelf, bed, chair, refrigerator
 ', TIMESTAMP '2026-09-30 15:49:35.072277', 'ភាសាអង់គ្លេស', 'Unit3: MY HOUSE', 'គោលបំណង៖ ពិពណ៌នាអំពីទីតាំងរបស់វត្ថុជុំវិញខ្លួន និងរូបរាងរបស់វា។
 ទម្រង់៖ មានកាបូបដាក់ទូរទស្សន៍ក្នុងបន្ទប់ទទួលភ្ញៀវ។ មិនមានទូដាក់ចាននៅក្នុងផ្ទះបាយទេ។
 វាក្យសព្ទ៖ សាឡុង ទូខោអាវ ទូដាក់ចាន តុ កញ្ចក់ ថតឯកសារ ធ្នើសៀវភៅ គ្រែ កៅអី ទូទឹកកក') ON CONFLICT (id) DO NOTHING;
-INSERT INTO lessons (id, account_id, audio_url, class_name, content, created_at, subject_name, title, khmer_content) VALUES (98, 97, NULL, 'គ្រប់ថ្នាក់', 'Aims: Describe and compare family members and people around them
+INSERT INTO lessons (id, account_id, audio_url, class_name, content, created_at, subject_name, title, khmer_content) VALUES (98, 97, NULL, '១០E, ១០F, ១០G', 'Aims: Describe and compare family members and people around them
 Forms: My grandma isn''t tall. She''s short.
 Pisey is pretty. My aunt is older than my dad.
 Vocabulary: aunt, uncle, father, mother, sister, brother, grandma, grandpa, cousin
@@ -27,7 +27,7 @@ young, tall, fat, short, old, long', TIMESTAMP '2026-09-30 16:03:44.409328', '�
 ពិសី ស្អាត. មីង​ខ្ញុំ​ចាស់​ជាង​ប៉ា​ខ្ញុំ​ទៅ​ទៀត។
 វាក្យសព្ទ៖ មីង ពូ ឪពុក ម្តាយ បងស្រី បងប្រុស យាយ ជីតា បងប្អូនជីដូនមួយ
 ក្មេង ខ្ពស់ ធាត់ ខ្លី ចាស់ វែង') ON CONFLICT (id) DO NOTHING;
-INSERT INTO lessons (id, account_id, audio_url, class_name, content, created_at, subject_name, title, khmer_content) VALUES (99, 97, NULL, 'គ្រប់ថ្នាក់', 'Aims: Talk about personal possessions
+INSERT INTO lessons (id, account_id, audio_url, class_name, content, created_at, subject_name, title, khmer_content) VALUES (99, 97, NULL, '១០E, ១០F, ១០G', 'Aims: Talk about personal possessions
 Forms: They haven''t got shoes in the drawer.
 She''s got a purse in her bag.
 This motorbike is mine. His sister''s name is Amanda.

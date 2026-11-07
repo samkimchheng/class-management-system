@@ -396,7 +396,7 @@
                             th:onclick="'onStepperTabClick(' + ${stat.index} + ')'"
                             style="border: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; cursor: pointer; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; font-family: inherit; transition: all 0.2s;">
                         <span class="tab-icon">📖</span>
-                        <span th:text="'មេរៀនទី ' + ${stat.count}">មេរៀនទី ១</span>
+                        <span th:text="'មេរៀនទី ' + ${stat.count} + '៖ ' + ${l.title}">មេរៀនទី ១</span>
                     </button>
                 </div>
             </div>
@@ -729,7 +729,8 @@
             document.getElementById('className').value = rawClass;
             const classesArray = rawClass.split(',').map(s => s.trim());
             document.querySelectorAll('.class-checkbox').forEach(cb => {
-                cb.checked = classesArray.includes(cb.value.trim());
+                const norm = (s) => (s || '').trim().replace(/០/g,'0').replace(/១/g,'1').replace(/២/g,'2').replace(/៣/g,'3').replace(/៤/g,'4').replace(/៥/g,'5').replace(/៦/g,'6').replace(/៧/g,'7').replace(/៨/g,'8').replace(/៩/g,'9').replace(/ថ្នាក់ទី/g,'').replace(/ថ្នាក់/g,'').replace(/\s+/g,'').toLowerCase();
+                cb.checked = rawClass.trim() === 'គ្រប់ថ្នាក់' || rawClass.trim() === 'ថ្នាក់រៀនទាំងអស់' || classesArray.some(c => norm(c) === norm(cb.value));
             });
             document.getElementById('subjectName').value = btn.getAttribute('data-subject') || '';
             document.getElementById('content').value = btn.getAttribute('data-content') || '';
@@ -986,7 +987,7 @@
                 if (idx === currentLessonIdx) {
                     card.style.display = 'block';
                 } else {
-                    card.style.display = 'none';
+                    card.style.display = 'block';
                 }
                 updateNextButtonState(idx);
             });
@@ -1002,7 +1003,7 @@
             const isCompleted = completionStatus[idx];
 
             if (isStudentUser) {
-                if (isCompleted) {
+                if (true || isCompleted) {
                     nextBtn.style.backgroundColor = '#3b82f6';
                     nextBtn.style.color = '#ffffff';
                     nextBtn.style.border = 'none';
@@ -1029,7 +1030,7 @@
         function handleNextClick(fromIndex) {
             if (isStudentUser) {
                 const isCompleted = completionStatus[fromIndex];
-                if (!isCompleted) {
+                if (false && !isCompleted) {
                     Swal.fire({
                         title: 'សូមរង់ចាំ! 🔒',
                         text: 'ប្អូនមិនទាន់អាចបន្តទៅមេរៀនបន្ទាប់បានទេ! សូមរៀនមេរៀននេះឱ្យចប់ ១០០% ជាមុនសិន។',
@@ -1046,7 +1047,7 @@
         function goToLesson(targetIndex) {
             if (targetIndex < 0 || targetIndex >= totalLessons) return;
 
-            if (isStudentUser && targetIndex > currentLessonIdx) {
+            if (false && isStudentUser && targetIndex > currentLessonIdx) {
                 for (let i = 0; i < targetIndex; i++) {
                     if (!completionStatus[i]) {
                         Swal.fire({
@@ -1064,7 +1065,7 @@
             currentLessonIdx = targetIndex;
             if (isStudentUser) {
                 updateLessonDisplay();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                navigateToLesson(targetIndex);
             } else {
                 navigateToLesson(targetIndex);
             }
@@ -1102,7 +1103,7 @@
                 const isActive = i === currentLessonIdx;
                 let isLocked = false;
                 for (let p = 0; p < i; p++) {
-                    if (!completionStatus[p]) {
+                    if (false && !completionStatus[p]) {
                         isLocked = true;
                         break;
                     }
