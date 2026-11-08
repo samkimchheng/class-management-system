@@ -393,6 +393,9 @@
             // CRITICAL: Sanitize filename so Android / iOS file systems never reject illegal characters like '/'
             const cleanFilename = rawFilename.replace(/[\/\\:*?"<>|]/g, '-').replace(/\s+/g, '_') + '.pdf';
 
+            // Reset any window scroll before cloning and measuring
+            window.scrollTo(0, 0);
+
             // Clone the report area to avoid touching the active screen
             const originalArea = document.getElementById('reportExportArea');
             const clone = originalArea.cloneNode(true);
@@ -401,32 +404,42 @@
             const pdfHeader = clone.querySelector('#pdfHeader');
             if (pdfHeader) {
                 pdfHeader.style.display = 'block';
-                pdfHeader.style.setProperty('margin-bottom', '12px', 'important');
+                pdfHeader.style.setProperty('margin-bottom', '10px', 'important');
                 pdfHeader.style.setProperty('padding-bottom', '6px', 'important');
                 pdfHeader.style.setProperty('border-bottom', '2px solid #0f172a', 'important');
             }
 
-            // CRITICAL FOR KHMER TEXT: Reset letter-spacing and font on all cloned elements
+            // CRITICAL FOR KHMER TEXT & SCROLL RESETS: Reset letter-spacing, font, and internal scroll offsets
             clone.querySelectorAll('*').forEach(el => {
+                el.scrollLeft = 0;
+                el.scrollTop = 0;
                 el.style.letterSpacing = 'normal';
                 el.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
             });
 
-            // Reset wrappers so table displays full width without scrollbars
-            clone.querySelectorAll('.scrollable-table-wrapper').forEach(w => {
-                w.style.overflow = 'visible';
-                w.style.maxHeight = 'none';
-                w.style.width = '100%';
-                w.style.maxWidth = '100%';
-                w.style.border = 'none';
+            // Reset wrappers so table displays full width without scrollbars and overrides stylesheet !important
+            clone.querySelectorAll('.scrollable-table-wrapper, .table-container, div[style*="overflow"]').forEach(w => {
+                w.style.setProperty('overflow', 'visible', 'important');
+                w.style.setProperty('overflow-x', 'visible', 'important');
+                w.style.setProperty('position', 'static', 'important');
+                w.style.setProperty('max-height', 'none', 'important');
+                w.style.setProperty('width', '100%', 'important');
+                w.style.setProperty('max-width', '100%', 'important');
+                w.style.setProperty('padding', '0', 'important');
+                w.style.setProperty('margin', '0', 'important');
+                w.style.setProperty('border', 'none', 'important');
+                w.style.setProperty('box-shadow', 'none', 'important');
             });
 
             const table = clone.querySelector('table');
             if (table) {
-                table.style.width = '100%';
-                table.style.minWidth = '100%';
-                table.style.maxWidth = '100%';
-                table.style.borderCollapse = 'collapse';
+                table.style.setProperty('width', '100%', 'important');
+                table.style.setProperty('min-width', '100%', 'important');
+                table.style.setProperty('max-width', '100%', 'important');
+                table.style.setProperty('margin-left', '0', 'important');
+                table.style.setProperty('margin-right', '0', 'important');
+                table.style.setProperty('border-collapse', 'collapse', 'important');
+                table.style.setProperty('box-sizing', 'border-box', 'important');
             }
 
             clone.querySelectorAll('tr').forEach(tr => {
@@ -484,6 +497,8 @@
             exportWrapper.style.position = 'fixed';
             exportWrapper.style.left = '0';
             exportWrapper.style.top = '0';
+            exportWrapper.style.margin = '0';
+            exportWrapper.style.padding = '0';
             exportWrapper.style.width = '1060px';
             exportWrapper.style.maxWidth = '1060px';
             exportWrapper.style.zIndex = '-99999';
@@ -503,7 +518,11 @@
                     allowTaint: true,
                     logging: false,
                     backgroundColor: '#ffffff',
-                    windowWidth: 1100 // Forces html2canvas to render full 1060px layout even on mobile viewports
+                    windowWidth: 1100, // Forces html2canvas to render full 1060px layout even on mobile viewports
+                    scrollX: 0,
+                    scrollY: 0,
+                    x: 0,
+                    y: 0
                 },
                 jsPDF: {
                     unit: 'mm',
