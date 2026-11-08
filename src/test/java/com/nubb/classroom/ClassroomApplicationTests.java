@@ -10,12 +10,17 @@ import com.nubb.classroom.repository.ScoreRuleRepository;
 import com.nubb.classroom.repository.LessonRepository;
 import com.nubb.classroom.repository.StudentRepository;
 import com.nubb.classroom.repository.AccountRepository;
+import com.nubb.classroom.repository.LeaveRequestRepository;
+import com.nubb.classroom.repository.AttendanceRepository;
 import com.nubb.classroom.model.Classroom;
 import com.nubb.classroom.model.Score;
 import com.nubb.classroom.model.Lesson;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.model.Account;
+import com.nubb.classroom.model.LeaveRequest;
+import com.nubb.classroom.model.Attendance;
 import com.nubb.classroom.controller.LessonController;
+import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -38,6 +43,12 @@ class ClassroomApplicationTests {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private LeaveRequestRepository leaveRequestRepository;
+
+    @Autowired
+    private AttendanceRepository attendanceRepository;
 
     @Autowired
     private WebController webController;
@@ -123,5 +134,41 @@ class ClassroomApplicationTests {
         Classroom c4 = new Classroom();
         c4.setClassName("10E");
         assertEquals("ទូទៅ", c4.getTrack());
+    }
+
+    @Test
+    void testStudentLeaveRequestFlowForAllTeachers() {
+        Student s = studentRepository.findByStudentCode("10E-01").orElse(null);
+        assertNotNull(s);
+
+        LocalDate testDate = LocalDate.of(2027, 4, 15);
+
+        LeaveRequest lr = new LeaveRequest();
+        lr.setStudent(s);
+        lr.setAccountId(s.getAccountId() != null ? s.getAccountId() : 97L);
+        lr.setClassName(s.getClassName());
+        lr.setAcademicYear("២០២៦-២០២៧");
+        lr.setStartDate(testDate);
+        lr.setEndDate(testDate);
+        lr.setLeaveType("ឈឺ");
+        lr.setLeaveSession("ពេញមួយថ្ងៃ");
+        lr.setReason("ឈឺគ្រុនក្តៅ");
+        lr.setStatus("PENDING");
+
+        LeaveRequest saved = leaveRequestRepository.save(lr);
+        webController.syncLeaveRequestToAttendance(saved, true);
+
+        // Verify teacher sees the leave request
+        List<LeaveRequest> teacherReqs = webController.getLeaveRequestsForTeacher(97L, "10E");
+        assertTrue(teacherReqs.stream().anyMatch(r -> r.getId().equals(saved.getId())));
+
+        // Verify attendance was synced as PERMISSION
+        List<Attendance> atts = attendanceRepository.findByStudentIdAndDateBetween(s.getId(), testDate, testDate);
+        assertFalse(atts.isEmpty());
+        assertTrue(atts.get(0).isPermission());
+
+        // Cleanup test data
+        leaveRequestRepository.delete(saved);
+        webController.syncLeaveRequestToAttendance(saved, false);
     }
 }

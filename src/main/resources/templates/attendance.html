@@ -199,6 +199,103 @@
                 <h4 th:text="(${isYearly} ? 'បញ្ជីអវត្តមានប្រចាំឆ្នាំ៖ ' : (${isSemester1 or isSemester2} ? 'បញ្ជីអវត្តមានប្រចាំឆមាស៖ ' : 'បញ្ជីអវត្តមានប្រចាំខែ៖ ')) + (${selectedClass} ?: 'ថ្នាក់រៀនទាំងអស់')">បញ្ជីអវត្តមានប្រចាំខែ</h4>
             </div>
 
+            <!-- Student Online Leave Requests Section -->
+            <div class="table-container" style="margin-bottom: 20px; border-left: 5px solid #f59e0b;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <h3 style="margin: 0; font-size: 1.12rem; color: #0f172a;">📩 បញ្ជីសំណើសុំច្បាប់ពីគណនីសិស្ស</h3>
+                        <span th:if="${pendingLeaveCount != null and pendingLeaveCount > 0}"
+                              style="background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 3px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 800;"
+                              th:text="'⏳ រង់ចាំអនុម័ត៖ ' + ${pendingLeaveCount} + ' សំណើ'">⏳ រង់ចាំអនុម័ត</span>
+                        <span style="background: #e0e7ff; color: #3730a3; padding: 3px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 700;"
+                              th:text="'សរុប៖ ' + (${leaveRequests != null ? #lists.size(leaveRequests) : 0}) + ' សំណើ'">សរុប</span>
+                    </div>
+                    <span style="font-size: 0.86rem; color: #64748b;">💡 សិស្សអាចចូលសុំច្បាប់តាមរយៈគណនីសិស្ស (<code>/test/leave</code>)</span>
+                </div>
+
+                <div th:if="${leaveRequests != null and !#lists.isEmpty(leaveRequests)}" style="overflow-x: auto; max-height: 320px; border: 1px solid var(--border); border-radius: 8px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 10px 8px; text-align: center;">ល.រ</th>
+                                <th style="padding: 10px 8px;">ឈ្មោះសិស្ស</th>
+                                <th style="padding: 10px 8px; text-align: center;">ថ្នាក់</th>
+                                <th style="padding: 10px 8px;">កាលបរិច្ឆេទសុំច្បាប់</th>
+                                <th style="padding: 10px 8px;">ប្រភេទ & មូលហេតុ</th>
+                                <th style="padding: 10px 8px; text-align: center;">ស្ថានភាព</th>
+                                <th style="padding: 10px 8px; text-align: center;">សកម្មភាពគ្រូ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="req, rStat : ${leaveRequests}">
+                                <td style="text-align: center; font-weight: bold;" th:text="${rStat.count}">1</td>
+                                <td style="white-space: nowrap;">
+                                    <div style="font-weight: 800; color: #0f172a;" th:text="${req.student != null ? req.student.name : 'សិស្ស'}">ឈ្មោះសិស្ស</div>
+                                    <div style="font-size: 0.8rem; color: #64748b;" th:if="${req.student != null}">
+                                        ភេទ៖ <span th:text="${req.student.gender}"></span> • កូដ៖ <b th:text="${req.student.studentCode}"></b>
+                                    </div>
+                                </td>
+                                <td style="text-align: center; font-weight: 700; color: #0284c7;" th:text="${req.className ?: (req.student != null ? req.student.className : '')}">10A</td>
+                                <td style="white-space: nowrap;">
+                                    <div style="font-weight: 700; color: #1e293b;">
+                                        <span th:text="${#temporals.format(req.startDate, 'dd-MM-yyyy')}">08-11-2026</span>
+                                        <span th:if="${req.endDate != null and !req.endDate.equals(req.startDate)}"
+                                              th:text="' ដល់ ' + ${#temporals.format(req.endDate, 'dd-MM-yyyy')}"></span>
+                                    </div>
+                                    <div style="font-size: 0.82rem; color: #4361ee; font-weight: 700;">
+                                        <span th:text="${req.totalDays + ' ថ្ងៃ'}">1 ថ្ងៃ</span> • <span th:text="${req.leaveSession ?: 'ពេញមួយថ្ងៃ'}">ពេញមួយថ្ងៃ</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;"
+                                              th:text="${req.leaveType ?: 'ច្បាប់'}">ឈឺ</span>
+                                        <span th:if="${req.parentPhone != null and !req.parentPhone.isEmpty()}"
+                                              style="font-size: 0.82rem; color: #0369a1; font-weight: 600; margin-left: 6px;"
+                                              th:text="'📞 ' + ${req.parentPhone}"></span>
+                                    </div>
+                                    <div style="margin-top: 4px; color: #334155;" th:text="${req.reason}">មូលហេតុ</div>
+                                </td>
+                                <td style="text-align: center; white-space: nowrap;">
+                                    <span th:if="${req.pending}" style="background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; font-weight: 700;">⏳ រង់ចាំអនុម័ត</span>
+                                    <span th:if="${req.approved}" style="background: #d1fae5; color: #065f46; border: 1px solid #10b981; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; font-weight: 700;">✅ អនុម័តរួច</span>
+                                    <span th:if="${req.rejected}" style="background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; font-weight: 700;">❌ បានបដិសេធ</span>
+                                </td>
+                                <td style="text-align: center; white-space: nowrap;">
+                                    <div style="display: inline-flex; gap: 6px; align-items: center;">
+                                        <form th:if="${!req.approved}" th:action="@{/attendance/leave-request/{id}/approve(id=${req.id})}" method="post" style="margin: 0;">
+                                            <input type="hidden" name="className" th:value="${selectedClass}">
+                                            <input type="hidden" name="month" th:value="${selectedMonth}">
+                                            <button type="submit" style="background: #10b981; color: white; border: none; padding: 6px 11px; border-radius: 6px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer;" title="អនុម័តច្បាប់ និងកត់ត្រាចូលតារាងវត្តមាន">
+                                                ✅ អនុម័ត
+                                            </button>
+                                        </form>
+                                        <form th:if="${!req.rejected}" th:action="@{/attendance/leave-request/{id}/reject(id=${req.id})}" method="post" style="margin: 0;">
+                                            <input type="hidden" name="className" th:value="${selectedClass}">
+                                            <input type="hidden" name="month" th:value="${selectedMonth}">
+                                            <button type="submit" style="background: #f59e0b; color: white; border: none; padding: 6px 11px; border-radius: 6px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer;" title="បដិសេធសំណើសុំច្បាប់">
+                                                ❌ បដិសេធ
+                                            </button>
+                                        </form>
+                                        <form th:action="@{/attendance/leave-request/{id}/delete(id=${req.id})}" method="post" style="margin: 0;"
+                                              onsubmit="return confirm('តើលោកគ្រូ/អ្នកគ្រូពិតជាចង់លុបសំណើសុំច្បាប់នេះមែនទេ?');">
+                                            <input type="hidden" name="className" th:value="${selectedClass}">
+                                            <input type="hidden" name="month" th:value="${selectedMonth}">
+                                            <button type="submit" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 6px 10px; border-radius: 6px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer;" title="លុបសំណើ">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:if="${leaveRequests == null or #lists.isEmpty(leaveRequests)}" style="text-align: center; padding: 14px; color: #64748b; background: #f8fafc; border-radius: 8px; font-size: 0.92rem;">
+                    មិនទាន់មានសំណើសុំច្បាប់ពីគណនីសិស្សនៅឡើយទេ។
+                </div>
+            </div>
+
             <div class="table-container" style="overflow-x: auto;">
                 <form th:action="@{/attendance/save}" method="post">
                 <div class="attendance-filter-controls">
@@ -389,9 +486,11 @@
                             <td class="sticky-col-2" th:text="${student.name}">ឈ្មោះសិស្ស</td>
                             <td style="text-align: center;" th:text="${student.gender}">ភេទ</td>
                             <!-- Days 1 to 31 -->
-                            <td th:each="i : ${#numbers.sequence(1, 31)}" th:attr="data-day=${i}" class="day-cell" style="text-align: center; padding: 2px;">
+                            <td th:each="i : ${#numbers.sequence(1, 31)}" th:attr="data-day=${i}" class="day-cell" style="text-align: center; padding: 2px;"
+                                th:title="${leaveReasonTooltips != null ? leaveReasonTooltips.get(student.id + '_' + i) : ''}">
                                 <select name="attendanceData" 
                                         class="att-select"
+                                        th:title="${leaveReasonTooltips != null ? leaveReasonTooltips.get(student.id + '_' + i) : ''}"
                                         th:classappend="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PERMISSION' ? ' att-permission' : (absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'UNEXCUSED' ? ' att-unexcused' : '')}"
                                         th:attr="data-student-id=${student.id}">
                                     <option value="" th:selected="${absentDayTypes == null or absentDayTypes.get(student.id + '_' + i) == null}">-</option>

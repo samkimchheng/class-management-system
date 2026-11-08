@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="km" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ចូលប្រឡង - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
-    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <title>ចូលគណនីសិស្ស - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #4361ee;
@@ -12,78 +12,114 @@
             --light: #f8fafc;
             --success: #10b981;
             --danger: #ef4444;
-            --radius: 8px;
+            --radius: 12px;
         }
         body {
-            font-family: 'Battambang', cursive;
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
             background-color: #f1f5f9;
             margin: 0;
+            padding: 15px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
         .login-card {
             background: white;
-            padding: 40px;
+            padding: 36px 32px;
             border-radius: var(--radius);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 400px;
+            max-width: 430px;
             text-align: center;
+            border: 1px solid #e2e8f0;
         }
         .login-card h2 {
             margin-top: 0;
+            margin-bottom: 8px;
             color: var(--dark);
+            font-size: 1.45rem;
         }
         .form-control {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            font-family: 'Battambang', cursive;
-            font-size: 1.1rem;
+            padding: 13px 15px;
+            margin-bottom: 18px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1.05rem;
             box-sizing: border-box;
+            text-align: center;
+            font-weight: 600;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
         }
         .btn-primary {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
+            padding: 13px 20px;
+            border-radius: 8px;
             cursor: pointer;
-            font-family: 'Battambang', cursive;
-            font-size: 1.1rem;
+            font-family: inherit;
+            font-size: 1.02rem;
+            font-weight: 700;
             width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.2s;
         }
         .btn-primary:hover {
             background-color: #3730a3;
+        }
+        .btn-leave {
+            background-color: #fef3c7;
+            color: #b45309;
+            border: 1px solid #f59e0b;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.98rem;
+            font-weight: 700;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .btn-leave:hover {
+            background-color: #fde68a;
         }
         .error-msg {
             background-color: #fee2e2;
             color: var(--danger);
             padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            display: none;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
     <div class="login-card">
-        <h2>ប្រព័ន្ធប្រឡងអនឡាញ</h2>
-        <p style="color: #64748b; margin-bottom: 30px;">សូមបញ្ចូលលេខកូដសម្ងាត់របស់អ្នក ដើម្បីចូលរួមការប្រឡងប្រចាំខែ។</p>
-        
-        <div class="error-msg" th:if="${errorMessage}" th:text="${errorMessage}" style="display: block;"></div>
-        
+        <div style="font-size: 2.5rem; margin-bottom: 8px;">🎓</div>
+        <h2>ប្រព័ន្ធគណនីសិស្សអនឡាញ</h2>
+        <p style="color: #64748b; margin-bottom: 24px; font-size: 0.95rem; line-height: 1.6;">
+            សូមបញ្ចូលលេខកូដសិស្សរបស់ប្អូន ដើម្បីចូលប្រឡង មើលមេរៀន ឬដាក់ពាក្យសុំច្បាប់ឈប់សម្រាក។
+        </p>
+
+        <div class="error-msg" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
         <form th:action="@{/test/login}" method="post">
-            <input type="text" name="studentCode" class="form-control" placeholder="លេខកូដសិស្ស..." required autofocus autocomplete="off">
-            <button type="submit" class="btn-primary">ចូលប្រឡង</button>
+            <input type="text" name="studentCode" class="form-control" placeholder="បញ្ចូលលេខកូដសិស្ស..." required autofocus autocomplete="off">
+            <button type="submit" name="redirectTo" value="/test/take" class="btn-primary">
+                📝 ចូលគណនីសិស្ស (ប្រឡង & មេរៀន)
+            </button>
+            <button type="submit" name="redirectTo" value="/test/leave" class="btn-leave">
+                📋 ចូលដាក់ពាក្យសុំច្បាប់ឈប់សម្រាក
+            </button>
         </form>
     </div>
 </body>
 </html>
-
-
-

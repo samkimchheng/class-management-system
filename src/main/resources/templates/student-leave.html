@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>សុំច្បាប់ឈប់សម្រាក - គណនីសិស្ស</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3730a3;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --muted: #64748b;
+            --bg: #f1f5f9;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px 15px;
+            color: var(--dark);
+        }
+        .swal2-popup { font-family: 'Kantumruy Pro', 'Battambang', sans-serif !important; }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header-card {
+            background: white;
+            padding: 20px 24px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 1px solid var(--border);
+        }
+        .nav-pills {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav-pill {
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.92rem;
+            padding: 8px 14px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .nav-pill:hover { transform: translateY(-1px); }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .stat-value {
+            font-size: 1.65rem;
+            font-weight: 800;
+            margin-top: 6px;
+        }
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            margin-bottom: 22px;
+        }
+        .card-title {
+            margin: 0 0 18px 0;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.98rem;
+            color: var(--dark);
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+        .reason-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .reason-chip {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .reason-chip:hover {
+            background: #e0e7ff;
+            border-color: #818cf8;
+            color: #1e1b4b;
+        }
+        .btn-submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4361ee, #3730a3);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.08rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(67, 97, 238, 0.4);
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .badge-pending { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+        .badge-approved { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+        .badge-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.94rem;
+        }
+        th {
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        @media screen and (max-width: 640px) {
+            .header-card { padding: 16px; }
+            .card { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Student Header -->
+        <div class="header-card">
+            <div>
+                <h2 style="margin: 0; font-size: 1.35rem; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                    📋 ប្រព័ន្ធសុំច្បាប់ឈប់សម្រាក (Student Leave Request)
+                </h2>
+                <div style="margin-top: 6px; color: var(--muted); font-size: 0.95rem; line-height: 1.6;">
+                    សិស្សឈ្មោះ៖ <b style="color: var(--primary);" th:text="${student.name}">ឈ្មោះសិស្ស</b>
+                    • ថ្នាក់៖ <b style="color: #0284c7;" th:text="${student.className}">10A</b>
+                    • អត្តលេខ៖ <b th:text="${student.studentCode}">STU-001</b>
+                    <span th:if="${studentTeacher != null}">
+                        • គ្រូបង្រៀន៖ <b style="color: #059669;" th:text="${studentTeacher.fullName}">ឈ្មោះគ្រូ</b>
+                    </span>
+                </div>
+            </div>
+            <div class="nav-pills">
+                <a href="/test/take" class="nav-pill" style="background: #e0f2fe; color: #0284c7;">
+                    📝 ផ្ទាំងប្រឡងសិស្ស
+                </a>
+                <a href="/lessons" class="nav-pill" style="background: #ede9fe; color: #6d28d9;">
+                    📚 មើលមេរៀន
+                </a>
+                <a href="/certificate" class="nav-pill" style="background: #fef3c7; color: #b45309;">
+                    🎓 វិញ្ញាបនបត្រ
+                </a>
+                <a href="/test/logout" class="nav-pill" style="background: #fee2e2; color: #b91c1c;">
+                    ចាកចេញ 🚪
+                </a>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" style="background: #d1fae5; color: #065f46; border: 1px solid #10b981; padding: 14px 18px; border-radius: 10px; margin-bottom: 18px; font-weight: 700;">
+            <span th:text="${successMessage}">ជោគជ័យ!</span>
+        </div>
+        <div th:if="${errorMessage}" style="background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; padding: 14px 18px; border-radius: 10px; margin-bottom: 18px; font-weight: 700;">
+            <span th:text="${errorMessage}">មានបញ្ហា!</span>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div class="stat-label">📨 សំណើសុំច្បាប់សរុប</div>
+                <div class="stat-value" style="color: var(--primary);" th:text="${totalRequests + ' ដង'}">0 ដង</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">⏳ រង់ចាំគ្រូពិនិត្យ</div>
+                <div class="stat-value" style="color: #d97706;" th:text="${pendingCount + ' ដង'}">0 ដង</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">✅ គ្រូបានអនុម័ត</div>
+                <div class="stat-value" style="color: var(--success);" th:text="${approvedCount + ' ដង'}">0 ដង</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">📅 ចំនួនថ្ងៃឈប់មានច្បាប់សរុប</div>
+                <div class="stat-value" style="color: #0284c7;" th:text="${totalLeaveDays + ' ថ្ងៃ'}">0 ថ្ងៃ</div>
+            </div>
+        </div>
+
+        <!-- Leave Request Form Card -->
+        <div class="card">
+            <h3 class="card-title">✍️ បំពេញពាក្យស្នើសុំច្បាប់ឈប់សម្រាក</h3>
+            <form th:action="@{/test/leave/submit}" method="post" id="leaveForm">
+                <div class="form-row">
+                    <div>
+                        <label for="leaveType">ប្រភេទនៃការសុំច្បាប់ <span style="color: var(--danger);">*</span></label>
+                        <select name="leaveType" id="leaveType" class="form-control" required>
+                            <option value="ឈឺ">🤒 ឈឺ (Sick Leave)</option>
+                            <option value="ធុរៈគ្រួសារ">👨‍👩‍👧 ធុរៈគ្រួសារ (Family Matter)</option>
+                            <option value="ធុរៈផ្ទាល់ខ្លួន">📌 ធុរៈផ្ទាល់ខ្លួន (Personal Leave)</option>
+                            <option value="ផ្សេងៗ">📝 ផ្សេងៗ (Other)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="leaveSession">វេនសិក្សា <span style="color: var(--danger);">*</span></label>
+                        <select name="leaveSession" id="leaveSession" class="form-control" required>
+                            <option value="ពេញមួយថ្ងៃ">🕒 ពេញមួយថ្ងៃ (Full Day)</option>
+                            <option value="ពេលព្រឹក">🌅 ពេលព្រឹក (Morning)</option>
+                            <option value="ពេលរសៀល">🌇 ពេលរសៀល (Afternoon)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="parentPhone">លេខទូរស័ព្ទអាណាព្យាបាល / ទំនាក់ទំនង</label>
+                        <input type="text" name="parentPhone" id="parentPhone" class="form-control" placeholder="ឧ. 012 345 678">
+                    </div>
+                </div>
+
+                <div class="form-row" style="align-items: end;">
+                    <div>
+                        <label for="startDate">ចាប់ពីថ្ងៃទី <span style="color: var(--danger);">*</span></label>
+                        <input type="date" name="startDate" id="startDate" class="form-control" th:value="${today}" required>
+                    </div>
+                    <div>
+                        <label for="endDate">ដល់ថ្ងៃទី <span style="color: var(--danger);">*</span></label>
+                        <input type="date" name="endDate" id="endDate" class="form-control" th:value="${today}" required>
+                    </div>
+                    <div>
+                        <div style="background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 11px 14px; border-radius: 8px; font-weight: 800; text-align: center;">
+                            សរុបចំនួនថ្ងៃឈប់៖ <span id="totalDaysBadge" style="font-size: 1.1rem; color: var(--primary);">1</span> ថ្ងៃ
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reason">មូលហេតុលម្អិតនៃការសុំច្បាប់ <span style="color: var(--danger);">*</span></label>
+                    <textarea name="reason" id="reason" rows="3" class="form-control" placeholder="សូមសរសេរមូលហេតុនៃការសុំច្បាប់ឈប់សម្រាករបស់ប្អូន..." required></textarea>
+                    <div class="reason-chips">
+                        <span style="font-size: 0.85rem; color: var(--muted); align-self: center;">ជ្រើសរើសមូលហេតុរហ័ស៖</span>
+                        <button type="button" class="reason-chip" onclick="fillReason('ឈឺ', 'ខ្ញុំបាទ/នាងខ្ញុំមានអាការៈគ្រុនក្តៅ និងមិនស្រួលខ្លួន មិនអាចមករៀនបាន។')">🤒 ឈឺគ្រុនក្តៅ</button>
+                        <button type="button" class="reason-chip" onclick="fillReason('ឈឺ', 'ខ្ញុំបាទ/នាងខ្ញុំត្រូវទៅពិនិត្យសុខភាពនៅមន្ទីរពេទ្យ។')">🏥 ទៅពិនិត្យសុខភាព</button>
+                        <button type="button" class="reason-chip" onclick="fillReason('ធុរៈគ្រួសារ', 'ខ្ញុំបាទ/នាងខ្ញុំជាប់រវល់ធុរៈចាំបាច់នៅក្នុងគ្រួសារ។')">👨‍👩‍👧 ធុរៈក្នុងគ្រួសារ</button>
+                        <button type="button" class="reason-chip" onclick="fillReason('ធុរៈគ្រួសារ', 'ខ្ញុំបាទ/នាងខ្ញុំត្រូវជួយការងារឪពុកម្តាយនៅផ្ទះ។')">🏠 ជួយការងារឪពុកម្តាយ</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    📨 បញ្ជូនពាក្យសុំច្បាប់ទៅលោកគ្រូ/អ្នកគ្រូ
+                </button>
+            </form>
+        </div>
+
+        <!-- Leave Request History Card -->
+        <div class="card">
+            <h3 class="card-title">📜 ប្រវត្តិសំណើសុំច្បាប់របស់ប្អូន</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ល.រ</th>
+                            <th>កាលបរិច្ឆេទឈប់</th>
+                            <th>ចំនួនថ្ងៃ</th>
+                            <th>ប្រភេទ & មូលហេតុ</th>
+                            <th>ស្ថានភាព</th>
+                            <th>សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="req, iterStat : ${leaveRequests}">
+                            <td th:text="${iterStat.count}" style="font-weight: 700;">1</td>
+                            <td style="white-space: nowrap;">
+                                <div style="font-weight: 700; color: var(--dark);">
+                                    <span th:text="${#temporals.format(req.startDate, 'dd-MM-yyyy')}">08-11-2026</span>
+                                    <span th:if="${req.endDate != null and !req.endDate.equals(req.startDate)}"
+                                          th:text="' ដល់ ' + ${#temporals.format(req.endDate, 'dd-MM-yyyy')}"></span>
+                                </div>
+                                <div style="font-size: 0.82rem; color: var(--muted);" th:text="${req.leaveSession ?: 'ពេញមួយថ្ងៃ'}">ពេញមួយថ្ងៃ</div>
+                            </td>
+                            <td style="white-space: nowrap; font-weight: 800; color: var(--primary);" th:text="${req.totalDays + ' ថ្ងៃ'}">1 ថ្ងៃ</td>
+                            <td>
+                                <div>
+                                    <span style="display: inline-block; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; margin-bottom: 4px;"
+                                          th:text="${req.leaveType ?: 'ច្បាប់'}">ឈឺ</span>
+                                    <span th:if="${req.parentPhone != null and !req.parentPhone.isEmpty()}"
+                                          style="font-size: 0.82rem; color: var(--muted); margin-left: 6px;"
+                                          th:text="'📞 ' + ${req.parentPhone}"></span>
+                                </div>
+                                <div style="color: #334155; line-height: 1.5;" th:text="${req.reason}">មូលហេតុ</div>
+                                <div th:if="${req.teacherNote != null and !req.teacherNote.isEmpty()}"
+                                     style="margin-top: 5px; font-size: 0.85rem; color: #0369a1; background: #f0f9ff; padding: 4px 8px; border-radius: 6px; border-left: 3px solid #0284c7;">
+                                    💬 មតិគ្រូ៖ <span th:text="${req.teacherNote}"></span>
+                                </div>
+                            </td>
+                            <td style="white-space: nowrap;">
+                                <span th:if="${req.pending}" class="badge badge-pending">⏳ រង់ចាំការអនុម័ត (បានកត់ត្រាច្បាប់)</span>
+                                <span th:if="${req.approved}" class="badge badge-approved">✅ គ្រូបានអនុម័ត (មានច្បាប់)</span>
+                                <span th:if="${req.rejected}" class="badge badge-rejected">❌ គ្រូមិនអនុញ្ញាត</span>
+                            </td>
+                            <td style="white-space: nowrap;">
+                                <form th:if="${req.pending}" th:action="@{/test/leave/cancel/{id}(id=${req.id})}" method="post" style="margin: 0;"
+                                      onsubmit="return confirm('តើប្អូនពិតជាចង់បោះបង់សំណើសុំច្បាប់នេះមែនទេ?');">
+                                    <button type="submit" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 6px 12px; border-radius: 6px; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+                                        🗑️ បោះបង់សំណើ
+                                    </button>
+                                </form>
+                                <span th:if="${!req.pending}" style="color: #94a3b8; font-size: 0.85rem;">ពិនិត្យរួចរាល់</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(leaveRequests)}">
+                            <td colspan="6" style="text-align: center; padding: 30px; color: var(--muted);">
+                                ប្អូនមិនទាន់មានប្រវត្តិស្នើសុំច្បាប់នៅឡើយទេ។
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const startInput = document.getElementById('startDate');
+        const endInput = document.getElementById('endDate');
+        const badge = document.getElementById('totalDaysBadge');
+
+        function updateDaysCount() {
+            if (!startInput.value || !endInput.value) return;
+            const s = new Date(startInput.value);
+            let e = new Date(endInput.value);
+            if (e < s) {
+                endInput.value = startInput.value;
+                e = s;
+            }
+            const diff = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+            badge.textContent = Math.max(1, diff);
+        }
+
+        startInput.addEventListener('change', updateDaysCount);
+        endInput.addEventListener('change', updateDaysCount);
+        updateDaysCount();
+
+        function fillReason(type, text) {
+            const typeSelect = document.getElementById('leaveType');
+            const reasonBox = document.getElementById('reason');
+            if (typeSelect) typeSelect.value = type;
+            if (reasonBox) {
+                reasonBox.value = text;
+                reasonBox.focus();
+            }
+        }
+    </script>
+    <script src="/js/logout-confirm.js"></script>
+</body>
+</html>

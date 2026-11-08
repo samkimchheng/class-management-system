@@ -92,10 +92,41 @@
 
             </div>
 
+            <!-- Pending Student Leave Requests Notification on Dashboard -->
+            <div class="table-container" th:if="${pendingLeaveRequests != null and !#lists.isEmpty(pendingLeaveRequests)}" style="margin-bottom: 20px; border-left: 5px solid #f59e0b;">
+                <div class="header-action">
+                    <h3 style="margin: 0; color: #92400e;">📩 សំណើសុំច្បាប់ថ្មីពីគណនីសិស្ស (<span th:text="${pendingLeaveCount}">0</span> សំណើ)</h3>
+                    <a href="/attendance" class="btn btn-primary" style="text-decoration: none;">ពិនិត្យ និងអនុម័តនៅបញ្ជីអវត្តមាន &rarr;</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ល.រ</th>
+                            <th>ឈ្មោះសិស្ស</th>
+                            <th>ថ្នាក់</th>
+                            <th>កាលបរិច្ឆេទឈប់</th>
+                            <th>ប្រភេទ & មូលហេតុ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="req, rStat : ${pendingLeaveRequests}">
+                            <td th:text="${rStat.count}">1</td>
+                            <td style="font-weight: bold;" th:text="${req.student != null ? req.student.name : 'សិស្ស'}">ឈ្មោះសិស្ស</td>
+                            <td th:text="${req.className ?: (req.student != null ? req.student.className : '')}">ថ្នាក់</td>
+                            <td th:text="${#temporals.format(req.startDate, 'dd-MM-yyyy') + (req.endDate != null and !req.endDate.equals(req.startDate) ? ' ដល់ ' + #temporals.format(req.endDate, 'dd-MM-yyyy') : '') + ' (' + req.totalDays + ' ថ្ងៃ)'}">កាលបរិច្ឆេទ</td>
+                            <td>
+                                <b style="color: #b45309;" th:text="${'[' + (req.leaveType ?: 'ច្បាប់') + '] '}"></b>
+                                <span th:text="${req.reason}">មូលហេតុ</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <div class="table-container">
                 <div class="header-action">
                     <h3>បញ្ជីសិស្សអវត្តមានថ្មីៗ</h3>
-                    <button class="btn btn-primary">មើលទាំងអស់</button>
+                    <a href="/attendance" class="btn btn-primary" style="text-decoration: none;">មើលទាំងអស់</a>
                 </div>
                 <table>
                     <thead>
@@ -104,6 +135,7 @@
                             <th style="white-space: nowrap;">ឈ្មោះសិស្ស</th>
                             <th>ភេទ</th>
                             <th>ថ្នាក់</th>
+                            <th>ប្រភេទអវត្តមាន</th>
                             <th>កាលបរិច្ឆេទ</th>
                         </tr>
                     </thead>
@@ -113,10 +145,14 @@
                             <td th:text="${attendance.student != null ? attendance.student.name : 'សិស្ស'}">ឈ្មោះសិស្ស</td>
                             <td th:text="${attendance.student != null ? attendance.student.gender : ''}">ភេទ</td>
                             <td th:text="${attendance.student != null ? attendance.student.className : ''}">ថ្នាក់</td>
+                            <td>
+                                <span th:if="${attendance.permission}" style="background: #fef3c7; color: #92400e; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 0.85rem;">🟡 មានច្បាប់</span>
+                                <span th:if="${!attendance.permission}" style="background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 0.85rem;">🔴 គ្មានច្បាប់</span>
+                            </td>
                             <td th:text="${#temporals.format(attendance.date, 'dd-MM-yyyy')}">កាលបរិច្ឆេទ</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(recentAbsents)}">
-                            <td colspan="5" style="text-align: center;">មិនមានសិស្សអវត្តមានទេថ្ងៃនេះ</td>
+                            <td colspan="6" style="text-align: center;">មិនមានសិស្សអវត្តមានទេថ្ងៃនេះ</td>
                         </tr>
                     </tbody>
                 </table>

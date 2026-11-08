@@ -282,6 +282,117 @@ public class WebController {
     @Autowired
     private com.nubb.classroom.repository.CertificateRecordRepository certificateRecordRepository;
 
+    @Autowired
+    private com.nubb.classroom.repository.LeaveRequestRepository leaveRequestRepository;
+
+    public List<com.nubb.classroom.model.LeaveRequest> getLeaveRequestsForTeacher(Long teacherAccountId, String classNameFilter) {
+        try {
+            Long effTeacherId = (teacherAccountId == null || teacherAccountId == 1L) ? 97L : teacherAccountId;
+            Set<String> teacherClasses = new HashSet<>();
+            for (Classroom c : classroomRepository.findByAccountId(effTeacherId)) {
+                if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
+                    teacherClasses.add(c.getClassName().trim());
+                }
+            }
+            for (Student s : studentRepository.findByAccountId(effTeacherId)) {
+                if (s.getClassName() != null && !s.getClassName().trim().isEmpty()) {
+                    teacherClasses.add(s.getClassName().trim());
+                }
+            }
+
+            List<com.nubb.classroom.model.LeaveRequest> all = leaveRequestRepository.findAllByOrderByCreatedAtDesc();
+            List<com.nubb.classroom.model.LeaveRequest> result = new ArrayList<>();
+            for (com.nubb.classroom.model.LeaveRequest lr : all) {
+                if (lr == null || lr.getStudent() == null) continue;
+                Long reqAccId = lr.getAccountId() != null ? lr.getAccountId() :
+                        (lr.getStudent().getAccountId() != null ? lr.getStudent().getAccountId() : 97L);
+                Long effReqAccId = (reqAccId == 1L) ? 97L : reqAccId;
+
+                boolean visible = effTeacherId.equals(effReqAccId);
+                if (!visible && effTeacherId != 98L && effReqAccId != 98L) {
+                    String lrClass = lr.getClassName() != null ? lr.getClassName() : lr.getStudent().getClassName();
+                    for (String tc : teacherClasses) {
+                        if (com.nubb.classroom.controller.LessonController.isClassMatching(tc, lrClass)) {
+                            visible = true;
+                            break;
+                        }
+                    }
+                }
+                if (!visible) continue;
+
+                if (classNameFilter != null && !classNameFilter.trim().isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(classNameFilter.trim())) {
+                    String lrClass = lr.getClassName() != null ? lr.getClassName() : lr.getStudent().getClassName();
+                    if (!com.nubb.classroom.controller.LessonController.isClassMatching(lrClass, classNameFilter.trim())) {
+                        continue;
+                    }
+                }
+                result.add(lr);
+            }
+            return result;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public void syncLeaveRequestToAttendance(com.nubb.classroom.model.LeaveRequest lr, boolean markPermission) {
+        if (lr == null || lr.getStudent() == null || lr.getStudent().getId() == null
+                || lr.getStartDate() == null || lr.getEndDate() == null) {
+            return;
+        }
+        try {
+            Student student = lr.getStudent();
+            LocalDate start = lr.getStartDate();
+            LocalDate end = lr.getEndDate();
+            Long accId = lr.getAccountId() != null ? lr.getAccountId() :
+                    (student.getAccountId() != null ? student.getAccountId() : 97L);
+            if (accId == 1L) accId = 97L;
+
+            List<Attendance> existing = attendanceRepository.findByStudentIdAndDateBetween(student.getId(), start, end);
+            if (markPermission) {
+                List<Attendance> toSave = new ArrayList<>();
+                LocalDate d = start;
+                int guard = 0;
+                while (!d.isAfter(end) && guard < 35) {
+                    final LocalDate curr = d;
+                    Optional<Attendance> found = existing.stream().filter(a -> curr.equals(a.getDate())).findFirst();
+                    if (found.isPresent()) {
+                        Attendance att = found.get();
+                        att.setPresent(false);
+                        att.setAbsenceType("PERMISSION");
+                        if (att.getAccountId() == null) att.setAccountId(accId);
+                        toSave.add(att);
+                    } else {
+                        Attendance att = new Attendance(student, curr, false, "PERMISSION");
+                        att.setAccountId(accId);
+                        toSave.add(att);
+                    }
+                    d = d.plusDays(1);
+                    guard++;
+                }
+                if (!toSave.isEmpty()) {
+                    attendanceRepository.saveAll(toSave);
+                }
+            } else {
+                List<com.nubb.classroom.model.LeaveRequest> otherActive = leaveRequestRepository
+                        .findByStudentIdOrderByCreatedAtDesc(student.getId()).stream()
+                        .filter(other -> !other.getId().equals(lr.getId()) && !other.isRejected())
+                        .collect(Collectors.toList());
+
+                for (Attendance att : existing) {
+                    if (att.isPermission()) {
+                        LocalDate d = att.getDate();
+                        boolean coveredByOther = otherActive.stream().anyMatch(o ->
+                                o.getStartDate() != null && o.getEndDate() != null
+                                        && !d.isBefore(o.getStartDate()) && !d.isAfter(o.getEndDate()));
+                        if (!coveredByOther) {
+                            attendanceRepository.delete(att);
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
 
     
     @GetMapping({"/docs/teacher-guide.pdf", "/docs/guide.pdf"})
@@ -426,6 +537,11 @@ public class WebController {
             }
 
 
+            List<com.nubb.classroom.model.LeaveRequest> allLeaveReqs = getLeaveRequestsForTeacher(accountId, className);
+            List<com.nubb.classroom.model.LeaveRequest> pendingLeaveRequests = allLeaveReqs.stream()
+                    .filter(com.nubb.classroom.model.LeaveRequest::isPending)
+                    .collect(Collectors.toList());
+
             model.addAttribute("totalStudents", totalStudents);
             model.addAttribute("totalFemale", totalFemale);
             model.addAttribute("presentToday", presentToday);
@@ -433,6 +549,8 @@ public class WebController {
             model.addAttribute("absentToday", absentToday);
             model.addAttribute("absentFemale", absentFemale);
             model.addAttribute("recentAbsents", recentAbsents);
+            model.addAttribute("pendingLeaveRequests", pendingLeaveRequests);
+            model.addAttribute("pendingLeaveCount", pendingLeaveRequests.size());
             model.addAttribute("selectedClass", className);
             return "index";
         } catch (Exception e) {
@@ -1019,12 +1137,49 @@ public class WebController {
                 }
             }
 
+            List<com.nubb.classroom.model.LeaveRequest> leaveRequests = getLeaveRequestsForTeacher(accountId, className);
+            Map<String, String> leaveReasonTooltips = new HashMap<>();
+            if (leaveRequests != null) {
+                for (com.nubb.classroom.model.LeaveRequest lr : leaveRequests) {
+                    if (lr.getStudent() == null || lr.getStudent().getId() == null
+                            || lr.getStartDate() == null || lr.getEndDate() == null) continue;
+                    if (lr.getEndDate().isBefore(start) || lr.getStartDate().isAfter(end)) continue;
+
+                    Long sId = lr.getStudent().getId();
+                    LocalDate d = lr.getStartDate().isBefore(start) ? start : lr.getStartDate();
+                    LocalDate dEnd = lr.getEndDate().isAfter(end) ? end : lr.getEndDate();
+                    int guard = 0;
+                    while (!d.isAfter(dEnd) && guard < 35) {
+                        int day = d.getDayOfMonth();
+                        String key = sId + "_" + day;
+                        String tip = "សុំច្បាប់ (" + (lr.getLeaveType() != null ? lr.getLeaveType() : "ច្បាប់") + ")៖ "
+                                + (lr.getReason() != null ? lr.getReason() : "")
+                                + " [" + lr.getStatusKhmer() + "]";
+                        leaveReasonTooltips.put(key, tip);
+
+                        if (!lr.isRejected() && !absentDayTypes.containsKey(key)) {
+                            absentDayTypes.put(key, "PERMISSION");
+                            studentPermissionCounts.put(sId, studentPermissionCounts.getOrDefault(sId, 0) + 1);
+                            studentTotalCounts.put(sId, studentTotalCounts.getOrDefault(sId, 0) + 1);
+                        }
+                        d = d.plusDays(1);
+                        guard++;
+                    }
+                }
+            }
+
             model.addAttribute("absentDayTypes", absentDayTypes);
+            model.addAttribute("leaveReasonTooltips", leaveReasonTooltips);
             model.addAttribute("studentPermissionCounts", studentPermissionCounts);
             model.addAttribute("studentUnexcusedCounts", studentUnexcusedCounts);
             model.addAttribute("studentTotalCounts", studentTotalCounts);
         }
 
+        List<com.nubb.classroom.model.LeaveRequest> teacherLeaveRequests = getLeaveRequestsForTeacher(accountId, className);
+        long pendingLeaveCount = teacherLeaveRequests.stream().filter(com.nubb.classroom.model.LeaveRequest::isPending).count();
+
+        model.addAttribute("leaveRequests", teacherLeaveRequests);
+        model.addAttribute("pendingLeaveCount", pendingLeaveCount);
         model.addAttribute("students", students);
         model.addAttribute("selectedClass", className);
         model.addAttribute("selectedMonth", month);
@@ -1033,6 +1188,83 @@ public class WebController {
         model.addAttribute("isSemester2", isSemester2);
 
         return "attendance";
+    }
+
+    @PostMapping("/attendance/leave-request/{id}/approve")
+    public String approveLeaveRequest(
+            @org.springframework.web.bind.annotation.PathVariable Long id,
+            @RequestParam(value = "className", required = false) String className,
+            @RequestParam(value = "month", required = false) String month,
+            @RequestParam(value = "teacherNote", required = false) String teacherNote,
+            RedirectAttributes redirectAttributes) {
+
+        Optional<com.nubb.classroom.model.LeaveRequest> lrOpt = leaveRequestRepository.findById(id);
+        if (lrOpt.isPresent()) {
+            com.nubb.classroom.model.LeaveRequest lr = lrOpt.get();
+            lr.setStatus("APPROVED");
+            lr.setReviewedAt(java.time.LocalDateTime.now());
+            if (teacherNote != null && !teacherNote.trim().isEmpty()) {
+                lr.setTeacherNote(teacherNote.trim());
+            }
+            leaveRequestRepository.save(lr);
+            syncLeaveRequestToAttendance(lr, true);
+            String stName = lr.getStudent() != null ? lr.getStudent().getName() : "សិស្ស";
+            redirectAttributes.addFlashAttribute("successMessage", "✅ បានអនុម័តច្បាប់ឈប់សម្រាករបស់សិស្ស «" + stName + "» និងកត់ត្រាចូលបញ្ជីអវត្តមានរួចរាល់!");
+        }
+        String safeClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ថ្នាក់រៀនទាំងអស់";
+        String safeMonth = (month != null && !month.trim().isEmpty()) ? month.trim() : "";
+        return "redirect:/attendance?className=" + URLEncoder.encode(safeClass, StandardCharsets.UTF_8)
+                + (safeMonth.isEmpty() ? "" : "&month=" + URLEncoder.encode(safeMonth, StandardCharsets.UTF_8));
+    }
+
+    @PostMapping("/attendance/leave-request/{id}/reject")
+    public String rejectLeaveRequest(
+            @org.springframework.web.bind.annotation.PathVariable Long id,
+            @RequestParam(value = "className", required = false) String className,
+            @RequestParam(value = "month", required = false) String month,
+            @RequestParam(value = "teacherNote", required = false) String teacherNote,
+            RedirectAttributes redirectAttributes) {
+
+        Optional<com.nubb.classroom.model.LeaveRequest> lrOpt = leaveRequestRepository.findById(id);
+        if (lrOpt.isPresent()) {
+            com.nubb.classroom.model.LeaveRequest lr = lrOpt.get();
+            lr.setStatus("REJECTED");
+            lr.setReviewedAt(java.time.LocalDateTime.now());
+            if (teacherNote != null && !teacherNote.trim().isEmpty()) {
+                lr.setTeacherNote(teacherNote.trim());
+            }
+            leaveRequestRepository.save(lr);
+            syncLeaveRequestToAttendance(lr, false);
+            String stName = lr.getStudent() != null ? lr.getStudent().getName() : "សិស្ស";
+            redirectAttributes.addFlashAttribute("successMessage", "❌ បានបដិសេធសំណើសុំច្បាប់របស់សិស្ស «" + stName + "»!");
+        }
+        String safeClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ថ្នាក់រៀនទាំងអស់";
+        String safeMonth = (month != null && !month.trim().isEmpty()) ? month.trim() : "";
+        return "redirect:/attendance?className=" + URLEncoder.encode(safeClass, StandardCharsets.UTF_8)
+                + (safeMonth.isEmpty() ? "" : "&month=" + URLEncoder.encode(safeMonth, StandardCharsets.UTF_8));
+    }
+
+    @PostMapping("/attendance/leave-request/{id}/delete")
+    public String deleteLeaveRequest(
+            @org.springframework.web.bind.annotation.PathVariable Long id,
+            @RequestParam(value = "className", required = false) String className,
+            @RequestParam(value = "month", required = false) String month,
+            RedirectAttributes redirectAttributes) {
+
+        Optional<com.nubb.classroom.model.LeaveRequest> lrOpt = leaveRequestRepository.findById(id);
+        if (lrOpt.isPresent()) {
+            com.nubb.classroom.model.LeaveRequest lr = lrOpt.get();
+            boolean wasApproved = lr.isApproved();
+            leaveRequestRepository.delete(lr);
+            if (!wasApproved) {
+                syncLeaveRequestToAttendance(lr, false);
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "🗑️ បានលុបសំណើសុំច្បាប់ដោយជោគជ័យ!");
+        }
+        String safeClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ថ្នាក់រៀនទាំងអស់";
+        String safeMonth = (month != null && !month.trim().isEmpty()) ? month.trim() : "";
+        return "redirect:/attendance?className=" + URLEncoder.encode(safeClass, StandardCharsets.UTF_8)
+                + (safeMonth.isEmpty() ? "" : "&month=" + URLEncoder.encode(safeMonth, StandardCharsets.UTF_8));
     }
 
     @PostMapping("/attendance/save")
@@ -1146,6 +1378,11 @@ public class WebController {
             accId = 97L;
         }
         student.setAccountId(accId);
+        if (student.getStudentCode() == null || student.getStudentCode().trim().isEmpty()) {
+            student.setStudentCode("STU-" + (1000 + studentRepository.count() + 1));
+        } else {
+            student.setStudentCode(student.getStudentCode().trim());
+        }
         if (student.getAcademicYear() == null || student.getAcademicYear().trim().isEmpty()) {
             student.setAcademicYear(getCurrentAcademicYear());
         }
@@ -1197,6 +1434,7 @@ public class WebController {
     @PostMapping("/student/delete/{id}")
     public String deleteStudent(@org.springframework.web.bind.annotation.PathVariable Long id) {
         Student student = studentRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid student Id:" + id));
+        try { leaveRequestRepository.deleteByStudent(student); } catch (Exception ignored) {}
         attendanceRepository.deleteByStudent(student);
         scoreRepository.deleteByStudentId(id);
         studentRepository.delete(student);
@@ -1731,6 +1969,7 @@ return "scores";
     @PostMapping("/test/login")
     public String doStudentLogin(
             @org.springframework.web.bind.annotation.RequestParam("studentCode") String studentCode,
+            @org.springframework.web.bind.annotation.RequestParam(value = "redirectTo", required = false) String redirectTo,
             jakarta.servlet.http.HttpSession session,
             jakarta.servlet.http.HttpServletRequest request,
             jakarta.servlet.http.HttpServletResponse response,
@@ -1754,6 +1993,9 @@ return "scores";
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
+            if ("/test/leave".equals(redirectTo) || "/lessons".equals(redirectTo) || "/certificate".equals(redirectTo)) {
+                return "redirect:" + redirectTo;
+            }
             return "redirect:/test/take";
         }
         redirectAttributes.addFlashAttribute("errorMessage", "លេខកូដមិនត្រឹមត្រូវ សូមពិនិត្យម្តងទៀត!");
@@ -1770,6 +2012,141 @@ return "scores";
         session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
         model.addAttribute("student", student);
         return "take-exam";
+    }
+
+    @GetMapping("/test/leave")
+    public String studentLeavePage(jakarta.servlet.http.HttpSession session, Model model) {
+        Student student = (Student) session.getAttribute("loggedInStudent");
+        if (student == null) {
+            return "redirect:/test";
+        }
+        if (student.getId() != null) {
+            student = studentRepository.findById(student.getId()).orElse(student);
+            session.setAttribute("loggedInStudent", student);
+        }
+        session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+
+        Long stuAccId = (student.getAccountId() == null || student.getAccountId() == 1L) ? 97L : student.getAccountId();
+        Account teacherAcc = accountRepository.findById(stuAccId).orElse(null);
+
+        List<com.nubb.classroom.model.LeaveRequest> myRequests = new ArrayList<>();
+        try {
+            myRequests = leaveRequestRepository.findByStudentIdOrderByCreatedAtDesc(student.getId());
+        } catch (Exception ignored) {}
+
+        long totalRequests = myRequests.size();
+        long approvedCount = myRequests.stream().filter(com.nubb.classroom.model.LeaveRequest::isApproved).count();
+        long pendingCount = myRequests.stream().filter(com.nubb.classroom.model.LeaveRequest::isPending).count();
+        long rejectedCount = myRequests.stream().filter(com.nubb.classroom.model.LeaveRequest::isRejected).count();
+        long totalLeaveDays = myRequests.stream().filter(r -> !r.isRejected()).mapToLong(com.nubb.classroom.model.LeaveRequest::getTotalDays).sum();
+
+        model.addAttribute("student", student);
+        model.addAttribute("studentTeacher", teacherAcc);
+        model.addAttribute("leaveRequests", myRequests);
+        model.addAttribute("totalRequests", totalRequests);
+        model.addAttribute("approvedCount", approvedCount);
+        model.addAttribute("pendingCount", pendingCount);
+        model.addAttribute("rejectedCount", rejectedCount);
+        model.addAttribute("totalLeaveDays", totalLeaveDays);
+        model.addAttribute("today", LocalDate.now().toString());
+        return "student-leave";
+    }
+
+    @PostMapping("/test/leave/submit")
+    public String submitStudentLeave(
+            @RequestParam("startDate") String startDateStr,
+            @RequestParam(value = "endDate", required = false) String endDateStr,
+            @RequestParam(value = "leaveType", defaultValue = "ឈឺ") String leaveType,
+            @RequestParam(value = "leaveSession", defaultValue = "ពេញមួយថ្ងៃ") String leaveSession,
+            @RequestParam("reason") String reason,
+            @RequestParam(value = "parentPhone", required = false) String parentPhone,
+            jakarta.servlet.http.HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Student student = (Student) session.getAttribute("loggedInStudent");
+        if (student == null) {
+            return "redirect:/test";
+        }
+        if (student.getId() != null) {
+            student = studentRepository.findById(student.getId()).orElse(student);
+            session.setAttribute("loggedInStudent", student);
+        }
+        session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+
+        LocalDate start;
+        LocalDate end;
+        try {
+            start = (startDateStr != null && !startDateStr.trim().isEmpty())
+                    ? LocalDate.parse(startDateStr.trim()) : LocalDate.now();
+        } catch (Exception e) {
+            start = LocalDate.now();
+        }
+        try {
+            end = (endDateStr != null && !endDateStr.trim().isEmpty())
+                    ? LocalDate.parse(endDateStr.trim()) : start;
+        } catch (Exception e) {
+            end = start;
+        }
+        if (end.isBefore(start)) {
+            end = start;
+        }
+        if (end.isAfter(start.plusDays(30))) {
+            end = start.plusDays(30);
+        }
+
+        String cleanReason = reason != null ? reason.trim() : "";
+        if (cleanReason.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "សូមបញ្ចូលមូលហេតុនៃការសុំច្បាប់ឈប់សម្រាក!");
+            return "redirect:/test/leave";
+        }
+
+        Long stuAccId = (student.getAccountId() == null || student.getAccountId() == 1L) ? 97L : student.getAccountId();
+
+        com.nubb.classroom.model.LeaveRequest lr = new com.nubb.classroom.model.LeaveRequest();
+        lr.setStudent(student);
+        lr.setAccountId(stuAccId);
+        lr.setClassName(student.getClassName());
+        lr.setAcademicYear(student.getAcademicYear() != null && !student.getAcademicYear().trim().isEmpty()
+                ? student.getAcademicYear().trim() : "២០២៦-២០២៧");
+        lr.setStartDate(start);
+        lr.setEndDate(end);
+        lr.setLeaveType(leaveType != null && !leaveType.trim().isEmpty() ? leaveType.trim() : "ឈឺ");
+        lr.setLeaveSession(leaveSession != null && !leaveSession.trim().isEmpty() ? leaveSession.trim() : "ពេញមួយថ្ងៃ");
+        lr.setReason(cleanReason);
+        lr.setParentPhone(parentPhone != null ? parentPhone.trim() : "");
+        lr.setStatus("PENDING");
+        lr.setCreatedAt(java.time.LocalDateTime.now());
+
+        leaveRequestRepository.save(lr);
+        syncLeaveRequestToAttendance(lr, true);
+
+        redirectAttributes.addFlashAttribute("successMessage", "✅ បានបញ្ជូនពាក្យសុំច្បាប់ទៅលោកគ្រូ/អ្នកគ្រូដោយជោគជ័យ!");
+        return "redirect:/test/leave";
+    }
+
+    @PostMapping("/test/leave/cancel/{id}")
+    public String cancelStudentLeave(
+            @org.springframework.web.bind.annotation.PathVariable Long id,
+            jakarta.servlet.http.HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Student student = (Student) session.getAttribute("loggedInStudent");
+        if (student == null) {
+            return "redirect:/test";
+        }
+        Optional<com.nubb.classroom.model.LeaveRequest> lrOpt = leaveRequestRepository.findById(id);
+        if (lrOpt.isPresent() && lrOpt.get().getStudent() != null
+                && lrOpt.get().getStudent().getId().equals(student.getId())) {
+            com.nubb.classroom.model.LeaveRequest lr = lrOpt.get();
+            if (lr.isPending()) {
+                leaveRequestRepository.delete(lr);
+                syncLeaveRequestToAttendance(lr, false);
+                redirectAttributes.addFlashAttribute("successMessage", "🗑️ បានបោះបង់សំណើសុំច្បាប់ដោយជោគជ័យ!");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "មិនអាចលុបសំណើដែលលោកគ្រូ/អ្នកគ្រូបានពិនិត្យរួចហើយនោះទេ!");
+            }
+        }
+        return "redirect:/test/leave";
     }
 
     @GetMapping("/test/logout")
