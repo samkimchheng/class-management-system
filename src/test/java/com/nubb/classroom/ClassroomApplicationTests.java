@@ -171,4 +171,23 @@ class ClassroomApplicationTests {
         leaveRequestRepository.delete(saved);
         webController.syncLeaveRequestToAttendance(saved, false);
     }
+
+    @Test
+    void testSortStudentsByClassAndKhmerAlphabet() {
+        Student s1 = new Student(); s1.setName("សុខ ចាន់ថន"); s1.setClassName("10B");
+        Student s2 = new Student(); s2.setName("កែវ សុខា"); s2.setClassName("10B");
+        Student s3 = new Student(); s3.setName("អ៊ុក សម្បត្តិ"); s3.setClassName("10A");
+        Student s4 = new Student(); s4.setName("ខៀវ តារា"); s4.setClassName("10A");
+        Student s5 = new Student(); s5.setName("ចាន់ ធីតា"); s5.setClassName("7A");
+
+        List<Student> input = java.util.Arrays.asList(s1, s2, s3, s4, s5);
+        List<Student> sorted = WebController.sortStudentsByClassAndKhmerAlphabet(input);
+
+        // Class 7A comes first, then 10A (ខៀវ តារា before អ៊ុក សម្បត្តិ), then 10B (កែវ សុខា before សុខ ចាន់ថន)
+        assertEquals("ចាន់ ធីតា", sorted.get(0).getName());
+        assertEquals("ខៀវ តារា", sorted.get(1).getName());
+        assertEquals("អ៊ុក សម្បត្តិ", sorted.get(2).getName());
+        assertEquals("កែវ សុខា", sorted.get(3).getName());
+        assertEquals("សុខ ចាន់ថន", sorted.get(4).getName());
+    }
 }

@@ -37,7 +37,81 @@
         tbody tr:hover .sticky-col {
             background-color: #f8fafc;
         }
-    
+
+        .students-toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-sort-khmer {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1.5px solid #4f46e5;
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.93rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 3px 8px rgba(79, 70, 229, 0.25);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .btn-sort-khmer:hover {
+            background: linear-gradient(135deg, #4338ca 0%, #312e81 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 12px rgba(79, 70, 229, 0.35);
+        }
+        .btn-sort-khmer.active-sort {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border-color: #059669;
+            box-shadow: 0 3px 8px rgba(5, 150, 105, 0.28);
+        }
+        .btn-reset-sort {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 10px 13px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #475569;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .btn-reset-sort:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .sort-status-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
         /* Mobile Sticky Override */
         @media screen and (max-width: 768px) {
             .sticky-col, thead th.sticky-col, tbody td.sticky-col {
@@ -50,12 +124,19 @@
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch !important;
             }
+            .students-toolbar-left {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-sort-khmer, .btn-reset-sort {
+                width: 100%;
+            }
         }
-    
     </style>
 </head>
 <body>
-        <!-- Sidebar -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
@@ -106,19 +187,42 @@
         <div class="content">
             <div class="table-container">
                 <div class="header-action">
-                    <div>
-                        <form action="/students" method="get" id="filterForm">
-                            <select name="className" class="form-control" style="width: auto; display: inline-block;" onchange="document.getElementById('filterForm').submit();">
+                    <div class="students-toolbar-left">
+                        <form action="/students" method="get" id="filterForm" style="margin: 0;">
+                            <input type="hidden" name="sort" id="sortInput" th:value="${sortMode}">
+                            <select name="className" id="classNameSelect" class="form-control" style="width: auto; display: inline-block; font-weight: 600;" onchange="document.getElementById('filterForm').submit();">
                                 <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
                                 <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
                             </select>
                         </form>
+
+                        <!-- Sort by Class & Khmer Alphabetical Order Button -->
+                        <button type="button"
+                                id="btnSortKhmerAlpha"
+                                class="btn-sort-khmer"
+                                th:classappend="${isKhmerSorted} ? ' active-sort' : ''"
+                                onclick="sortStudentsKhmerAlphabet()"
+                                title="រៀបឈ្មោះសិស្សតាមថ្នាក់នីមួយៗ និងតាមលំដាប់អក្ខរក្រមខ្មែរ (ក-អ)">
+                            <span th:text="${isKhmerSorted ? '✅ បានរៀបតាមថ្នាក់ & អក្ខរក្រមខ្មែរ (ក-អ)' : '🔤 រៀបសិស្សតាមថ្នាក់ & អក្ខរក្រមខ្មែរ (ក-អ)'}">🔤 រៀបសិស្សតាមថ្នាក់ & អក្ខរក្រមខ្មែរ (ក-អ)</span>
+                        </button>
+
+                        <a th:if="${isKhmerSorted}"
+                           th:href="@{/students(className=${selectedClass ?: 'ថ្នាក់រៀនទាំងអស់'}, sort='default')}"
+                           class="btn-reset-sort"
+                           title="ត្រឡប់ទៅលំដាប់ដើមវិញ">
+                            ↩️ លំដាប់ដើម
+                        </a>
                     </div>
                     <a th:href="@{/student/add}" class="btn btn-primary">+ បន្ថែមសិស្សថ្មី</a>
                 </div>
+
+                <div id="sortStatusBanner" class="sort-status-banner" th:style="${isKhmerSorted ? 'display: flex;' : 'display: none;'}">
+                    <span>🔤 បញ្ជីឈ្មោះសិស្សត្រូវបានរៀបតាមថ្នាក់នីមួយៗ និងតាមលំដាប់អក្ខរក្រមខ្មែរ (ក &rarr; អ)</span>
+                    <span style="font-size: 0.85rem; color: #047857;" th:text="${selectedClass != null and selectedClass != 'ថ្នាក់រៀនទាំងអស់' ? 'ថ្នាក់៖ ' + selectedClass : 'គ្រប់ថ្នាក់រៀន'}">គ្រប់ថ្នាក់រៀន</span>
+                </div>
                 
                 <div style="overflow: auto; max-height: 70vh; border: 1px solid var(--border); border-radius: 8px;">
-                <table style="border-collapse: separate; border-spacing: 0;">
+                <table id="studentsTable" style="border-collapse: separate; border-spacing: 0;">
                     <thead>
                         <tr>
                             <th class="sticky-col-1">ល.រ</th>
@@ -138,12 +242,13 @@
                             <th style="min-width: 120px; white-space: nowrap;">សកម្មភាព</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr th:each="student, iterStat : ${students}">
-                            <td class="sticky-col-1" th:text="${iterStat.count}">១</td>
-                            <td class="sticky-col-2" th:text="${student.name}">ឈ្មោះសិស្ស</td>
+                    <tbody id="studentsTableBody">
+                        <tr th:each="student, iterStat : ${students}"
+                            th:attr="data-name=${student.name}, data-class=${student.className}">
+                            <td class="sticky-col-1 row-index-cell" th:text="${iterStat.count}">១</td>
+                            <td class="sticky-col-2 student-name-cell" th:text="${student.name}">ឈ្មោះសិស្ស</td>
                             <td style="text-align: center;" th:text="${student.gender}">ភេទ</td>
-                            <td th:text="${student.className}" style="white-space: nowrap;">ថ្នាក់ទី</td>
+                            <td class="student-class-cell" th:text="${student.className}" style="white-space: nowrap; font-weight: 600;">ថ្នាក់ទី</td>
                             <td th:text="${student.village}"></td>
                             <td th:text="${student.commune}"></td>
                             <td th:text="${student.district}"></td>
@@ -170,18 +275,104 @@
             </div>
         </div>
     </div>
+    <script>
+        function cleanKhmerStr(s) {
+            if (!s) return '';
+            return s.replace(/[\u200B-\u200D\uFEFF]/g, '')
+                    .replace(/\u17C1\u17B6/g, '\u17C4')
+                    .replace(/\u17C1\u17B8/g, '\u17BE')
+                    .replace(/\u17C6\u17BB/g, '\u17BB\u17C6')
+                    .trim()
+                    .replace(/\s+/g, ' ');
+        }
+
+        function cleanKhmerPrimary(s) {
+            return cleanKhmerStr(s).replace(/[\u17C9-\u17D1\u17DD]/g, '');
+        }
+
+        function extractGradeNum(cls) {
+            if (!cls) return 999;
+            const cleaned = cleanKhmerStr(cls);
+            let digits = '';
+            for (let i = 0; i < cleaned.length; i++) {
+                const code = cleaned.charCodeAt(i);
+                if (code >= 0x17E0 && code <= 0x17E9) {
+                    digits += String.fromCharCode(48 + (code - 0x17E0));
+                } else if (code >= 48 && code <= 57) {
+                    digits += cleaned[i];
+                } else if (digits.length > 0) {
+                    break;
+                }
+            }
+            return digits.length > 0 ? parseInt(digits, 10) : 999;
+        }
+
+        function normalizeClassKey(cls) {
+            if (!cls) return '';
+            let cleaned = cleanKhmerStr(cls).replace(/ថ្នាក់ទី/g, '').replace(/ថ្នាក់/g, '').trim();
+            let out = '';
+            for (let i = 0; i < cleaned.length; i++) {
+                const code = cleaned.charCodeAt(i);
+                if (code >= 0x17E0 && code <= 0x17E9) {
+                    out += String.fromCharCode(48 + (code - 0x17E0));
+                } else {
+                    out += cleaned[i];
+                }
+            }
+            return out.trim().toUpperCase();
+        }
+
+        function compareKhmerStringsClient(a, b) {
+            const s1 = cleanKhmerStr(a);
+            const s2 = cleanKhmerStr(b);
+            if (s1 === s2) return 0;
+            if (!s1) return 1;
+            if (!s2) return -1;
+            const p1 = cleanKhmerPrimary(s1);
+            const p2 = cleanKhmerPrimary(s2);
+            if (p1 < p2) return -1;
+            if (p1 > p2) return 1;
+            return s1 < s2 ? -1 : (s1 > s2 ? 1 : 0);
+        }
+
+        function sortStudentsKhmerAlphabet() {
+            const tbody = document.getElementById('studentsTableBody');
+            if (tbody) {
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.sort((r1, r2) => {
+                    const c1 = r1.getAttribute('data-class') || (r1.querySelector('.student-class-cell') ? r1.querySelector('.student-class-cell').textContent : '');
+                    const c2 = r2.getAttribute('data-class') || (r2.querySelector('.student-class-cell') ? r2.querySelector('.student-class-cell').textContent : '');
+                    const g1 = extractGradeNum(c1);
+                    const g2 = extractGradeNum(c2);
+                    if (g1 !== g2) return g1 - g2;
+
+                    const nc1 = normalizeClassKey(c1);
+                    const nc2 = normalizeClassKey(c2);
+                    const clsCmp = compareKhmerStringsClient(nc1, nc2);
+                    if (clsCmp !== 0) return clsCmp;
+
+                    const n1 = r1.getAttribute('data-name') || (r1.querySelector('.student-name-cell') ? r1.querySelector('.student-name-cell').textContent : '');
+                    const n2 = r2.getAttribute('data-name') || (r2.querySelector('.student-name-cell') ? r2.querySelector('.student-name-cell').textContent : '');
+                    return compareKhmerStringsClient(n1, n2);
+                });
+
+                rows.forEach((row, idx) => {
+                    const idxCell = row.querySelector('.row-index-cell');
+                    if (idxCell) idxCell.textContent = (idx + 1);
+                    tbody.appendChild(row);
+                });
+            }
+
+            const sortInput = document.getElementById('sortInput');
+            const filterForm = document.getElementById('filterForm');
+            if (sortInput && filterForm) {
+                sortInput.value = 'khmer';
+                filterForm.submit();
+            }
+        }
+    </script>
     <script src="/js/academic-year.js"></script>
     <script src="/js/logout-confirm.js"></script>
     <script src="/js/mobile-nav.js?v=20261029h"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-

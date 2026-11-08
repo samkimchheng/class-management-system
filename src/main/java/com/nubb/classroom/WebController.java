@@ -1523,8 +1523,112 @@ public class WebController {
         return "redirect:/attendance?className=" + URLEncoder.encode(safeClass, StandardCharsets.UTF_8) + "&month=" + URLEncoder.encode(safeMonth, StandardCharsets.UTF_8);
     }
 
+    public static String cleanKhmerText(String s) {
+        if (s == null) return "";
+        return s.replaceAll("[\\u200B-\\u200D\\uFEFF]", "")
+                .replace("\u17C1\u17B6", "\u17C4")
+                .replace("\u17C1\u17B8", "\u17BE")
+                .replace("\u17C6\u17BB", "\u17BB\u17C6")
+                .trim()
+                .replaceAll("\\s+", " ");
+    }
+
+    public static String cleanKhmerForPrimarySort(String s) {
+        return cleanKhmerText(s).replaceAll("[\\u17C9-\\u17D1\\u17DD]", "");
+    }
+
+    public static int extractClassGradeOrder(String className) {
+        if (className == null) return 999;
+        String cleaned = cleanKhmerText(className);
+        StringBuilder digits = new StringBuilder();
+        for (char ch : cleaned.toCharArray()) {
+            if (ch >= '០' && ch <= '៩') {
+                digits.append((char) ('0' + (ch - '០')));
+            } else if (ch >= '0' && ch <= '9') {
+                digits.append(ch);
+            } else if (digits.length() > 0) {
+                break;
+            }
+        }
+        if (digits.length() > 0) {
+            try {
+                return Integer.parseInt(digits.toString());
+            } catch (Exception ignored) {}
+        }
+        return 999;
+    }
+
+    public static String normalizeClassSuffix(String className) {
+        if (className == null) return "";
+        String cleaned = cleanKhmerText(className)
+                .replace("ថ្នាក់ទី", "")
+                .replace("ថ្នាក់", "")
+                .trim();
+        StringBuilder sb = new StringBuilder();
+        for (char ch : cleaned.toCharArray()) {
+            if (ch >= '០' && ch <= '៩') {
+                sb.append((char) ('0' + (ch - '០')));
+            } else {
+                sb.append(ch);
+            }
+        }
+        return sb.toString().trim().toUpperCase();
+    }
+
+    public static int compareKhmerStrings(String a, String b) {
+        String s1 = cleanKhmerText(a);
+        String s2 = cleanKhmerText(b);
+        if (s1.equals(s2)) return 0;
+        if (s1.isEmpty()) return 1;
+        if (s2.isEmpty()) return -1;
+
+        String p1 = cleanKhmerForPrimarySort(s1);
+        String p2 = cleanKhmerForPrimarySort(s2);
+        int primaryCmp = p1.compareTo(p2);
+        if (primaryCmp != 0) {
+            return primaryCmp;
+        }
+        return s1.compareTo(s2);
+    }
+
+    public static List<Student> sortStudentsByClassAndKhmerAlphabet(List<Student> students) {
+        if (students == null || students.size() <= 1) return students;
+        List<Student> sorted = new ArrayList<>(students);
+        sorted.sort((s1, s2) -> {
+            if (s1 == null && s2 == null) return 0;
+            if (s1 == null) return 1;
+            if (s2 == null) return -1;
+
+            String c1 = s1.getClassName() != null ? s1.getClassName() : "";
+            String c2 = s2.getClassName() != null ? s2.getClassName() : "";
+            int g1 = extractClassGradeOrder(c1);
+            int g2 = extractClassGradeOrder(c2);
+            if (g1 != g2) {
+                return Integer.compare(g1, g2);
+            }
+            String normC1 = normalizeClassSuffix(c1);
+            String normC2 = normalizeClassSuffix(c2);
+            int classCmp = compareKhmerStrings(normC1, normC2);
+            if (classCmp != 0) {
+                return classCmp;
+            }
+
+            int nameCmp = compareKhmerStrings(s1.getName(), s2.getName());
+            if (nameCmp != 0) {
+                return nameCmp;
+            }
+            Long id1 = s1.getId() != null ? s1.getId() : 0L;
+            Long id2 = s2.getId() != null ? s2.getId() : 0L;
+            return id1.compareTo(id2);
+        });
+        return sorted;
+    }
+
     @GetMapping("/students")
-    public String students(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
+    public String students(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String className,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String sort,
+            Model model) {
         String currentYear = getCurrentAcademicYear();
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId != null && accountId == 1L) accountId = 97L;
@@ -1534,8 +1638,24 @@ public class WebController {
         } else {
             students = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
         }
+
+        if (sort != null && !sort.trim().isEmpty()) {
+            if ("default".equalsIgnoreCase(sort.trim()) || "none".equalsIgnoreCase(sort.trim())) {
+                session.removeAttribute("STUDENT_SORT_MODE");
+            } else if ("khmer".equalsIgnoreCase(sort.trim())) {
+                session.setAttribute("STUDENT_SORT_MODE", "khmer");
+            }
+        }
+        String activeSort = (String) session.getAttribute("STUDENT_SORT_MODE");
+        boolean isKhmerSorted = "khmer".equalsIgnoreCase(activeSort) || "khmer".equalsIgnoreCase(sort);
+        if (isKhmerSorted && students != null) {
+            students = sortStudentsByClassAndKhmerAlphabet(students);
+        }
+
         model.addAttribute("students", students);
         model.addAttribute("selectedClass", className);
+        model.addAttribute("sortMode", isKhmerSorted ? "khmer" : "");
+        model.addAttribute("isKhmerSorted", isKhmerSorted);
         return "students";
     }
 
