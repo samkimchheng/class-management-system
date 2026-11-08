@@ -614,9 +614,12 @@
             const pdfHeader = clone.querySelector('#pdfHeader');
             if (pdfHeader) {
                 pdfHeader.style.display = 'block';
+                pdfHeader.style.setProperty('margin-bottom', '12px', 'important');
+                pdfHeader.style.setProperty('padding-bottom', '6px', 'important');
+                pdfHeader.style.setProperty('border-bottom', '2px solid #0f172a', 'important');
             }
 
-            // Convert CSS conic-gradient to crisp styled rings so html2canvas renders them without errors
+            // Compact and crisp styling for stat circles in PDF
             clone.querySelectorAll('.stat-circle').forEach(circle => {
                 const inner = circle.querySelector('.stat-circle-inner');
                 const isPass = circle.classList.contains('pass-circle');
@@ -624,40 +627,128 @@
                 const color = isPass ? '#10b981' : (isFail ? '#ef4444' : '#4361ee');
                 const bgColor = isPass ? '#ecfdf5' : (isFail ? '#fef2f2' : '#eef2ff');
 
-                circle.style.backgroundImage = 'none';
-                circle.style.background = bgColor;
-                circle.style.border = `6px solid ${color}`;
+                circle.style.setProperty('position', 'relative', 'important');
+                circle.style.setProperty('display', 'flex', 'important');
+                circle.style.setProperty('align-items', 'center', 'important');
+                circle.style.setProperty('justify-content', 'center', 'important');
+                circle.style.setProperty('width', '75px', 'important');
+                circle.style.setProperty('height', '75px', 'important');
+                circle.style.setProperty('margin', '0 auto 6px auto', 'important');
+                circle.style.setProperty('background-image', 'none', 'important');
+                circle.style.setProperty('background-color', bgColor, 'important');
+                circle.style.setProperty('border', `5px solid ${color}`, 'important');
+                circle.style.setProperty('border-radius', '50%', 'important');
+
                 if (inner) {
-                    inner.style.background = 'transparent';
-                    inner.style.color = color;
-                    inner.style.fontWeight = 'bold';
-                    inner.style.fontSize = '1.8rem';
+                    inner.style.setProperty('position', 'static', 'important');
+                    inner.style.setProperty('display', 'flex', 'important');
+                    inner.style.setProperty('align-items', 'center', 'important');
+                    inner.style.setProperty('justify-content', 'center', 'important');
+                    inner.style.setProperty('width', '100%', 'important');
+                    inner.style.setProperty('height', '100%', 'important');
+                    inner.style.setProperty('background', 'transparent', 'important');
+                    inner.style.setProperty('color', color, 'important');
+                    inner.style.setProperty('font-weight', 'bold', 'important');
+                    inner.style.setProperty('font-size', '1.25rem', 'important');
                 }
             });
 
-            // Enforce horizontal 3-column grid for summary cards in PDF
+            // Compact cards in a single horizontal row for PDF
             clone.querySelectorAll('.card-grid').forEach(grid => {
-                grid.style.display = 'grid';
-                grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
-                grid.style.gap = '20px';
-                grid.style.marginBottom = '25px';
+                grid.style.setProperty('display', 'flex', 'important');
+                grid.style.setProperty('flex-direction', 'row', 'important');
+                grid.style.setProperty('justify-content', 'space-between', 'important');
+                grid.style.setProperty('gap', '12px', 'important');
+                grid.style.setProperty('margin-bottom', '12px', 'important');
             });
 
-            // Reset all table containers and scrollable wrappers so NO clipping or horizontal scrolling occurs!
+            clone.querySelectorAll('.stat-card').forEach(card => {
+                card.style.setProperty('flex', '1 1 0', 'important');
+                card.style.setProperty('max-width', '33.33%', 'important');
+                card.style.setProperty('padding', '10px 12px', 'important');
+                card.style.setProperty('margin', '0', 'important');
+                card.style.setProperty('box-sizing', 'border-box', 'important');
+                card.style.setProperty('box-shadow', 'none', 'important');
+                card.style.setProperty('border', '1px solid #cbd5e1', 'important');
+                card.style.setProperty('page-break-inside', 'avoid', 'important');
+                card.style.setProperty('break-inside', 'avoid', 'important');
+
+                const h3 = card.querySelector('h3');
+                if (h3) {
+                    h3.style.setProperty('font-size', '0.95rem', 'important');
+                    h3.style.setProperty('margin', '0 0 6px 0', 'important');
+                }
+                card.querySelectorAll('p').forEach(p => {
+                    p.style.setProperty('margin', '2px 0', 'important');
+                    p.style.setProperty('font-size', '0.88rem', 'important');
+                });
+            });
+
+            // Universal styling resets: ensure full width, no overflow clipping, correct Khmer font
             clone.querySelectorAll('.table-container, .scrollable-table-wrapper').forEach(w => {
                 w.style.overflow = 'visible';
                 w.style.width = '100%';
                 w.style.maxWidth = '100%';
                 w.style.padding = '0';
-                w.style.margin = '0 0 25px 0';
+                w.style.margin = '0 0 10px 0';
                 w.style.border = 'none';
                 w.style.boxShadow = 'none';
             });
 
-            // CRITICAL FOR KHMER TEXT: Reset letter-spacing and font on all cloned elements
             clone.querySelectorAll('*').forEach(el => {
                 el.style.letterSpacing = 'normal';
                 el.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
+            });
+
+            // Prevent ugly row and section splitting across page boundaries
+            const tableContainers = clone.querySelectorAll('.table-container');
+            if (tableContainers.length > 0) {
+                // Table 1 (Grade Summary): Keep neatly on Page 1
+                const gradeContainer = tableContainers[0];
+                gradeContainer.style.setProperty('margin-top', '8px', 'important');
+                gradeContainer.style.setProperty('margin-bottom', '0', 'important');
+                gradeContainer.style.setProperty('padding', '0', 'important');
+                gradeContainer.style.setProperty('border', 'none', 'important');
+                gradeContainer.style.setProperty('box-shadow', 'none', 'important');
+                gradeContainer.style.setProperty('page-break-inside', 'avoid', 'important');
+                gradeContainer.style.setProperty('break-inside', 'avoid', 'important');
+                
+                gradeContainer.querySelectorAll('th, td').forEach(c => {
+                    c.style.setProperty('padding', '5px 8px', 'important');
+                    c.style.setProperty('font-size', '0.80rem', 'important');
+                    c.style.setProperty('line-height', '1.2', 'important');
+                    c.style.setProperty('white-space', 'nowrap', 'important');
+                    c.style.setProperty('box-sizing', 'border-box', 'important');
+                });
+
+                const gradeTitle = gradeContainer.querySelector('h3');
+                if (gradeTitle) {
+                    gradeTitle.style.setProperty('font-size', '0.95rem', 'important');
+                    gradeTitle.parentElement.style.setProperty('margin-bottom', '6px', 'important');
+                }
+            }
+
+            if (tableContainers.length > 1) {
+                // Table 2 (16-Column Detailed Table): Clean dedicated Page 2
+                const subjectContainer = tableContainers[1];
+                subjectContainer.style.setProperty('page-break-before', 'always', 'important');
+                subjectContainer.style.setProperty('break-before', 'page', 'important');
+                subjectContainer.style.setProperty('margin-top', '0', 'important');
+                subjectContainer.style.setProperty('padding-top', '8px', 'important');
+            }
+
+            // Universal anti-split rules for all table rows and headers
+            clone.querySelectorAll('tr').forEach(tr => {
+                tr.style.setProperty('page-break-inside', 'avoid', 'important');
+                tr.style.setProperty('break-inside', 'avoid', 'important');
+            });
+            clone.querySelectorAll('thead').forEach(thead => {
+                thead.style.setProperty('display', 'table-header-group', 'important');
+            });
+            clone.querySelectorAll('tfoot').forEach(tfoot => {
+                tfoot.style.setProperty('display', 'table-footer-group', 'important');
+                tfoot.style.setProperty('page-break-inside', 'avoid', 'important');
+                tfoot.style.setProperty('break-inside', 'avoid', 'important');
             });
 
             // Target the 16-column Subject Summary Table and enforce fixed 100% layout
@@ -688,33 +779,28 @@
                 subjectTable.querySelectorAll('th, td').forEach(c => {
                     c.style.width = '';
                     c.style.minWidth = '';
+                    c.style.setProperty('white-space', 'nowrap', 'important');
+                    c.style.setProperty('word-break', 'normal', 'important');
+                    c.style.setProperty('overflow-wrap', 'normal', 'important');
+                    c.style.setProperty('letter-spacing', 'normal', 'important');
+                    c.style.setProperty('padding', '5px 2px', 'important');
+                    c.style.setProperty('font-size', '0.78rem', 'important');
+                    c.style.setProperty('line-height', '1.25', 'important');
+                    c.style.setProperty('box-sizing', 'border-box', 'important');
+                });
+
+                // Allow natural word wrapping only on the subject name column
+                subjectTable.querySelectorAll('tbody tr td:nth-child(2)').forEach(td => {
+                    td.style.setProperty('white-space', 'normal', 'important');
+                    td.style.setProperty('word-break', 'normal', 'important');
                 });
             }
 
-            // Universal cell styling inside clone: prevent broken Khmer ligatures by avoiding character splitting
-            clone.querySelectorAll('th, td').forEach(cell => {
-                cell.style.whiteSpace = 'nowrap';
-                cell.style.wordBreak = 'normal';
-                cell.style.overflowWrap = 'normal';
-                cell.style.letterSpacing = 'normal';
-                cell.style.padding = '6px 2px';
-                cell.style.fontSize = '0.80rem';
-                cell.style.lineHeight = '1.3';
-                cell.style.boxSizing = 'border-box';
-                cell.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
-            });
-
-            // Allow natural word wrapping only on the subject name column
-            clone.querySelectorAll('.scrollable-table-wrapper table tbody tr td:nth-child(2)').forEach(td => {
-                td.style.whiteSpace = 'normal';
-                td.style.wordBreak = 'normal';
-            });
-
             // Optimize container width to match Landscape A4 (297mm - 16mm margins = 281mm ≈ 1062px at 96 DPI)
-            clone.style.width = '1080px';
-            clone.style.maxWidth = '1080px';
+            clone.style.width = '1060px';
+            clone.style.maxWidth = '1060px';
             clone.style.boxSizing = 'border-box';
-            clone.style.padding = '15px 20px';
+            clone.style.padding = '12px 18px';
             clone.style.backgroundColor = '#ffffff';
             clone.style.color = '#0f172a';
             clone.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
@@ -725,8 +811,8 @@
             exportWrapper.style.position = 'fixed';
             exportWrapper.style.left = '0';
             exportWrapper.style.top = '0';
-            exportWrapper.style.width = '1080px';
-            exportWrapper.style.maxWidth = '1080px';
+            exportWrapper.style.width = '1060px';
+            exportWrapper.style.maxWidth = '1060px';
             exportWrapper.style.zIndex = '-99999';
             exportWrapper.style.backgroundColor = '#ffffff';
             exportWrapper.style.pointerEvents = 'none';
@@ -744,14 +830,14 @@
                     allowTaint: true,
                     logging: false,
                     backgroundColor: '#ffffff',
-                    windowWidth: 1120 // Forces html2canvas to render full 1080px layout even on 360px mobile viewports
+                    windowWidth: 1100 // Forces html2canvas to render full 1060px layout even on mobile viewports
                 },
                 jsPDF: {
                     unit: 'mm',
                     format: 'a4',
                     orientation: 'landscape' // A4 Landscape
                 },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                pagebreak: { mode: ['css'] }
             };
 
             // Generate PDF as Blob and trigger direct browser download without opening any blank tabs

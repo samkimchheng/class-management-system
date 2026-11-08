@@ -401,6 +401,9 @@
             const pdfHeader = clone.querySelector('#pdfHeader');
             if (pdfHeader) {
                 pdfHeader.style.display = 'block';
+                pdfHeader.style.setProperty('margin-bottom', '12px', 'important');
+                pdfHeader.style.setProperty('padding-bottom', '6px', 'important');
+                pdfHeader.style.setProperty('border-bottom', '2px solid #0f172a', 'important');
             }
 
             // CRITICAL FOR KHMER TEXT: Reset letter-spacing and font on all cloned elements
@@ -428,6 +431,16 @@
 
             clone.querySelectorAll('tr').forEach(tr => {
                 tr.style.backgroundColor = 'transparent';
+                tr.style.setProperty('page-break-inside', 'avoid', 'important');
+                tr.style.setProperty('break-inside', 'avoid', 'important');
+            });
+            clone.querySelectorAll('thead').forEach(thead => {
+                thead.style.setProperty('display', 'table-header-group', 'important');
+            });
+            clone.querySelectorAll('tfoot').forEach(tfoot => {
+                tfoot.style.setProperty('display', 'table-footer-group', 'important');
+                tfoot.style.setProperty('page-break-inside', 'avoid', 'important');
+                tfoot.style.setProperty('break-inside', 'avoid', 'important');
             });
 
             // Universal cell styling inside clone: prevent broken Khmer ligatures by avoiding character splitting
@@ -435,9 +448,9 @@
                 cell.style.letterSpacing = 'normal';
                 cell.style.wordBreak = 'normal';
                 cell.style.overflowWrap = 'normal';
-                cell.style.padding = '6px 4px';
-                cell.style.fontSize = '0.80rem';
-                cell.style.lineHeight = '1.3';
+                cell.style.padding = '5px 4px';
+                cell.style.fontSize = '0.78rem';
+                cell.style.lineHeight = '1.25';
                 cell.style.boxSizing = 'border-box';
                 cell.style.border = '1px solid #cbd5e1';
                 cell.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
@@ -457,10 +470,10 @@
             });
 
             // Optimize container width to match Landscape A4 (297mm - 16mm margins = 281mm ≈ 1062px at 96 DPI)
-            clone.style.width = '1080px';
-            clone.style.maxWidth = '1080px';
+            clone.style.width = '1060px';
+            clone.style.maxWidth = '1060px';
             clone.style.boxSizing = 'border-box';
-            clone.style.padding = '15px 20px';
+            clone.style.padding = '12px 18px';
             clone.style.backgroundColor = '#ffffff';
             clone.style.color = '#0f172a';
             clone.style.fontFamily = "'Kantumruy Pro', 'Battambang', sans-serif";
@@ -471,8 +484,8 @@
             exportWrapper.style.position = 'fixed';
             exportWrapper.style.left = '0';
             exportWrapper.style.top = '0';
-            exportWrapper.style.width = '1080px';
-            exportWrapper.style.maxWidth = '1080px';
+            exportWrapper.style.width = '1060px';
+            exportWrapper.style.maxWidth = '1060px';
             exportWrapper.style.zIndex = '-99999';
             exportWrapper.style.backgroundColor = '#ffffff';
             exportWrapper.style.pointerEvents = 'none';
@@ -490,14 +503,14 @@
                     allowTaint: true,
                     logging: false,
                     backgroundColor: '#ffffff',
-                    windowWidth: 1120 // Forces html2canvas to render full 1080px layout even on 360px mobile viewports
+                    windowWidth: 1100 // Forces html2canvas to render full 1060px layout even on mobile viewports
                 },
                 jsPDF: {
                     unit: 'mm',
                     format: 'a4',
                     orientation: 'landscape' // A4 Landscape
                 },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                pagebreak: { mode: ['css', 'legacy'] }
             };
 
             // Generate PDF as Blob and trigger direct browser download without opening any blank tabs
