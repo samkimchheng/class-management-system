@@ -112,6 +112,66 @@
             font-weight: 700;
         }
 
+        /* Excel Import Modal Styles (Desktop & Mobile) */
+        #excelImportModal,
+        .excel-import-modal {
+            display: none;
+            position: fixed !important;
+            inset: 0 !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background-color: rgba(15, 23, 42, 0.75) !important;
+            backdrop-filter: blur(4px) !important;
+            z-index: 99999 !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            -webkit-overflow-scrolling: touch !important;
+            padding: 20px 14px !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+        }
+
+        .excel-modal-card {
+            background-color: #ffffff;
+            margin: 15px auto;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalFadeIn 0.2s ease-out;
+            position: relative;
+        }
+
+        .btn-excel-import {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #059669;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(5, 150, 105, 0.3);
+            font-family: inherit;
+            font-size: 0.93rem;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-excel-import:hover, .btn-excel-import:active {
+            background-color: #047857;
+            transform: translateY(-1px);
+        }
+
         /* Mobile Sticky Override */
         @media screen and (max-width: 768px) {
             .sticky-col, thead th.sticky-col, tbody td.sticky-col {
@@ -120,7 +180,7 @@
                 right: auto !important;
                 box-shadow: none !important;
             }
-            .table-container, div[style*="overflow: auto"] {
+            .table-container, div[style*="overflow: auto"]:not(#excelImportModal):not(.excel-import-modal) {
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch !important;
             }
@@ -131,6 +191,63 @@
             }
             .btn-sort-khmer, .btn-reset-sort {
                 width: 100%;
+            }
+            .btn-excel-import {
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 12px 16px !important;
+                font-size: 0.95rem !important;
+            }
+
+            #excelImportModal {
+                padding: 6px !important;
+            }
+            .excel-modal-card {
+                margin: 4px auto 25px auto !important;
+                border-radius: 12px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .excel-modal-header {
+                padding: 14px 16px !important;
+            }
+            .excel-modal-header h3 {
+                font-size: 1.05rem !important;
+            }
+            .excel-modal-body {
+                padding: 14px !important;
+                max-height: none !important;
+            }
+            .excel-modal-footer {
+                padding: 12px 14px !important;
+                flex-direction: column-reverse !important;
+                gap: 10px !important;
+            }
+            .excel-modal-footer button {
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 12px !important;
+                font-size: 0.95rem !important;
+            }
+            .import-step1-controls {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+            }
+            .import-step1-controls select,
+            .import-step1-controls input,
+            .import-step1-controls button {
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+            .import-tab-nav {
+                flex-direction: column !important;
+                gap: 6px !important;
+            }
+            .import-tab-nav button {
+                width: 100% !important;
+                text-align: center !important;
+                padding: 10px !important;
             }
         }
     </style>
@@ -214,7 +331,7 @@
                         </a>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <button type="button" class="btn" onclick="openExcelImportModal()" style="display: inline-flex; align-items: center; gap: 6px; background-color: #059669; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 5px rgba(5, 150, 105, 0.3); font-family: inherit; font-size: 0.93rem; transition: all 0.2s;" title="នាំចូលបញ្ជីឈ្មោះសិស្សពី Excel ម្តងមួយថ្នាក់">
+                        <button type="button" id="btnOpenExcelImport" class="btn btn-excel-import" onclick="openExcelImportModal()" title="នាំចូលបញ្ជីឈ្មោះសិស្សពី Excel ម្តងមួយថ្នាក់">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                             <span>📥 នាំចូលពី Excel</span>
                         </button>
@@ -384,13 +501,13 @@
     <script th:src="@{/js/xlsx.full.min.js}" src="/js/xlsx.full.min.js"></script>
 
     <!-- Modal នាំចូលសិស្សពី Excel (Excel Import Modal) -->
-    <div id="excelImportModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
-        <div style="background-color: #ffffff; margin: 30px auto; border-radius: 14px; width: 92%; max-width: 920px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08); overflow: hidden; animation: modalFadeIn 0.2s ease-out;">
+    <div id="excelImportModal" class="excel-import-modal">
+        <div class="excel-modal-card">
             
             <!-- Modal Header -->
-            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="excel-modal-header" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="background: rgba(255,255,255,0.2); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                    <div style="background: rgba(255,255,255,0.2); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
                         📥
                     </div>
                     <div>
@@ -398,18 +515,18 @@
                         <p style="margin: 2px 0 0 0; font-size: 0.88rem; color: #a7f3d0;">បញ្ចូលសិស្សទាំងអស់ក្នុងថ្នាក់បានលឿន និងងាយស្រួលបំផុត</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeExcelImportModal()" style="background: transparent; border: none; color: white; font-size: 1.8rem; cursor: pointer; padding: 0 8px; line-height: 1; border-radius: 6px;" title="បិទ">&times;</button>
+                <button type="button" onclick="closeExcelImportModal()" style="background: transparent; border: none; color: white; font-size: 2rem; cursor: pointer; padding: 4px 10px; line-height: 1; border-radius: 6px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;" title="បិទ">&times;</button>
             </div>
 
             <!-- Modal Body -->
-            <div style="padding: 24px; max-height: calc(85vh - 130px); overflow-y: auto;">
+            <div class="excel-modal-body" style="padding: 24px; max-height: calc(85vh - 130px); overflow-y: auto; -webkit-overflow-scrolling: touch;">
 
                 <!-- Step 1: Select Target Class -->
                 <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
                     <label style="display: block; font-weight: 700; color: #0f172a; margin-bottom: 8px; font-size: 0.95rem;">
                         🏫 ជំហានទី ១៖ ជ្រើសរើសថ្នាក់រៀនគោលដៅ <span style="color: #ef4444;">*</span>
                     </label>
-                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div class="import-step1-controls" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                         <select id="importClassSelect" class="form-control" style="flex: 1; min-width: 220px; font-weight: 600; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.95rem;" onchange="handleImportClassChange(this.value)">
                             <option value="">-- សូមជ្រើសរើសថ្នាក់រៀន --</option>
                             <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className and selectedClass != 'ថ្នាក់រៀនទាំងអស់'}"></option>
@@ -417,7 +534,7 @@
                         </select>
                         <input type="text" id="customClassNameInput" placeholder="វាយបញ្ចូលឈ្មោះថ្នាក់ (ឧ. ១០ក)" style="display: none; flex: 1; min-width: 220px; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #3b82f6; font-weight: 600; font-family: inherit; font-size: 0.95rem;">
                         
-                        <button type="button" onclick="downloadSampleExcel()" class="btn" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 9px 14px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;" title="ទាញយកគំរូឯកសារ Excel">
+                        <button type="button" onclick="downloadSampleExcel()" class="btn" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 9px 14px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; touch-action: manipulation;" title="ទាញយកគំរូឯកសារ Excel">
                             <span>📄 ទាញយកគំរូ Excel (.xlsx)</span>
                         </button>
                     </div>
@@ -425,18 +542,18 @@
 
                 <!-- Step 2: Input Method (Upload File or Paste) -->
                 <div style="margin-bottom: 20px;">
-                    <div style="display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 16px; gap: 8px;">
-                        <button type="button" id="tabUploadBtn" onclick="switchImportTab('upload')" style="padding: 10px 18px; border: none; background: transparent; font-weight: 700; color: #059669; border-bottom: 3px solid #059669; cursor: pointer; font-family: inherit; font-size: 0.95rem; margin-bottom: -2px;">
+                    <div class="import-tab-nav" style="display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 16px; gap: 8px;">
+                        <button type="button" id="tabUploadBtn" onclick="switchImportTab('upload')" style="padding: 10px 18px; border: none; background: transparent; font-weight: 700; color: #059669; border-bottom: 3px solid #059669; cursor: pointer; font-family: inherit; font-size: 0.95rem; margin-bottom: -2px; touch-action: manipulation;">
                             📁 ផ្ទុកឡើងឯកសារ Excel (.xlsx, .xls, .csv)
                         </button>
-                        <button type="button" id="tabPasteBtn" onclick="switchImportTab('paste')" style="padding: 10px 18px; border: none; background: transparent; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; cursor: pointer; font-family: inherit; font-size: 0.95rem; margin-bottom: -2px;">
+                        <button type="button" id="tabPasteBtn" onclick="switchImportTab('paste')" style="padding: 10px 18px; border: none; background: transparent; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; cursor: pointer; font-family: inherit; font-size: 0.95rem; margin-bottom: -2px; touch-action: manipulation;">
                             📋 ចម្លង & បិទភ្ជាប់ពី Excel (Copy & Paste)
                         </button>
                     </div>
 
                     <!-- Panel 1: File Upload -->
                     <div id="tabUploadPanel">
-                        <div id="dropZone" style="border: 2px dashed #10b981; background: #ecfdf5; border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('excelFileInput').click()">
+                        <div id="dropZone" style="border: 2px dashed #10b981; background: #ecfdf5; border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.2s; touch-action: manipulation;" onclick="document.getElementById('excelFileInput').click()">
                             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleExcelFileSelect(event)">
                             <div style="font-size: 2.2rem; margin-bottom: 8px;">📊</div>
                             <div style="font-size: 1rem; font-weight: 700; color: #065f46; margin-bottom: 4px;">ចុចទីនេះដើម្បីជ្រើសរើសឯកសារ Excel ឬ អូសទម្លាក់ (Drag & Drop)</div>
@@ -460,14 +577,14 @@
                         <div id="previewStatsBadge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 700; padding: 6px 14px; border-radius: 20px; font-size: 0.90rem;">
                             📊 រកឃើញសិស្សចំនួន ០ នាក់
                         </div>
-                        <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 600; color: #475569; cursor: pointer;">
+                        <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 600; color: #475569; cursor: pointer; touch-action: manipulation;">
                             <input type="checkbox" id="overwriteClassCheckbox" style="width: 16px; height: 16px; cursor: pointer;">
                             <span>ជំនួសសិស្សចាស់ទាំងអស់ក្នុងថ្នាក់នេះ (បើមាន)</span>
                         </label>
                     </div>
 
-                    <div style="max-height: 280px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 8px;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <div style="max-height: 280px; overflow-y: auto; overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 8px; -webkit-overflow-scrolling: touch;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 600px;">
                             <thead style="background: #f1f5f9; position: sticky; top: 0; z-index: 2;">
                                 <tr>
                                     <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: center; width: 45px;">ល.រ</th>
@@ -489,11 +606,11 @@
             </div>
 
             <!-- Modal Footer -->
-            <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <button type="button" onclick="closeExcelImportModal()" class="btn" style="background: #e2e8f0; color: #334155; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+            <div class="excel-modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <button type="button" onclick="closeExcelImportModal()" class="btn" style="background: #e2e8f0; color: #334155; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; touch-action: manipulation;">
                     បោះបង់ (Cancel)
                 </button>
-                <button type="button" id="btnConfirmImport" onclick="submitBatchImport()" class="btn btn-success" style="background: #059669; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;" disabled>
+                <button type="button" id="btnConfirmImport" onclick="submitBatchImport()" class="btn btn-success" style="background: #059669; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; touch-action: manipulation;" disabled>
                     <span>✅ បញ្ជាក់ និងបញ្ចូលសិស្សទាំងអស់</span>
                 </button>
             </div>
@@ -508,6 +625,7 @@
             const modal = document.getElementById('excelImportModal');
             if (modal) {
                 modal.style.display = 'block';
+                modal.scrollTop = 0;
                 document.body.style.overflow = 'hidden';
 
                 const filterClass = document.getElementById('classNameSelect') ? document.getElementById('classNameSelect').value : '';
@@ -523,9 +641,22 @@
             const modal = document.getElementById('excelImportModal');
             if (modal) {
                 modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
+                document.body.style.overflow = '';
             }
         }
+
+        // Close on backdrop click or ESC key
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('excelImportModal');
+            if (modal && e.target === modal) {
+                closeExcelImportModal();
+            }
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeExcelImportModal();
+            }
+        });
 
         function switchImportTab(tab) {
             const uploadBtn = document.getElementById('tabUploadBtn');

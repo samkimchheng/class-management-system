@@ -679,8 +679,8 @@ html, body {
 .attendance-table-wrapper,
 .scrollable-table-wrapper,
 .table-responsive,
-div[style*="overflow: auto"],
-div[style*="overflow-x: auto"] {
+div[style*="overflow: auto"]:not(#excelImportModal):not([id*="Modal"]):not([id*="modal"]):not(.modal),
+div[style*="overflow-x: auto"]:not(#excelImportModal):not([id*="Modal"]):not([id*="modal"]):not(.modal) {
     position: relative !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
