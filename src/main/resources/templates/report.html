@@ -305,30 +305,44 @@
         }
 
         async function handlePdfMobileDownload(pdfBlob, filename, btn, originalText) {
-            // 1. Try Native Web Share API if on HTTPS or localhost (works great on iOS Safari & modern Android Chrome)
-            if (window.isSecureContext && navigator.canShare) {
-                try {
-                    const file = new File([pdfBlob], filename, { type: 'application/pdf' });
-                    if (navigator.canShare({ files: [file] })) {
+            // 1. Send PDF blob to backend relay to get a real HTTP download link.
+            // This is essential for Android DownloadManager, Telegram In-App Browser, and Messenger
+            // which cannot download local blob: URLs directly.
+            try {
+                const formData = new FormData();
+                formData.append('file', pdfBlob, filename);
+                formData.append('filename', filename);
+
+                const response = await fetch('/api/pdf/prepare', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.downloadUrl) {
                         btn.disabled = false;
-                        btn.innerHTML = originalText;
-                        await navigator.share({
-                            files: [file],
-                            title: filename,
-                            text: 'របាយការណ៍សរុប'
-                        });
-                        return;
-                    }
-                } catch (shareErr) {
-                    if (shareErr.name === 'AbortError') {
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
+                        btn.innerHTML = '<span>✅ បានទាញយក!</span>';
+                        setTimeout(() => { btn.innerHTML = originalText; }, 3000);
+
+                        // Trigger native download via anchor tag with HTTP url
+                        const link = document.createElement('a');
+                        link.href = data.downloadUrl;
+                        link.download = filename;
+                        link.style.display = 'none';
+                        document.body.appendChild(link);
+                        link.click();
+                        setTimeout(() => {
+                            if (link.parentNode) link.parentNode.removeChild(link);
+                        }, 5000);
                         return;
                     }
                 }
+            } catch (err) {
+                console.warn('Backend PDF relay error, falling back to direct blob:', err);
             }
 
-            // 2. Direct Blob Download without opening about:blank or any popup windows
+            // 2. Fallback: Direct Blob Download
             triggerDirectDownload(pdfBlob, filename);
 
             btn.disabled = false;
@@ -336,16 +350,6 @@
             setTimeout(() => {
                 btn.innerHTML = originalText;
             }, 3000);
-
-            // If inside in-app browser like Telegram or Messenger, show helpful hint
-            const isInApp = /FBAN|FBAV|Instagram|Telegram|Line|Messenger/i.test(navigator.userAgent);
-            if (isInApp) {
-                const hint = document.getElementById('mobileDownloadHint');
-                if (hint) {
-                    hint.style.display = 'block';
-                    setTimeout(() => { hint.style.display = 'none'; }, 8000);
-                }
-            }
         }
 
         function downloadAsPDF() {

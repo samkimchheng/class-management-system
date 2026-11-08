@@ -116,6 +116,11 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // Allow temporary PDF download routes (UUID-based token, auto-expires in 5 minutes)
+        if (path.startsWith("/api/pdf/")) {
+            return true;
+        }
+
         // Public certificate verification routes ONLY (for scanning QR codes)
         if (path.startsWith("/certificate/verify") || path.startsWith("/api/certificate/verify")) {
             return true;
