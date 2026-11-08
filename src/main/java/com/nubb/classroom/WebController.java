@@ -1712,6 +1712,116 @@ public class WebController {
         return "redirect:/students";
     }
 
+    @PostMapping("/api/students/import-batch")
+    @ResponseBody
+    public ResponseEntity<?> importStudentsBatch(@org.springframework.web.bind.annotation.RequestBody Map<String, Object> payload) {
+        Long accId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accId == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
+        }
+        if (accId == 1L) accId = 97L;
+
+        String targetClass = (String) payload.get("className");
+        if (targetClass == null || targetClass.trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "សូមជ្រើសរើស ឬបញ្ចូលឈ្មោះថ្នាក់រៀន!"));
+        }
+        targetClass = targetClass.trim();
+
+        String currentYear = getCurrentAcademicYear();
+        Boolean overwrite = Boolean.TRUE.equals(payload.get("overwrite"));
+        List<Map<String, Object>> studentsRaw = (List<Map<String, Object>>) payload.get("students");
+
+        if (studentsRaw == null || studentsRaw.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "មិនមានទិន្នន័យសិស្សសម្រាប់បញ្ចូលទេ!"));
+        }
+
+        // Auto-register classroom if it doesn't exist for this teacher
+        if (!classroomRepository.existsByClassNameAndAccountIdAndAcademicYear(targetClass, accId, currentYear)) {
+            Classroom newCls = new Classroom();
+            newCls.setClassName(targetClass);
+            newCls.setAccountId(accId);
+            newCls.setAcademicYear(currentYear);
+            newCls.setTrack(newCls.getTrack());
+            classroomRepository.save(newCls);
+        }
+
+        // If overwrite is requested, clear old records for this class
+        if (overwrite) {
+            List<Student> existingInClass = studentRepository.findByClassNameAndAccountIdAndAcademicYear(targetClass, accId, currentYear);
+            if (existingInClass != null && !existingInClass.isEmpty()) {
+                for (Student s : existingInClass) {
+                    try { leaveRequestRepository.deleteByStudent(s); } catch (Exception ignored) {}
+                    try { attendanceRepository.deleteByStudent(s); } catch (Exception ignored) {}
+                    try { scoreRepository.deleteByStudentId(s.getId()); } catch (Exception ignored) {}
+                }
+                studentRepository.deleteAll(existingInClass);
+            }
+        }
+
+        long baseCount = studentRepository.count();
+        List<Student> toSave = new ArrayList<>();
+        int importedCount = 0;
+        int femaleCount = 0;
+
+        for (int i = 0; i < studentsRaw.size(); i++) {
+            Map<String, Object> row = studentsRaw.get(i);
+            String name = row.get("name") != null ? row.get("name").toString().trim() : "";
+            if (name.isEmpty()) continue;
+
+            String gender = row.get("gender") != null ? row.get("gender").toString().trim() : "ប្រុស";
+            if (gender.equalsIgnoreCase("F") || gender.equalsIgnoreCase("Female") || gender.equals("ស") || gender.contains("ស្រី")) {
+                gender = "ស្រី";
+            } else {
+                gender = "ប្រុស";
+            }
+            if ("ស្រី".equals(gender)) femaleCount++;
+
+            String code = row.get("studentCode") != null ? row.get("studentCode").toString().trim() : "";
+            if (code.isEmpty()) {
+                code = "STU-" + (1000 + baseCount + toSave.size() + 1);
+            }
+
+            Student s = new Student();
+            s.setName(name);
+            s.setGender(gender);
+            s.setClassName(targetClass);
+            s.setStudentCode(code);
+            s.setAccountId(accId);
+            s.setAcademicYear(currentYear);
+
+            s.setVillage(row.get("village") != null ? row.get("village").toString().trim() : "");
+            s.setCommune(row.get("commune") != null ? row.get("commune").toString().trim() : "");
+            s.setDistrict(row.get("district") != null ? row.get("district").toString().trim() : "");
+            s.setProvince(row.get("province") != null ? row.get("province").toString().trim() : "");
+            s.setFatherName(row.get("fatherName") != null ? row.get("fatherName").toString().trim() : "");
+            s.setFatherOccupation(row.get("fatherOccupation") != null ? row.get("fatherOccupation").toString().trim() : "");
+            s.setMotherName(row.get("motherName") != null ? row.get("motherName").toString().trim() : "");
+            s.setMotherOccupation(row.get("motherOccupation") != null ? row.get("motherOccupation").toString().trim() : "");
+            s.setStatus(row.get("status") != null && !row.get("status").toString().trim().isEmpty() ? row.get("status").toString().trim() : "កំពុងរៀន");
+
+            toSave.add(s);
+            importedCount++;
+        }
+
+        if (toSave.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "រកមិនឃើញទិន្នន័យសិស្សដែលមានឈ្មោះត្រឹមត្រូវទេ!"));
+        }
+
+        studentRepository.saveAll(toSave);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "បានបញ្ចូលសិស្សដោយជោគជ័យចំនួន " + importedCount + " នាក់ (ស្រី " + femaleCount + " នាក់) ទៅក្នុងថ្នាក់ " + targetClass + "!",
+                "count", importedCount,
+                "femaleCount", femaleCount,
+                "className", targetClass
+        ));
+    }
+
     @GetMapping("/student/edit/{id}")
     public String editStudentForm(@org.springframework.web.bind.annotation.PathVariable Long id, Model model) {
         Student student = studentRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid student Id:" + id));

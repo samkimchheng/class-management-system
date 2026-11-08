@@ -213,7 +213,13 @@
                             ↩️ លំដាប់ដើម
                         </a>
                     </div>
-                    <a th:href="@{/student/add}" class="btn btn-primary">+ បន្ថែមសិស្សថ្មី</a>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <button type="button" class="btn" onclick="openExcelImportModal()" style="display: inline-flex; align-items: center; gap: 6px; background-color: #059669; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 5px rgba(5, 150, 105, 0.3); font-family: inherit; font-size: 0.93rem; transition: all 0.2s;" title="នាំចូលបញ្ជីឈ្មោះសិស្សពី Excel ម្តងមួយថ្នាក់">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            <span>📥 នាំចូលពី Excel</span>
+                        </button>
+                        <a th:href="@{/student/add}" class="btn btn-primary">+ បន្ថែមសិស្សថ្មី</a>
+                    </div>
                 </div>
 
                 <div id="sortStatusBanner" class="sort-status-banner" th:style="${isKhmerSorted ? 'display: flex;' : 'display: none;'}">
@@ -374,5 +380,540 @@
     <script src="/js/academic-year.js"></script>
     <script src="/js/logout-confirm.js"></script>
     <script src="/js/mobile-nav.js?v=20261029h"></script>
+    <!-- SheetJS for Excel Import & Sample Generation -->
+    <script th:src="@{/js/xlsx.full.min.js}" src="/js/xlsx.full.min.js"></script>
+
+    <!-- Modal នាំចូលសិស្សពី Excel (Excel Import Modal) -->
+    <div id="excelImportModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+        <div style="background-color: #ffffff; margin: 30px auto; border-radius: 14px; width: 92%; max-width: 920px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08); overflow: hidden; animation: modalFadeIn 0.2s ease-out;">
+            
+            <!-- Modal Header -->
+            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="background: rgba(255,255,255,0.2); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                        📥
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: white;">នាំចូលបញ្ជីឈ្មោះសិស្សពី Excel (ម្តងមួយថ្នាក់)</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.88rem; color: #a7f3d0;">បញ្ចូលសិស្សទាំងអស់ក្នុងថ្នាក់បានលឿន និងងាយស្រួលបំផុត</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeExcelImportModal()" style="background: transparent; border: none; color: white; font-size: 1.8rem; cursor: pointer; padding: 0 8px; line-height: 1; border-radius: 6px;" title="បិទ">&times;</button>
+            </div>
+
+            <!-- Modal Body -->
+            <div style="padding: 24px; max-height: calc(85vh - 130px); overflow-y: auto;">
+
+                <!-- Step 1: Select Target Class -->
+                <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 700; color: #0f172a; margin-bottom: 8px; font-size: 0.95rem;">
+                        🏫 ជំហានទី ១៖ ជ្រើសរើសថ្នាក់រៀនគោលដៅ <span style="color: #ef4444;">*</span>
+                    </label>
+                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <select id="importClassSelect" class="form-control" style="flex: 1; min-width: 220px; font-weight: 600; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.95rem;" onchange="handleImportClassChange(this.value)">
+                            <option value="">-- សូមជ្រើសរើសថ្នាក់រៀន --</option>
+                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className and selectedClass != 'ថ្នាក់រៀនទាំងអស់'}"></option>
+                            <option value="__NEW_CLASS__">➕ បញ្ចូលឈ្មោះថ្នាក់ថ្មី...</option>
+                        </select>
+                        <input type="text" id="customClassNameInput" placeholder="វាយបញ្ចូលឈ្មោះថ្នាក់ (ឧ. ១០ក)" style="display: none; flex: 1; min-width: 220px; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #3b82f6; font-weight: 600; font-family: inherit; font-size: 0.95rem;">
+                        
+                        <button type="button" onclick="downloadSampleExcel()" class="btn" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 9px 14px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;" title="ទាញយកគំរូឯកសារ Excel">
+                            <span>📄 ទាញយកគំរូ Excel (.xlsx)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Input Method (Upload File or Paste) -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 16px; gap: 8px;">
+                        <button type="button" id="tabUploadBtn" onclick="switchImportTab('upload')" style="padding: 10px 18px; border: none; background: transparent; font-weight: 700; color: #059669; border-bottom: 3px solid #059669; cursor: pointer; font-family: inherit; font-size: 0.95rem; margin-bottom: -2px;">
+                            📁 ផ្ទុកឡើងឯកសារ Excel (.xlsx, .xls, .csv)
+                        </button>
+                        <button type="button" id="tabPasteBtn" onclick="switchImportTab('paste')" style="padding: 10px 18px; border: none; background: transparent; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; cursor: pointer; font-family: inherit; font-size: 0.95rem; margin-bottom: -2px;">
+                            📋 ចម្លង & បិទភ្ជាប់ពី Excel (Copy & Paste)
+                        </button>
+                    </div>
+
+                    <!-- Panel 1: File Upload -->
+                    <div id="tabUploadPanel">
+                        <div id="dropZone" style="border: 2px dashed #10b981; background: #ecfdf5; border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('excelFileInput').click()">
+                            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleExcelFileSelect(event)">
+                            <div style="font-size: 2.2rem; margin-bottom: 8px;">📊</div>
+                            <div style="font-size: 1rem; font-weight: 700; color: #065f46; margin-bottom: 4px;">ចុចទីនេះដើម្បីជ្រើសរើសឯកសារ Excel ឬ អូសទម្លាក់ (Drag & Drop)</div>
+                            <div style="font-size: 0.85rem; color: #047857;">គាំទ្រឯកសារ .xlsx, .xls និង .csv</div>
+                            <div id="selectedFileNameDisplay" style="display: none; margin-top: 10px; font-weight: bold; color: #1e3a8a; background: #dbeafe; padding: 6px 14px; border-radius: 6px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 2: Paste Rows -->
+                    <div id="tabPastePanel" style="display: none;">
+                        <p style="margin: 0 0 8px 0; font-size: 0.88rem; color: #64748b;">
+                            បើកឯកសារ Excel របស់លោកគ្រូអ្នកគ្រូ &rarr; ចម្លង (Copy: Ctrl+C) លើជួរឈ្មោះសិស្ស &rarr; រួចបិទភ្ជាប់ (Paste: Ctrl+V) ក្នុងប្រអប់ខាងក្រោម៖
+                        </p>
+                        <textarea id="pasteExcelTextarea" rows="6" placeholder="បិទភ្ជាប់ទិន្នន័យពី Excel នៅទីនេះ (ឧ. ល.រ   ឈ្មោះ   ភេទ   ភូមិ)..." style="width: 100%; box-sizing: border-box; padding: 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.88rem;" oninput="handlePastedExcelData()"></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 3: Live Preview & Options -->
+                <div id="previewSection" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <div id="previewStatsBadge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 700; padding: 6px 14px; border-radius: 20px; font-size: 0.90rem;">
+                            📊 រកឃើញសិស្សចំនួន ០ នាក់
+                        </div>
+                        <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 600; color: #475569; cursor: pointer;">
+                            <input type="checkbox" id="overwriteClassCheckbox" style="width: 16px; height: 16px; cursor: pointer;">
+                            <span>ជំនួសសិស្សចាស់ទាំងអស់ក្នុងថ្នាក់នេះ (បើមាន)</span>
+                        </label>
+                    </div>
+
+                    <div style="max-height: 280px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead style="background: #f1f5f9; position: sticky; top: 0; z-index: 2;">
+                                <tr>
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: center; width: 45px;">ល.រ</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: left; width: 110px;">លេខកូដសិស្ស</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: left;">ឈ្មោះសិស្ស</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: center; width: 65px;">ភេទ</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: left; width: 90px;">ថ្នាក់</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: left;">ភូមិ/ឃុំ/ស្រុក</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: left;">ឈ្មោះឪពុក/ម្តាយ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewTableBody">
+                                <!-- Generated rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <button type="button" onclick="closeExcelImportModal()" class="btn" style="background: #e2e8f0; color: #334155; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                    បោះបង់ (Cancel)
+                </button>
+                <button type="button" id="btnConfirmImport" onclick="submitBatchImport()" class="btn btn-success" style="background: #059669; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;" disabled>
+                    <span>✅ បញ្ជាក់ និងបញ្ចូលសិស្សទាំងអស់</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let parsedStudentsList = [];
+
+        function openExcelImportModal() {
+            const modal = document.getElementById('excelImportModal');
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+
+                const filterClass = document.getElementById('classNameSelect') ? document.getElementById('classNameSelect').value : '';
+                const importSelect = document.getElementById('importClassSelect');
+                if (filterClass && filterClass !== 'ថ្នាក់រៀនទាំងអស់' && importSelect) {
+                    importSelect.value = filterClass;
+                    handleImportClassChange(filterClass);
+                }
+            }
+        }
+
+        function closeExcelImportModal() {
+            const modal = document.getElementById('excelImportModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function switchImportTab(tab) {
+            const uploadBtn = document.getElementById('tabUploadBtn');
+            const pasteBtn = document.getElementById('tabPasteBtn');
+            const uploadPanel = document.getElementById('tabUploadPanel');
+            const pastePanel = document.getElementById('tabPastePanel');
+
+            if (tab === 'upload') {
+                uploadBtn.style.color = '#059669';
+                uploadBtn.style.borderBottomColor = '#059669';
+                pasteBtn.style.color = '#64748b';
+                pasteBtn.style.borderBottomColor = 'transparent';
+                uploadPanel.style.display = 'block';
+                pastePanel.style.display = 'none';
+            } else {
+                pasteBtn.style.color = '#059669';
+                pasteBtn.style.borderBottomColor = '#059669';
+                uploadBtn.style.color = '#64748b';
+                uploadBtn.style.borderBottomColor = 'transparent';
+                pastePanel.style.display = 'block';
+                uploadPanel.style.display = 'none';
+            }
+        }
+
+        function handleImportClassChange(val) {
+            const customInput = document.getElementById('customClassNameInput');
+            if (val === '__NEW_CLASS__') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+            }
+            updatePreviewClassDisplay();
+        }
+
+        function getEffectiveTargetClass() {
+            const select = document.getElementById('importClassSelect');
+            if (!select) return '';
+            if (select.value === '__NEW_CLASS__') {
+                const customInput = document.getElementById('customClassNameInput');
+                return customInput ? customInput.value.trim() : '';
+            }
+            return select.value.trim();
+        }
+
+        function updatePreviewClassDisplay() {
+            const targetClass = getEffectiveTargetClass();
+            if (parsedStudentsList && parsedStudentsList.length > 0) {
+                parsedStudentsList.forEach(s => {
+                    s.className = targetClass || s.className;
+                });
+                renderPreviewTable(parsedStudentsList);
+            }
+        }
+
+        // Drag & Drop Listeners
+        const dropZone = document.getElementById('dropZone');
+        if (dropZone) {
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#059669';
+                dropZone.style.backgroundColor = '#d1fae5';
+            });
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#10b981';
+                dropZone.style.backgroundColor = '#ecfdf5';
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#10b981';
+                dropZone.style.backgroundColor = '#ecfdf5';
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    processUploadedFile(e.dataTransfer.files[0]);
+                }
+            });
+        }
+
+        function handleExcelFileSelect(event) {
+            const file = event.target.files && event.target.files[0];
+            if (file) {
+                processUploadedFile(file);
+            }
+        }
+
+        function processUploadedFile(file) {
+            const fileNameDisplay = document.getElementById('selectedFileNameDisplay');
+            if (fileNameDisplay) {
+                fileNameDisplay.style.display = 'inline-block';
+                fileNameDisplay.textContent = '📄 ' + file.name;
+            }
+
+            if (typeof XLSX === 'undefined') {
+                alert('កំពុងផ្ទុកបណ្ណាល័យ Excel សូមសាកល្បងម្ដងទៀតក្នុងរយៈពេលបន្តិចទៀត!');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+                    
+                    parsedStudentsList = parseRawRows(rawRows);
+                    renderPreviewTable(parsedStudentsList);
+                } catch (err) {
+                    console.error('Error reading Excel:', err);
+                    alert('មិនអាចអានឯកសារ Excel នេះបានទេ! សូមពិនិត្យមើលទ្រង់ទ្រាយឯកសារឡើងវិញ។');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function handlePastedExcelData() {
+            const text = document.getElementById('pasteExcelTextarea').value;
+            if (!text || !text.trim()) {
+                parsedStudentsList = [];
+                renderPreviewTable([]);
+                return;
+            }
+
+            const lines = text.split(/\r?\n/).map(line => line.split('\t').map(c => c.trim()));
+            parsedStudentsList = parseRawRows(lines);
+            renderPreviewTable(parsedStudentsList);
+        }
+
+        function parseRawRows(rows) {
+            if (!rows || rows.length === 0) return [];
+
+            let headerIdx = 0;
+            let maxScore = 0;
+
+            for (let r = 0; r < Math.min(rows.length, 15); r++) {
+                const row = rows[r];
+                if (!Array.isArray(row)) continue;
+                let score = 0;
+                for (let cell of row) {
+                    const s = String(cell || '').trim().toLowerCase();
+                    if (s.includes('ឈ្មោះ') || s.includes('គោត្តនាម') || s.includes('name')) score += 3;
+                    if (s.includes('ភេទ') || s.includes('gender') || s.includes('sex')) score += 2;
+                    if (s.includes('ល.រ') || s.includes('លរ') || s.includes('អត្តលេខ') || s.includes('code')) score += 1;
+                }
+                if (score > maxScore) {
+                    maxScore = score;
+                    headerIdx = r;
+                }
+            }
+
+            const headerRow = rows[headerIdx] || [];
+            let colName = -1, colSurname = -1, colFirstName = -1;
+            let colGender = -1, colCode = -1, colClass = -1;
+            let colVillage = -1, colCommune = -1, colDistrict = -1, colProvince = -1;
+            let colFatherName = -1, colFatherOcc = -1, colMotherName = -1, colMotherOcc = -1, colStatus = -1;
+
+            headerRow.forEach((cell, idx) => {
+                const h = String(cell || '').trim().toLowerCase();
+                if (h.includes('គោត្តនាម និងនាម') || h.includes('គោត្តនាម-នាម') || h.includes('ឈ្មោះសិស្ស') || h.includes('fullname') || h.includes('full name') || (h.includes('ឈ្មោះ') && !h.includes('ឪពុក') && !h.includes('ម្តាយ') && !h.includes('សាលា'))) {
+                    colName = idx;
+                } else if (h.includes('គោត្តនាម') || h.includes('surname') || h.includes('lastname') || h.includes('last name')) {
+                    colSurname = idx;
+                } else if (h.includes('នាម') || h.includes('firstname') || h.includes('first name')) {
+                    colFirstName = idx;
+                }
+
+                if (h.includes('ភេទ') || h.includes('gender') || h.includes('sex')) colGender = idx;
+                if (h.includes('អត្តលេខ') || h.includes('លេខកូដ') || h.includes('កូដសិស្ស') || h.includes('code') || h.includes('student code') || (h.includes('id') && !h.includes('guid'))) colCode = idx;
+                if (h.includes('ថ្នាក់') || h.includes('class') || h.includes('grade')) colClass = idx;
+
+                if (h.includes('ភូមិ') || h.includes('village')) colVillage = idx;
+                if (h.includes('ឃុំ') || h.includes('សង្កាត់') || h.includes('commune')) colCommune = idx;
+                if (h.includes('ស្រុក') || h.includes('ខណ្ឌ') || h.includes('district')) colDistrict = idx;
+                if (h.includes('ខេត្ត') || h.includes('រាជធានី') || h.includes('province')) colProvince = idx;
+
+                if (h.includes('ឪពុក') || h.includes('father')) {
+                    if (h.includes('មុខរបរ') || h.includes('occupation')) colFatherOcc = idx;
+                    else colFatherName = idx;
+                }
+                if (h.includes('ម្តាយ') || h.includes('mother')) {
+                    if (h.includes('មុខរបរ') || h.includes('occupation')) colMotherOcc = idx;
+                    else colMotherName = idx;
+                }
+                if (h.includes('ស្ថានភាព') || h.includes('status') || h.includes('សម្គាល់') || h.includes('ផ្សេងៗ')) colStatus = idx;
+            });
+
+            const parsed = [];
+            const targetClass = getEffectiveTargetClass();
+
+            for (let r = headerIdx + 1; r < rows.length; r++) {
+                const row = rows[r];
+                if (!Array.isArray(row) || row.length === 0) continue;
+
+                let name = '';
+                if (colName !== -1 && row[colName] != null) {
+                    name = String(row[colName]).trim();
+                } else if (colSurname !== -1 || colFirstName !== -1) {
+                    const sur = colSurname !== -1 && row[colSurname] != null ? String(row[colSurname]).trim() : '';
+                    const fir = colFirstName !== -1 && row[colFirstName] != null ? String(row[colFirstName]).trim() : '';
+                    name = (sur + ' ' + fir).trim();
+                }
+
+                if (!name || name.length < 2) continue;
+                if (name.includes('បានឃើញ') || name.includes('នាយក') || name.includes('គ្រូបន្ទុក') || name.includes('សរុប') || name.includes('ឈ្មោះ') || name.includes('Total')) continue;
+
+                let gender = 'ប្រុស';
+                if (colGender !== -1 && row[colGender] != null) {
+                    const g = String(row[colGender]).trim().toLowerCase();
+                    if (g.includes('ស្រី') || g === 'ស' || g === 'f' || g === 'female') {
+                        gender = 'ស្រី';
+                    } else {
+                        gender = 'ប្រុស';
+                    }
+                }
+
+                let studentCode = '';
+                if (colCode !== -1 && row[colCode] != null) {
+                    studentCode = String(row[colCode]).trim();
+                }
+
+                let rowClass = targetClass;
+                if (colClass !== -1 && row[colClass] != null && String(row[colClass]).trim().length > 0) {
+                    rowClass = String(row[colClass]).trim();
+                }
+
+                parsed.push({
+                    name: name,
+                    gender: gender,
+                    studentCode: studentCode,
+                    className: rowClass,
+                    village: colVillage !== -1 && row[colVillage] != null ? String(row[colVillage]).trim() : '',
+                    commune: colCommune !== -1 && row[colCommune] != null ? String(row[colCommune]).trim() : '',
+                    district: colDistrict !== -1 && row[colDistrict] != null ? String(row[colDistrict]).trim() : '',
+                    province: colProvince !== -1 && row[colProvince] != null ? String(row[colProvince]).trim() : '',
+                    fatherName: colFatherName !== -1 && row[colFatherName] != null ? String(row[colFatherName]).trim() : '',
+                    fatherOccupation: colFatherOcc !== -1 && row[colFatherOcc] != null ? String(row[colFatherOcc]).trim() : '',
+                    motherName: colMotherName !== -1 && row[colMotherName] != null ? String(row[colMotherName]).trim() : '',
+                    motherOccupation: colMotherOcc !== -1 && row[colMotherOcc] != null ? String(row[colMotherOcc]).trim() : '',
+                    status: colStatus !== -1 && row[colStatus] != null ? String(row[colStatus]).trim() : 'កំពុងរៀន'
+                });
+            }
+
+            return parsed;
+        }
+
+        function renderPreviewTable(list) {
+            const previewSection = document.getElementById('previewSection');
+            const tbody = document.getElementById('previewTableBody');
+            const statsBadge = document.getElementById('previewStatsBadge');
+            const btnConfirm = document.getElementById('btnConfirmImport');
+
+            if (!list || list.length === 0) {
+                previewSection.style.display = 'none';
+                btnConfirm.disabled = true;
+                return;
+            }
+
+            previewSection.style.display = 'block';
+            btnConfirm.disabled = false;
+
+            let femaleCount = 0;
+            list.forEach(s => { if (s.gender === 'ស្រី') femaleCount++; });
+            const maleCount = list.length - femaleCount;
+            const targetClass = getEffectiveTargetClass();
+
+            statsBadge.innerHTML = `📊 រកឃើញសិស្សសរុប <b>${list.length}</b> នាក់ (ប្រុស <b>${maleCount}</b> នាក់, ស្រី <b>${femaleCount}</b> នាក់) ${targetClass ? 'សម្រាប់ថ្នាក់ <b>' + targetClass + '</b>' : ''}`;
+
+            tbody.innerHTML = '';
+            list.forEach((s, idx) => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #e2e8f0';
+                if (idx % 2 === 1) tr.style.backgroundColor = '#f8fafc';
+
+                const addr = [s.village, s.commune, s.district, s.province].filter(Boolean).join(', ') || '-';
+                const parents = [s.fatherName ? 'ឪ៖ ' + s.fatherName : '', s.motherName ? 'ម្តាយ៖ ' + s.motherName : ''].filter(Boolean).join(' | ') || '-';
+
+                tr.innerHTML = `
+                    <td style="padding: 8px; text-align: center; font-weight: bold; color: #64748b;">${idx + 1}</td>
+                    <td style="padding: 8px; font-weight: 600; color: #3b82f6;">${s.studentCode || '<span style="color:#94a3b8; font-style:italic;">(ស្វ័យប្រវត្ត)</span>'}</td>
+                    <td style="padding: 8px; font-weight: 700; color: #0f172a;">${s.name}</td>
+                    <td style="padding: 8px; text-align: center;">
+                        <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; ${s.gender === 'ស្រី' ? 'background: #fce7f3; color: #be185d;' : 'background: #e0f2fe; color: #0369a1;'}">
+                            ${s.gender}
+                        </span>
+                    </td>
+                    <td style="padding: 8px; font-weight: 600;">${targetClass || s.className || '-'}</td>
+                    <td style="padding: 8px; color: #475569; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${addr}">${addr}</td>
+                    <td style="padding: 8px; color: #475569; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${parents}">${parents}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function downloadSampleExcel() {
+            if (typeof XLSX === 'undefined') {
+                alert('កំពុងផ្ទុកបណ្ណាល័យ Excel សូមសាកល្បងម្ដងទៀតក្នុងរយៈពេលបន្តិចទៀត!');
+                return;
+            }
+            const targetClass = getEffectiveTargetClass() || '១០ក';
+            const sampleRows = [
+                ["ល.រ", "អត្តលេខ", "គោត្តនាម-នាម", "ភេទ", "ថ្នាក់", "ភូមិ", "ឃុំ/សង្កាត់", "ស្រុក/ខណ្ឌ", "ខេត្ត/រាជធានី", "ឈ្មោះឪពុក", "មុខរបរឪពុក", "ឈ្មោះម្តាយ", "មុខរបរម្តាយ", "ស្ថានភាព"],
+                [1, "STU-001", "សុខ សុភា", "ស្រី", targetClass, "ព្រែកប្រា", "ព្រែកប្រា", "ច្បារអំពៅ", "ភ្នំពេញ", "សុខ វិបុល", "កសិករ", "ចាន់ ធីតា", "មេផ្ទះ", "កំពុងរៀន"],
+                [2, "STU-002", "ចាន់ ពិសិដ្ឋ", "ប្រុស", targetClass, "ស្វាយធំ", "ស្វាយធំ", "សៀមរាប", "សៀមរាប", "ចាន់ សំអាត", "គ្រូបង្រៀន", "កែវ សោភា", "អាជីវករ", "កំពុងរៀន"],
+                [3, "STU-003", "ម៉ៅ សុខា", "ប្រុស", targetClass, "វត្តបូព៌", "សាលាកំរើក", "សៀមរាប", "សៀមរាប", "ម៉ៅ រិទ្ធី", "មន្ត្រីរាជការ", "អ៊ុំ ម៉ាលី", "អាជីវករ", "កំពុងរៀន"],
+                [4, "STU-004", "ហេង ស្រីពៅ", "ស្រី", targetClass, "ដូនកែវ", "ដូនកែវ", "ដូនកែវ", "តាកែវ", "ហេង សុវណ្ណ", "កសិករ", "ស៊ុន ផល្លា", "កសិករ", "កំពុងរៀន"]
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(sampleRows);
+            ws['!cols'] = [
+                { wch: 6 },
+                { wch: 12 },
+                { wch: 22 },
+                { wch: 8 },
+                { wch: 10 },
+                { wch: 16 },
+                { wch: 16 },
+                { wch: 16 },
+                { wch: 16 },
+                { wch: 18 },
+                { wch: 16 },
+                { wch: 18 },
+                { wch: 16 },
+                { wch: 12 }
+            ];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "បញ្ជីសិស្ស");
+            XLSX.writeFile(wb, "គំរូបញ្ជីឈ្មោះសិស្ស_" + targetClass.replace(/[\/\\:*?"<>|]/g, '-') + ".xlsx");
+        }
+
+        async function submitBatchImport() {
+            const targetClass = getEffectiveTargetClass();
+            if (!targetClass) {
+                alert('សូមជ្រើសរើស ឬបញ្ចូលឈ្មោះថ្នាក់រៀនជាមុនសិន!');
+                const select = document.getElementById('importClassSelect');
+                if (select) select.focus();
+                return;
+            }
+
+            if (!parsedStudentsList || parsedStudentsList.length === 0) {
+                alert('មិនទាន់មានទិន្នន័យសិស្សសម្រាប់បញ្ចូលទេ!');
+                return;
+            }
+
+            parsedStudentsList.forEach(s => {
+                s.className = targetClass;
+            });
+
+            const overwrite = document.getElementById('overwriteClassCheckbox') ? document.getElementById('overwriteClassCheckbox').checked : false;
+
+            if (overwrite) {
+                const confirmOverwrite = confirm('តើលោកគ្រូអ្នកគ្រូពិតជាចង់ជំនួសសិស្សចាស់ទាំងអស់ក្នុងថ្នាក់ ' + targetClass + ' មែនទេ?');
+                if (!confirmOverwrite) return;
+            }
+
+            const btn = document.getElementById('btnConfirmImport');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ កំពុងបញ្ចូល ' + parsedStudentsList.length + ' នាក់...</span>';
+
+            try {
+                const response = await fetch('/api/students/import-batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        className: targetClass,
+                        overwrite: overwrite,
+                        students: parsedStudentsList
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    btn.innerHTML = '<span>✅ បានបញ្ចូលជោគជ័យ!</span>';
+                    alert(result.message || 'បានបញ្ចូលសិស្សដោយជោគជ័យ!');
+                    window.location.href = '/students?className=' + encodeURIComponent(targetClass);
+                } else {
+                    alert('កំហុស៖ ' + (result.message || 'មិនអាចបញ្ចូលសិស្សបានទេ!'));
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            } catch (err) {
+                console.error('Import error:', err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើ (Server Error)!');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+    </script>
 </body>
 </html>
