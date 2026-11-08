@@ -1124,7 +1124,7 @@ public class WebController {
             Model model) {
 
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
+        if (accountId == null || accountId == 1L) {
             accountId = 97L;
         }
 
@@ -1136,12 +1136,8 @@ public class WebController {
             month = month.trim();
         }
 
-        List<Student> students;
-        if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear);
-        } else {
-            students = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
-        }
+        boolean isKhmerSorted = isKhmerSortActive(accountId, null);
+        List<Student> students = getOrderedStudentsForTeacher(accountId, className, currentYear, isKhmerSorted);
 
         boolean isYearly = "ប្រចាំឆ្នាំ".equals(month);
         boolean isSemester1 = "ឆមាសទី១".equals(month);
@@ -1624,6 +1620,49 @@ public class WebController {
         return sorted;
     }
 
+    private static final Map<Long, Boolean> ACCOUNT_KHMER_SORT_PREF = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public boolean isKhmerSortActive(Long accountId, String sortParam) {
+        Long effId = (accountId == null || accountId == 1L) ? 97L : accountId;
+        if (sortParam != null && !sortParam.trim().isEmpty()) {
+            boolean enable = !"default".equalsIgnoreCase(sortParam.trim()) && !"none".equalsIgnoreCase(sortParam.trim());
+            ACCOUNT_KHMER_SORT_PREF.put(effId, enable);
+            try {
+                if (enable) {
+                    session.setAttribute("STUDENT_SORT_MODE", "khmer");
+                } else {
+                    session.setAttribute("STUDENT_SORT_MODE", "default");
+                }
+            } catch (Exception ignored) {}
+            return enable;
+        }
+        try {
+            String sessMode = (String) session.getAttribute("STUDENT_SORT_MODE");
+            if ("default".equalsIgnoreCase(sessMode)) {
+                return false;
+            }
+            if ("khmer".equalsIgnoreCase(sessMode)) {
+                ACCOUNT_KHMER_SORT_PREF.put(effId, true);
+                return true;
+            }
+        } catch (Exception ignored) {}
+        return ACCOUNT_KHMER_SORT_PREF.getOrDefault(effId, true);
+    }
+
+    public List<Student> getOrderedStudentsForTeacher(Long accountId, String className, String currentYear, boolean sortKhmer) {
+        Long effId = (accountId == null || accountId == 1L) ? 97L : accountId;
+        List<Student> students;
+        if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
+            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, effId, currentYear);
+        } else {
+            students = studentRepository.findByAccountIdAndAcademicYear(effId, currentYear);
+        }
+        if (sortKhmer && students != null) {
+            students = sortStudentsByClassAndKhmerAlphabet(students);
+        }
+        return students;
+    }
+
     @GetMapping("/students")
     public String students(
             @org.springframework.web.bind.annotation.RequestParam(required = false) String className,
@@ -1631,30 +1670,14 @@ public class WebController {
             Model model) {
         String currentYear = getCurrentAcademicYear();
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId != null && accountId == 1L) accountId = 97L;
-        List<Student> students;
-        if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear);
-        } else {
-            students = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
-        }
+        if (accountId == null || accountId == 1L) accountId = 97L;
 
-        if (sort != null && !sort.trim().isEmpty()) {
-            if ("default".equalsIgnoreCase(sort.trim()) || "none".equalsIgnoreCase(sort.trim())) {
-                session.removeAttribute("STUDENT_SORT_MODE");
-            } else if ("khmer".equalsIgnoreCase(sort.trim())) {
-                session.setAttribute("STUDENT_SORT_MODE", "khmer");
-            }
-        }
-        String activeSort = (String) session.getAttribute("STUDENT_SORT_MODE");
-        boolean isKhmerSorted = "khmer".equalsIgnoreCase(activeSort) || "khmer".equalsIgnoreCase(sort);
-        if (isKhmerSorted && students != null) {
-            students = sortStudentsByClassAndKhmerAlphabet(students);
-        }
+        boolean isKhmerSorted = isKhmerSortActive(accountId, sort);
+        List<Student> students = getOrderedStudentsForTeacher(accountId, className, currentYear, isKhmerSorted);
 
         model.addAttribute("students", students);
         model.addAttribute("selectedClass", className);
-        model.addAttribute("sortMode", isKhmerSorted ? "khmer" : "");
+        model.addAttribute("sortMode", isKhmerSorted ? "khmer" : "default");
         model.addAttribute("isKhmerSorted", isKhmerSorted);
         return "students";
     }
@@ -1744,13 +1767,9 @@ public class WebController {
     public String scores(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
         String currentYear = getCurrentAcademicYear();
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId != null && accountId == 1L) accountId = 97L;
-        List<Student> students;
-        if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear);
-        } else {
-            students = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
-        }
+        if (accountId == null || accountId == 1L) accountId = 97L;
+        boolean isKhmerSorted = isKhmerSortActive(accountId, null);
+        List<Student> students = getOrderedStudentsForTeacher(accountId, className, currentYear, isKhmerSorted);
         model.addAttribute("students", students);
         model.addAttribute("selectedClass", className);
                 // Determine track for selected classroom
