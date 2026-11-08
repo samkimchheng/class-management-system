@@ -134,6 +134,45 @@
         .btn-translate:hover {
             background: #c7d2fe;
         }
+        .btn-listen {
+            background: #0284c7;
+            color: white;
+            border: 1px solid #0369a1;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: clamp(0.74rem, 2.5vw, 0.85rem) !important;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            transition: all 0.2s;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            box-shadow: 0 1px 2px rgba(2, 132, 199, 0.2);
+        }
+        .btn-listen:hover {
+            background: #0369a1;
+            transform: translateY(-1px);
+        }
+        .btn-listen:active {
+            transform: scale(0.97);
+        }
+        .btn-listen.is-playing {
+            background: #059669 !important;
+            border-color: #047857 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35) !important;
+            animation: pulse-audio 1.5s infinite;
+        }
+        @keyframes pulse-audio {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
         .btn-add-lesson {
             white-space: nowrap !important;
             flex-shrink: 0 !important;
@@ -449,11 +488,14 @@
 
                     <!-- Main Audio Player (if present) -->
                     <div th:if="${lesson.audioUrl != null and !lesson.audioUrl.isEmpty()}" style="margin-top: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                        <label style="font-weight: bold; font-size: 0.9rem; color: #475569; display: flex; align-items: center; gap: 6px;">
+                        <label style="font-weight: bold; font-size: 0.9rem; color: #475569; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
                             🎵 សំឡេងមេរៀនទូទៅ (Main MP3 Audio):
                         </label>
-                        <audio class="audio-player" controls preload="metadata" th:data-lesson-id="${lesson.id}" th:data-lesson-index="${lessonStat.index}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
+                        <audio th:id="'audio-player-main-' + ${lesson.id}" class="audio-player" controls preload="auto" th:src="${lesson.audioUrl}" th:data-lesson-id="${lesson.id}" th:data-lesson-index="${lessonStat.index}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
                             <source th:src="${lesson.audioUrl}" type="audio/mpeg">
+                            <source th:src="${lesson.audioUrl}" type="audio/mp3">
+                            <source th:src="${lesson.audioUrl}" type="audio/wav">
+                            <source th:src="${lesson.audioUrl}" type="audio/ogg">
                         </audio>
                     </div>
 
@@ -462,10 +504,26 @@
                         <div th:id="'main-content-text-' + ${lesson.id}" style="background: #fafafa; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary); white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;" th:text="${lesson.content}">
                         </div>
 
-                        <!-- Translate Button for Main Content -->
-                        <button class="btn-translate" th:data-khmer="${lesson.khmerContent != null ? lesson.khmerContent : ''}" th:onclick="'toggleKhmerTranslation(\'main-content-text-' + ${lesson.id} + '\', \'khmer-box-main-' + ${lesson.id} + '\', this)'">
-                            <span>🌐 បកប្រែជាភាសាខ្មែរ (Translate to Khmer)</span>
-                        </button>
+                        <!-- Action Buttons for Main Content -->
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; align-items: center;">
+                            <button type="button" 
+                                    class="btn-listen" 
+                                    th:id="'btn-listen-main-' + ${lesson.id}"
+                                    th:data-audio="${lesson.audioUrl != null ? lesson.audioUrl : ''}"
+                                    th:data-audio-id="'audio-player-main-' + ${lesson.id}"
+                                    th:data-text-id="'main-content-text-' + ${lesson.id}"
+                                    th:data-lesson-id="${lesson.id}"
+                                    th:data-lesson-index="${lessonStat.index}"
+                                    onclick="toggleListenTranscript(this)">
+                                <span class="listen-icon">🔊</span>
+                                <span class="listen-label">ចុចស្ដាប់សំឡេង (Listen Audio)</span>
+                            </button>
+
+                            <!-- Translate Button for Main Content -->
+                            <button type="button" class="btn-translate" style="margin-top: 0;" th:data-khmer="${lesson.khmerContent != null ? lesson.khmerContent : ''}" th:onclick="'toggleKhmerTranslation(\'main-content-text-' + ${lesson.id} + '\', \'khmer-box-main-' + ${lesson.id} + '\', this)'">
+                                <span>🌐 បកប្រែជាភាសាខ្មែរ (Translate to Khmer)</span>
+                            </button>
+                        </div>
                         <div th:id="'khmer-box-main-' + ${lesson.id}" class="khmer-translation-box"></div>
                     </div>
 
@@ -482,10 +540,13 @@
                                 <span th:text="${ts.title}">ចំណងជើង Transcript</span>
                             </div>
 
-                            <!-- Audio Player for this Transcript -->
+                            <!-- Audio Player for this Transcript (with direct src & multiple fallbacks) -->
                             <div th:if="${ts.audioUrl != null and !ts.audioUrl.isEmpty()}" style="margin-bottom: 10px;">
-                                <audio class="audio-player" controls preload="metadata" th:data-lesson-id="${lesson.id}" th:data-lesson-index="${lessonStat.index}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
+                                <audio th:id="'audio-player-ts-' + ${ts.id}" class="audio-player" controls preload="auto" th:src="${ts.audioUrl}" th:data-lesson-id="${lesson.id}" th:data-lesson-index="${lessonStat.index}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
                                     <source th:src="${ts.audioUrl}" type="audio/mpeg">
+                                    <source th:src="${ts.audioUrl}" type="audio/mp3">
+                                    <source th:src="${ts.audioUrl}" type="audio/wav">
+                                    <source th:src="${ts.audioUrl}" type="audio/ogg">
                                 </audio>
                             </div>
 
@@ -494,10 +555,26 @@
                                 <div th:id="'ts-content-text-' + ${ts.id}" style="background: #f8fafc; padding: 12px; border-radius: 6px; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; border: 1px solid #e2e8f0;" th:text="${ts.content}">
                                 </div>
 
-                                <!-- Translate Button for Transcript -->
-                                <button class="btn-translate" th:data-khmer="${ts.khmerContent != null ? ts.khmerContent : ''}" th:onclick="'toggleKhmerTranslation(\'ts-content-text-' + ${ts.id} + '\', \'khmer-box-ts-' + ${ts.id} + '\', this)'">
-                                    <span>🌐 បកប្រែជាភាសាខ្មែរ (Translate to Khmer)</span>
-                                </button>
+                                <!-- Action Buttons: Listen & Translate -->
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; align-items: center;">
+                                    <button type="button" 
+                                            class="btn-listen" 
+                                            th:id="'btn-listen-ts-' + ${ts.id}"
+                                            th:data-audio="${ts.audioUrl != null ? ts.audioUrl : ''}"
+                                            th:data-audio-id="'audio-player-ts-' + ${ts.id}"
+                                            th:data-text-id="'ts-content-text-' + ${ts.id}"
+                                            th:data-lesson-id="${lesson.id}"
+                                            th:data-lesson-index="${lessonStat.index}"
+                                            onclick="toggleListenTranscript(this)">
+                                        <span class="listen-icon">🔊</span>
+                                        <span class="listen-label">ចុចស្ដាប់សំឡេង (Listen Audio)</span>
+                                    </button>
+
+                                    <!-- Translate Button for Transcript -->
+                                    <button type="button" class="btn-translate" style="margin-top: 0;" th:data-khmer="${ts.khmerContent != null ? ts.khmerContent : ''}" th:onclick="'toggleKhmerTranslation(\'ts-content-text-' + ${ts.id} + '\', \'khmer-box-ts-' + ${ts.id} + '\', this)'">
+                                        <span>🌐 បកប្រែជាភាសាខ្មែរ (Translate to Khmer)</span>
+                                    </button>
+                                </div>
                                 <div th:id="'khmer-box-ts-' + ${ts.id}" class="khmer-translation-box"></div>
                             </div>
                         </div>
@@ -714,6 +791,7 @@
                         <input type="text" name="tsAudioUrl" class="form-control" placeholder="https://example.com/audio.mp3" value="${escapeHtml(audioUrlVal)}">
                     </div>
                 </div>
+                ${audioUrlVal ? `<div style="margin-top: 8px;"><audio src="${escapeHtml(audioUrlVal)}" controls style="width: 100%; height: 34px; border-radius: 6px;"></audio></div>` : ''}
             `;
             container.appendChild(div);
         }
@@ -949,6 +1027,175 @@
                 target.value = '';
                 Swal.fire('កំហុស', 'មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ប្រព័ន្ធបកប្រែ', 'error');
             }
+        }
+
+        // ==========================================
+        // SMART TRANSCRIPT & LESSON AUDIO LISTENER
+        // ==========================================
+        let currentActiveListenBtn = null;
+        let currentActiveAudio = null;
+        let currentSpeechUtterance = null;
+
+        function stopAllAudioAndSpeech() {
+            // 1. Pause any playing native HTML5 audio
+            if (currentActiveAudio) {
+                try { currentActiveAudio.pause(); } catch(e) {}
+                currentActiveAudio = null;
+            }
+            document.querySelectorAll('audio').forEach(a => {
+                try { a.pause(); } catch(e) {}
+            });
+
+            // 2. Stop any active speech synthesis
+            if ('speechSynthesis' in window) {
+                try { window.speechSynthesis.cancel(); } catch(e) {}
+            }
+            currentSpeechUtterance = null;
+
+            // 3. Reset any active button appearance
+            if (currentActiveListenBtn) {
+                resetListenButton(currentActiveListenBtn);
+                currentActiveListenBtn = null;
+            }
+        }
+
+        function resetListenButton(btn) {
+            if (!btn) return;
+            btn.classList.remove('is-playing');
+            const icon = btn.querySelector('.listen-icon');
+            const label = btn.querySelector('.listen-label');
+            if (icon) icon.textContent = '🔊';
+            if (label) label.textContent = 'ចុចស្ដាប់សំឡេង (Listen Audio)';
+        }
+
+        function setListenButtonPlaying(btn, text) {
+            if (!btn) return;
+            btn.classList.add('is-playing');
+            const icon = btn.querySelector('.listen-icon');
+            const label = btn.querySelector('.listen-label');
+            if (icon) icon.textContent = '⏸️';
+            if (label) label.textContent = text || 'កំពុងចាក់... (ចុចផ្អាក)';
+        }
+
+        function toggleListenTranscript(btn) {
+            const audioUrl = btn.getAttribute('data-audio') || '';
+            const audioId = btn.getAttribute('data-audio-id') || '';
+            const textId = btn.getAttribute('data-text-id') || '';
+            const lessonId = btn.getAttribute('data-lesson-id');
+            const lessonIndex = parseInt(btn.getAttribute('data-lesson-index') || 0);
+
+            // If the user taps the SAME button that is currently playing -> pause/stop it
+            if (currentActiveListenBtn === btn) {
+                stopAllAudioAndSpeech();
+                return;
+            }
+
+            // Stop other active playbacks
+            stopAllAudioAndSpeech();
+
+            // Check if there is an audio element with a valid URL
+            let audioElement = audioId ? document.getElementById(audioId) : null;
+            if (audioElement && audioUrl && audioUrl.trim() !== '') {
+                currentActiveListenBtn = btn;
+                currentActiveAudio = audioElement;
+                setListenButtonPlaying(btn, 'កំពុងចាក់ MP3... (ចុចផ្អាក)');
+
+                audioElement.onended = function() {
+                    resetListenButton(btn);
+                    currentActiveListenBtn = null;
+                    currentActiveAudio = null;
+                    if (typeof handleAudioEnded === 'function') handleAudioEnded(audioElement);
+                };
+                audioElement.onpause = function() {
+                    if (currentActiveListenBtn === btn) {
+                        resetListenButton(btn);
+                        currentActiveListenBtn = null;
+                        currentActiveAudio = null;
+                    }
+                };
+
+                const playPromise = audioElement.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => {
+                        console.warn('MP3 playback failed, falling back to Web Speech Synthesis:', err);
+                        playSpeechSynthesis(btn, textId, lessonId, lessonIndex);
+                    });
+                }
+                return;
+            }
+
+            // Otherwise, play with Web Speech Synthesis (TTS)
+            playSpeechSynthesis(btn, textId, lessonId, lessonIndex);
+        }
+
+        function playSpeechSynthesis(btn, textId, lessonId, lessonIndex) {
+            if (!('speechSynthesis' in window)) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'កម្មវិធីរុករកមិនគាំទ្រសំឡេង',
+                    text: 'កម្មវិធីរុករករបស់អ្នកមិនគាំទ្រការអានសំឡេង Text-to-Speech ទេ។ សូមប្រើប្រាស់ Google Chrome ឬ Safari។'
+                });
+                return;
+            }
+
+            const textEl = document.getElementById(textId);
+            const rawText = textEl ? (textEl.innerText || textEl.textContent || '') : '';
+            const cleanText = rawText.trim();
+
+            if (!cleanText) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'គ្មានអត្ថបទសម្រាប់ស្ដាប់',
+                    text: 'សូមបញ្ចូលអត្ថបទជាមុនសិនដើម្បីស្ដាប់សំឡេង។'
+                });
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.88; // Comfortable natural learning rate
+            utterance.pitch = 1.0;
+
+            // Pick highest quality English voice available
+            const voices = window.speechSynthesis.getVoices();
+            if (voices && voices.length > 0) {
+                const preferredVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('David') || v.name.includes('Zira')))
+                    || voices.find(v => v.lang.startsWith('en'));
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+            }
+
+            currentActiveListenBtn = btn;
+            currentSpeechUtterance = utterance;
+            setListenButtonPlaying(btn, 'កំពុងអានអត្ថបទ... (ចុចផ្អាក)');
+
+            utterance.onend = function() {
+                resetListenButton(btn);
+                currentActiveListenBtn = null;
+                currentSpeechUtterance = null;
+                if (lessonId && typeof updateProgressOnServer === 'function') {
+                    updateProgressOnServer(lessonId, 100, true, lessonIndex);
+                }
+            };
+
+            utterance.onerror = function(e) {
+                console.warn('SpeechSynthesis error:', e);
+                resetListenButton(btn);
+                currentActiveListenBtn = null;
+                currentSpeechUtterance = null;
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Preload speech synthesis voices
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                window.speechSynthesis.getVoices();
+            };
         }
 
         // Sequential Lesson Controller & Locked Progression for Students
