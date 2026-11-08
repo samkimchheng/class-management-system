@@ -115,7 +115,7 @@
         /* Excel Import Modal Styles (Desktop & Mobile) */
         #excelImportModal,
         .excel-import-modal {
-            display: none;
+            display: none !important;
             position: fixed !important;
             inset: 0 !important;
             top: 0 !important;
@@ -135,6 +135,13 @@
             padding: 20px 14px !important;
             box-sizing: border-box !important;
             margin: 0 !important;
+        }
+
+        #excelImportModal.active,
+        .excel-import-modal.active {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
         .excel-modal-card {
@@ -249,6 +256,9 @@
 
             #excelImportModal {
                 padding: 8px !important;
+            }
+            #excelImportModal.active,
+            .excel-import-modal.active {
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
@@ -280,6 +290,7 @@
             .excel-modal-footer {
                 flex-shrink: 0 !important;
                 padding: 10px 12px !important;
+                padding-bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
                 display: flex !important;
                 flex-direction: row !important;
                 align-items: center !important;
@@ -611,7 +622,7 @@
                         <p style="margin: 2px 0 0 0; font-size: 0.88rem; color: #a7f3d0;">បញ្ចូលសិស្សទាំងអស់ក្នុងថ្នាក់បានលឿន និងងាយស្រួលបំផុត</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeExcelImportModal()" style="background: transparent; border: none; color: white; font-size: 2rem; cursor: pointer; padding: 4px 10px; line-height: 1; border-radius: 6px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;" title="បិទ">&times;</button>
+                <button type="button" id="btnCloseExcelModalTop" onclick="closeExcelImportModal()" style="background: transparent; border: none; color: white; font-size: 2rem; cursor: pointer; padding: 4px 10px; line-height: 1; border-radius: 6px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;" title="បិទ">&times;</button>
             </div>
 
             <!-- Modal Body -->
@@ -703,7 +714,7 @@
 
             <!-- Modal Footer -->
             <div class="excel-modal-footer">
-                <button type="button" onclick="closeExcelImportModal()" class="btn btn-cancel-modal">
+                <button type="button" id="btnCancelExcelModal" onclick="closeExcelImportModal()" class="btn btn-cancel-modal">
                     បោះបង់ (Cancel)
                 </button>
                 <button type="button" id="btnConfirmImport" onclick="submitBatchImport()" class="btn btn-success btn-confirm-modal" disabled>
@@ -720,7 +731,8 @@
         function openExcelImportModal() {
             const modal = document.getElementById('excelImportModal');
             if (modal) {
-                modal.style.display = 'block';
+                modal.classList.add('active');
+                modal.style.setProperty('display', 'flex', 'important');
                 modal.scrollTop = 0;
                 document.body.style.overflow = 'hidden';
 
@@ -736,18 +748,40 @@
         function closeExcelImportModal() {
             const modal = document.getElementById('excelImportModal');
             if (modal) {
-                modal.style.display = 'none';
+                modal.classList.remove('active');
+                modal.style.setProperty('display', 'none', 'important');
                 document.body.style.overflow = '';
             }
         }
 
-        // Close on backdrop click or ESC key
-        document.addEventListener('click', function(e) {
+        // Close on backdrop click / touch or ESC key
+        document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('excelImportModal');
-            if (modal && e.target === modal) {
-                closeExcelImportModal();
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeExcelImportModal();
+                    }
+                });
             }
+
+            ['btnCancelExcelModal', 'btnCloseExcelModalTop'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeExcelImportModal();
+                    });
+                    el.addEventListener('touchend', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeExcelImportModal();
+                    });
+                }
+            });
         });
+
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeExcelImportModal();
