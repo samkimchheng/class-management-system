@@ -2,17 +2,22 @@ package com.nubb.classroom.controller;
 
 import com.nubb.classroom.model.Account;
 import com.nubb.classroom.model.Feedback;
+import com.nubb.classroom.model.LeaveRequest;
 import com.nubb.classroom.repository.AccountRepository;
 import com.nubb.classroom.repository.FeedbackRepository;
+import com.nubb.classroom.repository.LeaveRequestRepository;
 import com.nubb.classroom.repository.StudentRepository;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -22,6 +27,9 @@ public class AdminController {
     private final AccountRepository accountRepository;
     private final StudentRepository studentRepository;
     private final FeedbackRepository feedbackRepository;
+
+    @Autowired(required = false)
+    private LeaveRequestRepository leaveRequestRepository;
 
     public AdminController(AccountRepository accountRepository, 
                            StudentRepository studentRepository,
@@ -45,6 +53,25 @@ public class AdminController {
         model.addAttribute("totalFeedbacks", totalFb);
         model.addAttribute("pendingFeedbacks", pendingFb);
         model.addAttribute("recentFeedbacks", recentFb);
+
+        List<LeaveRequest> leaveReqs = List.of();
+        long pendingLeaves = 0;
+        Map<Long, String> teacherNames = new HashMap<>();
+        try {
+            for (Account acc : accountRepository.findAll()) {
+                if (acc.getId() != null && acc.getFullName() != null) {
+                    teacherNames.put(acc.getId(), acc.getFullName());
+                }
+            }
+            if (leaveRequestRepository != null) {
+                leaveReqs = leaveRequestRepository.findAllByOrderByCreatedAtDesc();
+                pendingLeaves = leaveReqs.stream().filter(LeaveRequest::isPending).count();
+            }
+        } catch (Exception ignored) {}
+        model.addAttribute("leaveRequests", leaveReqs);
+        model.addAttribute("totalLeaveRequests", leaveReqs.size());
+        model.addAttribute("pendingLeaveRequests", pendingLeaves);
+        model.addAttribute("teacherNames", teacherNames);
         return "admin/dashboard";
     }
 

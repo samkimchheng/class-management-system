@@ -1267,6 +1267,110 @@ public class WebController {
                 + (safeMonth.isEmpty() ? "" : "&month=" + URLEncoder.encode(safeMonth, StandardCharsets.UTF_8));
     }
 
+    @GetMapping("/api/leave-requests/notifications")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getLeaveRequestNotifications() {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("pendingCount", 0, "requests", Collections.emptyList()));
+        }
+        String role = (String) session.getAttribute("ACCOUNT_ROLE");
+        List<com.nubb.classroom.model.LeaveRequest> allVisible;
+        if ("ADMIN".equalsIgnoreCase(role) || accountId == 1L) {
+            allVisible = leaveRequestRepository.findAllByOrderByCreatedAtDesc();
+        } else {
+            allVisible = getLeaveRequestsForTeacher(accountId, null);
+        }
+
+        Map<Long, String> teacherNames = new HashMap<>();
+        try {
+            for (Account acc : accountRepository.findAll()) {
+                if (acc.getId() != null && acc.getFullName() != null) {
+                    teacherNames.put(acc.getId(), acc.getFullName());
+                }
+            }
+        } catch (Exception ignored) {}
+
+        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        List<Map<String, Object>> pendingList = new ArrayList<>();
+        for (com.nubb.classroom.model.LeaveRequest lr : allVisible) {
+            if (lr == null || !lr.isPending()) continue;
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", lr.getId());
+            item.put("studentName", lr.getStudent() != null && lr.getStudent().getName() != null ? lr.getStudent().getName() : "សិស្ស");
+            item.put("studentCode", lr.getStudent() != null && lr.getStudent().getStudentCode() != null ? lr.getStudent().getStudentCode() : "");
+            item.put("gender", lr.getStudent() != null && lr.getStudent().getGender() != null ? lr.getStudent().getGender() : "");
+            String cls = lr.getClassName() != null ? lr.getClassName() : (lr.getStudent() != null && lr.getStudent().getClassName() != null ? lr.getStudent().getClassName() : "");
+            item.put("className", cls);
+            Long tId = lr.getAccountId() != null ? lr.getAccountId() : 97L;
+            if (tId == 1L) tId = 97L;
+            item.put("teacherName", teacherNames.getOrDefault(tId, "គ្រូបង្រៀន"));
+            String sDate = lr.getStartDate() != null ? lr.getStartDate().format(dtf) : "";
+            String eDate = lr.getEndDate() != null ? lr.getEndDate().format(dtf) : sDate;
+            item.put("startDate", sDate);
+            item.put("endDate", eDate);
+            item.put("dateRange", (!eDate.isEmpty() && !eDate.equals(sDate)) ? (sDate + " ដល់ " + eDate) : sDate);
+            item.put("totalDays", lr.getTotalDays());
+            item.put("leaveType", lr.getLeaveType() != null ? lr.getLeaveType() : "ច្បាប់");
+            item.put("leaveSession", lr.getLeaveSession() != null ? lr.getLeaveSession() : "ពេញមួយថ្ងៃ");
+            item.put("reason", lr.getReason() != null ? lr.getReason() : "");
+            item.put("parentPhone", lr.getParentPhone() != null ? lr.getParentPhone() : "");
+            pendingList.add(item);
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "pendingCount", pendingList.size(),
+                "totalCount", allVisible.size(),
+                "requests", pendingList
+        ));
+    }
+
+    @PostMapping("/api/leave-requests/{id}/approve")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> apiApproveLeaveRequest(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
+        }
+        Optional<com.nubb.classroom.model.LeaveRequest> lrOpt = leaveRequestRepository.findById(id);
+        if (lrOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "រកមិនឃើញសំណើសុំច្បាប់នេះទេ"));
+        }
+        com.nubb.classroom.model.LeaveRequest lr = lrOpt.get();
+        lr.setStatus("APPROVED");
+        lr.setReviewedAt(java.time.LocalDateTime.now());
+        leaveRequestRepository.save(lr);
+        syncLeaveRequestToAttendance(lr, true);
+        String stName = lr.getStudent() != null ? lr.getStudent().getName() : "សិស្ស";
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "✅ បានអនុម័តច្បាប់ឈប់សម្រាករបស់សិស្ស «" + stName + "» រួចរាល់!"
+        ));
+    }
+
+    @PostMapping("/api/leave-requests/{id}/reject")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> apiRejectLeaveRequest(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
+        }
+        Optional<com.nubb.classroom.model.LeaveRequest> lrOpt = leaveRequestRepository.findById(id);
+        if (lrOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "រកមិនឃើញសំណើសុំច្បាប់នេះទេ"));
+        }
+        com.nubb.classroom.model.LeaveRequest lr = lrOpt.get();
+        lr.setStatus("REJECTED");
+        lr.setReviewedAt(java.time.LocalDateTime.now());
+        leaveRequestRepository.save(lr);
+        syncLeaveRequestToAttendance(lr, false);
+        String stName = lr.getStudent() != null ? lr.getStudent().getName() : "សិស្ស";
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "❌ បានបដិសេធសំណើសុំច្បាប់របស់សិស្ស «" + stName + "»!"
+        ));
+    }
+
     @PostMapping("/attendance/save")
     public String saveAttendance(
             @RequestParam("month") String month,

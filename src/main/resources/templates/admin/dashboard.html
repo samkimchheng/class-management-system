@@ -95,6 +95,63 @@
                     </div>
                     <div class="value" style="color: #d97706;" th:text="${totalFeedbacks} + ' មតិ'">០ មតិ</div>
                 </div>
+                <div class="card" style="border-left-color: #ec4899;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="margin: 0;">📩 សំណើសុំច្បាប់របស់សិស្ស</h3>
+                        <span th:if="${pendingLeaveRequests != null and pendingLeaveRequests > 0}" style="background: #fef3c7; color: #b45309; border: 1px solid #f59e0b; font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; font-weight: bold;" th:text="${pendingLeaveRequests} + ' រង់ចាំអនុម័ត'">1 រង់ចាំ</span>
+                    </div>
+                    <div class="value" style="color: #db2777;" th:text="(${totalLeaveRequests ?: 0}) + ' សំណើ'">០ សំណើ</div>
+                </div>
+            </div>
+
+            <!-- Student Leave Requests Section on Admin Dashboard -->
+            <div style="background: white; padding: 22px 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 24px; border-left: 5px solid #f59e0b;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+                    <h3 style="margin: 0; color: #0f172a;">🔔 បញ្ជីសំណើសុំច្បាប់របស់សិស្ស (Student Leave Requests)</h3>
+                    <a href="/attendance" class="btn" style="background: #4361ee; color: white; font-size: 0.88rem; font-weight: bold;">ទៅកាន់បញ្ជីអវត្តមាន &rarr;</a>
+                </div>
+                <div th:if="${leaveRequests != null and !#lists.isEmpty(leaveRequests)}" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                                <th style="padding: 10px 8px; text-align: left;">ល.រ</th>
+                                <th style="padding: 10px 8px; text-align: left;">ឈ្មោះសិស្ស</th>
+                                <th style="padding: 10px 8px; text-align: left;">ថ្នាក់</th>
+                                <th style="padding: 10px 8px; text-align: left;">គ្រូបង្រៀន</th>
+                                <th style="padding: 10px 8px; text-align: left;">កាលបរិច្ឆេទឈប់</th>
+                                <th style="padding: 10px 8px; text-align: left;">ប្រភេទ & មូលហេតុ</th>
+                                <th style="padding: 10px 8px; text-align: center;">ស្ថានភាព</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="req, rStat : ${leaveRequests}" style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 10px 8px; font-weight: bold;" th:text="${rStat.count}">1</td>
+                                <td style="padding: 10px 8px; font-weight: bold; color: #0f172a;">
+                                    <span th:text="${req.student != null ? req.student.name : 'សិស្ស'}"></span>
+                                    <div style="font-size: 0.8rem; color: #64748b;" th:if="${req.student != null}" th:text="'កូដ៖ ' + ${req.student.studentCode}"></div>
+                                </td>
+                                <td style="padding: 10px 8px; font-weight: bold; color: #0284c7;" th:text="${req.className ?: (req.student != null ? req.student.className : '')}">10A</td>
+                                <td style="padding: 10px 8px; color: #059669; font-weight: 600;" th:text="${teacherNames != null and req.accountId != null and teacherNames.containsKey(req.accountId) ? teacherNames.get(req.accountId) : 'គ្រូបង្រៀន'}">គ្រូ</td>
+                                <td style="padding: 10px 8px; white-space: nowrap;">
+                                    <div style="font-weight: bold;" th:text="${#temporals.format(req.startDate, 'dd-MM-yyyy') + (req.endDate != null and !req.endDate.equals(req.startDate) ? ' ដល់ ' + #temporals.format(req.endDate, 'dd-MM-yyyy') : '')}"></div>
+                                    <div style="font-size: 0.8rem; color: #4361ee; font-weight: bold;" th:text="${req.totalDays + ' ថ្ងៃ • ' + (req.leaveSession ?: 'ពេញមួយថ្ងៃ')}"></div>
+                                </td>
+                                <td style="padding: 10px 8px;">
+                                    <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 5px; font-size: 0.8rem; font-weight: bold;" th:text="${req.leaveType ?: 'ច្បាប់'}"></span>
+                                    <span th:text="${req.reason}" style="margin-left: 4px; color: #334155;"></span>
+                                </td>
+                                <td style="padding: 10px 8px; text-align: center; white-space: nowrap;">
+                                    <span th:if="${req.pending}" style="background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 3px 9px; border-radius: 15px; font-size: 0.8rem; font-weight: bold;">⏳ រង់ចាំអនុម័ត</span>
+                                    <span th:if="${req.approved}" style="background: #d1fae5; color: #065f46; border: 1px solid #10b981; padding: 3px 9px; border-radius: 15px; font-size: 0.8rem; font-weight: bold;">✅ អនុម័តរួច</span>
+                                    <span th:if="${req.rejected}" style="background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; padding: 3px 9px; border-radius: 15px; font-size: 0.8rem; font-weight: bold;">❌ បានបដិសេធ</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:if="${leaveRequests == null or #lists.isEmpty(leaveRequests)}" style="text-align: center; padding: 15px; color: #64748b; background: #f8fafc; border-radius: 8px;">
+                    មិនទាន់មានសំណើសុំច្បាប់ពីគណនីសិស្សនៅឡើយទេ។
+                </div>
             </div>
             
             <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
