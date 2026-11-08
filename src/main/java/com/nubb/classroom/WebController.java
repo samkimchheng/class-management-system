@@ -452,7 +452,10 @@ public class WebController {
     }
 
     @GetMapping("/")
-    public String index(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
+    public String index(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String className,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String date,
+            Model model) {
         String[] provinces = {
             "ខេត្តបាត់ដំបង", "រាជធានីភ្នំពេញ", "ខេត្តសៀមរាប", "ខេត្តបន្ទាយមានជ័យ", "ខេត្តពោធិ៍សាត់",
             "ខេត្តកំពង់ចាម", "ខេត្តកំពង់ធំ", "ខេត្តកំពង់ឆ្នាំង", "ខេត្តកំពង់ស្ពឺ", "ខេត្តកណ្តាល",
@@ -470,74 +473,126 @@ public class WebController {
         model.addAttribute("standardSubjects", standardSubjects);
 
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        Long effAccountId = (accountId != null && accountId == 1L) ? 97L : accountId;
         Account teacherAccount = null;
-        if (accountId != null) {
+        if (effAccountId != null) {
             try {
-                teacherAccount = accountRepository.findById(accountId).orElse(null);
+                teacherAccount = accountRepository.findById(effAccountId).orElse(null);
             } catch (Exception ignored) {}
         }
         model.addAttribute("teacherAccount", teacherAccount);
 
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate targetDate = today;
+        if (date != null && !date.trim().isEmpty()) {
+            try {
+                targetDate = java.time.LocalDate.parse(date.trim());
+            } catch (Exception e1) {
+                try {
+                    targetDate = java.time.LocalDate.parse(date.trim(), java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                } catch (Exception ignored) {}
+            }
+        }
+        boolean isToday = targetDate.equals(today);
+        java.time.format.DateTimeFormatter isoFmt = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        java.time.format.DateTimeFormatter displayFmt = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String selectedDateStr = targetDate.format(isoFmt);
+        String selectedDateDisplay = targetDate.format(displayFmt);
+        String prevDateStr = targetDate.minusDays(1).format(isoFmt);
+        String nextDateStr = targetDate.plusDays(1).format(isoFmt);
+        String todayDateStr = today.format(isoFmt);
+
         try {
-            java.time.LocalDate today = java.time.LocalDate.now();
             long totalStudents = 0;
             long totalFemale = 0;
             long presentToday = 0;
             long presentFemale = 0;
             long absentToday = 0;
             long absentFemale = 0;
+            long absentPermissionToday = 0;
+            long absentUnexcusedToday = 0;
             List<com.nubb.classroom.model.Attendance> recentAbsents = new java.util.ArrayList<>();
 
-
             String currentYear = getCurrentAcademicYear();
+            List<Student> students;
             if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-                List<Student> students = (accountId != null) ? studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear) : studentRepository.findAll();
-                if (students != null) {
-                    totalStudents = students.size();
-                    totalFemale = students.stream().filter(s -> s != null && "ស្រី".equals(s.getGender())).count();
-                    Set<Long> studentIds = students.stream().map(Student::getId).collect(Collectors.toSet());
-                    
-                    List<com.nubb.classroom.model.Attendance> pres = attendanceRepository.findByDateAndPresentTrueAndStudentClassName(today, className);
-                    if (pres != null) {
-                        pres = pres.stream().filter(a -> a != null && a.getStudent() != null && studentIds.contains(a.getStudent().getId())).collect(Collectors.toList());
-                        presentToday = pres.size();
-                        presentFemale = pres.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
-                    }
-                    
-                    List<com.nubb.classroom.model.Attendance> abs = attendanceRepository.findByDateAndPresentFalseAndStudentClassName(today, className);
-                    if (abs != null) {
-                        abs = abs.stream().filter(a -> a != null && a.getStudent() != null && studentIds.contains(a.getStudent().getId())).collect(Collectors.toList());
-                        absentToday = abs.size();
-                        absentFemale = abs.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
-                        recentAbsents = abs;
-                    }
-                }
+                students = (effAccountId != null)
+                        ? studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, effAccountId, currentYear)
+                        : studentRepository.findAll();
             } else {
-                List<Student> students = (accountId != null) ? studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear) : studentRepository.findAll();
-                if (students != null) {
-                    totalStudents = students.size();
-                    totalFemale = students.stream().filter(s -> s != null && "ស្រី".equals(s.getGender())).count();
-                    Set<Long> studentIds = students.stream().map(Student::getId).collect(Collectors.toSet());
-                    
-                    List<com.nubb.classroom.model.Attendance> pres = attendanceRepository.findByDateAndPresentTrue(today);
-                    if (pres != null) {
-                        pres = pres.stream().filter(a -> a != null && a.getStudent() != null && studentIds.contains(a.getStudent().getId())).collect(Collectors.toList());
-                        presentToday = pres.size();
-                        presentFemale = pres.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
-                    }
-                    
-                    List<com.nubb.classroom.model.Attendance> abs = attendanceRepository.findByDateAndPresentFalse(today);
-                    if (abs != null) {
-                        abs = abs.stream().filter(a -> a != null && a.getStudent() != null && studentIds.contains(a.getStudent().getId())).collect(Collectors.toList());
-                        absentToday = abs.size();
-                        absentFemale = abs.stream().filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender())).count();
-                        recentAbsents = abs;
-                    }
-                }
+                students = (effAccountId != null)
+                        ? studentRepository.findByAccountIdAndAcademicYear(effAccountId, currentYear)
+                        : studentRepository.findAll();
             }
 
+            List<com.nubb.classroom.model.LeaveRequest> allLeaveReqs = getLeaveRequestsForTeacher(effAccountId, className);
 
-            List<com.nubb.classroom.model.LeaveRequest> allLeaveReqs = getLeaveRequestsForTeacher(accountId, className);
+            if (students != null) {
+                totalStudents = students.size();
+                totalFemale = students.stream().filter(s -> s != null && "ស្រី".equals(s.getGender())).count();
+                Set<Long> studentIds = students.stream()
+                        .filter(s -> s != null && s.getId() != null)
+                        .map(Student::getId)
+                        .collect(Collectors.toSet());
+
+                List<com.nubb.classroom.model.Attendance> abs;
+                if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
+                    abs = attendanceRepository.findByDateAndPresentFalseAndStudentClassName(targetDate, className);
+                } else {
+                    abs = attendanceRepository.findByDateAndPresentFalse(targetDate);
+                }
+
+                Map<Long, com.nubb.classroom.model.Attendance> absentByStudentId = new java.util.LinkedHashMap<>();
+                if (abs != null) {
+                    for (com.nubb.classroom.model.Attendance a : abs) {
+                        if (a != null && a.getStudent() != null && a.getStudent().getId() != null
+                                && studentIds.contains(a.getStudent().getId())) {
+                            absentByStudentId.putIfAbsent(a.getStudent().getId(), a);
+                        }
+                    }
+                }
+
+                if (allLeaveReqs != null) {
+                    final java.time.LocalDate checkDate = targetDate;
+                    for (com.nubb.classroom.model.LeaveRequest lr : allLeaveReqs) {
+                        if (lr != null && !lr.isRejected()
+                                && lr.getStudent() != null && lr.getStudent().getId() != null
+                                && studentIds.contains(lr.getStudent().getId())
+                                && lr.getStartDate() != null && lr.getEndDate() != null
+                                && !checkDate.isBefore(lr.getStartDate()) && !checkDate.isAfter(lr.getEndDate())) {
+                            absentByStudentId.computeIfAbsent(lr.getStudent().getId(),
+                                    sId -> new com.nubb.classroom.model.Attendance(lr.getStudent(), checkDate, false, "PERMISSION"));
+                        }
+                    }
+                }
+
+                recentAbsents = new java.util.ArrayList<>(absentByStudentId.values());
+                absentToday = recentAbsents.size();
+                absentFemale = recentAbsents.stream()
+                        .filter(a -> a != null && a.getStudent() != null && "ស្រី".equals(a.getStudent().getGender()))
+                        .count();
+                absentPermissionToday = recentAbsents.stream()
+                        .filter(com.nubb.classroom.model.Attendance::isPermission)
+                        .count();
+                absentUnexcusedToday = Math.max(0L, absentToday - absentPermissionToday);
+
+                presentToday = Math.max(0L, totalStudents - absentToday);
+                presentFemale = Math.max(0L, totalFemale - absentFemale);
+            }
+
+            String presentPercent = "0";
+            String absentPercent = "0";
+            if (totalStudents > 0) {
+                double pPct = (presentToday * 100.0) / totalStudents;
+                double aPct = (absentToday * 100.0) / totalStudents;
+                presentPercent = (Math.abs(pPct - Math.round(pPct)) < 0.05)
+                        ? String.valueOf(Math.round(pPct))
+                        : String.format(java.util.Locale.US, "%.1f", pPct);
+                absentPercent = (Math.abs(aPct - Math.round(aPct)) < 0.05)
+                        ? String.valueOf(Math.round(aPct))
+                        : String.format(java.util.Locale.US, "%.1f", aPct);
+            }
+
             List<com.nubb.classroom.model.LeaveRequest> pendingLeaveRequests = allLeaveReqs.stream()
                     .filter(com.nubb.classroom.model.LeaveRequest::isPending)
                     .collect(Collectors.toList());
@@ -546,12 +601,22 @@ public class WebController {
             model.addAttribute("totalFemale", totalFemale);
             model.addAttribute("presentToday", presentToday);
             model.addAttribute("presentFemale", presentFemale);
+            model.addAttribute("presentPercent", presentPercent);
             model.addAttribute("absentToday", absentToday);
             model.addAttribute("absentFemale", absentFemale);
+            model.addAttribute("absentPercent", absentPercent);
+            model.addAttribute("absentPermissionToday", absentPermissionToday);
+            model.addAttribute("absentUnexcusedToday", absentUnexcusedToday);
             model.addAttribute("recentAbsents", recentAbsents);
             model.addAttribute("pendingLeaveRequests", pendingLeaveRequests);
             model.addAttribute("pendingLeaveCount", pendingLeaveRequests.size());
             model.addAttribute("selectedClass", className);
+            model.addAttribute("selectedDate", selectedDateStr);
+            model.addAttribute("selectedDateDisplay", selectedDateDisplay);
+            model.addAttribute("prevDate", prevDateStr);
+            model.addAttribute("nextDate", nextDateStr);
+            model.addAttribute("todayDate", todayDateStr);
+            model.addAttribute("isToday", isToday);
             return "index";
         } catch (Exception e) {
             System.err.println("Error in index dashboard: " + e.getMessage());
@@ -560,10 +625,20 @@ public class WebController {
             model.addAttribute("totalFemale", 0);
             model.addAttribute("presentToday", 0);
             model.addAttribute("presentFemale", 0);
+            model.addAttribute("presentPercent", "0");
             model.addAttribute("absentToday", 0);
             model.addAttribute("absentFemale", 0);
+            model.addAttribute("absentPercent", "0");
+            model.addAttribute("absentPermissionToday", 0);
+            model.addAttribute("absentUnexcusedToday", 0);
             model.addAttribute("recentAbsents", new java.util.ArrayList<>());
             model.addAttribute("selectedClass", className);
+            model.addAttribute("selectedDate", selectedDateStr);
+            model.addAttribute("selectedDateDisplay", selectedDateDisplay);
+            model.addAttribute("prevDate", prevDateStr);
+            model.addAttribute("nextDate", nextDateStr);
+            model.addAttribute("todayDate", todayDateStr);
+            model.addAttribute("isToday", isToday);
             return "index";
         }
     }

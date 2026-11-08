@@ -7,9 +7,173 @@
     <!-- Google Fonts for Khmer OS Battambang -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css?v=20261029h}" href="../static/css/style.css?v=20261029h">
+    <style>
+        .dashboard-filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .date-picker-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 4px 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .date-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 7px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #1e293b;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .date-nav-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .date-input-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            border-radius: 7px;
+            color: #1e1b4b;
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+        }
+        .date-input-wrapper input[type="date"] {
+            border: none;
+            background: transparent;
+            color: #1e1b4b;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.92rem;
+            outline: none;
+            cursor: pointer;
+            padding: 0;
+        }
+        .btn-today-reset {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 7px;
+            background: #4361ee;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .btn-today-reset:hover {
+            background: #3a56d4;
+        }
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .stat-card-header h3 {
+            margin-bottom: 0 !important;
+        }
+        .date-pill-badge {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            white-space: nowrap;
+        }
+        .stat-value-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .pct-badge-success {
+            font-size: 1.15rem;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+            white-space: nowrap;
+        }
+        .pct-badge-danger {
+            font-size: 1.15rem;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            white-space: nowrap;
+        }
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill-success {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+        .progress-fill-danger {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+        @media screen and (max-width: 640px) {
+            .dashboard-filter-group {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .date-picker-bar {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .date-input-wrapper {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
-        <!-- Sidebar -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
@@ -60,10 +224,33 @@
 
         <div class="content">
             <div class="header-action" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <select name="className" class="form-control" style="width: auto;" onchange="window.location.href = '/?className=' + this.value;">
-                    <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
-                    <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
-                </select>
+                <div class="dashboard-filter-group">
+                    <select id="dashboardClassSelect" name="className" class="form-control" style="width: auto; font-weight: 600;" onchange="navigateDashboard()">
+                        <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">ថ្នាក់រៀនទាំងអស់</option>
+                        <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className}"></option>
+                    </select>
+
+                    <!-- Date Picker Controls -->
+                    <div class="date-picker-bar" title="ជ្រើសរើសថ្ងៃខែឆ្នាំដើម្បីមើលទិន្នន័យវត្តមាន និងអវត្តមាន">
+                        <a class="date-nav-btn"
+                           th:href="@{/(className=${selectedClass ?: 'ថ្នាក់រៀនទាំងអស់'}, date=${prevDate})}"
+                           title="ថ្ងៃមុន">&#9664;</a>
+                        <label class="date-input-wrapper" for="dashboardDateInput">
+                            <span>📅 ថ្ងៃទី៖</span>
+                            <input type="date" id="dashboardDateInput" name="date"
+                                   th:value="${selectedDate}"
+                                   onchange="navigateDashboard()">
+                        </label>
+                        <a class="date-nav-btn"
+                           th:href="@{/(className=${selectedClass ?: 'ថ្នាក់រៀនទាំងអស់'}, date=${nextDate})}"
+                           title="ថ្ងៃបន្ទាប់">&#9654;</a>
+                        <a th:if="${!isToday}"
+                           class="btn-today-reset"
+                           th:href="@{/(className=${selectedClass ?: 'ថ្នាក់រៀនទាំងអស់'}, date=${todayDate})}"
+                           title="ត្រឡប់មកថ្ងៃនេះវិញ">📍 ថ្ងៃនេះ</a>
+                    </div>
+                </div>
+
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <a href="/feedback" class="btn" style="background-color: #f59e0b; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: bold;">
                         <span>💬 បញ្ចេញមតិកែលម្អ</span>
@@ -73,23 +260,59 @@
                     </a>
                 </div>
             </div>
+
             <div class="card-grid">
+                <!-- Card 1: Total Students -->
                 <div class="card">
-                    <h3>សិស្សសរុប</h3>
+                    <div class="stat-card-header">
+                        <h3>សិស្សសរុប</h3>
+                        <span class="date-pill-badge" th:text="${selectedClass != null and selectedClass != 'ថ្នាក់រៀនទាំងអស់' ? selectedClass : 'គ្រប់ថ្នាក់'}">គ្រប់ថ្នាក់</span>
+                    </div>
                     <div class="value" th:text="${totalStudents} + ' នាក់'">៤២ នាក់</div>
-                    <div style="font-size: 1.1rem; color: #666; margin-top: 8px;" th:text="'ស្រី៖ ' + ${totalFemale} + ' នាក់'">ស្រី៖ ២០ នាក់</div>
-                </div>
-                <div class="card">
-                    <h3>វត្តមានថ្ងៃនេះ</h3>
-                    <div class="value" style="color: var(--success)" th:text="${presentToday} + ' នាក់'">៣៩ នាក់</div>
-                    <div style="font-size: 1.1rem; color: #666; margin-top: 8px;" th:text="'ស្រី៖ ' + ${presentFemale} + ' នាក់'">ស្រី៖ ១៨ នាក់</div>
-                </div>
-                <div class="card">
-                    <h3>អវត្តមានថ្ងៃនេះ</h3>
-                    <div class="value" style="color: var(--danger)" th:text="${absentToday} + ' នាក់'">៣ នាក់</div>
-                    <div style="font-size: 1.1rem; color: #666; margin-top: 8px;" th:text="'ស្រី៖ ' + ${absentFemale} + ' នាក់'">ស្រី៖ ២ នាក់</div>
+                    <div style="font-size: 1.05rem; color: #475569; margin-top: 10px; font-weight: 600;"
+                         th:text="'ស្រី៖ ' + ${totalFemale} + ' នាក់ | ប្រុស៖ ' + (${totalStudents - totalFemale}) + ' នាក់'">ស្រី៖ ២០ នាក់ | ប្រុស៖ ២២ នាក់</div>
                 </div>
 
+                <!-- Card 2: Present Today / Selected Date -->
+                <div class="card">
+                    <div class="stat-card-header">
+                        <h3 th:text="${isToday ? 'វត្តមានថ្ងៃនេះ' : 'វត្តមានថ្ងៃទី ' + selectedDateDisplay}">វត្តមានថ្ងៃនេះ</h3>
+                        <span class="date-pill-badge" th:text="'📅 ' + ${selectedDateDisplay}">📅 08-11-2026</span>
+                    </div>
+                    <div class="stat-value-row">
+                        <div class="value" style="color: var(--success);" th:text="${presentToday} + ' នាក់'">៣៩ នាក់</div>
+                        <span class="pct-badge-success" th:text="${presentPercent} + '%'">92.9%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill-success" th:style="'width: ' + ${presentPercent} + '%;'"></div>
+                    </div>
+                    <div style="font-size: 1rem; color: #065f46; margin-top: 10px; font-weight: 700;"
+                         th:text="'✅ សិស្សបានមករៀន៖ ' + ${presentToday} + ' នាក់ (' + ${presentPercent} + '%)'">✅ សិស្សបានមករៀន៖ ៣៩ នាក់ (92.9%)</div>
+                    <div style="font-size: 0.98rem; color: #64748b; margin-top: 4px;"
+                         th:text="'ស្រី៖ ' + ${presentFemale} + ' នាក់'">ស្រី៖ ១៨ នាក់</div>
+                </div>
+
+                <!-- Card 3: Absent Today / Selected Date -->
+                <div class="card">
+                    <div class="stat-card-header">
+                        <h3 th:text="${isToday ? 'អវត្តមានថ្ងៃនេះ' : 'អវត្តមានថ្ងៃទី ' + selectedDateDisplay}">អវត្តមានថ្ងៃនេះ</h3>
+                        <span class="date-pill-badge" th:text="'📅 ' + ${selectedDateDisplay}">📅 08-11-2026</span>
+                    </div>
+                    <div class="stat-value-row">
+                        <div class="value" style="color: var(--danger);" th:text="${absentToday} + ' នាក់'">៣ នាក់</div>
+                        <span class="pct-badge-danger" th:text="${absentPercent} + '%'">7.1%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill-danger" th:style="'width: ' + ${absentPercent} + '%;'"></div>
+                    </div>
+                    <div style="font-size: 1rem; color: #991b1b; margin-top: 10px; font-weight: 700;"
+                         th:text="'❌ សិស្សមិនបានមករៀន៖ ' + ${absentToday} + ' នាក់ (' + ${absentPercent} + '%)'">❌ សិស្សមិនបានមករៀន៖ ៣ នាក់ (7.1%)</div>
+                    <div style="font-size: 0.95rem; color: #64748b; margin-top: 4px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                        <span th:text="'ស្រី៖ ' + ${absentFemale} + ' នាក់'">ស្រី៖ ២ នាក់</span>
+                        <span style="font-weight: 600; color: #475569;"
+                              th:text="'(ច្បាប់៖ ' + ${absentPermissionToday} + ' | គ្មានច្បាប់៖ ' + ${absentUnexcusedToday} + ')'">(ច្បាប់៖ 1 | គ្មានច្បាប់៖ 2)</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Pending Student Leave Requests Notification on Dashboard -->
@@ -125,7 +348,7 @@
 
             <div class="table-container">
                 <div class="header-action">
-                    <h3>បញ្ជីសិស្សអវត្តមានថ្មីៗ</h3>
+                    <h3 th:text="${isToday ? 'បញ្ជីសិស្សអវត្តមានថ្ងៃនេះ (' + selectedDateDisplay + ')' : 'បញ្ជីសិស្សអវត្តមានថ្ងៃទី ' + selectedDateDisplay}">បញ្ជីសិស្សអវត្តមានថ្មីៗ</h3>
                     <a href="/attendance" class="btn btn-primary" style="text-decoration: none;">មើលទាំងអស់</a>
                 </div>
                 <table>
@@ -152,17 +375,29 @@
                             <td th:text="${#temporals.format(attendance.date, 'dd-MM-yyyy')}">កាលបរិច្ឆេទ</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(recentAbsents)}">
-                            <td colspan="6" style="text-align: center;">មិនមានសិស្សអវត្តមានទេថ្ងៃនេះ</td>
+                            <td colspan="6" style="text-align: center;"
+                                th:text="${isToday ? 'មិនមានសិស្សអវត្តមានទេថ្ងៃនេះ (' + selectedDateDisplay + ')' : 'មិនមានសិស្សអវត្តមានទេនៅថ្ងៃទី ' + selectedDateDisplay}">មិនមានសិស្សអវត្តមានទេថ្ងៃនេះ</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+    <script>
+        function navigateDashboard() {
+            const clsEl = document.getElementById('dashboardClassSelect');
+            const dateEl = document.getElementById('dashboardDateInput');
+            const cls = clsEl ? clsEl.value : 'ថ្នាក់រៀនទាំងអស់';
+            const dt = dateEl ? dateEl.value : '';
+            let url = '/?className=' + encodeURIComponent(cls);
+            if (dt) {
+                url += '&date=' + encodeURIComponent(dt);
+            }
+            window.location.href = url;
+        }
+    </script>
     <script src="/js/academic-year.js"></script>
     <script src="/js/logout-confirm.js"></script>
     <script src="/js/mobile-nav.js?v=20261029h"></script>
-
-    
 </body>
 </html>
