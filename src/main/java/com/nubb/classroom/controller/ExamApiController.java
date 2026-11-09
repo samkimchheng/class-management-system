@@ -52,9 +52,6 @@ public class ExamApiController {
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន"));
         }
-        if (accountId == 1L) {
-            accountId = 97L;
-        }
 
         String targetClass = "";
         if (payload.getClasses() != null && !payload.getClasses().isEmpty()) {
@@ -137,9 +134,6 @@ public class ExamApiController {
             @RequestParam(required = false) String subjectName) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) return ResponseEntity.status(401).build();
-        if (accountId == 1L) {
-            accountId = 97L;
-        }
 
         Optional<Exam> examOpt = Optional.empty();
         if (id != null) {
@@ -164,9 +158,6 @@ public class ExamApiController {
     public ResponseEntity<?> listExams() {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) return ResponseEntity.status(401).build();
-        if (accountId == 1L) {
-            accountId = 97L;
-        }
 
         List<Exam> exams = examRepository.findByAccountId(accountId);
         List<Map<String, Object>> result = new ArrayList<>();
@@ -187,9 +178,6 @@ public class ExamApiController {
     public ResponseEntity<?> deleteExam(@PathVariable Long id) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) return ResponseEntity.status(401).build();
-        if (accountId == 1L) {
-            accountId = 97L;
-        }
 
         Optional<Exam> examOpt = examRepository.findByIdAndAccountId(id, accountId);
         if (examOpt.isPresent()) {

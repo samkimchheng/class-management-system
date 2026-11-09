@@ -24,6 +24,20 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     List<Attendance> findByDateAndPresentTrue(LocalDate date);
     List<Attendance> findByDateAndPresentTrueAndStudentClassName(LocalDate date, String className);
 
+    @Query("SELECT a FROM Attendance a WHERE a.date = :date AND a.present = false AND a.student.accountId = :accountId")
+    List<Attendance> findByDateAndPresentFalseAndStudentAccountId(@Param("date") LocalDate date, @Param("accountId") Long accountId);
+
+    @Query("SELECT a FROM Attendance a WHERE a.date = :date AND a.present = false AND a.student.className = :className AND a.student.accountId = :accountId")
+    List<Attendance> findByDateAndPresentFalseAndStudentClassNameAndStudentAccountId(
+            @Param("date") LocalDate date, @Param("className") String className, @Param("accountId") Long accountId);
+
+    @Query("SELECT a FROM Attendance a WHERE a.date = :date AND a.present = true AND a.student.accountId = :accountId")
+    List<Attendance> findByDateAndPresentTrueAndStudentAccountId(@Param("date") LocalDate date, @Param("accountId") Long accountId);
+
+    @Query("SELECT a FROM Attendance a WHERE a.date = :date AND a.present = true AND a.student.className = :className AND a.student.accountId = :accountId")
+    List<Attendance> findByDateAndPresentTrueAndStudentClassNameAndStudentAccountId(
+            @Param("date") LocalDate date, @Param("className") String className, @Param("accountId") Long accountId);
+
     @Transactional
     void deleteByStudent(Student student);
 

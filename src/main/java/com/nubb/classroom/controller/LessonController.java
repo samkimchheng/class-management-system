@@ -48,9 +48,6 @@ public class LessonController {
             List<Classroom> list = new ArrayList<>();
             Set<String> seen = new LinkedHashSet<>();
             List<Classroom> dbClasses = classroomRepository.findByAccountId(accountId);
-            if ((dbClasses == null || dbClasses.isEmpty()) && accountId != 98L) {
-                dbClasses = classroomRepository.findByAccountId(97L);
-            }
             if (dbClasses != null) {
                 for (Classroom c : dbClasses) {
                     if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
@@ -119,30 +116,17 @@ public class LessonController {
         if (student == null) return new ArrayList<>();
         Long studentAccountId = student.getAccountId();
         String studentClassName = student.getClassName();
-        List<Lesson> allLessons = lessonRepository.findAll();
+        if (studentAccountId == null) return new ArrayList<>();
+
+        List<Lesson> accountLessons = lessonRepository.findByAccountIdOrderByIdAsc(studentAccountId);
         List<Lesson> result = new ArrayList<>();
 
-        for (Lesson l : allLessons) {
-            boolean sameAccountPool;
-            if (studentAccountId == null) {
-                sameAccountPool = (l.getAccountId() == null || l.getAccountId() != 98L);
-            } else if (studentAccountId == 98L) {
-                sameAccountPool = Objects.equals(l.getAccountId(), 98L);
-            } else if (studentAccountId == 1L || studentAccountId == 97L) {
-                sameAccountPool = (l.getAccountId() == null || l.getAccountId() == 1L || l.getAccountId() == 97L);
-            } else {
-                sameAccountPool = Objects.equals(l.getAccountId(), studentAccountId);
-            }
-
+        for (Lesson l : accountLessons) {
             if (studentClassName != null && !studentClassName.trim().isEmpty()) {
-                if (sameAccountPool && isClassMatching(l.getClassName(), studentClassName)) {
-                    result.add(l);
-                } else if ((studentAccountId == null || studentAccountId != 98L)
-                        && (l.getAccountId() == null || l.getAccountId() != 98L)
-                        && isExplicitClassMatching(l.getClassName(), studentClassName)) {
+                if (isClassMatching(l.getClassName(), studentClassName)) {
                     result.add(l);
                 }
-            } else if (sameAccountPool) {
+            } else {
                 result.add(l);
             }
         }
@@ -152,23 +136,8 @@ public class LessonController {
     }
 
     private boolean isLessonVisibleToTeacher(Lesson l, Long accountId, List<Classroom> myClassrooms) {
-        if (accountId == null) return false;
-        if (accountId == 1L) return true;
-        if (accountId == 98L) return Objects.equals(l.getAccountId(), 98L);
-        if (Objects.equals(l.getAccountId(), accountId)) return true;
-        if (accountId == 97L && (l.getAccountId() == null || l.getAccountId() == 1L || l.getAccountId() == 97L)) {
-            return true;
-        }
-        if (l.getAccountId() == null || l.getAccountId() != 98L) {
-            if (myClassrooms != null) {
-                for (Classroom c : myClassrooms) {
-                    if (c.getClassName() != null && isExplicitClassMatching(l.getClassName(), c.getClassName())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        if (accountId == null || l == null) return false;
+        return Objects.equals(l.getAccountId(), accountId);
     }
 
     public static String normalizeClass(String cls) {
@@ -186,16 +155,16 @@ public class LessonController {
                 .replace("៩", "9")
                 .replace("ថ្នាក់ទី", "")
                 .replace("ថ្នាក់", "")
-                .replaceAll("\\s+", "")
-                .toLowerCase();
+                .replace(" ", "")
+                .toUpperCase();
     }
 
     @GetMapping("/lessons")
-    public String viewLessons(
+    public String listLessons(
             @RequestParam(required = false) String className,
             @RequestParam(required = false) String subjectName,
-            HttpServletResponse response,
-            Model model) {
+            Model model,
+            HttpServletResponse response) {
 
         if (response != null) {
             response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -229,13 +198,7 @@ public class LessonController {
 
             lessons = resolveLessonsForStudent(lessonRepository, student);
         } else if (accountId != null) {
-            List<Classroom> myClasses = getMyClassrooms();
-            List<Lesson> accountLessons = new ArrayList<>();
-            for (Lesson l : lessonRepository.findAll()) {
-                if (isLessonVisibleToTeacher(l, accountId, myClasses)) {
-                    accountLessons.add(l);
-                }
-            }
+            List<Lesson> accountLessons = lessonRepository.findByAccountIdOrderByIdAsc(accountId);
 
             if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
                 for (Lesson l : accountLessons) {
@@ -337,7 +300,13 @@ public class LessonController {
         if (id != null && !id.trim().isEmpty()) {
             try {
                 Long lessonId = Long.parseLong(id.trim());
-                lesson = lessonRepository.findById(lessonId).orElse(new Lesson());
+                lesson = lessonRepository.findById(lessonId).orElse(null);
+                if (lesson == null) {
+                    lesson = new Lesson();
+                    lesson.setAccountId(accountId);
+                } else if (!Objects.equals(lesson.getAccountId(), accountId)) {
+                    return ResponseEntity.status(403).body(Map.of("error", "លោកគ្រូ-អ្នកគ្រូគ្មានសិទ្ធិកែប្រែមេរៀនរបស់អ្នកដទៃទេ"));
+                }
             } catch (Exception e) {
                 lesson = new Lesson();
                 lesson.setAccountId(accountId);
@@ -347,9 +316,7 @@ public class LessonController {
             lesson.setAccountId(accountId);
         }
 
-        if (lesson.getAccountId() == null) {
-            lesson.setAccountId(accountId != null ? accountId : 97L);
-        }
+        lesson.setAccountId(accountId);
 
         lesson.setTitle(title);
         lesson.setClassName(className);
@@ -369,7 +336,7 @@ public class LessonController {
 
         lessonRepository.save(lesson);
 
-        // Save & update multiple Transcripts
+        // Save nested transcripts if any
         if (tsTitle != null && !tsTitle.isEmpty()) {
             List<LessonTranscript> existingTs = lessonTranscriptRepository.findByLessonIdOrderByOrderIndexAsc(lesson.getId());
             lessonTranscriptRepository.deleteByLessonId(lesson.getId());
@@ -416,12 +383,19 @@ public class LessonController {
             return ResponseEntity.status(401).body(Map.of("error", "សូមចូលប្រើប្រាស់ប្រព័ន្ធ"));
         }
 
+        Optional<Lesson> opt = lessonRepository.findById(id);
+        if (opt.isEmpty()) {
+            return ResponseEntity.ok(Map.of("success", true));
+        }
+        Lesson lesson = opt.get();
+        if (!Objects.equals(lesson.getAccountId(), accountId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "លោកគ្រូ-អ្នកគ្រូគ្មានសិទ្ធិលុបមេរៀនរបស់អ្នកដទៃទេ"));
+        }
+
         lessonProgressRepository.deleteByLessonId(id);
         lessonTranscriptRepository.deleteByLessonId(id);
-        if (lessonRepository.existsById(id)) {
-            lessonRepository.deleteById(id);
-            lessonRepository.flush();
-        }
+        lessonRepository.delete(lesson);
+        lessonRepository.flush();
         return ResponseEntity.ok(Map.of("success", true));
     }
 

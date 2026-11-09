@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/classrooms")
@@ -23,9 +24,6 @@ public class ClassroomApiController {
                                       @RequestParam(required = false) String track) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) return ResponseEntity.status(401).build();
-        if (accountId == 1L) {
-            accountId = 97L;
-        }
 
         String trimmedName = className.trim();
         if (trimmedName.isEmpty()) {
@@ -73,10 +71,9 @@ public class ClassroomApiController {
     public ResponseEntity<?> updateTrack(@RequestParam Long id, @RequestParam String track) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) return ResponseEntity.status(401).build();
-        if (accountId == 1L) accountId = 97L;
 
         Classroom c = classroomRepository.findById(id).orElse(null);
-        if (c != null && (c.getAccountId().equals(accountId) || (c.getAccountId() == 1L || c.getAccountId() == 97L))) {
+        if (c != null && Objects.equals(c.getAccountId(), accountId)) {
             String cleanTrack = (track != null && !track.trim().isEmpty()) ? track.trim() : "ទូទៅ";
             c.setTrack(cleanTrack);
             classroomRepository.save(c);
@@ -91,7 +88,7 @@ public class ClassroomApiController {
         if (accountId == null) return ResponseEntity.status(401).build();
 
         Classroom c = classroomRepository.findById(id).orElse(null);
-        if (c != null && (c.getAccountId().equals(accountId) || ((accountId == 1L || accountId == 97L) && (c.getAccountId() == 1L || c.getAccountId() == 97L)))) {
+        if (c != null && Objects.equals(c.getAccountId(), accountId)) {
             classroomRepository.delete(c);
             return ResponseEntity.ok(Map.of("success", true));
         }

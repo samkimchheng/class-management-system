@@ -344,59 +344,47 @@ public class CertificateController {
 
             // 1. Check if certificate record exists in database for this student
             Optional<CertificateRecord> existingRecord = Optional.empty();
+            Long targetAccId = (accountId != null) ? accountId : (student != null ? student.getAccountId() : null);
             try {
-                existingRecord = certificateRecordRepository.findFirstByStudentIdOrderByIdDesc(student.getId());
+                if (student != null && student.getId() != null) {
+                    if (targetAccId != null) {
+                        existingRecord = certificateRecordRepository.findFirstByStudentIdAndAccountIdOrderByIdDesc(student.getId(), targetAccId);
+                    }
+                    if (existingRecord.isEmpty()) {
+                        existingRecord = certificateRecordRepository.findFirstByStudentIdOrderByIdDesc(student.getId());
+                    }
+                }
             } catch (Exception ignored) {}
 
             // 2. If not, check if any student in the same class has a saved record (class template inheritance)
             Optional<CertificateRecord> classRecord = existingRecord;
-if (classRecord.isEmpty() && student.getClassName() != null) {
-    try {
-        classRecord = certificateRecordRepository.findFirstByClassNameOrderByIdDesc(student.getClassName());
-    } catch (Exception ignored) {}
-}
+            if (classRecord.isEmpty() && student != null && student.getClassName() != null) {
+                try {
+                    if (targetAccId != null) {
+                        classRecord = certificateRecordRepository.findFirstByClassNameAndAccountIdOrderByIdDesc(student.getClassName(), targetAccId);
+                    }
+                    if (classRecord.isEmpty()) {
+                        classRecord = certificateRecordRepository.findFirstByClassNameOrderByIdDesc(student.getClassName());
+                    }
+                } catch (Exception ignored) {}
+            }
 
             CertificateRecord template = existingRecord.orElse(classRecord.orElse(null));
 
             // currentTeacherAcc already resolved above
-            if (currentTeacherAcc == null && student.getAccountId() != null) {
-                currentTeacherAcc = accountRepository.findById(student.getAccountId()).orElse(null);
-            }
-            if (currentTeacherAcc == null) {
-                currentTeacherAcc = accountRepository.findById(97L).orElse(null);
-            }
-            if (currentTeacherAcc == null) {
-                currentTeacherAcc = accountRepository.findAll().stream()
-                        .filter(a -> !isGenericAdminOrInvalidTeacher(a.getFullName()))
-                        .findFirst()
-                        .orElse(null);
+            if (currentTeacherAcc == null && targetAccId != null) {
+                currentTeacherAcc = accountRepository.findById(targetAccId).orElse(null);
             }
 
-            // Resolve School Name (Priority: Explicit Non-Placeholder Param -> Current Teacher Profile -> Account 97 / Other Accounts -> Saved Record / Template -> Default)
+            // Resolve School Name (Priority: Explicit Non-Placeholder Param -> Current Teacher Profile -> Saved Record / Template -> Default)
             if (schoolName != null && !isPlaceholderSchool(schoolName)) {
                 schoolName = schoolName.trim();
             } else if (currentTeacherAcc != null && !isPlaceholderSchool(currentTeacherAcc.getSchoolName())) {
                 schoolName = currentTeacherAcc.getSchoolName().trim();
+            } else if (template != null && !isPlaceholderSchool(template.getSchoolName())) {
+                schoolName = template.getSchoolName().trim();
             } else {
-                String foundSchool = null;
-                Optional<Account> tAcc = accountRepository.findById(97L);
-                if (tAcc.isPresent() && !isPlaceholderSchool(tAcc.get().getSchoolName())) {
-                    foundSchool = tAcc.get().getSchoolName().trim();
-                } else {
-                    for (Account other : accountRepository.findAll()) {
-                        if (!isPlaceholderSchool(other.getSchoolName())) {
-                            foundSchool = other.getSchoolName().trim();
-                            break;
-                        }
-                    }
-                }
-                if (foundSchool != null) {
-                    schoolName = foundSchool;
-                } else if (template != null && !isPlaceholderSchool(template.getSchoolName())) {
-                    schoolName = template.getSchoolName().trim();
-                } else {
-                    schoolName = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
-                }
+                schoolName = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
             }
 
             // Resolve Subject (Priority: Selected Query Param -> Profile -> Template -> Default)
@@ -474,34 +462,16 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 }
             }
 
-            // Resolve Teacher Signature (Priority: Teacher Account -> Template / Existing Record -> Account 97 / 1 -> default resource)
+            // Resolve Teacher Signature (Priority: Teacher Account -> Template / Existing Record -> default resource)
             String teacherSignature = null;
             if (currentTeacherAcc != null && currentTeacherAcc.getSignature() != null && !currentTeacherAcc.getSignature().trim().isEmpty()) {
                 teacherSignature = currentTeacherAcc.getSignature().trim();
             } else if (template != null && template.getSignature() != null && !template.getSignature().trim().isEmpty()) {
                 teacherSignature = template.getSignature().trim();
-            } else {
-                Optional<Account> tAcc = accountRepository.findById(97L);
-                if (tAcc.isPresent() && tAcc.get().getSignature() != null && !tAcc.get().getSignature().trim().isEmpty()) {
-                    teacherSignature = tAcc.get().getSignature().trim();
-                } else {
-                    Optional<Account> aAcc = accountRepository.findById(1L);
-                    if (aAcc.isPresent() && aAcc.get().getSignature() != null && !aAcc.get().getSignature().trim().isEmpty()) {
-                        teacherSignature = aAcc.get().getSignature().trim();
-                    }
-                }
             }
 
             if (teacherSignature == null || teacherSignature.trim().isEmpty()) {
                 teacherSignature = loadDefaultSignature();
-            }
-
-            if (teacherSignature != null && !teacherSignature.trim().isEmpty()) {
-                final String sUri = teacherSignature;
-                if (currentTeacherAcc != null && (currentTeacherAcc.getSignature() == null || currentTeacherAcc.getSignature().isEmpty())) {
-                    currentTeacherAcc.setSignature(sUri);
-                    try { accountRepository.save(currentTeacherAcc); } catch (Exception ignored) {}
-                }
             }
 
             // Resolve Principal Signature
@@ -510,16 +480,6 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 principalSignature = currentTeacherAcc.getPrincipalSignature().trim();
             } else if (template != null && template.getPrincipalSignature() != null && !template.getPrincipalSignature().trim().isEmpty()) {
                 principalSignature = template.getPrincipalSignature().trim();
-            } else {
-                Optional<Account> tAcc = accountRepository.findById(97L);
-                if (tAcc.isPresent() && tAcc.get().getPrincipalSignature() != null && !tAcc.get().getPrincipalSignature().trim().isEmpty()) {
-                    principalSignature = tAcc.get().getPrincipalSignature().trim();
-                } else {
-                    Optional<Account> aAcc = accountRepository.findById(1L);
-                    if (aAcc.isPresent() && aAcc.get().getPrincipalSignature() != null && !aAcc.get().getPrincipalSignature().trim().isEmpty()) {
-                        principalSignature = aAcc.get().getPrincipalSignature().trim();
-                    }
-                }
             }
 
             // Resolve School Stamp
@@ -528,16 +488,6 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 schoolStamp = currentTeacherAcc.getSchoolStamp().trim();
             } else if (template != null && template.getSchoolStamp() != null && !template.getSchoolStamp().trim().isEmpty()) {
                 schoolStamp = template.getSchoolStamp().trim();
-            } else {
-                Optional<Account> tAcc = accountRepository.findById(97L);
-                if (tAcc.isPresent() && tAcc.get().getSchoolStamp() != null && !tAcc.get().getSchoolStamp().trim().isEmpty()) {
-                    schoolStamp = tAcc.get().getSchoolStamp().trim();
-                } else {
-                    Optional<Account> aAcc = accountRepository.findById(1L);
-                    if (aAcc.isPresent() && aAcc.get().getSchoolStamp() != null && !aAcc.get().getSchoolStamp().trim().isEmpty()) {
-                        schoolStamp = aAcc.get().getSchoolStamp().trim();
-                    }
-                }
             }
 
             // Resolve Principal Name
@@ -547,17 +497,7 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 } else if (template != null && template.getPrincipalName() != null && !template.getPrincipalName().trim().isEmpty() && !template.getPrincipalName().contains("គឹម ហ៊ាង")) {
                     principalName = template.getPrincipalName().trim();
                 } else {
-                    Optional<Account> tAcc = accountRepository.findById(97L);
-                    if (tAcc.isPresent() && tAcc.get().getPrincipalName() != null && !tAcc.get().getPrincipalName().trim().isEmpty() && !tAcc.get().getPrincipalName().contains("គឹម ហ៊ាង")) {
-                        principalName = tAcc.get().getPrincipalName().trim();
-                    } else {
-                        for (Account other : accountRepository.findAll()) {
-                            if (other.getPrincipalName() != null && !other.getPrincipalName().trim().isEmpty() && !other.getPrincipalName().contains("គឹម ហ៊ាង")) {
-                                principalName = other.getPrincipalName().trim();
-                                break;
-                            }
-                        }
-                    }
+                    principalName = "នាយក / នាយិកា";
                 }
             }
             if (principalName == null || principalName.trim().isEmpty() || principalName.contains("គឹម ហ៊ាង")) {
@@ -726,18 +666,13 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
             String issueDateKhmer = toKhmerDate(now);
             String issueDateEn = now.getMonth().name() + " " + now.getDayOfMonth() + ", " + now.getYear();
 
+            Long accId = (Long) session.getAttribute("ACCOUNT_ID");
             if (isPlaceholderSchool(schoolName)) {
-                Long accId = (Long) session.getAttribute("ACCOUNT_ID");
-                Account tAcc = (accId != null) ? accountRepository.findById(accId).orElse(null) : accountRepository.findById(97L).orElse(null);
+                Account tAcc = (accId != null) ? accountRepository.findById(accId).orElse(null) : null;
                 if (tAcc != null && !isPlaceholderSchool(tAcc.getSchoolName())) {
                     schoolName = tAcc.getSchoolName().trim();
                 } else {
-                    for (Account other : accountRepository.findAll()) {
-                        if (!isPlaceholderSchool(other.getSchoolName())) {
-                            schoolName = other.getSchoolName().trim();
-                            break;
-                        }
-                    }
+                    schoolName = "វិទ្យាល័យ / អនុវិទ្យាល័យ";
                 }
             }
 
@@ -758,20 +693,28 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 }
                 studentRepository.save(student);
 
+                Long teacherAccountId = (accId != null) ? accId : student.getAccountId();
                 if (applyToWholeClass && student.getClassName() != null) {
-                    List<Student> classStudents = studentRepository.findByClassName(student.getClassName());
+                    List<Student> classStudents = (teacherAccountId != null)
+                            ? studentRepository.findByClassNameAndAccountId(student.getClassName(), teacherAccountId)
+                            : studentRepository.findByClassName(student.getClassName());
                     for (Student s : classStudents) {
-                        saveOrUpdateRecord(s, schoolName, subjectName, province, teacherName, principalName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
+                        saveOrUpdateRecord(s, schoolName, subjectName, province, teacherName, principalName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn, teacherAccountId);
                     }
                 } else {
-                    saveOrUpdateRecord(student, schoolName, subjectName, province, teacherName, principalName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn);
+                    saveOrUpdateRecord(student, schoolName, subjectName, province, teacherName, principalName, roleSignerLeft, roleSignerRight, issueDateKhmer, issueDateEn, teacherAccountId);
                 }
             } else {
                 // In preview mode or custom creation, save a class template record
                 String targetClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ថ្នាក់ទី១០ A";
                 String serial = "CMS-2027-0001-123456";
-                CertificateRecord record = certificateRecordRepository.findFirstBySerialNumberOrderByIdDesc(serial)
-                        .orElse(new CertificateRecord());
+                CertificateRecord record = (accId != null)
+                        ? certificateRecordRepository.findFirstByClassNameAndAccountIdOrderByIdDesc(targetClass, accId).orElse(null)
+                        : null;
+                if (record == null) {
+                    record = certificateRecordRepository.findFirstBySerialNumberOrderByIdDesc(serial).orElse(new CertificateRecord());
+                }
+                record.setAccountId(accId);
                 record.setStudentId(1L);
                 record.setClassName(targetClass);
                 record.setSerialNumber(serial);
@@ -799,14 +742,22 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
 
     private void saveOrUpdateRecord(Student s, String schoolName, String subjectName, String province,
                                     String teacherName, String principalName, String roleSignerLeft, String roleSignerRight,
-                                    String issueDateKhmer, String issueDateEn) {
+                                    String issueDateKhmer, String issueDateEn, Long accountId) {
         try {
+            Long effAccountId = (accountId != null) ? accountId : s.getAccountId();
             String sCode = (s.getStudentCode() != null && !s.getStudentCode().trim().isEmpty()) ? s.getStudentCode().trim() : "123456";
             String serial = "CMS-2027-" + String.format("%04d", s.getId()) + "-" + sCode;
 
-            CertificateRecord record = certificateRecordRepository.findFirstByStudentIdOrderByIdDesc(s.getId())
-                    .orElse(certificateRecordRepository.findFirstBySerialNumberOrderByIdDesc(serial).orElse(new CertificateRecord()));
+            CertificateRecord record = null;
+            if (effAccountId != null) {
+                record = certificateRecordRepository.findFirstByStudentIdAndAccountIdOrderByIdDesc(s.getId(), effAccountId).orElse(null);
+            }
+            if (record == null) {
+                record = certificateRecordRepository.findFirstByStudentIdOrderByIdDesc(s.getId())
+                        .orElse(certificateRecordRepository.findFirstBySerialNumberOrderByIdDesc(serial).orElse(new CertificateRecord()));
+            }
 
+            record.setAccountId(effAccountId);
             record.setStudentId(s.getId());
             record.setClassName(s.getClassName());
             record.setSerialNumber(serial);
@@ -951,18 +902,8 @@ if (classRecord.isEmpty() && student.getClassName() != null) {
                 if (verifiedStudent != null && verifiedStudent.getAccountId() != null) {
                     acc = accountRepository.findById(verifiedStudent.getAccountId()).orElse(null);
                 }
-                if (acc == null) {
-                    acc = accountRepository.findById(97L).orElse(null);
-                }
                 if (acc != null && !isPlaceholderSchool(acc.getSchoolName())) {
                     finalSchool = acc.getSchoolName().trim();
-                } else {
-                    for (Account other : accountRepository.findAll()) {
-                        if (!isPlaceholderSchool(other.getSchoolName())) {
-                            finalSchool = other.getSchoolName().trim();
-                            break;
-                        }
-                    }
                 }
             }
             if (finalSchool == null || isPlaceholderSchool(finalSchool)) {

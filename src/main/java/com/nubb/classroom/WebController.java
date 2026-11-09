@@ -26,6 +26,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -247,7 +248,6 @@ public class WebController {
     public Account getTeacherAccount(jakarta.servlet.http.HttpSession session) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId != null) {
-            if (accountId == 1L) accountId = 97L;
             return accountRepository.findById(accountId).orElse(null);
         }
         return null;
@@ -257,7 +257,6 @@ public class WebController {
     public List<Classroom> getMyClassrooms(jakarta.servlet.http.HttpSession session) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId != null) {
-            if (accountId == 1L) accountId = 97L;
             String academicYear = getCurrentAcademicYear();
             return classroomRepository.findByAccountIdAndAcademicYear(accountId, academicYear);
         }
@@ -286,39 +285,14 @@ public class WebController {
     private com.nubb.classroom.repository.LeaveRequestRepository leaveRequestRepository;
 
     public List<com.nubb.classroom.model.LeaveRequest> getLeaveRequestsForTeacher(Long teacherAccountId, String classNameFilter) {
+        if (teacherAccountId == null) return new ArrayList<>();
         try {
-            Long effTeacherId = (teacherAccountId == null || teacherAccountId == 1L) ? 97L : teacherAccountId;
-            Set<String> teacherClasses = new HashSet<>();
-            for (Classroom c : classroomRepository.findByAccountId(effTeacherId)) {
-                if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
-                    teacherClasses.add(c.getClassName().trim());
-                }
-            }
-            for (Student s : studentRepository.findByAccountId(effTeacherId)) {
-                if (s.getClassName() != null && !s.getClassName().trim().isEmpty()) {
-                    teacherClasses.add(s.getClassName().trim());
-                }
-            }
-
             List<com.nubb.classroom.model.LeaveRequest> all = leaveRequestRepository.findAllByOrderByCreatedAtDesc();
             List<com.nubb.classroom.model.LeaveRequest> result = new ArrayList<>();
             for (com.nubb.classroom.model.LeaveRequest lr : all) {
                 if (lr == null || lr.getStudent() == null) continue;
-                Long reqAccId = lr.getAccountId() != null ? lr.getAccountId() :
-                        (lr.getStudent().getAccountId() != null ? lr.getStudent().getAccountId() : 97L);
-                Long effReqAccId = (reqAccId == 1L) ? 97L : reqAccId;
-
-                boolean visible = effTeacherId.equals(effReqAccId);
-                if (!visible && effTeacherId != 98L && effReqAccId != 98L) {
-                    String lrClass = lr.getClassName() != null ? lr.getClassName() : lr.getStudent().getClassName();
-                    for (String tc : teacherClasses) {
-                        if (com.nubb.classroom.controller.LessonController.isClassMatching(tc, lrClass)) {
-                            visible = true;
-                            break;
-                        }
-                    }
-                }
-                if (!visible) continue;
+                Long reqAccId = lr.getAccountId() != null ? lr.getAccountId() : lr.getStudent().getAccountId();
+                if (!Objects.equals(teacherAccountId, reqAccId)) continue;
 
                 if (classNameFilter != null && !classNameFilter.trim().isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(classNameFilter.trim())) {
                     String lrClass = lr.getClassName() != null ? lr.getClassName() : lr.getStudent().getClassName();
@@ -343,9 +317,7 @@ public class WebController {
             Student student = lr.getStudent();
             LocalDate start = lr.getStartDate();
             LocalDate end = lr.getEndDate();
-            Long accId = lr.getAccountId() != null ? lr.getAccountId() :
-                    (student.getAccountId() != null ? student.getAccountId() : 97L);
-            if (accId == 1L) accId = 97L;
+            Long accId = lr.getAccountId() != null ? lr.getAccountId() : student.getAccountId();
 
             List<Attendance> existing = attendanceRepository.findByStudentIdAndDateBetween(student.getId(), start, end);
             if (markPermission) {
@@ -473,11 +445,10 @@ public class WebController {
         model.addAttribute("standardSubjects", standardSubjects);
 
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        Long effAccountId = (accountId != null && accountId == 1L) ? 97L : accountId;
         Account teacherAccount = null;
-        if (effAccountId != null) {
+        if (accountId != null) {
             try {
-                teacherAccount = accountRepository.findById(effAccountId).orElse(null);
+                teacherAccount = accountRepository.findById(accountId).orElse(null);
             } catch (Exception ignored) {}
         }
         model.addAttribute("teacherAccount", teacherAccount);
@@ -516,16 +487,16 @@ public class WebController {
             String currentYear = getCurrentAcademicYear();
             List<Student> students;
             if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-                students = (effAccountId != null)
-                        ? studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, effAccountId, currentYear)
+                students = (accountId != null)
+                        ? studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear)
                         : studentRepository.findAll();
             } else {
-                students = (effAccountId != null)
-                        ? studentRepository.findByAccountIdAndAcademicYear(effAccountId, currentYear)
+                students = (accountId != null)
+                        ? studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear)
                         : studentRepository.findAll();
             }
 
-            List<com.nubb.classroom.model.LeaveRequest> allLeaveReqs = getLeaveRequestsForTeacher(effAccountId, className);
+            List<com.nubb.classroom.model.LeaveRequest> allLeaveReqs = getLeaveRequestsForTeacher(accountId, className);
 
             if (students != null) {
                 totalStudents = students.size();
@@ -537,9 +508,13 @@ public class WebController {
 
                 List<com.nubb.classroom.model.Attendance> abs;
                 if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-                    abs = attendanceRepository.findByDateAndPresentFalseAndStudentClassName(targetDate, className);
+                    abs = (accountId != null)
+                            ? attendanceRepository.findByDateAndPresentFalseAndStudentClassNameAndStudentAccountId(targetDate, className, accountId)
+                            : attendanceRepository.findByDateAndPresentFalseAndStudentClassName(targetDate, className);
                 } else {
-                    abs = attendanceRepository.findByDateAndPresentFalse(targetDate);
+                    abs = (accountId != null)
+                            ? attendanceRepository.findByDateAndPresentFalseAndStudentAccountId(targetDate, accountId)
+                            : attendanceRepository.findByDateAndPresentFalse(targetDate);
                 }
 
                 Map<Long, com.nubb.classroom.model.Attendance> absentByStudentId = new java.util.LinkedHashMap<>();
@@ -779,27 +754,11 @@ public class WebController {
     }
 
     private void syncTeacherAccounts(Account src) {
+        if (src == null || src.getId() == null) return;
         try {
-            for (Account other : accountRepository.findAll()) {
-                if (!other.getId().equals(src.getId()) && ("admin".equals(other.getUsername()) || "samkimchheng".equals(other.getUsername()) || (other.getFullName() != null && other.getFullName().contains("សំ គឹមឆេង")))) {
-                    if (src.getFullName() != null) other.setFullName(src.getFullName());
-                    if (src.getGender() != null) other.setGender(src.getGender());
-                    if (src.getSchoolName() != null) other.setSchoolName(src.getSchoolName());
-                    if (src.getSubject() != null) other.setSubject(src.getSubject());
-                    if (src.getProvince() != null) other.setProvince(src.getProvince());
-                    if (src.getPhone() != null) other.setPhone(src.getPhone());
-                    if (src.getTelegram() != null) other.setTelegram(src.getTelegram());
-                    if (src.getEmail() != null) other.setEmail(src.getEmail());
-                    if (src.getPosition() != null) other.setPosition(src.getPosition());
-                    if (src.getTeachingClasses() != null) other.setTeachingClasses(src.getTeachingClasses());
-                    if (src.getBio() != null) other.setBio(src.getBio());
-                    if (src.getPrincipalName() != null) other.setPrincipalName(src.getPrincipalName());
-                    accountRepository.save(other);
-                }
-            }
             if (src.getSchoolName() != null && !com.nubb.classroom.controller.CertificateController.isPlaceholderSchool(src.getSchoolName())) {
                 String newSchool = src.getSchoolName().trim();
-                List<com.nubb.classroom.model.CertificateRecord> certs = certificateRecordRepository.findAll();
+                List<com.nubb.classroom.model.CertificateRecord> certs = certificateRecordRepository.findByAccountId(src.getId());
                 for (com.nubb.classroom.model.CertificateRecord cr : certs) {
                     cr.setSchoolName(newSchool);
                     certificateRecordRepository.save(cr);
@@ -807,7 +766,7 @@ public class WebController {
             }
             if (src.getPrincipalName() != null && !src.getPrincipalName().trim().isEmpty() && !src.getPrincipalName().contains("គឹម ហ៊ាង")) {
                 String newPrincipal = src.getPrincipalName().trim();
-                List<com.nubb.classroom.model.CertificateRecord> certs = certificateRecordRepository.findAll();
+                List<com.nubb.classroom.model.CertificateRecord> certs = certificateRecordRepository.findByAccountId(src.getId());
                 for (com.nubb.classroom.model.CertificateRecord cr : certs) {
                     cr.setPrincipalName(newPrincipal);
                     certificateRecordRepository.save(cr);
@@ -1124,8 +1083,8 @@ public class WebController {
             Model model) {
 
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null || accountId == 1L) {
-            accountId = 97L;
+        if (accountId == null) {
+            return "redirect:/login";
         }
 
         String currentYear = getCurrentAcademicYear();
@@ -1373,8 +1332,7 @@ public class WebController {
             item.put("gender", lr.getStudent() != null && lr.getStudent().getGender() != null ? lr.getStudent().getGender() : "");
             String cls = lr.getClassName() != null ? lr.getClassName() : (lr.getStudent() != null && lr.getStudent().getClassName() != null ? lr.getStudent().getClassName() : "");
             item.put("className", cls);
-            Long tId = lr.getAccountId() != null ? lr.getAccountId() : 97L;
-            if (tId == 1L) tId = 97L;
+            Long tId = lr.getAccountId() != null ? lr.getAccountId() : (lr.getStudent() != null ? lr.getStudent().getAccountId() : null);
             item.put("teacherName", teacherNames.getOrDefault(tId, "គ្រូបង្រៀន"));
             String sDate = lr.getStartDate() != null ? lr.getStartDate().format(dtf) : "";
             String eDate = lr.getEndDate() != null ? lr.getEndDate().format(dtf) : sDate;
@@ -1451,7 +1409,7 @@ public class WebController {
 
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
-            accountId = 97L;
+            return "redirect:/login";
         }
 
         String safeClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ថ្នាក់រៀនទាំងអស់";
@@ -1623,7 +1581,8 @@ public class WebController {
     private static final Map<Long, Boolean> ACCOUNT_KHMER_SORT_PREF = new java.util.concurrent.ConcurrentHashMap<>();
 
     public boolean isKhmerSortActive(Long accountId, String sortParam) {
-        Long effId = (accountId == null || accountId == 1L) ? 97L : accountId;
+        if (accountId == null) return true;
+        Long effId = accountId;
         if (sortParam != null && !sortParam.trim().isEmpty()) {
             boolean enable = !"default".equalsIgnoreCase(sortParam.trim()) && !"none".equalsIgnoreCase(sortParam.trim());
             ACCOUNT_KHMER_SORT_PREF.put(effId, enable);
@@ -1650,7 +1609,8 @@ public class WebController {
     }
 
     public List<Student> getOrderedStudentsForTeacher(Long accountId, String className, String currentYear, boolean sortKhmer) {
-        Long effId = (accountId == null || accountId == 1L) ? 97L : accountId;
+        if (accountId == null) return new ArrayList<>();
+        Long effId = accountId;
         List<Student> students;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
             students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, effId, currentYear);
@@ -1668,9 +1628,11 @@ public class WebController {
             @org.springframework.web.bind.annotation.RequestParam(required = false) String className,
             @org.springframework.web.bind.annotation.RequestParam(required = false) String sort,
             Model model) {
-        String currentYear = getCurrentAcademicYear();
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null || accountId == 1L) accountId = 97L;
+        if (accountId == null) {
+            return "redirect:/login";
+        }
+        String currentYear = getCurrentAcademicYear();
 
         boolean isKhmerSorted = isKhmerSortActive(accountId, sort);
         List<Student> students = getOrderedStudentsForTeacher(accountId, className, currentYear, isKhmerSorted);
@@ -1696,9 +1658,6 @@ public class WebController {
         if (accId == null) {
             return "redirect:/login";
         }
-        if (accId == 1L) {
-            accId = 97L;
-        }
         student.setAccountId(accId);
         if (student.getStudentCode() == null || student.getStudentCode().trim().isEmpty()) {
             student.setStudentCode("STU-" + (1000 + studentRepository.count() + 1));
@@ -1720,7 +1679,6 @@ public class WebController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
                     .body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
         }
-        if (accId == 1L) accId = 97L;
 
         String targetClass = (String) payload.get("className");
         if (targetClass == null || targetClass.trim().isEmpty()) {
@@ -1853,10 +1811,7 @@ public class WebController {
             }
             Long accId = (Long) session.getAttribute("ACCOUNT_ID");
             if (accId != null) {
-                if (accId == 1L) accId = 97L;
                 existing.setAccountId(accId);
-            } else if (existing.getAccountId() == null) {
-                existing.setAccountId(97L);
             }
             studentRepository.save(existing);
         }
@@ -1865,7 +1820,13 @@ public class WebController {
 
     @PostMapping("/student/delete/{id}")
     public String deleteStudent(@org.springframework.web.bind.annotation.PathVariable Long id) {
-        Student student = studentRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid student Id:" + id));
+        Long accId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accId == null) return "redirect:/login";
+        Student student = studentRepository.findById(id).orElse(null);
+        if (student == null) return "redirect:/students";
+        if (!Objects.equals(student.getAccountId(), accId)) {
+            return "redirect:/students";
+        }
         try { leaveRequestRepository.deleteByStudent(student); } catch (Exception ignored) {}
         attendanceRepository.deleteByStudent(student);
         scoreRepository.deleteByStudentId(id);
@@ -1875,9 +1836,11 @@ public class WebController {
 
     @GetMapping("/scores")
     public String scores(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
-        String currentYear = getCurrentAcademicYear();
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null || accountId == 1L) accountId = 97L;
+        if (accountId == null) {
+            return "redirect:/login";
+        }
+        String currentYear = getCurrentAcademicYear();
         boolean isKhmerSorted = isKhmerSortActive(accountId, null);
         List<Student> students = getOrderedStudentsForTeacher(accountId, className, currentYear, isKhmerSorted);
         model.addAttribute("students", students);
@@ -1931,11 +1894,8 @@ return "scores";
     }
 
     private double computeDefaultMaxScoreForClass(String className, String subjectName, Long accountId, String academicYear) {
-        if (className == null || className.trim().isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className)) {
+        if (className == null || className.trim().isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className) || accountId == null) {
             return 100.0;
-        }
-        if (accountId == null || accountId == 1L) {
-            accountId = 97L;
         }
         String track = "ទូទៅ";
         List<Classroom> found = classroomRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, academicYear);
@@ -1979,7 +1939,10 @@ return "scores";
                              @org.springframework.web.bind.annotation.RequestParam(required = false) String subjectName,
                              Model model) {
         Long sessionAccountId = (Long) session.getAttribute("ACCOUNT_ID");
-        final Long accountId = (sessionAccountId == null || sessionAccountId == 1L) ? 97L : sessionAccountId;
+        if (sessionAccountId == null) {
+            return "redirect:/login";
+        }
+        final Long accountId = sessionAccountId;
         if (month == null || month.isEmpty()) {
             month = "តេស្តដើមឆ្នាំ";
         }
@@ -2454,8 +2417,8 @@ return "scores";
         }
         session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
 
-        Long stuAccId = (student.getAccountId() == null || student.getAccountId() == 1L) ? 97L : student.getAccountId();
-        Account teacherAcc = accountRepository.findById(stuAccId).orElse(null);
+        Long stuAccId = student.getAccountId();
+        Account teacherAcc = (stuAccId != null) ? accountRepository.findById(stuAccId).orElse(null) : null;
 
         List<com.nubb.classroom.model.LeaveRequest> myRequests = new ArrayList<>();
         try {
@@ -2528,7 +2491,7 @@ return "scores";
             return "redirect:/test/leave";
         }
 
-        Long stuAccId = (student.getAccountId() == null || student.getAccountId() == 1L) ? 97L : student.getAccountId();
+        Long stuAccId = student.getAccountId();
 
         com.nubb.classroom.model.LeaveRequest lr = new com.nubb.classroom.model.LeaveRequest();
         lr.setStudent(student);
@@ -2694,6 +2657,9 @@ return "scores";
         }
 
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return "redirect:/login";
+        }
         String currentYear = getCurrentAcademicYear();
         List<Student> students;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {

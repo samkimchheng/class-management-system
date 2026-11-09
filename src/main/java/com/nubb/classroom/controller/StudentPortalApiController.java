@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,14 +36,12 @@ public class StudentPortalApiController {
         Student student = (Student) session.getAttribute("loggedInStudent");
         if (student == null) return ResponseEntity.status(401).build();
 
-        Long stuAccId = (student.getAccountId() == null || student.getAccountId() == 1L) ? 97L : student.getAccountId();
+        Long stuAccId = student.getAccountId();
+        if (stuAccId == null) return ResponseEntity.ok(Collections.emptyList());
+
         List<Exam> exams = examRepository.findAll().stream()
                 .filter(e -> month != null && month.equals(e.getMonth()))
-                .filter(e -> {
-                    Long exAccId = (e.getAccountId() == null || e.getAccountId() == 1L) ? 97L : e.getAccountId();
-                    if (stuAccId.equals(exAccId)) return true;
-                    return stuAccId != 98L && exAccId != 98L;
-                })
+                .filter(e -> Objects.equals(stuAccId, e.getAccountId()))
                 .filter(e -> ExamApiController.classMatches(e.getClassName(), student.getClassName()))
                 .toList();
 
@@ -59,21 +57,14 @@ public class StudentPortalApiController {
         Student student = (Student) session.getAttribute("loggedInStudent");
         if (student == null) return ResponseEntity.status(401).build();
 
-        Long stuAccId = (student.getAccountId() == null || student.getAccountId() == 1L) ? 97L : student.getAccountId();
+        Long stuAccId = student.getAccountId();
+        if (stuAccId == null) return ResponseEntity.notFound().build();
+
         Optional<Exam> examOpt = examRepository.findAll().stream()
                 .filter(e -> month != null && month.equals(e.getMonth()) && subjectName != null && subjectName.equals(e.getSubjectName()))
-                .filter(e -> {
-                    Long exAccId = (e.getAccountId() == null || e.getAccountId() == 1L) ? 97L : e.getAccountId();
-                    if (stuAccId.equals(exAccId)) return true;
-                    return stuAccId != 98L && exAccId != 98L;
-                })
+                .filter(e -> Objects.equals(stuAccId, e.getAccountId()))
                 .filter(e -> ExamApiController.classMatches(e.getClassName(), student.getClassName()))
-                .sorted((a, b) -> {
-                    boolean aExact = a.getAccountId() != null && a.getAccountId().equals(stuAccId);
-                    boolean bExact = b.getAccountId() != null && b.getAccountId().equals(stuAccId);
-                    if (aExact != bExact) return bExact ? 1 : -1;
-                    return Long.compare(b.getId(), a.getId());
-                })
+                .sorted(Comparator.comparing(Exam::getId).reversed())
                 .findFirst();
 
         if (examOpt.isPresent()) {
@@ -92,7 +83,7 @@ public class StudentPortalApiController {
         Student student = (Student) session.getAttribute("loggedInStudent");
         if (student == null) return ResponseEntity.status(401).build();
 
-        Long stuAccId = (student.getAccountId() == null || student.getAccountId() == 1L) ? 97L : student.getAccountId();
+        Long stuAccId = student.getAccountId();
         Optional<Score> existingOpt = scoreRepository.findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(
                 student.getId(), payload.getMonth(), student.getClassName(), payload.getSubjectName(), stuAccId);
 
@@ -164,7 +155,7 @@ public class StudentPortalApiController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "សូមបញ្ចូលមូលហេតុនៃការសុំច្បាប់!"));
         }
 
-        Long stuAccId = (student.getAccountId() == null || student.getAccountId() == 1L) ? 97L : student.getAccountId();
+        Long stuAccId = student.getAccountId();
 
         LeaveRequest lr = new LeaveRequest();
         lr.setStudent(student);
@@ -208,7 +199,7 @@ public class StudentPortalApiController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "មិនអាចលុបសំណើដែលគ្រូបានពិនិត្យរួចហើយនោះទេ!"));
         }
 
-        Long stuAccId = (student.getAccountId() == null || student.getAccountId() == 1L) ? 97L : student.getAccountId();
+        Long stuAccId = student.getAccountId();
         leaveRequestRepository.delete(lr);
         syncAttendanceForLeave(student, lr.getStartDate(), lr.getEndDate(), stuAccId, false);
 

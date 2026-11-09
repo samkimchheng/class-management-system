@@ -11,8 +11,12 @@ import java.util.Optional;
 public interface CertificateRecordRepository extends JpaRepository<CertificateRecord, Long> {
     Optional<CertificateRecord> findFirstBySerialNumberOrderByIdDesc(String serialNumber);
     Optional<CertificateRecord> findFirstByStudentIdOrderByIdDesc(Long studentId);
+    Optional<CertificateRecord> findFirstByStudentIdAndAccountIdOrderByIdDesc(Long studentId, Long accountId);
     List<CertificateRecord> findByClassName(String className);
     Optional<CertificateRecord> findFirstByClassNameOrderByIdDesc(String className);
+    Optional<CertificateRecord> findFirstByClassNameAndAccountIdOrderByIdDesc(String className, Long accountId);
+    Optional<CertificateRecord> findFirstByAccountIdOrderByIdDesc(Long accountId);
+    List<CertificateRecord> findByAccountId(Long accountId);
     List<CertificateRecord> findAllByStudentId(Long studentId);
     List<CertificateRecord> findAllBySerialNumber(String serialNumber);
 }
