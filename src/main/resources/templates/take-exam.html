@@ -607,6 +607,13 @@
             const vocabQuestions = questions.filter(q => q.skillType === 'vocabulary');
             const fallbackMCQ = questions.filter(q => !q.skillType || q.skillType === 'general');
 
+            const s1Pts = (exam && exam.section1MaxPoints != null) ? exam.section1MaxPoints : 20;
+            const s2Pts = (exam && exam.section2MaxPoints != null) ? exam.section2MaxPoints : 15;
+            const s3Pts = (exam && exam.section3MaxPoints != null) ? exam.section3MaxPoints : 15;
+            const hasWriting = !!(exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            const s4Pts = hasWriting ? (exam.writingMaxPoints != null ? exam.writingMaxPoints : 15) : 0;
+            const totalPossiblePoints = s1Pts + s2Pts + s3Pts + s4Pts;
+
             let html = '';
 
             // 1. Official MoEYS Header
@@ -626,15 +633,15 @@
                         <div class="moeys-subtitle" style="font-size: 0.95rem;">បេក្ខជន៖ <strong>${escapeHtml(studentName)}</strong></div>
                         <div class="moeys-meta">
                             រយៈពេល៖ <strong>៦០ នាទី</strong><br>
-                            ពិន្ទុសរុប៖ <strong>៥០ ពិន្ទុ (ស្មើនឹង ១០០%)</strong>
+                            ពិន្ទុសរុប៖ <strong>${totalPossiblePoints} ពិន្ទុ (ស្មើនឹង ១០០%)</strong>
                         </div>
                     </div>
                 </div>
                 <div class="moeys-score-summary">
-                    <span>📌 ផ្នែក I (GAPS FILLING): ២០ ពិន្ទុ</span>
-                    <span>📌 ផ្នែក II (GRAMMAR): ១៥ ពិន្ទុ</span>
-                    <span>📌 ផ្នែក III (VOCABULARY): ១៥ ពិន្ទុ</span>
-                    ${(exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0) ? `<span style="color: #be123c;">📌 ផ្នែក IV (WRITING): ${exam.writingMaxPoints || 15} ពិន្ទុ</span>` : ''}
+                    <span>📌 ផ្នែក I (GAPS FILLING): ${s1Pts} ពិន្ទុ</span>
+                    <span>📌 ផ្នែក II (GRAMMAR): ${s2Pts} ពិន្ទុ</span>
+                    <span>📌 ផ្នែក III (VOCABULARY): ${s3Pts} ពិន្ទុ</span>
+                    ${hasWriting ? `<span style="color: #be123c;">📌 ផ្នែក IV (WRITING): ${s4Pts} ពិន្ទុ</span>` : ''}
                 </div>
             </div>
             `;
@@ -646,8 +653,8 @@
             html += `
             <div class="exam-section-card" id="section-1-card">
                 <div class="section-header">
-                    <span class="section-title">I. GAPS FILLING</span>
-                    <span class="section-points-badge">២០ ពិន្ទុ (20 pts)</span>
+                    <span class="section-title">${escapeHtml((exam && exam.section1Title) || 'I. GAPS FILLING')}</span>
+                    <span class="section-points-badge">${s1Pts} ពិន្ទុ (${s1Pts} pts)</span>
                 </div>
                 <div class="section-body">
                     <div class="section-instruction">
@@ -700,8 +707,8 @@
             html += `
             <div class="exam-section-card" id="section-2-card">
                 <div class="section-header grammar">
-                    <span class="section-title">II. GRAMMAR SECTION</span>
-                    <span class="section-points-badge">១៥ ពិន្ទុ (15 pts)</span>
+                    <span class="section-title">${escapeHtml((exam && exam.section2Title) || 'II. GRAMMAR SECTION')}</span>
+                    <span class="section-points-badge">${s2Pts} ពិន្ទុ (${s2Pts} pts)</span>
                 </div>
                 <div class="section-body">
                     <div class="section-instruction">
@@ -717,8 +724,8 @@
             html += `
             <div class="exam-section-card" id="section-3-card">
                 <div class="section-header vocabulary">
-                    <span class="section-title">III. VOCABULARY SECTION</span>
-                    <span class="section-points-badge">១៥ ពិន្ទុ (15 pts)</span>
+                    <span class="section-title">${escapeHtml((exam && exam.section3Title) || 'III. VOCABULARY SECTION')}</span>
+                    <span class="section-points-badge">${s3Pts} ពិន្ទុ (${s3Pts} pts)</span>
                 </div>
                 <div class="section-body">
                     <div class="section-instruction">
@@ -736,7 +743,7 @@
                 <div class="exam-section-card" id="section-4-card">
                     <div class="section-header" style="background: linear-gradient(135deg, #be123c, #e11d48);">
                         <span class="section-title">${escapeHtml(exam.section4Title || 'IV. WRITING SECTION')}</span>
-                        <span class="section-points-badge">${writingPts} ពិន្ទុ (${writingPts} pts)</span>
+                        <span class="section-points-badge">${s4Pts} ពិន្ទុ (${s4Pts} pts)</span>
                     </div>
                     <div class="section-body">
                         <div class="section-instruction">
@@ -939,22 +946,39 @@
             const grammarQuestions = currentQuestions.filter(q => q.skillType === 'grammar');
             const vocabQuestions = currentQuestions.filter(q => q.skillType === 'vocabulary');
 
-            let gapPoints = 0; // max 20
-            let grammarPoints = 0; // max 15
-            let vocabPoints = 0; // max 15
+            const s1Pts = (currentExam && currentExam.section1MaxPoints != null) ? currentExam.section1MaxPoints : 20;
+            const s2Pts = (currentExam && currentExam.section2MaxPoints != null) ? currentExam.section2MaxPoints : 15;
+            const s3Pts = (currentExam && currentExam.section3MaxPoints != null) ? currentExam.section3MaxPoints : 15;
+            const hasWriting = !!(currentExam && currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0);
+            const s4Pts = hasWriting ? (currentExam.writingMaxPoints != null ? currentExam.writingMaxPoints : 15) : 0;
+            const totalPossiblePoints = s1Pts + s2Pts + s3Pts + s4Pts;
+
+            const ptsPerGap = gapQuestions.length > 0 ? (s1Pts / gapQuestions.length) : 0;
+            const ptsPerGrammar = grammarQuestions.length > 0 ? (s2Pts / grammarQuestions.length) : 0;
+            const ptsPerVocab = vocabQuestions.length > 0 ? (s3Pts / vocabQuestions.length) : 0;
+
+            let gapPoints = 0;
+            let grammarPoints = 0;
+            let vocabPoints = 0;
+            let correctGapsCount = 0;
+            let correctGrammarCount = 0;
+            let correctVocabCount = 0;
 
             let gapReview = [];
             let grammarReview = [];
             let vocabReview = [];
 
-            // 1. Grade Section I: Gaps (10 gaps, 2 pts each = 20 pts)
-            for (let i = 1; i <= 10; i++) {
+            // 1. Grade Section I: Gaps
+            for (let i = 1; i <= gapQuestions.length; i++) {
                 const userChoice = (gapSelections[i] || '').trim().toLowerCase();
                 const q = gapQuestions[i - 1];
                 const correctWord = q ? (q.correctOption || '').trim().toLowerCase() : '';
                 const isCorrect = userChoice && correctWord && (userChoice === correctWord);
 
-                if (isCorrect) gapPoints += 2;
+                if (isCorrect) {
+                    gapPoints += ptsPerGap;
+                    correctGapsCount++;
+                }
 
                 gapReview.push({
                     num: i,
@@ -964,14 +988,17 @@
                 });
             }
 
-            // 2. Grade Section II: Grammar (5 questions, 3 pts each = 15 pts)
+            // 2. Grade Section II: Grammar
             grammarQuestions.forEach((q, idx) => {
                 const qId = q.id || idx;
                 const selected = document.querySelector(`input[name="q_${qId}"]:checked`);
                 const userVal = selected ? selected.value : '';
                 const isCorrect = userVal && (userVal.toUpperCase() === (q.correctOption || '').toUpperCase());
 
-                if (isCorrect) grammarPoints += 3;
+                if (isCorrect) {
+                    grammarPoints += ptsPerGrammar;
+                    correctGrammarCount++;
+                }
 
                 grammarReview.push({
                     num: idx + 1,
@@ -982,14 +1009,17 @@
                 });
             });
 
-            // 3. Grade Section III: Vocabulary (5 questions, 3 pts each = 15 pts)
+            // 3. Grade Section III: Vocabulary
             vocabQuestions.forEach((q, idx) => {
                 const qId = q.id || idx;
                 const selected = document.querySelector(`input[name="q_${qId}"]:checked`);
                 const userVal = selected ? selected.value : '';
                 const isCorrect = userVal && (userVal.toUpperCase() === (q.correctOption || '').toUpperCase());
 
-                if (isCorrect) vocabPoints += 3;
+                if (isCorrect) {
+                    vocabPoints += ptsPerVocab;
+                    correctVocabCount++;
+                }
 
                 vocabReview.push({
                     num: idx + 1,
@@ -1000,8 +1030,13 @@
                 });
             });
 
-            const totalPointsEarned = gapPoints + grammarPoints + vocabPoints; // out of 50
-            const percentageScore = Math.round((totalPointsEarned / 50) * 100);
+            // Round points
+            gapPoints = Math.round(gapPoints * 10) / 10;
+            grammarPoints = Math.round(grammarPoints * 10) / 10;
+            vocabPoints = Math.round(vocabPoints * 10) / 10;
+
+            const totalPointsEarned = Math.round((gapPoints + grammarPoints + vocabPoints) * 10) / 10;
+            const percentageScore = totalPossiblePoints > 0 ? Math.round((totalPointsEarned / totalPossiblePoints) * 100) : 0;
 
             // Sync score to server
             const month = document.getElementById('monthSelect').value;
@@ -1024,10 +1059,10 @@
             }
 
             // Render Results Screen
-            renderEnglishResults(totalPointsEarned, percentageScore, gapPoints, grammarPoints, vocabPoints, gapReview, grammarReview, vocabReview, studentWritingText);
+            renderEnglishResults(totalPointsEarned, percentageScore, gapPoints, grammarPoints, vocabPoints, gapReview, grammarReview, vocabReview, studentWritingText, s1Pts, s2Pts, s3Pts, s4Pts, totalPossiblePoints, correctGapsCount, gapQuestions.length, correctGrammarCount, grammarQuestions.length, correctVocabCount, vocabQuestions.length);
         }
 
-        function renderEnglishResults(totalPoints, scorePercent, gapPts, gramPts, vocPts, gapReview, grammarReview, vocabReview, studentWriting = '') {
+        function renderEnglishResults(totalPoints, scorePercent, gapPts, gramPts, vocPts, gapReview, grammarReview, vocabReview, studentWriting = '', s1Pts = 20, s2Pts = 15, s3Pts = 15, s4Pts = 0, totalPossiblePoints = 50, correctGaps = 0, totalGaps = 10, correctGrammar = 0, totalGrammar = 5, correctVocab = 0, totalVocab = 5) {
             const container = document.getElementById('examContent');
             
             let html = `
@@ -1038,25 +1073,25 @@
                     <p style="color: #64748b; font-size: 1rem;">ពិន្ទុត្រូវបានកត់ត្រា និងបញ្ចូលក្នុងបញ្ជីពិន្ទុដោយស្វ័យប្រវត្ត។</p>
                     
                     <div class="results-score-badge">
-                        ${scorePercent}% <span style="font-size: 1.25rem; font-weight: normal; color: #166534;">(${totalPoints} / 50 ពិន្ទុ)</span>
+                        ${scorePercent}% <span style="font-size: 1.25rem; font-weight: normal; color: #166534;">(${totalPoints} / ${totalPossiblePoints} ពិន្ទុ)</span>
                     </div>
                 </div>
 
                 <div class="section-score-row">
                     <div class="sec-score-card">
                         <div style="font-weight: bold; color: #1e40af; margin-bottom: 6px;">I. GAPS FILLING</div>
-                        <div style="font-size: 1.6rem; font-weight: 800; color: #1d4ed8;">${gapPts} / 20 pts</div>
-                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">(ត្រូវ ${gapPts / 2} លើ ១០ ចន្លោះ)</div>
+                        <div style="font-size: 1.6rem; font-weight: 800; color: #1d4ed8;">${gapPts} / ${s1Pts} pts</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">(ត្រូវ ${correctGaps} លើ ${totalGaps} ចន្លោះ)</div>
                     </div>
                     <div class="sec-score-card">
                         <div style="font-weight: bold; color: #0f766e; margin-bottom: 6px;">II. GRAMMAR</div>
-                        <div style="font-size: 1.6rem; font-weight: 800; color: #0d9488;">${gramPts} / 15 pts</div>
-                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">(ត្រូវ ${gramPts / 3} លើ ៥ សំណួរ)</div>
+                        <div style="font-size: 1.6rem; font-weight: 800; color: #0d9488;">${gramPts} / ${s2Pts} pts</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">(ត្រូវ ${correctGrammar} លើ ${totalGrammar} សំណួរ)</div>
                     </div>
                     <div class="sec-score-card">
                         <div style="font-weight: bold; color: #6d28d9; margin-bottom: 6px;">III. VOCABULARY</div>
-                        <div style="font-size: 1.6rem; font-weight: 800; color: #7c3aed;">${vocPts} / 15 pts</div>
-                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">(ត្រូវ ${vocPts / 3} លើ ៥ សំណួរ)</div>
+                        <div style="font-size: 1.6rem; font-weight: 800; color: #7c3aed;">${vocPts} / ${s3Pts} pts</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">(ត្រូវ ${correctVocab} លើ ${totalVocab} សំណួរ)</div>
                     </div>
                     ${(studentWriting && studentWriting.trim().length > 0) ? `
                     <div class="sec-score-card" style="border-color: #fecdd3; background: #fff1f2;">

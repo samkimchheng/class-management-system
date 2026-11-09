@@ -51,10 +51,24 @@ public class DataInitializer {
         try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS section4instruction VARCHAR(500)"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS writing_prompt TEXT"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS writing_max_points INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS section1max_points INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS section2max_points INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS section3max_points INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS section1_max_points INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS section2_max_points INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS section3_max_points INTEGER"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"SECTION4TITLE\" VARCHAR(255)"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"SECTION4INSTRUCTION\" VARCHAR(500)"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"WRITING_PROMPT\" TEXT"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"WRITING_MAX_POINTS\" INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"SECTION1MAX_POINTS\" INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"SECTION2MAX_POINTS\" INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"SECTION3MAX_POINTS\" INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"SECTION1_MAX_POINTS\" INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"SECTION2_MAX_POINTS\" INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"SECTION3_MAX_POINTS\" INTEGER"); } catch (Exception ignored) {}
+        try { stmt.execute("DELETE FROM question WHERE exam_id IN (SELECT id FROM exam WHERE account_id = 1)"); } catch (Exception ignored) {}
+        try { stmt.execute("DELETE FROM exam WHERE account_id = 1"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS score ADD COLUMN IF NOT EXISTS student_writing TEXT"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS \"SCORE\" ADD COLUMN IF NOT EXISTS \"STUDENT_WRITING\" TEXT"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS score ADD COLUMN IF NOT EXISTS writing_score DOUBLE PRECISION"); } catch (Exception ignored) {}
@@ -672,7 +686,7 @@ public class DataInitializer {
 
     private void seedEnglishExamIfMissing(ExamRepository examRepository, QuestionRepository questionRepository) {
         try {
-            Long[] accountIds = {97L, 1L, 98L};
+            Long[] accountIds = {97L, 98L};
             String[] months = {"ឆមាសទី២", "ខែវិច្ឆិកា ២០២៦", "តេស្តដើមឆ្នាំ"};
             String subject = "ភាសាអង់គ្លេស";
             String passage = "I hope you're 1..................and that your wedding ceremony in Phnom Penh went well. I'm sorry I haven't written to you since May, but I just haven't 2.................. find the time, because of my end of year exams. They're our final exams and I did an 3.................. amount of work for them, but now they're finished and you'll be 4.................. to know that I passed them all. As well as exams, I've been very busy playing football and other sports for school over the past months. I'm sure you understand.\n" +
@@ -697,10 +711,13 @@ public class DataInitializer {
                         exam.setWordBank(wordBank);
                         exam.setSection1Title("I. GAPS FILLING:");
                         exam.setSection1Instruction("Read the text and fill in each gap with the word in the box given: (20pts)");
+                        exam.setSection1MaxPoints(20);
                         exam.setSection2Title("II. GRAMMAR SECTION:");
                         exam.setSection2Instruction("Choose the best and correct only one answer A, B, C or D as the following: (15pts)");
+                        exam.setSection2MaxPoints(15);
                         exam.setSection3Title("III. VOCABULARY SECTION:");
                         exam.setSection3Instruction("Choose the best and correct only one answer A, B, C or D as the following: (15pts)");
+                        exam.setSection3MaxPoints(15);
                         exam.setSection4Title("IV. WRITING SECTION:");
                         exam.setSection4Instruction("Write a short composition (80-120 words) on the topic given below: (15pts)");
                         exam.setWritingPrompt("Write a letter to your friend telling them about your school life, your favorite subjects, and your plans after completing high school.");

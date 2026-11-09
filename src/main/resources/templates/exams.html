@@ -321,11 +321,34 @@
 
             <!-- English 3-Section Container -->
             <div id="section-english-container" style="display: none;">
+
+            <!-- Live Total Points Banner for English Exam -->
+            <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+                <div>
+                    <span style="font-weight: 700; color: #0f172a; font-size: 1.05rem;">🎯 ពិន្ទុសរុបវិញ្ញាសា (Total Exam Points):</span>
+                    <span id="enTotalPointsDisplay" style="color: #2563eb; font-size: 1.4rem; font-weight: 800; margin-left: 6px;">50</span>
+                    <span style="font-weight: 700; color: #475569; font-size: 1rem;"> ពិន្ទុ</span>
+                </div>
+                <div style="display: flex; gap: 8px; font-size: 0.85rem; font-weight: 600; flex-wrap: wrap;">
+                    <span id="badgeSec1Pill" style="background: #eff6ff; color: #1d4ed8; padding: 5px 12px; border-radius: 20px; border: 1px solid #bfdbfe;">Sec I: 20 pts</span>
+                    <span id="badgeSec2Pill" style="background: #f0fdfa; color: #0d9488; padding: 5px 12px; border-radius: 20px; border: 1px solid #99f6e4;">Sec II: 15 pts</span>
+                    <span id="badgeSec3Pill" style="background: #f5f3ff; color: #7c3aed; padding: 5px 12px; border-radius: 20px; border: 1px solid #ddd6fe;">Sec III: 15 pts</span>
+                    <span id="badgeSec4Pill" style="background: #fff1f2; color: #e11d48; padding: 5px 12px; border-radius: 20px; border: 1px solid #fecdd3;">Sec IV: 0 pts</span>
+                </div>
+            </div>
+
                 <!-- Section I: GAPS FILLING -->
                 <div class="exam-section" style="border-left-color: #2563eb;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
-                        <h4 style="margin: 0; font-size: 1.15rem; color: #1e3a8a;">ផ្នែក I៖ GAPS FILLING (២០ ពិន្ទុ)</h4>
-                        <span style="background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">១០ ចន្លោះ (២ ពិន្ទុ/ចន្លោះ)</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #1e3a8a;">ផ្នែក I៖ GAPS FILLING</h4>
+                            <span id="badgeSec1Summary" style="background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">១០ ចន្លោះ (២ ពិន្ទុ/ចន្លោះ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <label style="font-weight: bold; font-size: 0.88rem; color: #1e3a8a;">ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="enSec1MaxPoints" class="form-control" style="width: 80px; text-align: center; font-weight: bold; color: #1e3a8a;" value="20" min="1" max="100" oninput="updateEnSummaryBadges()">
+                            <span style="font-weight: bold; font-size: 0.88rem; color: #1e3a8a;">ពិន្ទុ (pts)</span>
+                        </div>
                     </div>
                     <div style="margin-bottom: 14px;">
                         <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក (Section Title)</label>
@@ -361,8 +384,15 @@
                 <!-- Section II: Grammar Section -->
                 <div class="exam-section" style="border-left-color: #0d9488;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
-                        <h4 style="margin: 0; font-size: 1.15rem; color: #0f766e;">ផ្នែក II៖ GRAMMAR SECTION (១៥ ពិន្ទុ)</h4>
-                        <span style="background: #f0fdfa; color: #0d9488; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #0f766e;">ផ្នែក II៖ GRAMMAR SECTION</h4>
+                            <span id="badgeSec2Summary" style="background: #f0fdfa; color: #0d9488; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <label style="font-weight: bold; font-size: 0.88rem; color: #0f766e;">ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="enSec2MaxPoints" class="form-control" style="width: 80px; text-align: center; font-weight: bold; color: #0f766e;" value="15" min="1" max="100" oninput="updateEnSummaryBadges()">
+                            <span style="font-weight: bold; font-size: 0.88rem; color: #0f766e;">ពិន្ទុ (pts)</span>
+                        </div>
                     </div>
                     <div style="margin-bottom: 14px;">
                         <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក (Section Title)</label>
@@ -379,8 +409,15 @@
                 <!-- Section III: Vocabulary Section -->
                 <div class="exam-section" style="border-left-color: #7c3aed;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
-                        <h4 style="margin: 0; font-size: 1.15rem; color: #6d28d9;">ផ្នែក III៖ VOCABULARY SECTION (១៥ ពិន្ទុ)</h4>
-                        <span style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #6d28d9;">ផ្នែក III៖ VOCABULARY SECTION</h4>
+                            <span id="badgeSec3Summary" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <label style="font-weight: bold; font-size: 0.88rem; color: #6d28d9;">ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="enSec3MaxPoints" class="form-control" style="width: 80px; text-align: center; font-weight: bold; color: #6d28d9;" value="15" min="1" max="100" oninput="updateEnSummaryBadges()">
+                            <span style="font-weight: bold; font-size: 0.88rem; color: #6d28d9;">ពិន្ទុ (pts)</span>
+                        </div>
                     </div>
                     <div style="margin-bottom: 14px;">
                         <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក (Section Title)</label>
@@ -403,7 +440,7 @@
                         </label>
                         <div style="display: flex; align-items: center; gap: 6px;">
                             <label style="font-weight: bold; font-size: 0.88rem; color: #475569;">ពិន្ទុអតិបរមា៖</label>
-                            <input type="number" id="enWritingMaxPoints" class="form-control" style="width: 80px; text-align: center; font-weight: bold; color: #be123c;" value="15" min="1" max="50">
+                            <input type="number" id="enWritingMaxPoints" class="form-control" style="width: 80px; text-align: center; font-weight: bold; color: #be123c;" value="15" min="1" max="100" oninput="updateEnSummaryBadges()">
                             <span style="font-weight: bold; font-size: 0.88rem; color: #475569;">ពិន្ទុ (pts)</span>
                         </div>
                     </div>
@@ -580,6 +617,62 @@
             updateQuestionBadge();
         }
 
+        
+        function updateEnSummaryBadges() {
+            const el1 = document.getElementById('enSec1MaxPoints');
+            const el2 = document.getElementById('enSec2MaxPoints');
+            const el3 = document.getElementById('enSec3MaxPoints');
+            const elW = document.getElementById('enWritingMaxPoints');
+            const wCheck = document.getElementById('enWritingEnabled');
+
+            const p1 = el1 ? (parseFloat(el1.value) || 0) : 20;
+            const p2 = el2 ? (parseFloat(el2.value) || 0) : 15;
+            const p3 = el3 ? (parseFloat(el3.value) || 0) : 15;
+            const isWOpen = wCheck ? wCheck.checked : false;
+            const p4 = isWOpen && elW ? (parseFloat(elW.value) || 0) : 0;
+
+            const total = p1 + p2 + p3 + p4;
+            const totalDisplay = document.getElementById('enTotalPointsDisplay');
+            if (totalDisplay) totalDisplay.textContent = Number.isInteger(total) ? total : total.toFixed(1);
+
+            // Gaps count
+            const gapsCount = document.querySelectorAll('#enGapsContainer .en-gap-input').length || document.querySelectorAll('#enGapsContainer > div').length;
+            const ptsPerGap = gapsCount > 0 ? (p1 / gapsCount) : 0;
+            const s1Summary = document.getElementById('badgeSec1Summary');
+            if (s1Summary) {
+                const ptsGapStr = Number.isInteger(ptsPerGap) ? ptsPerGap : ptsPerGap.toFixed(1);
+                s1Summary.textContent = gapsCount + ' ចន្លោះ (' + ptsGapStr + ' ពិន្ទុ/ចន្លោះ)';
+            }
+
+            // Grammar count
+            const grammarCount = document.querySelectorAll('#enGrammarContainer .question-card').length;
+            const ptsPerGrammar = grammarCount > 0 ? (p2 / grammarCount) : 0;
+            const s2Summary = document.getElementById('badgeSec2Summary');
+            if (s2Summary) {
+                const ptsGrammarStr = Number.isInteger(ptsPerGrammar) ? ptsPerGrammar : ptsPerGrammar.toFixed(1);
+                s2Summary.textContent = grammarCount + ' សំណួរ (' + ptsGrammarStr + ' ពិន្ទុ/សំណួរ)';
+            }
+
+            // Vocab count
+            const vocabCount = document.querySelectorAll('#enVocabContainer .question-card').length;
+            const ptsPerVocab = vocabCount > 0 ? (p3 / vocabCount) : 0;
+            const s3Summary = document.getElementById('badgeSec3Summary');
+            if (s3Summary) {
+                const ptsVocabStr = Number.isInteger(ptsPerVocab) ? ptsPerVocab : ptsPerVocab.toFixed(1);
+                s3Summary.textContent = vocabCount + ' សំណួរ (' + ptsVocabStr + ' ពិន្ទុ/សំណួរ)';
+            }
+
+            // Pill badges
+            const b1 = document.getElementById('badgeSec1Pill');
+            if (b1) b1.textContent = 'Sec I: ' + p1 + ' pts';
+            const b2 = document.getElementById('badgeSec2Pill');
+            if (b2) b2.textContent = 'Sec II: ' + p2 + ' pts';
+            const b3 = document.getElementById('badgeSec3Pill');
+            if (b3) b3.textContent = 'Sec III: ' + p3 + ' pts';
+            const b4 = document.getElementById('badgeSec4Pill');
+            if (b4) b4.textContent = isWOpen ? ('Sec IV: ' + p4 + ' pts') : 'Sec IV: បិទ (0 pts)';
+        }
+
         function toggleEnWritingSection() {
             const enabled = document.getElementById('enWritingEnabled').checked;
             document.getElementById('enWritingContent').style.display = enabled ? 'block' : 'none';
@@ -730,6 +823,7 @@
             // Populate Section I
             document.getElementById('enSec1Title').value = 'I. GAPS FILLING:';
             document.getElementById('enSec1Instruction').value = 'Read the text and fill in each gap with the word in the box given: (20pts)';
+            document.getElementById('enSec1MaxPoints').value = 20;
             document.getElementById('enWordBank').value = 'enormous, reading, been able to, acknowledge, mentioned, delighted, particularly, keeping well, ashamed, postcard';
             document.getElementById('enReadingPassage').value = "I hope you're 1..................and that your wedding ceremony in Phnom Penh went well. I'm sorry I haven't written to you since May, but I just haven't 2.................. find the time, because of my end of year exams. They're our final exams and I did an 3.................. amount of work for them, but now they're finished and you'll be 4.................. to know that I passed them all. As well as exams, I've been very busy playing football and other sports for school over the past months. I'm sure you understand.\nThanks for your letter, which took only ten days to arrive here. I really enjoyed 5.................. it. It was lovely to read all the news from Cambodia, 6.................. the bits about Dany's wedding in Samrong and your own plans to get married. I also received a letter from Kim Seng in which he 7.................. Dany's and your wedding. I'm sending a 8.................. to him with my letter to you. I hope you don't mind sending it on to him. In addition, could you please give a message to Pisey? I feel really 9.................., because I haven't been able to 10.................. her letter yet.";
 
@@ -891,14 +985,17 @@
         function populateEnglishExamData(exam, questions) {
             document.getElementById('enSec1Title').value = exam.section1Title || 'I. GAPS FILLING:';
             document.getElementById('enSec1Instruction').value = exam.section1Instruction || 'Read the text and fill in each gap with the word in the box given: (20pts)';
+            document.getElementById('enSec1MaxPoints').value = exam.section1MaxPoints || 20;
             document.getElementById('enWordBank').value = exam.wordBank || '';
             document.getElementById('enReadingPassage').value = exam.readingPassage || '';
 
             document.getElementById('enSec2Title').value = exam.section2Title || 'II. GRAMMAR SECTION:';
             document.getElementById('enSec2Instruction').value = exam.section2Instruction || 'Choose the best and correct only one answer A, B, C or D as the following: (15pts)';
+            document.getElementById('enSec2MaxPoints').value = exam.section2MaxPoints || 15;
 
             document.getElementById('enSec3Title').value = exam.section3Title || 'III. VOCABULARY SECTION:';
             document.getElementById('enSec3Instruction').value = exam.section3Instruction || 'Choose the best and correct only one answer A, B, C or D as the following: (15pts)';
+            document.getElementById('enSec3MaxPoints').value = exam.section3MaxPoints || 15;
 
             // Section IV Writing
             const hasWriting = !!(exam.writingPrompt && exam.writingPrompt.trim().length > 0);
@@ -966,15 +1063,25 @@
 
             if (subjectName === 'ភាសាអង់គ្លេស') {
                 const questions = [];
-                // 10 gap questions
-                for (let i = 1; i <= 10; i++) {
-                    const el = document.getElementById(`en_gap_${i}`);
-                    const word = el ? el.value.trim() : '';
-                    questions.push({
-                        skillType: 'gaps_filling',
-                        questionText: `Gap ${i}`,
-                        correctOption: word
+                // Dynamic gap questions
+                const gapCards = document.querySelectorAll('#enGapsContainer .en-gap-input');
+                if (gapCards.length > 0) {
+                    gapCards.forEach((input, idx) => {
+                        questions.push({
+                            skillType: 'gaps_filling',
+                            questionText: 'Gap ' + (idx + 1),
+                            correctOption: input.value.trim()
+                        });
                     });
+                } else {
+                    for (let i = 1; i <= 10; i++) {
+                        const el = document.getElementById('en_gap_' + i);
+                        questions.push({
+                            skillType: 'gaps_filling',
+                            questionText: 'Gap ' + i,
+                            correctOption: el ? el.value.trim() : ''
+                        });
+                    }
                 }
 
                 // 5 Grammar questions
@@ -1033,10 +1140,13 @@
                     wordBank: document.getElementById('enWordBank').value,
                     section1Title: document.getElementById('enSec1Title').value,
                     section1Instruction: document.getElementById('enSec1Instruction').value,
+                    section1MaxPoints: parseInt(document.getElementById('enSec1MaxPoints').value) || 20,
                     section2Title: document.getElementById('enSec2Title').value,
                     section2Instruction: document.getElementById('enSec2Instruction').value,
+                    section2MaxPoints: parseInt(document.getElementById('enSec2MaxPoints').value) || 15,
                     section3Title: document.getElementById('enSec3Title').value,
                     section3Instruction: document.getElementById('enSec3Instruction').value,
+                    section3MaxPoints: parseInt(document.getElementById('enSec3MaxPoints').value) || 15,
                     section4Title: writingEnabled ? document.getElementById('enSec4Title').value : null,
                     section4Instruction: writingEnabled ? document.getElementById('enSec4Instruction').value : null,
                     writingPrompt: writingEnabled ? document.getElementById('enWritingPrompt').value : null,

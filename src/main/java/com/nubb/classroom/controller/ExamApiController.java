@@ -95,10 +95,13 @@ public class ExamApiController {
         exam.setWordBank(payload.getWordBank());
         exam.setSection1Title(payload.getSection1Title());
         exam.setSection1Instruction(payload.getSection1Instruction());
+        exam.setSection1MaxPoints(payload.getSection1MaxPoints() != null ? payload.getSection1MaxPoints() : 20);
         exam.setSection2Title(payload.getSection2Title());
         exam.setSection2Instruction(payload.getSection2Instruction());
+        exam.setSection2MaxPoints(payload.getSection2MaxPoints() != null ? payload.getSection2MaxPoints() : 15);
         exam.setSection3Title(payload.getSection3Title());
         exam.setSection3Instruction(payload.getSection3Instruction());
+        exam.setSection3MaxPoints(payload.getSection3MaxPoints() != null ? payload.getSection3MaxPoints() : 15);
         exam.setSection4Title(payload.getSection4Title());
         exam.setSection4Instruction(payload.getSection4Instruction());
         exam.setWritingPrompt(payload.getWritingPrompt());
@@ -209,10 +212,13 @@ public class ExamApiController {
         private String wordBank;
         private String section1Title;
         private String section1Instruction;
+        private Integer section1MaxPoints;
         private String section2Title;
         private String section2Instruction;
+        private Integer section2MaxPoints;
         private String section3Title;
         private String section3Instruction;
+        private Integer section3MaxPoints;
 
         public String getReadingPassage() { return readingPassage; }
         public void setReadingPassage(String readingPassage) { this.readingPassage = readingPassage; }
@@ -222,14 +228,20 @@ public class ExamApiController {
         public void setSection1Title(String section1Title) { this.section1Title = section1Title; }
         public String getSection1Instruction() { return section1Instruction; }
         public void setSection1Instruction(String section1Instruction) { this.section1Instruction = section1Instruction; }
+        public Integer getSection1MaxPoints() { return section1MaxPoints; }
+        public void setSection1MaxPoints(Integer section1MaxPoints) { this.section1MaxPoints = section1MaxPoints; }
         public String getSection2Title() { return section2Title; }
         public void setSection2Title(String section2Title) { this.section2Title = section2Title; }
         public String getSection2Instruction() { return section2Instruction; }
         public void setSection2Instruction(String section2Instruction) { this.section2Instruction = section2Instruction; }
+        public Integer getSection2MaxPoints() { return section2MaxPoints; }
+        public void setSection2MaxPoints(Integer section2MaxPoints) { this.section2MaxPoints = section2MaxPoints; }
         public String getSection3Title() { return section3Title; }
         public void setSection3Title(String section3Title) { this.section3Title = section3Title; }
         public String getSection3Instruction() { return section3Instruction; }
         public void setSection3Instruction(String section3Instruction) { this.section3Instruction = section3Instruction; }
+        public Integer getSection3MaxPoints() { return section3MaxPoints; }
+        public void setSection3MaxPoints(Integer section3MaxPoints) { this.section3MaxPoints = section3MaxPoints; }
 
         private String section4Title;
         private String section4Instruction;

@@ -68,7 +68,12 @@ public class StudentPortalApiController {
                     return stuAccId != 98L && exAccId != 98L;
                 })
                 .filter(e -> ExamApiController.classMatches(e.getClassName(), student.getClassName()))
-                .sorted((a, b) -> Long.compare(b.getId(), a.getId()))
+                .sorted((a, b) -> {
+                    boolean aExact = a.getAccountId() != null && a.getAccountId().equals(stuAccId);
+                    boolean bExact = b.getAccountId() != null && b.getAccountId().equals(stuAccId);
+                    if (aExact != bExact) return bExact ? 1 : -1;
+                    return Long.compare(b.getId(), a.getId());
+                })
                 .findFirst();
 
         if (examOpt.isPresent()) {
