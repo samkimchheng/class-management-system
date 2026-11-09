@@ -7,25 +7,406 @@
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4361ee;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --bg: #f0f2f5;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --bg: #f1f5f9;
+            --border: #cbd5e1;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
         }
-        body { font-family: 'Kantumruy Pro', 'Battambang', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .header { background: white; padding: 20px 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        .timer-badge { background: var(--danger); color: white; padding: 8px 16px; border-radius: 20px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
-        .question-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; border-left: 5px solid var(--primary); }
-        .question-text { font-size: 1.15rem; font-weight: 600; margin-bottom: 20px; color: var(--dark); line-height: 1.6; }
-        .option-label { display: flex; align-items: center; padding: 12px 15px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s; user-select: none; }
-        .option-label:hover { background-color: #f8fafc; border-color: #cbd5e1; }
-        .option-label input[type="radio"] { margin-right: 15px; width: 18px; height: 18px; cursor: pointer; }
-        .btn-submit { display: block; width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; font-family: inherit; margin-top: 30px; }
-        .btn-submit:hover { background: #3a56d4; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Kantumruy Pro', 'Battambang', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; color: var(--dark); }
+        .container { max-width: 960px; margin: 0 auto; }
+        .header { background: white; padding: 18px 24px; border-radius: 12px; box-shadow: var(--card-shadow); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; border-top: 4px solid var(--primary); }
+        .timer-badge { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 7px 15px; border-radius: 20px; font-weight: bold; display: flex; align-items: center; gap: 6px; font-size: 0.95rem; }
+        
+        /* Official MoEYS Exam Paper Style Header */
+        .moeys-exam-header {
+            background: white;
+            border: 2px solid #1e3a8a;
+            border-radius: 10px;
+            padding: 18px 22px;
+            margin-bottom: 24px;
+            box-shadow: var(--card-shadow);
+        }
+        .moeys-header-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            border-bottom: 1px dashed #94a3b8;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .moeys-title-kh {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+        }
+        .moeys-subtitle {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+        .moeys-meta {
+            font-size: 0.9rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+        .moeys-score-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        /* Section Styling */
+        .exam-section-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 24px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .section-header {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: white;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .section-header.grammar {
+            background: linear-gradient(135deg, #0f766e, #0d9488);
+        }
+        .section-header.vocabulary {
+            background: linear-gradient(135deg, #6d28d9, #7c3aed);
+        }
+        .section-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .section-points-badge {
+            background: rgba(255,255,255,0.22);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .section-body {
+            padding: 22px;
+        }
+        .section-instruction {
+            font-style: italic;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 18px;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.98rem;
+        }
+
+        /* Word Bank Container */
+        .word-bank-box {
+            background: #f0fdf4;
+            border: 2px dashed #22c55e;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 22px;
+        }
+        .word-bank-header {
+            font-weight: 700;
+            color: #15803d;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .word-bank-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .word-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: white;
+            border: 1.5px solid #86efac;
+            color: #166534;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .word-chip.used {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #94a3b8;
+            text-decoration: line-through;
+            opacity: 0.75;
+        }
+        .word-chip-badge {
+            font-size: 0.75rem;
+            padding: 1px 6px;
+            background: #dcfce7;
+            color: #15803d;
+            border-radius: 10px;
+        }
+
+        /* Reading Passage Box */
+        .reading-passage-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 22px;
+            font-size: 1.05rem;
+            line-height: 2.3;
+            color: #1e293b;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            margin-bottom: 22px;
+        }
+        .gap-inline-select {
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 2px solid #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+            margin: 0 3px;
+            max-width: 175px;
+            vertical-align: baseline;
+        }
+        .gap-inline-select:focus,
+        .gap-inline-select.filled {
+            border-color: #10b981;
+            background: #ecfdf5;
+            color: #047857;
+        }
+
+        /* Gaps quick grid */
+        .gaps-grid-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 15px;
+        }
+        .gaps-grid-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .gaps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+        }
+        .gap-grid-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+        }
+        .gap-grid-num {
+            font-weight: bold;
+            color: #2563eb;
+            min-width: 55px;
+            font-size: 0.9rem;
+        }
+        .gap-grid-item select {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #94a3b8;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 500;
+            outline: none;
+            background: white;
+        }
+
+        /* Question Card (MCQ) */
+        .question-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+            margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid var(--primary);
+            transition: border-color 0.2s;
+        }
+        .question-card.grammar-q {
+            border-left-color: #0d9488;
+        }
+        .question-card.vocab-q {
+            border-left-color: #7c3aed;
+        }
+        .question-text {
+            font-size: 1.08rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark);
+            line-height: 1.5;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        @media (min-width: 640px) {
+            .options-grid.two-cols {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            background: #ffffff;
+        }
+        .option-label:hover {
+            background-color: #f8fafc;
+            border-color: #94a3b8;
+        }
+        .option-label input[type="radio"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .option-label.checked {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .btn-submit {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 30px 0 50px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #1e40af, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Results / Review Styling */
+        .results-container {
+            background: white;
+            border-radius: 14px;
+            padding: 30px 24px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #e2e8f0;
+        }
+        .results-score-badge {
+            display: inline-block;
+            background: #dcfce7;
+            color: #15803d;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-size: 2.2rem;
+            font-weight: 800;
+            border: 2px solid #86efac;
+            margin: 15px 0;
+        }
+        .section-score-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+        .sec-score-card {
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .review-item {
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #94a3b8;
+            background: #f8fafc;
+            font-size: 0.95rem;
+        }
+        .review-item.correct {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        .review-item.wrong {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        @media (max-width: 640px) {
+            .moeys-header-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .header {
+                padding: 14px;
+            }
+            .gap-inline-select {
+                max-width: 130px;
+                font-size: 0.88rem;
+                padding: 3px 5px;
+            }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>.swal2-popup { font-family: 'Kantumruy Pro', 'Battambang', sans-serif !important; }</style>
@@ -34,18 +415,20 @@
     <div class="container">
         <div class="header">
             <div>
-                <h2 style="margin:0;">សួស្តី, <span th:text="${student.name}">ឈ្មោះសិស្ស</span></h2>
-                <div style="margin:5px 0 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                    <span style="color: #64748b;">ថ្នាក់ - <span th:text="${student.className}" id="studentClass" style="font-weight: bold; color: var(--primary);">10A</span></span>
-                    <a href="/lessons" style="color: #0284c7; text-decoration: none; font-weight: bold; font-size: 0.92rem; background: #e0f2fe; padding: 3px 10px; border-radius: 6px;">📚 មើលមេរៀន</a>
-                    <a href="/test/leave" style="color: #059669; text-decoration: none; font-weight: bold; font-size: 0.92rem; background: #d1fae5; padding: 3px 10px; border-radius: 6px;">📋 សុំច្បាប់ឈប់សម្រាក</a>
-                    <a href="/certificate" style="color: #b45309; text-decoration: none; font-weight: bold; font-size: 0.92rem; background: #fef3c7; padding: 3px 10px; border-radius: 6px;">🎓 វិញ្ញាបនបត្រ</a>
-                    <a href="/test/logout" style="color: #b91c1c; text-decoration: none; font-weight: bold; font-size: 0.92rem; background: #fee2e2; padding: 3px 10px; border-radius: 6px;">🚪 ចាកចេញ</a>
+                <h2 style="margin:0; font-size: clamp(1.2rem, 3.5vw, 1.5rem); color: #0f172a;">
+                    សួស្តី, <span th:text="${student.name}" id="studentNameText">ឈ្មោះសិស្ស</span>
+                </h2>
+                <div style="margin:6px 0 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="color: #64748b; font-size: 0.92rem;">ថ្នាក់ - <span th:text="${student.className}" id="studentClass" style="font-weight: bold; color: var(--primary);">10A</span></span>
+                    <a href="/lessons" style="color: #0284c7; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #e0f2fe; padding: 3px 10px; border-radius: 6px;">📚 មើលមេរៀន</a>
+                    <a href="/test/leave" style="color: #059669; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #d1fae5; padding: 3px 10px; border-radius: 6px;">📋 សុំច្បាប់</a>
+                    <a href="/certificate" style="color: #b45309; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #fef3c7; padding: 3px 10px; border-radius: 6px;">🎓 វិញ្ញាបនបត្រ</a>
+                    <a href="/test/logout" style="color: #b91c1c; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #fee2e2; padding: 3px 10px; border-radius: 6px;">🚪 ចាកចេញ</a>
                 </div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <div id="timerBadge" class="timer-badge" style="display:none;">⏱️ <span id="timeText" style="margin-left: 5px;">60:00</span></div>
-                <select id="monthSelect" style="padding: 10px; font-family: inherit; font-size: 1rem; border-radius: 6px; border: 1px solid #cbd5e1;">
+                <select id="monthSelect" style="padding: 9px 12px; font-family: inherit; font-size: 0.95rem; border-radius: 6px; border: 1px solid #cbd5e1; outline: none;">
                     <option value="តេស្តដើមឆ្នាំ">តេស្តដើមឆ្នាំ</option>
                     <option value="ខែវិច្ឆិកា ២០២៦">ខែវិច្ឆិកា ២០២៦</option>
                     <option value="ខែធ្នូ ២០២៦">ខែធ្នូ ២០២៦</option>
@@ -61,19 +444,22 @@
                     <option value="ខែសីហា ២០២៧">ខែសីហា ២០២៧</option>
                     <option value="ប្រចាំឆ្នាំ">ប្រចាំឆ្នាំ</option>
                 </select>
-                <select id="subjectSelect" style="padding: 10px; font-family: inherit; font-size: 1rem; min-width: 170px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                <select id="subjectSelect" style="padding: 9px 12px; font-family: inherit; font-size: 0.95rem; min-width: 170px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none;">
                     <option value="">-- ជ្រើសរើសមុខវិជ្ជា --</option>
                 </select>
             </div>
         </div>
 
         <div id="examContent">
-            <!-- Questions rendered here -->
+            <!-- Questions or 3-Section Exam rendered here -->
         </div>
     </div>
 
     <script>
+        let currentExam = null;
         let currentQuestions = [];
+        let wordBankList = [];
+        let gapSelections = {}; // gapIndex (1..10) -> word
         let timeRemaining = 60 * 60; // 60 mins
         let timerInterval = null;
 
@@ -112,7 +498,7 @@
                     subjectSelect.innerHTML = '<option value="">-- ជ្រើសរើសមុខវិជ្ជា --</option>';
                     if (subjects && subjects.length > 0) {
                         subjects.forEach(sub => {
-                            subjectSelect.innerHTML += '<option value="' + sub + '">' + sub + '</option>';
+                            subjectSelect.innerHTML += '<option value="' + escapeHtml(sub) + '">' + escapeHtml(sub) + '</option>';
                         });
                     } else {
                         subjectSelect.innerHTML = '<option value="">(មិនទាន់មានវិញ្ញាសាសម្រាប់ថ្នាក់នេះទេ)</option>';
@@ -130,6 +516,7 @@
             const container = document.getElementById('examContent');
             
             stopTimer();
+            gapSelections = {};
             
             if (!subjectName) {
                 container.innerHTML = '<h3 style="text-align: center; color: #64748b; margin-top: 50px;">សូមជ្រើសរើសមុខវិជ្ជា...</h3>';
@@ -142,9 +529,11 @@
                 const res = await fetch('/api/student-portal/exam?month=' + encodeURIComponent(month) + '&subjectName=' + encodeURIComponent(subjectName));
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.questions && data.questions.length > 0) {
-                        currentQuestions = data.questions;
-                        renderExam(data.questions);
+                    currentExam = data.exam || null;
+                    currentQuestions = data.questions || [];
+
+                    if (currentQuestions.length > 0) {
+                        renderExam(currentExam, currentQuestions);
                         startTimer();
                     } else {
                         container.innerHTML = '<h3 style="text-align: center; color: #ef4444; margin-top: 50px;">មិនទាន់មានសំណួរនៅក្នុងវិញ្ញាសានេះទេ!</h3>';
@@ -157,7 +546,23 @@
             }
         }
 
-        function renderExam(questions) {
+        function renderExam(exam, questions) {
+            const container = document.getElementById('examContent');
+            const studentName = document.getElementById('studentNameText') ? document.getElementById('studentNameText').innerText.trim() : 'សិស្ស';
+            const studentClass = document.getElementById('studentClass') ? document.getElementById('studentClass').innerText.trim() : '';
+
+            // Check if this is an English or multi-section exam
+            const hasGaps = questions.some(q => q.skillType === 'gaps_filling') || (exam && exam.readingPassage);
+            const isEnglish = (exam && exam.subjectName === 'ភាសាអង់គ្លេស') || hasGaps;
+
+            if (isEnglish) {
+                renderEnglishMultiSectionExam(exam, questions, studentName, studentClass);
+            } else {
+                renderStandardExam(questions);
+            }
+        }
+
+        function renderStandardExam(questions) {
             const container = document.getElementById('examContent');
             let html = '';
             
@@ -166,39 +571,306 @@
                 html += `
                 <div class="question-card" data-qid="${qId}">
                     <div class="question-text">${idx + 1}. ${escapeHtml(q.questionText || '')}</div>
-                    <label class="option-label">
-                        <input type="radio" name="q_${qId}" value="A"> <span class="option-text">A. ${escapeHtml(q.optionA || '')}</span>
-                    </label>
-                    <label class="option-label">
-                        <input type="radio" name="q_${qId}" value="B"> <span class="option-text">B. ${escapeHtml(q.optionB || '')}</span>
-                    </label>
-                    <label class="option-label">
-                        <input type="radio" name="q_${qId}" value="C"> <span class="option-text">C. ${escapeHtml(q.optionC || '')}</span>
-                    </label>
-                    <label class="option-label">
-                        <input type="radio" name="q_${qId}" value="D"> <span class="option-text">D. ${escapeHtml(q.optionD || '')}</span>
-                    </label>
+                    <div class="options-grid">
+                        <label class="option-label" onclick="selectRadioOption(this)">
+                            <input type="radio" name="q_${qId}" value="A"> <span class="option-text">A. ${escapeHtml(q.optionA || '')}</span>
+                        </label>
+                        <label class="option-label" onclick="selectRadioOption(this)">
+                            <input type="radio" name="q_${qId}" value="B"> <span class="option-text">B. ${escapeHtml(q.optionB || '')}</span>
+                        </label>
+                        <label class="option-label" onclick="selectRadioOption(this)">
+                            <input type="radio" name="q_${qId}" value="C"> <span class="option-text">C. ${escapeHtml(q.optionC || '')}</span>
+                        </label>
+                        <label class="option-label" onclick="selectRadioOption(this)">
+                            <input type="radio" name="q_${qId}" value="D"> <span class="option-text">D. ${escapeHtml(q.optionD || '')}</span>
+                        </label>
+                    </div>
                 </div>
                 `;
             });
 
-            html += '<button type="button" class="btn-submit" onclick="submitExam()">បញ្ជូនចម្លើយ (Submit)</button>';
+            html += '<button type="button" class="btn-submit" onclick="submitExam()"><span>🚀</span> <span>បញ្ជូនចម្លើយ (Submit)</span></button>';
             container.innerHTML = html;
         }
 
+        function renderEnglishMultiSectionExam(exam, questions, studentName, studentClass) {
+            const container = document.getElementById('examContent');
+            gapSelections = {};
+
+            // Parse Word Bank words
+            let wbRaw = (exam && exam.wordBank) ? exam.wordBank : "enormous, reading, been able to, acknowledge, mentioned, delighted, particularly, keeping well, ashamed, postcard";
+            wordBankList = wbRaw.split(/[,;\n]+/).map(s => s.trim()).filter(s => s.length > 0);
+
+            // Separate questions into sections
+            const gapQuestions = questions.filter(q => q.skillType === 'gaps_filling');
+            const grammarQuestions = questions.filter(q => q.skillType === 'grammar');
+            const vocabQuestions = questions.filter(q => q.skillType === 'vocabulary');
+            const fallbackMCQ = questions.filter(q => !q.skillType || q.skillType === 'general');
+
+            let html = '';
+
+            // 1. Official MoEYS Header
+            html += `
+            <div class="moeys-exam-header">
+                <div class="moeys-header-grid">
+                    <div>
+                        <div class="moeys-title-kh">ក្រសួងអប់រំ យុវជន និងកីឡា</div>
+                        <div class="moeys-subtitle">ប្រឡងឆមាសលើកទី២ (ថ្នាក់ទី ១១)</div>
+                        <div class="moeys-meta">
+                            សម័យប្រឡង៖ <strong>${escapeHtml(exam ? exam.month : 'ឆមាសទី២')}</strong><br>
+                            ថ្នាក់រៀន៖ <strong>${escapeHtml(studentClass || 'ថ្នាក់ទី ១១')}</strong>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="moeys-title-kh" style="color: #047857;">វិញ្ញាសា៖ ភាសាអង់គ្លេស</div>
+                        <div class="moeys-subtitle" style="font-size: 0.95rem;">បេក្ខជន៖ <strong>${escapeHtml(studentName)}</strong></div>
+                        <div class="moeys-meta">
+                            រយៈពេល៖ <strong>៦០ នាទី</strong><br>
+                            ពិន្ទុសរុប៖ <strong>៥០ ពិន្ទុ (ស្មើនឹង ១០០%)</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="moeys-score-summary">
+                    <span>📌 ផ្នែក I (GAPS FILLING): ២០ ពិន្ទុ</span>
+                    <span>📌 ផ្នែក II (GRAMMAR): ១៥ ពិន្ទុ</span>
+                    <span>📌 ផ្នែក III (VOCABULARY): ១៥ ពិន្ទុ</span>
+                </div>
+            </div>
+            `;
+
+            // 2. Section I: GAPS FILLING (20 pts)
+            const passage = (exam && exam.readingPassage) ? exam.readingPassage : getDefaultPassage();
+            const formattedPassage = formatReadingPassage(passage, wordBankList);
+
+            html += `
+            <div class="exam-section-card" id="section-1-card">
+                <div class="section-header">
+                    <span class="section-title">I. GAPS FILLING</span>
+                    <span class="section-points-badge">២០ ពិន្ទុ (20 pts)</span>
+                </div>
+                <div class="section-body">
+                    <div class="section-instruction">
+                        ${escapeHtml((exam && exam.section1Instruction) || 'Read the text and fill in each gap with the word in the box given: (20pts)')}
+                    </div>
+
+                    <!-- Word Bank Box -->
+                    <div class="word-bank-box">
+                        <div class="word-bank-header">
+                            <span>📦 ឃ្លាំងពាក្យសម្រាប់បំពេញ (Word Bank - ${wordBankList.length} Words):</span>
+                        </div>
+                        <div class="word-bank-chips" id="wordBankChips">
+                            ${wordBankList.map(w => `
+                                <div class="word-chip" id="chip_${cleanId(w)}" onclick="highlightWord('${escapeHtml(w)}')">
+                                    <span class="chip-status">( )</span>
+                                    <span>${escapeHtml(w)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Reading Passage with Inline Selects -->
+                    <div class="reading-passage-card">
+                        ${formattedPassage}
+                    </div>
+
+                    <!-- Quick Answer Grid for Gaps 1-10 -->
+                    <div class="gaps-grid-box">
+                        <div class="gaps-grid-title">
+                            <span>📋 បញ្ជីចម្លើយសម្រាប់ចន្លោះទី ១ ដល់ទី ១០ (Answer Grid):</span>
+                        </div>
+                        <div class="gaps-grid">
+                            ${[1,2,3,4,5,6,7,8,9,10].map(num => `
+                                <div class="gap-grid-item">
+                                    <span class="gap-grid-num">Gap ${num}:</span>
+                                    <select id="grid_gap_${num}" onchange="syncGapChoice(${num}, this.value)">
+                                        <option value="">-- ជ្រើសរើស --</option>
+                                        ${wordBankList.map(w => `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join('')}
+                                    </select>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+
+            // 3. Section II: GRAMMAR SECTION (15 pts)
+            const grammarItems = grammarQuestions.length > 0 ? grammarQuestions : fallbackMCQ.slice(0, 5);
+            html += `
+            <div class="exam-section-card" id="section-2-card">
+                <div class="section-header grammar">
+                    <span class="section-title">II. GRAMMAR SECTION</span>
+                    <span class="section-points-badge">១៥ ពិន្ទុ (15 pts)</span>
+                </div>
+                <div class="section-body">
+                    <div class="section-instruction">
+                        ${escapeHtml((exam && exam.section2Instruction) || 'Choose the best and correct only one answer A, B, C or D as the following: (15pts)')}
+                    </div>
+                    ${grammarItems.map((q, idx) => renderMCQCard(q, idx, 'grammar-q')).join('')}
+                </div>
+            </div>
+            `;
+
+            // 4. Section III: VOCABULARY SECTION (15 pts)
+            const vocabItems = vocabQuestions.length > 0 ? vocabQuestions : fallbackMCQ.slice(5, 10);
+            html += `
+            <div class="exam-section-card" id="section-3-card">
+                <div class="section-header vocabulary">
+                    <span class="section-title">III. VOCABULARY SECTION</span>
+                    <span class="section-points-badge">១៥ ពិន្ទុ (15 pts)</span>
+                </div>
+                <div class="section-body">
+                    <div class="section-instruction">
+                        ${escapeHtml((exam && exam.section3Instruction) || 'Choose the best and correct only one answer A, B, C or D as the following: (15pts)')}
+                    </div>
+                    ${vocabItems.map((q, idx) => renderMCQCard(q, idx, 'vocab-q')).join('')}
+                </div>
+            </div>
+            `;
+
+            // Submit Button
+            html += `
+            <button type="button" class="btn-submit" onclick="submitExam()">
+                <span>🚀</span> <span>បញ្ជូនចម្លើយ (Submit Official Exam)</span>
+            </button>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function renderMCQCard(q, idx, extraClass) {
+            const qId = q.id || idx;
+            return `
+            <div class="question-card ${extraClass}" data-qid="${qId}">
+                <div class="question-text">${escapeHtml(q.questionText || '')}</div>
+                <div class="options-grid two-cols">
+                    <label class="option-label" onclick="selectRadioOption(this)">
+                        <input type="radio" name="q_${qId}" value="A"> <span class="option-text">A. ${escapeHtml(q.optionA || '')}</span>
+                    </label>
+                    <label class="option-label" onclick="selectRadioOption(this)">
+                        <input type="radio" name="q_${qId}" value="B"> <span class="option-text">B. ${escapeHtml(q.optionB || '')}</span>
+                    </label>
+                    <label class="option-label" onclick="selectRadioOption(this)">
+                        <input type="radio" name="q_${qId}" value="C"> <span class="option-text">C. ${escapeHtml(q.optionC || '')}</span>
+                    </label>
+                    <label class="option-label" onclick="selectRadioOption(this)">
+                        <input type="radio" name="q_${qId}" value="D"> <span class="option-text">D. ${escapeHtml(q.optionD || '')}</span>
+                    </label>
+                </div>
+            </div>
+            `;
+        }
+
+        function selectRadioOption(labelEl) {
+            const radio = labelEl.querySelector('input[type="radio"]');
+            if (!radio) return;
+            const name = radio.name;
+            document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                if (r.parentElement) r.parentElement.classList.remove('checked');
+            });
+            labelEl.classList.add('checked');
+            radio.checked = true;
+        }
+
+        function formatReadingPassage(text, words) {
+            // Replace occurrences like 1.................. or [1] with interactive inline select
+            let processed = escapeHtml(text);
+
+            for (let i = 1; i <= 10; i++) {
+                const optionsHtml = `<option value="">(${i}) ...</option>` + words.map(w => `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join('');
+                const selectHtml = `<select class="gap-inline-select" id="inline_gap_${i}" onchange="syncGapChoice(${i}, this.value)">${optionsHtml}</select>`;
+                
+                // Match patterns like "1.................." or "1....." or "[1]"
+                const reg1 = new RegExp(`\\b${i}\\s*\\.{2,}`, 'g');
+                const reg2 = new RegExp(`\\[${i}\\]`, 'g');
+                
+                if (reg1.test(processed)) {
+                    processed = processed.replace(reg1, selectHtml);
+                } else if (reg2.test(processed)) {
+                    processed = processed.replace(reg2, selectHtml);
+                } else {
+                    // Fallback search for just number followed by dots or underscores
+                    const reg3 = new RegExp(`\\b${i}[\\._]{2,}`, 'g');
+                    processed = processed.replace(reg3, selectHtml);
+                }
+            }
+            return processed.replace(/\n/g, '<br><br>');
+        }
+
+        function syncGapChoice(gapNum, val) {
+            gapSelections[gapNum] = val || '';
+
+            // Sync inline select
+            const inlineSel = document.getElementById(`inline_gap_${gapNum}`);
+            if (inlineSel && inlineSel.value !== val) {
+                inlineSel.value = val;
+            }
+            if (inlineSel) {
+                if (val) inlineSel.classList.add('filled');
+                else inlineSel.classList.remove('filled');
+            }
+
+            // Sync grid select
+            const gridSel = document.getElementById(`grid_gap_${gapNum}`);
+            if (gridSel && gridSel.value !== val) {
+                gridSel.value = val;
+            }
+
+            updateWordBankBadges();
+        }
+
+        function updateWordBankBadges() {
+            const usedWords = Object.values(gapSelections).filter(w => w && w.trim().length > 0);
+
+            wordBankList.forEach(w => {
+                const chip = document.getElementById(`chip_${cleanId(w)}`);
+                if (chip) {
+                    const statusSpan = chip.querySelector('.chip-status');
+                    if (usedWords.includes(w)) {
+                        chip.classList.add('used');
+                        if (statusSpan) statusSpan.innerText = '✓';
+                    } else {
+                        chip.classList.remove('used');
+                        if (statusSpan) statusSpan.innerText = '( )';
+                    }
+                }
+            });
+        }
+
+        function highlightWord(word) {
+            // Find next empty gap and set it or focus
+            for (let i = 1; i <= 10; i++) {
+                if (!gapSelections[i]) {
+                    syncGapChoice(i, word);
+                    break;
+                }
+            }
+        }
+
+        function cleanId(text) {
+            return (text || '').replace(/[^a-zA-Z0-9]/g, '_');
+        }
+
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        function getDefaultPassage() {
+            return "I hope you're 1..................and that your wedding ceremony in Phnom Penh went well. I'm sorry I haven't written to you since May, but I just haven't 2.................. find the time, because of my end of year exams. They're our final exams and I did an 3.................. amount of work for them, but now they're finished and you'll be 4.................. to know that I passed them all. As well as exams, I've been very busy playing football and other sports for school over the past months. I'm sure you understand.\n" +
+                "Thanks for your letter, which took only ten days to arrive here. I really enjoyed 5.................. it. It was lovely to read all the news from Cambodia, 6.................. the bits about Dany's wedding in Samrong and your own plans to get married. I also received a letter from Kim Seng in which he 7.................. Dany's and your wedding. I'm sending a 8.................. to him with my letter to you. I hope you don't mind sending it on to him. In addition, could you please give a message to Pisey? I feel really 9.................., because I haven't been able to 10.................. her letter yet.";
         }
 
         async function submitExam() {
             stopTimer();
             const result = await Swal.fire({
                 title: 'តើប្អូនពិតជាចង់បញ្ជូនចម្លើយមែនទេ?',
+                text: 'សូមពិនិត្យមើលចម្លើយទាំងអស់មុនពេលបញ្ជូនជាផ្លូវការ។',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#4361ee',
+                confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#94a3b8',
                 confirmButtonText: 'បញ្ជូន (Submit)',
                 cancelButtonText: 'ពិនិត្យឡើងវិញ (Review)'
@@ -209,6 +881,193 @@
                 return;
             }
 
+            const isEnglish = (currentExam && currentExam.subjectName === 'ភាសាអង់គ្លេស') || 
+                              currentQuestions.some(q => q.skillType === 'gaps_filling');
+
+            if (isEnglish) {
+                evaluateAndSubmitEnglishExam();
+            } else {
+                evaluateAndSubmitStandardExam();
+            }
+        }
+
+        async function evaluateAndSubmitEnglishExam() {
+            const gapQuestions = currentQuestions.filter(q => q.skillType === 'gaps_filling');
+            const grammarQuestions = currentQuestions.filter(q => q.skillType === 'grammar');
+            const vocabQuestions = currentQuestions.filter(q => q.skillType === 'vocabulary');
+
+            let gapPoints = 0; // max 20
+            let grammarPoints = 0; // max 15
+            let vocabPoints = 0; // max 15
+
+            let gapReview = [];
+            let grammarReview = [];
+            let vocabReview = [];
+
+            // 1. Grade Section I: Gaps (10 gaps, 2 pts each = 20 pts)
+            for (let i = 1; i <= 10; i++) {
+                const userChoice = (gapSelections[i] || '').trim().toLowerCase();
+                const q = gapQuestions[i - 1];
+                const correctWord = q ? (q.correctOption || '').trim().toLowerCase() : '';
+                const isCorrect = userChoice && correctWord && (userChoice === correctWord);
+
+                if (isCorrect) gapPoints += 2;
+
+                gapReview.push({
+                    num: i,
+                    userChoice: gapSelections[i] || '(មិនទាន់ឆ្លើយ)',
+                    correctWord: q ? q.correctOption : '',
+                    isCorrect: isCorrect
+                });
+            }
+
+            // 2. Grade Section II: Grammar (5 questions, 3 pts each = 15 pts)
+            grammarQuestions.forEach((q, idx) => {
+                const qId = q.id || idx;
+                const selected = document.querySelector(`input[name="q_${qId}"]:checked`);
+                const userVal = selected ? selected.value : '';
+                const isCorrect = userVal && (userVal.toUpperCase() === (q.correctOption || '').toUpperCase());
+
+                if (isCorrect) grammarPoints += 3;
+
+                grammarReview.push({
+                    num: idx + 1,
+                    text: q.questionText,
+                    userChoice: userVal || '(មិនទាន់ឆ្លើយ)',
+                    correctOption: q.correctOption,
+                    isCorrect: isCorrect
+                });
+            });
+
+            // 3. Grade Section III: Vocabulary (5 questions, 3 pts each = 15 pts)
+            vocabQuestions.forEach((q, idx) => {
+                const qId = q.id || idx;
+                const selected = document.querySelector(`input[name="q_${qId}"]:checked`);
+                const userVal = selected ? selected.value : '';
+                const isCorrect = userVal && (userVal.toUpperCase() === (q.correctOption || '').toUpperCase());
+
+                if (isCorrect) vocabPoints += 3;
+
+                vocabReview.push({
+                    num: idx + 1,
+                    text: q.questionText,
+                    userChoice: userVal || '(មិនទាន់ឆ្លើយ)',
+                    correctOption: q.correctOption,
+                    isCorrect: isCorrect
+                });
+            });
+
+            const totalPointsEarned = gapPoints + grammarPoints + vocabPoints; // out of 50
+            const percentageScore = Math.round((totalPointsEarned / 50) * 100);
+
+            // Sync score to server
+            const month = document.getElementById('monthSelect').value;
+            const subjectName = document.getElementById('subjectSelect').value;
+            
+            try {
+                await fetch('/api/student-portal/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        month: month,
+                        subjectName: subjectName,
+                        totalScore: percentageScore
+                    })
+                });
+            } catch(e) {
+                console.error("Failed to sync score to db", e);
+            }
+
+            // Render Results Screen
+            renderEnglishResults(totalPointsEarned, percentageScore, gapPoints, grammarPoints, vocabPoints, gapReview, grammarReview, vocabReview);
+        }
+
+        function renderEnglishResults(totalPoints, scorePercent, gapPts, gramPts, vocPts, gapReview, grammarReview, vocabReview) {
+            const container = document.getElementById('examContent');
+            
+            let html = `
+            <div class="results-container">
+                <div style="text-align: center;">
+                    <div style="font-size: 3.5rem; margin: 0;">🎉</div>
+                    <h2 style="color: #0f172a; margin: 10px 0 5px;">ប្អូនបានបញ្ចប់ការប្រឡងភាសាអង់គ្លេសជាផ្លូវការ!</h2>
+                    <p style="color: #64748b; font-size: 1rem;">ពិន្ទុត្រូវបានកត់ត្រា និងបញ្ចូលក្នុងបញ្ជីពិន្ទុដោយស្វ័យប្រវត្ត។</p>
+                    
+                    <div class="results-score-badge">
+                        ${scorePercent}% <span style="font-size: 1.25rem; font-weight: normal; color: #166534;">(${totalPoints} / 50 ពិន្ទុ)</span>
+                    </div>
+                </div>
+
+                <div class="section-score-row">
+                    <div class="sec-score-card">
+                        <div style="font-weight: bold; color: #1e40af; margin-bottom: 6px;">I. GAPS FILLING</div>
+                        <div style="font-size: 1.6rem; font-weight: 800; color: #1d4ed8;">${gapPts} / 20 pts</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">(ត្រូវ ${gapPts / 2} លើ ១០ ចន្លោះ)</div>
+                    </div>
+                    <div class="sec-score-card">
+                        <div style="font-weight: bold; color: #0f766e; margin-bottom: 6px;">II. GRAMMAR</div>
+                        <div style="font-size: 1.6rem; font-weight: 800; color: #0d9488;">${gramPts} / 15 pts</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">(ត្រូវ ${gramPts / 3} លើ ៥ សំណួរ)</div>
+                    </div>
+                    <div class="sec-score-card">
+                        <div style="font-weight: bold; color: #6d28d9; margin-bottom: 6px;">III. VOCABULARY</div>
+                        <div style="font-size: 1.6rem; font-weight: 800; color: #7c3aed;">${vocPts} / 15 pts</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">(ត្រូវ ${vocPts / 3} លើ ៥ សំណួរ)</div>
+                    </div>
+                </div>
+
+                <!-- Detailed Answers Review -->
+                <h3 style="margin-top: 35px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; color: #0f172a;">
+                    🔍 ផ្ទៀងផ្ទាត់ចម្លើយលម្អិត (Answer Review)
+                </h3>
+
+                <h4 style="color: #1e40af; margin-top: 20px;">ផ្នែកទី I: GAPS FILLING</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;">
+                    ${gapReview.map(g => `
+                        <div class="review-item ${g.isCorrect ? 'correct' : 'wrong'}">
+                            <strong>Gap ${g.num}:</strong> 
+                            ${g.isCorrect ? `<span style="color:#15803d; font-weight:bold;">✓ ${escapeHtml(g.userChoice)}</span>` : 
+                                `<span style="color:#b91c1c;">✗ ${escapeHtml(g.userChoice)}</span> <br><small style="color:#15803d; font-weight:bold;">ចម្លើយត្រូវ៖ ${escapeHtml(g.correctWord)}</small>`}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <h4 style="color: #0f766e; margin-top: 25px;">ផ្នែកទី II: GRAMMAR SECTION</h4>
+                <div>
+                    ${grammarReview.map(gr => `
+                        <div class="review-item ${gr.isCorrect ? 'correct' : 'wrong'}">
+                            <div><strong>${escapeHtml(gr.text)}</strong></div>
+                            <div>
+                                ${gr.isCorrect ? `<span style="color:#15803d; font-weight:bold;">✓ ចម្លើយរបស់អ្នក៖ ${escapeHtml(gr.userChoice)} (ត្រឹមត្រូវ)</span>` : 
+                                    `<span style="color:#b91c1c;">✗ ចម្លើយរបស់អ្នក៖ ${escapeHtml(gr.userChoice)}</span> — <span style="color:#15803d; font-weight:bold;">ចម្លើយត្រូវ៖ ${escapeHtml(gr.correctOption)}</span>`}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <h4 style="color: #6d28d9; margin-top: 25px;">ផ្នែកទី III: VOCABULARY SECTION</h4>
+                <div>
+                    ${vocabReview.map(vr => `
+                        <div class="review-item ${vr.isCorrect ? 'correct' : 'wrong'}">
+                            <div><strong>${escapeHtml(vr.text)}</strong></div>
+                            <div>
+                                ${vr.isCorrect ? `<span style="color:#15803d; font-weight:bold;">✓ ចម្លើយរបស់អ្នក៖ ${escapeHtml(vr.userChoice)} (ត្រឹមត្រូវ)</span>` : 
+                                    `<span style="color:#b91c1c;">✗ ចម្លើយរបស់អ្នក៖ ${escapeHtml(vr.userChoice)}</span> — <span style="color:#15803d; font-weight:bold;">ចម្លើយត្រូវ៖ ${escapeHtml(vr.correctOption)}</span>`}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div style="text-align: center; margin-top: 35px;">
+                    <a href="/test/logout" style="display: inline-block; padding: 12px 30px; background: var(--primary); color:white; text-decoration:none; border-radius:8px; font-weight: bold; font-size: 1rem;">ចាកចេញ (Logout)</a>
+                </div>
+            </div>
+            `;
+
+            container.innerHTML = html;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function evaluateAndSubmitStandardExam() {
             let correctCount = 0;
             currentQuestions.forEach((q, idx) => {
                 const qId = q.id || idx;
@@ -219,21 +1078,18 @@
             });
 
             const totalScore = currentQuestions.length > 0 ? Math.round((correctCount / currentQuestions.length) * 100) : 0;
-
             const month = document.getElementById('monthSelect').value;
             const subjectName = document.getElementById('subjectSelect').value;
             
-            const payload = {
-                month: month,
-                subjectName: subjectName,
-                totalScore: totalScore
-            };
-
             try {
                 await fetch('/api/student-portal/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        month: month,
+                        subjectName: subjectName,
+                        totalScore: totalScore
+                    })
                 });
             } catch(e) {
                 console.error("Failed to sync score to db", e);
@@ -248,6 +1104,7 @@
                     <a href="/test/logout" style="display: inline-block; margin-top:30px; padding: 12px 28px; background: var(--primary); color:white; text-decoration:none; border-radius:6px; font-weight: bold;">ចាកចេញ (Logout)</a>
                 </div>
             `;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         document.getElementById('monthSelect').addEventListener('change', loadSubjectsForMonth);

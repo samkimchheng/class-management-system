@@ -283,7 +283,10 @@
                         </div>
                     </div>
 
-                    <div id="actionButtons" style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div id="actionButtons" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                        <button type="button" class="btn" id="btnLoadEnglishSample" onclick="loadMoeyseGrade11Sample()" style="background: #047857; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 6px;">
+                            <span>📥 ផ្ទុកគំរូវិញ្ញាសាអង់គ្លេសថ្នាក់ទី១១</span>
+                        </button>
                         <input type="hidden" id="currentExamId" value="">
                         <button type="button" class="btn" id="btnEdit" onclick="enableEditMode()" style="display:none; background: #f59e0b; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-family: inherit; font-size: 0.95rem; cursor: pointer; font-weight: bold;">✏️ កែប្រែវិញ្ញាសា</button>
                         <button type="button" class="btn btn-primary" id="btnSave" onclick="saveExam()" style="padding: 10px 20px; font-weight: bold; font-size: 0.95rem;">💾 រក្សាទុកវិញ្ញាសា</button>
@@ -313,6 +316,74 @@
                             ⚠️ មិនទាន់មានថ្នាក់រៀននៅក្នុងបញ្ជីថ្នាក់រៀនទេ! សូមបង្កើតថ្នាក់រៀនជាមុនសិន។
                         </span>
                     </div>
+                </div>
+            </div>
+
+            <!-- English 3-Section Container -->
+            <div id="section-english-container" style="display: none;">
+                <!-- Section I: GAPS FILLING -->
+                <div class="exam-section" style="border-left-color: #2563eb;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
+                        <h4 style="margin: 0; font-size: 1.15rem; color: #1e3a8a;">ផ្នែក I៖ GAPS FILLING (២០ ពិន្ទុ)</h4>
+                        <span style="background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">១០ ចន្លោះ (២ ពិន្ទុ/ចន្លោះ)</span>
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក (Section Title)</label>
+                        <input type="text" id="enSec1Title" class="form-control" style="width: 100%;" value="I. GAPS FILLING:">
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ (Instruction)</label>
+                        <input type="text" id="enSec1Instruction" class="form-control" style="width: 100%;" value="Read the text and fill in each gap with the word in the box given: (20pts)">
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ឃ្លាំងពាក្យ Word Bank (ញែកដោយសញ្ញាក្បៀស , )</label>
+                        <input type="text" id="enWordBank" class="form-control" style="width: 100%;" value="enormous, reading, been able to, acknowledge, mentioned, delighted, particularly, keeping well, ashamed, postcard">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">អត្ថបទអាន (Reading Passage) — ប្រើ [1] ដល់ [10] ឬ 1........ ដល់ 10........ សម្រាប់ចន្លោះនីមួយៗ</label>
+                        <textarea id="enReadingPassage" class="form-control" rows="8" style="width: 100%; font-family: inherit; font-size: 0.98rem; line-height: 1.6;"></textarea>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px;">
+                        <div style="font-weight: bold; color: #1e3a8a; margin-bottom: 10px;">ចម្លើយត្រូវសម្រាប់ចន្លោះទាំង ១០ (Correct word for each gap):</div>
+                        <div id="enGapsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;">
+                            <!-- 10 gap inputs rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section II: Grammar Section -->
+                <div class="exam-section" style="border-left-color: #0d9488;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
+                        <h4 style="margin: 0; font-size: 1.15rem; color: #0f766e;">ផ្នែក II៖ GRAMMAR SECTION (១៥ ពិន្ទុ)</h4>
+                        <span style="background: #f0fdfa; color: #0d9488; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក (Section Title)</label>
+                        <input type="text" id="enSec2Title" class="form-control" style="width: 100%;" value="II. GRAMMAR SECTION:">
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ (Instruction)</label>
+                        <input type="text" id="enSec2Instruction" class="form-control" style="width: 100%;" value="Choose the best and correct only one answer A, B, C or D as the following: (15pts)">
+                    </div>
+                    <div id="enGrammarContainer"></div>
+                </div>
+
+                <!-- Section III: Vocabulary Section -->
+                <div class="exam-section" style="border-left-color: #7c3aed;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
+                        <h4 style="margin: 0; font-size: 1.15rem; color: #6d28d9;">ផ្នែក III៖ VOCABULARY SECTION (១៥ ពិន្ទុ)</h4>
+                        <span style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក (Section Title)</label>
+                        <input type="text" id="enSec3Title" class="form-control" style="width: 100%;" value="III. VOCABULARY SECTION:">
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ (Instruction)</label>
+                        <input type="text" id="enSec3Instruction" class="form-control" style="width: 100%;" value="Choose the best and correct only one answer A, B, C or D as the following: (15pts)">
+                    </div>
+                    <div id="enVocabContainer"></div>
                 </div>
             </div>
 
@@ -381,14 +452,32 @@
         }
 
         function updateQuestionBadge() {
-            const count = document.querySelectorAll('.question-card').length;
+            const count = document.querySelectorAll('#section-general .question-card').length;
             const badge = document.getElementById('questionCountBadge');
             if (badge) {
                 badge.innerHTML = `<span style="white-space: nowrap !important; display: inline-block;">${count} សំណួរ</span>`;
             }
         }
 
-        function createQuestionCard(skillType, qData = null) {
+        function onSubjectChanged() {
+            const subject = document.getElementById('subjectSelect').value;
+            const isEnglish = (subject === 'ភាសាអង់គ្លេស');
+            const enContainer = document.getElementById('section-english-container');
+            const genContainer = document.getElementById('section-general');
+            const btnSample = document.getElementById('btnLoadEnglishSample');
+
+            if (isEnglish) {
+                if (enContainer) enContainer.style.display = 'block';
+                if (genContainer) genContainer.style.display = 'none';
+                if (btnSample) btnSample.style.display = 'inline-flex';
+            } else {
+                if (enContainer) enContainer.style.display = 'none';
+                if (genContainer) genContainer.style.display = 'block';
+                if (btnSample) btnSample.style.display = 'none';
+            }
+        }
+
+        function createQuestionCard(skillType, qData = null, fixedNum = null) {
             qIdCounter++;
             const qId = `q_${qIdCounter}`;
             
@@ -402,10 +491,13 @@
             const optC = qData ? (qData.optionC || '') : '';
             const optD = qData ? (qData.optionD || '') : '';
             const correct = qData ? (qData.correctOption || 'A') : 'A';
+            const numLabel = fixedNum !== null ? `សំណួរទី ${fixedNum}៖` : 'សំណួរ៖';
+            const deleteBtn = (skillType === 'general') ? 
+                `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge();">លុបសំណួរ</button>` : '';
             
             div.innerHTML = `
-                <button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge();">លុបសំណួរ</button>
-                <div style="font-weight: bold; margin-bottom: 6px; color: #334155;">សំណួរ៖</div>
+                ${deleteBtn}
+                <div style="font-weight: bold; margin-bottom: 6px; color: #334155;">${numLabel}</div>
                 <input type="text" class="q-text" placeholder="បញ្ចូលខ្លឹមសារសំណួរ..." value="${escapeHtml(qText)}" required>
                 <div class="options-grid">
                     <div class="option-row">
@@ -440,13 +532,48 @@
 
         function addQuestion(skillType, qData = null) {
             const container = document.querySelector(`#section-${skillType} .q-container`);
-            container.appendChild(createQuestionCard(skillType, qData));
-            updateQuestionBadge();
+            if (container) {
+                container.appendChild(createQuestionCard(skillType, qData));
+                updateQuestionBadge();
+            }
         }
 
         function clearAllQuestions() {
             document.querySelectorAll('.q-container').forEach(c => c.innerHTML = '');
             updateQuestionBadge();
+        }
+
+        function initEnglishContainers() {
+            // Render 10 gap inputs
+            const gapsContainer = document.getElementById('enGapsContainer');
+            if (gapsContainer && gapsContainer.children.length === 0) {
+                let html = '';
+                for (let i = 1; i <= 10; i++) {
+                    html += `
+                        <div style="background: white; padding: 10px 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                            <div style="font-weight: bold; color: #1e3a8a; font-size: 0.9rem; margin-bottom: 4px;">Gap ${i}:</div>
+                            <input type="text" id="en_gap_${i}" class="form-control en-gap-input" placeholder="ពាក្យត្រូវចន្លោះទី ${i}..." style="width: 100%; font-size: 0.92rem;">
+                        </div>
+                    `;
+                }
+                gapsContainer.innerHTML = html;
+            }
+
+            // Render 5 Grammar items
+            const gramContainer = document.getElementById('enGrammarContainer');
+            if (gramContainer && gramContainer.children.length === 0) {
+                for (let i = 1; i <= 5; i++) {
+                    gramContainer.appendChild(createQuestionCard('grammar', null, i));
+                }
+            }
+
+            // Render 5 Vocab items
+            const vocContainer = document.getElementById('enVocabContainer');
+            if (vocContainer && vocContainer.children.length === 0) {
+                for (let i = 1; i <= 5; i++) {
+                    vocContainer.appendChild(createQuestionCard('vocabulary', null, i));
+                }
+            }
         }
 
         function disableEditMode() {
@@ -457,6 +584,7 @@
             
             document.querySelectorAll('.question-card input').forEach(el => el.disabled = true);
             document.querySelectorAll('.exam-class-checkbox').forEach(el => el.disabled = true);
+            document.querySelectorAll('#section-english-container input, #section-english-container textarea').forEach(el => el.disabled = true);
             document.querySelectorAll('.add-q-btn, .delete-btn').forEach(el => el.style.display = 'none');
         }
 
@@ -469,6 +597,7 @@
             
             document.querySelectorAll('.question-card input').forEach(el => el.disabled = false);
             document.querySelectorAll('.exam-class-checkbox').forEach(el => el.disabled = false);
+            document.querySelectorAll('#section-english-container input, #section-english-container textarea').forEach(el => el.disabled = false);
             document.querySelectorAll('.add-q-btn, .delete-btn').forEach(el => el.style.display = 'inline-block');
         }
 
@@ -476,13 +605,104 @@
             document.getElementById('currentExamId').value = '';
             clearAllQuestions();
             setSelectedClasses([]);
-            addQuestion('general');
+            initEnglishContainers();
+            
+            if (document.getElementById('subjectSelect').value === 'ភាសាអង់គ្លេស') {
+                onSubjectChanged();
+            } else {
+                addQuestion('general');
+                onSubjectChanged();
+            }
+
             enableEditMode();
             document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function loadMoeyseGrade11Sample() {
+            initEnglishContainers();
+            document.getElementById('currentExamId').value = '';
+            document.getElementById('monthSelect').value = 'ឆមាសទី២';
+            document.getElementById('subjectSelect').value = 'ភាសាអង់គ្លេស';
+            onSubjectChanged();
+
+            // Check all classes
+            toggleAllExamClasses(true);
+
+            // Populate Section I
+            document.getElementById('enSec1Title').value = 'I. GAPS FILLING:';
+            document.getElementById('enSec1Instruction').value = 'Read the text and fill in each gap with the word in the box given: (20pts)';
+            document.getElementById('enWordBank').value = 'enormous, reading, been able to, acknowledge, mentioned, delighted, particularly, keeping well, ashamed, postcard';
+            document.getElementById('enReadingPassage').value = "I hope you're 1..................and that your wedding ceremony in Phnom Penh went well. I'm sorry I haven't written to you since May, but I just haven't 2.................. find the time, because of my end of year exams. They're our final exams and I did an 3.................. amount of work for them, but now they're finished and you'll be 4.................. to know that I passed them all. As well as exams, I've been very busy playing football and other sports for school over the past months. I'm sure you understand.\nThanks for your letter, which took only ten days to arrive here. I really enjoyed 5.................. it. It was lovely to read all the news from Cambodia, 6.................. the bits about Dany's wedding in Samrong and your own plans to get married. I also received a letter from Kim Seng in which he 7.................. Dany's and your wedding. I'm sending a 8.................. to him with my letter to you. I hope you don't mind sending it on to him. In addition, could you please give a message to Pisey? I feel really 9.................., because I haven't been able to 10.................. her letter yet.";
+
+            const gapAnswers = [
+                'keeping well', 'been able to', 'enormous', 'delighted', 'reading',
+                'particularly', 'mentioned', 'postcard', 'ashamed', 'acknowledge'
+            ];
+            for (let i = 1; i <= 10; i++) {
+                const el = document.getElementById(`en_gap_${i}`);
+                if (el) el.value = gapAnswers[i - 1];
+            }
+
+            // Populate Section II: Grammar
+            const gramData = [
+                { q: "1. Kim Seng... Monica yet.", a: "hasn't phoned", b: "didn't", c: "have phoned", d: "phoned", correct: "A" },
+                { q: "2. Thy .... a letter to his sister.", a: "wrote", b: "has just written", c: "had written", d: "writes", correct: "B" },
+                { q: "3. Thy and Kim Seng.... football very well for school.", a: "played", b: "play", c: "have just played", d: "has just played", correct: "B" },
+                { q: "4. Monica......the strange scandal to Thy yet.", a: "didn't tell", b: "told", c: "has told", d: "hasn't told", correct: "D" },
+                { q: "5. Thy.... the news from Monica about her wedding day.", a: "has already received", b: "hasn't already received", c: "have already received", d: "has received", correct: "A" }
+            ];
+            const gramCards = document.querySelectorAll('#enGrammarContainer .question-card');
+            gramCards.forEach((card, idx) => {
+                if (gramData[idx]) {
+                    const d = gramData[idx];
+                    card.querySelector('.q-text').value = d.q;
+                    card.querySelector('.q-optA').value = d.a;
+                    card.querySelector('.q-optB').value = d.b;
+                    card.querySelector('.q-optC').value = d.c;
+                    card.querySelector('.q-optD').value = d.d;
+                    const r = card.querySelector(`input[value="${d.correct}"]`);
+                    if (r) r.checked = true;
+                }
+            });
+
+            // Populate Section III: Vocabulary
+            const vocData = [
+                { q: "1. Thy hasn't written to his sister before, because of the...", a: "time", b: "end of year", c: "exams", d: "past months", correct: "C" },
+                { q: "2. Monica will be delighted, because Thy has...his exams.", a: "Worked hard for", b: "just finished", c: "been busy with", d: "passed", correct: "D" },
+                { q: "3. Thy has also been busy at school with...", a: "Final exams", b: "playing football and sports", c: "wedding in Phnom Penh", d: "end of year", correct: "B" },
+                { q: "4. Monica's letter took... to arrive to Thy.", a: "ten days", b: "since May", c: "final exams", d: "months", correct: "A" },
+                { q: "5. Thy feels ashamed because he hasn't...", a: "written to Monica", b: "sent Kim Seng a postcard", c: "acknowledged Pisey's letter yet", d: "played sports", correct: "C" }
+            ];
+            const vocCards = document.querySelectorAll('#enVocabContainer .question-card');
+            vocCards.forEach((card, idx) => {
+                if (vocData[idx]) {
+                    const d = vocData[idx];
+                    card.querySelector('.q-text').value = d.q;
+                    card.querySelector('.q-optA').value = d.a;
+                    card.querySelector('.q-optB').value = d.b;
+                    card.querySelector('.q-optC').value = d.c;
+                    card.querySelector('.q-optD').value = d.d;
+                    const r = card.querySelector(`input[value="${d.correct}"]`);
+                    if (r) r.checked = true;
+                }
+            });
+
+            enableEditMode();
+            document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
+
+            Swal.fire({
+                icon: 'success',
+                title: 'បានផ្ទុកគំរូវិញ្ញាសាថ្នាក់ទី១១ ឆមាសទី២!',
+                text: 'ទម្រង់រួមមាន ផ្នែកទី១ (Gaps Filling), ផ្នែកទី២ (Grammar) និង ផ្នែកទី៣ (Vocabulary) ត្រូវបានបញ្ចូលរួចរាល់។',
+                timer: 2200,
+                showConfirmButton: false
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         async function loadExamById(examId) {
+            initEnglishContainers();
             try {
                 const res = await fetch(`/api/exams/get?id=${examId}`);
                 if (res.ok) {
@@ -492,12 +712,18 @@
                         document.getElementById('monthSelect').value = data.exam.month;
                         document.getElementById('subjectSelect').value = data.exam.subjectName;
                         setSelectedClasses(data.exam.className);
-                    }
-                    clearAllQuestions();
-                    if (data.questions && data.questions.length > 0) {
-                        data.questions.forEach(q => addQuestion('general', q));
-                    } else {
-                        addQuestion('general');
+                        onSubjectChanged();
+
+                        if (data.exam.subjectName === 'ភាសាអង់គ្លេស' || data.exam.readingPassage) {
+                            populateEnglishExamData(data.exam, data.questions || []);
+                        } else {
+                            clearAllQuestions();
+                            if (data.questions && data.questions.length > 0) {
+                                data.questions.forEach(q => addQuestion('general', q));
+                            } else {
+                                addQuestion('general');
+                            }
+                        }
                     }
                     disableEditMode();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -508,13 +734,15 @@
         }
 
         async function loadExam() {
-            clearAllQuestions();
+            initEnglishContainers();
             document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
             const month = document.getElementById('monthSelect').value;
             const subjectName = document.getElementById('subjectSelect').value;
             const selectedClasses = getSelectedClasses();
             const firstClass = selectedClasses.length > 0 ? selectedClasses[0] : '';
             
+            onSubjectChanged();
+
             let foundExisting = false;
             try {
                 let url = `/api/exams/get?month=${encodeURIComponent(month)}&subjectName=${encodeURIComponent(subjectName)}`;
@@ -527,12 +755,15 @@
                     if (data.exam) {
                         document.getElementById('currentExamId').value = data.exam.id || '';
                         setSelectedClasses(data.exam.className);
-                    }
-                    if (data.questions && data.questions.length > 0) {
-                        data.questions.forEach(q => {
-                            addQuestion('general', q);
-                        });
-                        foundExisting = true;
+
+                        if (data.exam.subjectName === 'ភាសាអង់គ្លេស' || data.exam.readingPassage) {
+                            populateEnglishExamData(data.exam, data.questions || []);
+                            foundExisting = true;
+                        } else if (data.questions && data.questions.length > 0) {
+                            clearAllQuestions();
+                            data.questions.forEach(q => addQuestion('general', q));
+                            foundExisting = true;
+                        }
                     }
                 }
             } catch (e) {
@@ -543,9 +774,62 @@
                 disableEditMode();
             } else {
                 document.getElementById('currentExamId').value = '';
-                addQuestion('general');
+                if (subjectName !== 'ភាសាអង់គ្លេស') {
+                    clearAllQuestions();
+                    addQuestion('general');
+                }
                 enableEditMode();
             }
+        }
+
+        function populateEnglishExamData(exam, questions) {
+            document.getElementById('enSec1Title').value = exam.section1Title || 'I. GAPS FILLING:';
+            document.getElementById('enSec1Instruction').value = exam.section1Instruction || 'Read the text and fill in each gap with the word in the box given: (20pts)';
+            document.getElementById('enWordBank').value = exam.wordBank || '';
+            document.getElementById('enReadingPassage').value = exam.readingPassage || '';
+
+            document.getElementById('enSec2Title').value = exam.section2Title || 'II. GRAMMAR SECTION:';
+            document.getElementById('enSec2Instruction').value = exam.section2Instruction || 'Choose the best and correct only one answer A, B, C or D as the following: (15pts)';
+
+            document.getElementById('enSec3Title').value = exam.section3Title || 'III. VOCABULARY SECTION:';
+            document.getElementById('enSec3Instruction').value = exam.section3Instruction || 'Choose the best and correct only one answer A, B, C or D as the following: (15pts)';
+
+            const gaps = questions.filter(q => q.skillType === 'gaps_filling');
+            for (let i = 1; i <= 10; i++) {
+                const el = document.getElementById(`en_gap_${i}`);
+                const q = gaps[i - 1];
+                if (el) el.value = q ? (q.correctOption || '') : '';
+            }
+
+            const grammar = questions.filter(q => q.skillType === 'grammar');
+            const gramCards = document.querySelectorAll('#enGrammarContainer .question-card');
+            gramCards.forEach((card, idx) => {
+                const q = grammar[idx];
+                if (q) {
+                    card.querySelector('.q-text').value = q.questionText || '';
+                    card.querySelector('.q-optA').value = q.optionA || '';
+                    card.querySelector('.q-optB').value = q.optionB || '';
+                    card.querySelector('.q-optC').value = q.optionC || '';
+                    card.querySelector('.q-optD').value = q.optionD || '';
+                    const r = card.querySelector(`input[value="${q.correctOption}"]`);
+                    if (r) r.checked = true;
+                }
+            });
+
+            const vocab = questions.filter(q => q.skillType === 'vocabulary');
+            const vocCards = document.querySelectorAll('#enVocabContainer .question-card');
+            vocCards.forEach((card, idx) => {
+                const q = vocab[idx];
+                if (q) {
+                    card.querySelector('.q-text').value = q.questionText || '';
+                    card.querySelector('.q-optA').value = q.optionA || '';
+                    card.querySelector('.q-optB').value = q.optionB || '';
+                    card.querySelector('.q-optC').value = q.optionC || '';
+                    card.querySelector('.q-optD').value = q.optionD || '';
+                    const r = card.querySelector(`input[value="${q.correctOption}"]`);
+                    if (r) r.checked = true;
+                }
+            });
         }
 
         function onClassCheckboxChanged() {
@@ -569,53 +853,132 @@
                 return;
             }
 
-            const questions = [];
-            let isValid = true;
-            document.querySelectorAll('.question-card').forEach((card, idx) => {
-                const qText = card.querySelector('.q-text').value.trim();
-                const optA = card.querySelector('.q-optA').value.trim();
-                const optB = card.querySelector('.q-optB').value.trim();
-                const optC = card.querySelector('.q-optC').value.trim();
-                const optD = card.querySelector('.q-optD').value.trim();
-                
-                if (!qText || !optA || !optB || !optC || !optD) {
-                    isValid = false;
+            let payload;
+
+            if (subjectName === 'ភាសាអង់គ្លេស') {
+                const questions = [];
+                // 10 gap questions
+                for (let i = 1; i <= 10; i++) {
+                    const el = document.getElementById(`en_gap_${i}`);
+                    const word = el ? el.value.trim() : '';
+                    questions.push({
+                        skillType: 'gaps_filling',
+                        questionText: `Gap ${i}`,
+                        correctOption: word
+                    });
                 }
 
-                const qRadio = card.querySelector('input[type="radio"]');
-                const qName = qRadio ? qRadio.name : '';
-                const checkedRadio = card.querySelector(`input[name="${qName}"]:checked`);
-                const correct = checkedRadio ? checkedRadio.value : 'A';
-                
-                questions.push({
-                    skillType: 'general',
-                    questionText: qText,
-                    optionA: optA,
-                    optionB: optB,
-                    optionC: optC,
-                    optionD: optD,
-                    correctOption: correct
+                // 5 Grammar questions
+                document.querySelectorAll('#enGrammarContainer .question-card').forEach((card, idx) => {
+                    const qText = card.querySelector('.q-text').value.trim();
+                    const optA = card.querySelector('.q-optA').value.trim();
+                    const optB = card.querySelector('.q-optB').value.trim();
+                    const optC = card.querySelector('.q-optC').value.trim();
+                    const optD = card.querySelector('.q-optD').value.trim();
+                    const qRadio = card.querySelector('input[type="radio"]');
+                    const qName = qRadio ? qRadio.name : '';
+                    const checkedRadio = card.querySelector(`input[name="${qName}"]:checked`);
+                    const correct = checkedRadio ? checkedRadio.value : 'A';
+                    
+                    questions.push({
+                        skillType: 'grammar',
+                        questionText: qText,
+                        optionA: optA,
+                        optionB: optB,
+                        optionC: optC,
+                        optionD: optD,
+                        correctOption: correct
+                    });
                 });
-            });
 
-            if (!isValid) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'សូមបំពេញព័ត៌មានសំណួរ!',
-                    text: 'សូមបំពេញខ្លឹមសារសំណួរ និងជម្រើស A, B, C, D ឱ្យបានគ្រប់គ្រាន់។',
-                    confirmButtonText: 'យល់ព្រម',
-                    confirmButtonColor: '#4361ee'
+                // 5 Vocab questions
+                document.querySelectorAll('#enVocabContainer .question-card').forEach((card, idx) => {
+                    const qText = card.querySelector('.q-text').value.trim();
+                    const optA = card.querySelector('.q-optA').value.trim();
+                    const optB = card.querySelector('.q-optB').value.trim();
+                    const optC = card.querySelector('.q-optC').value.trim();
+                    const optD = card.querySelector('.q-optD').value.trim();
+                    const qRadio = card.querySelector('input[type="radio"]');
+                    const qName = qRadio ? qRadio.name : '';
+                    const checkedRadio = card.querySelector(`input[name="${qName}"]:checked`);
+                    const correct = checkedRadio ? checkedRadio.value : 'A';
+                    
+                    questions.push({
+                        skillType: 'vocabulary',
+                        questionText: qText,
+                        optionA: optA,
+                        optionB: optB,
+                        optionC: optC,
+                        optionD: optD,
+                        correctOption: correct
+                    });
                 });
-                return;
+
+                payload = {
+                    id: examId ? parseInt(examId) : null,
+                    month: month,
+                    classes: selectedClasses,
+                    subjectName: subjectName,
+                    readingPassage: document.getElementById('enReadingPassage').value,
+                    wordBank: document.getElementById('enWordBank').value,
+                    section1Title: document.getElementById('enSec1Title').value,
+                    section1Instruction: document.getElementById('enSec1Instruction').value,
+                    section2Title: document.getElementById('enSec2Title').value,
+                    section2Instruction: document.getElementById('enSec2Instruction').value,
+                    section3Title: document.getElementById('enSec3Title').value,
+                    section3Instruction: document.getElementById('enSec3Instruction').value,
+                    questions: questions
+                };
+
+            } else {
+                const questions = [];
+                let isValid = true;
+                document.querySelectorAll('#section-general .question-card').forEach((card, idx) => {
+                    const qText = card.querySelector('.q-text').value.trim();
+                    const optA = card.querySelector('.q-optA').value.trim();
+                    const optB = card.querySelector('.q-optB').value.trim();
+                    const optC = card.querySelector('.q-optC').value.trim();
+                    const optD = card.querySelector('.q-optD').value.trim();
+                    
+                    if (!qText || !optA || !optB || !optC || !optD) {
+                        isValid = false;
+                    }
+
+                    const qRadio = card.querySelector('input[type="radio"]');
+                    const qName = qRadio ? qRadio.name : '';
+                    const checkedRadio = card.querySelector(`input[name="${qName}"]:checked`);
+                    const correct = checkedRadio ? checkedRadio.value : 'A';
+                    
+                    questions.push({
+                        skillType: 'general',
+                        questionText: qText,
+                        optionA: optA,
+                        optionB: optB,
+                        optionC: optC,
+                        optionD: optD,
+                        correctOption: correct
+                    });
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'សូមបំពេញព័ត៌មានសំណួរ!',
+                        text: 'សូមបំពេញខ្លឹមសារសំណួរ និងជម្រើស A, B, C, D ឱ្យបានគ្រប់គ្រាន់។',
+                        confirmButtonText: 'យល់ព្រម',
+                        confirmButtonColor: '#4361ee'
+                    });
+                    return;
+                }
+
+                payload = {
+                    id: examId ? parseInt(examId) : null,
+                    month: month,
+                    classes: selectedClasses,
+                    subjectName: subjectName,
+                    questions: questions
+                };
             }
-
-            const payload = {
-                id: examId ? parseInt(examId) : null,
-                month: month,
-                classes: selectedClasses,
-                subjectName: subjectName,
-                questions: questions
-            };
 
             try {
                 const res = await fetch('/api/exams/save', {
@@ -750,9 +1113,14 @@
         }
 
         document.getElementById('monthSelect').addEventListener('change', loadExam);
-        document.getElementById('subjectSelect').addEventListener('change', loadExam);
+        document.getElementById('subjectSelect').addEventListener('change', () => {
+            onSubjectChanged();
+            loadExam();
+        });
         
         // Initial load
+        initEnglishContainers();
+        onSubjectChanged();
         loadExam();
         loadExamsList();
     </script>

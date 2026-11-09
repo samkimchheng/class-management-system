@@ -88,6 +88,14 @@ public class ExamApiController {
         exam.setClassName(targetClass);
         exam.setSubjectName(payload.getSubjectName());
         exam.setAccountId(accountId);
+        exam.setReadingPassage(payload.getReadingPassage());
+        exam.setWordBank(payload.getWordBank());
+        exam.setSection1Title(payload.getSection1Title());
+        exam.setSection1Instruction(payload.getSection1Instruction());
+        exam.setSection2Title(payload.getSection2Title());
+        exam.setSection2Instruction(payload.getSection2Instruction());
+        exam.setSection3Title(payload.getSection3Title());
+        exam.setSection3Instruction(payload.getSection3Instruction());
         examRepository.save(exam);
 
         // Delete old questions for this exam
@@ -181,6 +189,31 @@ public class ExamApiController {
         private List<String> classes;
         private String subjectName;
         private List<Question> questions;
+        private String readingPassage;
+        private String wordBank;
+        private String section1Title;
+        private String section1Instruction;
+        private String section2Title;
+        private String section2Instruction;
+        private String section3Title;
+        private String section3Instruction;
+
+        public String getReadingPassage() { return readingPassage; }
+        public void setReadingPassage(String readingPassage) { this.readingPassage = readingPassage; }
+        public String getWordBank() { return wordBank; }
+        public void setWordBank(String wordBank) { this.wordBank = wordBank; }
+        public String getSection1Title() { return section1Title; }
+        public void setSection1Title(String section1Title) { this.section1Title = section1Title; }
+        public String getSection1Instruction() { return section1Instruction; }
+        public void setSection1Instruction(String section1Instruction) { this.section1Instruction = section1Instruction; }
+        public String getSection2Title() { return section2Title; }
+        public void setSection2Title(String section2Title) { this.section2Title = section2Title; }
+        public String getSection2Instruction() { return section2Instruction; }
+        public void setSection2Instruction(String section2Instruction) { this.section2Instruction = section2Instruction; }
+        public String getSection3Title() { return section3Title; }
+        public void setSection3Title(String section3Title) { this.section3Title = section3Title; }
+        public String getSection3Instruction() { return section3Instruction; }
+        public void setSection3Instruction(String section3Instruction) { this.section3Instruction = section3Instruction; }
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
