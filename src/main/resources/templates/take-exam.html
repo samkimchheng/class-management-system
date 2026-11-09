@@ -634,6 +634,7 @@
                     <span>📌 ផ្នែក I (GAPS FILLING): ២០ ពិន្ទុ</span>
                     <span>📌 ផ្នែក II (GRAMMAR): ១៥ ពិន្ទុ</span>
                     <span>📌 ផ្នែក III (VOCABULARY): ១៥ ពិន្ទុ</span>
+                    ${(exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0) ? `<span style="color: #be123c;">📌 ផ្នែក IV (WRITING): ${exam.writingMaxPoints || 15} ពិន្ទុ</span>` : ''}
                 </div>
             </div>
             `;
@@ -728,6 +729,38 @@
             </div>
             `;
 
+            // 5. Section IV: WRITING SECTION (if configured)
+            if (exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0) {
+                const writingPts = exam.writingMaxPoints || 15;
+                html += `
+                <div class="exam-section-card" id="section-4-card">
+                    <div class="section-header" style="background: linear-gradient(135deg, #be123c, #e11d48);">
+                        <span class="section-title">${escapeHtml(exam.section4Title || 'IV. WRITING SECTION')}</span>
+                        <span class="section-points-badge">${writingPts} ពិន្ទុ (${writingPts} pts)</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-instruction">
+                            ${escapeHtml(exam.section4Instruction || 'Write a composition on the topic given below: (${writingPts}pts)')}
+                        </div>
+
+                        <div style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
+                            <div style="font-weight: bold; color: #9f1239; margin-bottom: 6px;">📝 ប្រធានបទ (Writing Prompt / Topic):</div>
+                            <div style="font-size: 1.05rem; line-height: 1.6; color: #881337;">${escapeHtml(exam.writingPrompt)}</div>
+                        </div>
+
+                        <div>
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 6px;">✍️ ចម្លើយសរសេររបស់អ្នក (Type your composition here):</label>
+                            <textarea id="studentWritingTextarea" class="form-control" rows="8" style="width: 100%; font-family: inherit; font-size: 1rem; line-height: 1.6; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 12px;" placeholder="Start writing your paragraph or composition here..." oninput="updateWritingWordCount(this)"></textarea>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 0.9rem; color: #64748b; font-weight: 600; flex-wrap: wrap; gap: 8px;">
+                                <span id="writingWordCountSpan" style="color: #2563eb; font-weight: bold;">✍️ ចំនួនពាក្យ៖ 0 ពាក្យ (Word count: 0)</span>
+                                <span style="color: #be123c;">* អត្ថបទរបស់អ្នកនឹងត្រូវបានផ្ញើជូនលោកគ្រូ/អ្នកគ្រូដើម្បីពិនិត្យ និងដាក់ពិន្ទុ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }
+
             // Submit Button
             html += `
             <button type="button" class="btn-submit" onclick="submitExam()">
@@ -817,6 +850,16 @@
             }
 
             updateWordBankBadges();
+        }
+
+        function updateWritingWordCount(textarea) {
+            const text = (textarea.value || '').trim();
+            const words = text ? text.split(/\s+/).filter(w => w.length > 0) : [];
+            const count = words.length;
+            const span = document.getElementById('writingWordCountSpan');
+            if (span) {
+                span.innerText = `✍️ ចំនួនពាក្យ៖ ${count} ពាក្យ (Word count: ${count})`;
+            }
         }
 
         function updateWordBankBadges() {
@@ -965,13 +1008,15 @@
             const subjectName = document.getElementById('subjectSelect').value;
             
             try {
-                await fetch('/api/student-portal/submit', {
+                const studentWritingText = document.getElementById('studentWritingTextarea') ? document.getElementById('studentWritingTextarea').value.trim() : '';
+            await fetch('/api/student-portal/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         month: month,
                         subjectName: subjectName,
-                        totalScore: percentageScore
+                        totalScore: percentageScore,
+                        studentWriting: studentWritingText
                     })
                 });
             } catch(e) {
@@ -979,10 +1024,10 @@
             }
 
             // Render Results Screen
-            renderEnglishResults(totalPointsEarned, percentageScore, gapPoints, grammarPoints, vocabPoints, gapReview, grammarReview, vocabReview);
+            renderEnglishResults(totalPointsEarned, percentageScore, gapPoints, grammarPoints, vocabPoints, gapReview, grammarReview, vocabReview, studentWritingText);
         }
 
-        function renderEnglishResults(totalPoints, scorePercent, gapPts, gramPts, vocPts, gapReview, grammarReview, vocabReview) {
+        function renderEnglishResults(totalPoints, scorePercent, gapPts, gramPts, vocPts, gapReview, grammarReview, vocabReview, studentWriting = '') {
             const container = document.getElementById('examContent');
             
             let html = `
@@ -1013,6 +1058,13 @@
                         <div style="font-size: 1.6rem; font-weight: 800; color: #7c3aed;">${vocPts} / 15 pts</div>
                         <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">(ត្រូវ ${vocPts / 3} លើ ៥ សំណួរ)</div>
                     </div>
+                    ${(studentWriting && studentWriting.trim().length > 0) ? `
+                    <div class="sec-score-card" style="border-color: #fecdd3; background: #fff1f2;">
+                        <div style="font-weight: bold; color: #be123c; margin-bottom: 6px;">IV. WRITING</div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: #9f1239;">បានបញ្ជូន (${studentWriting.trim().split(/\s+/).length} ពាក្យ)</div>
+                        <div style="font-size: 0.85rem; color: #881337; margin-top: 4px;">(រង់ចាំគ្រូដាក់ពិន្ទុបន្ថែម)</div>
+                    </div>
+                    ` : ''}
                 </div>
 
                 <!-- Detailed Answers Review -->
@@ -1056,6 +1108,17 @@
                         </div>
                     `).join('')}
                 </div>
+
+                ${(studentWriting && studentWriting.trim().length > 0) ? `
+                <h4 style="color: #be123c; margin-top: 25px;">ផ្នែកទី IV: WRITING SECTION (សំណួរសរសេរ)</h4>
+                <div class="review-item" style="border-left-color: #e11d48; background: #fff1f2;">
+                    <div style="font-weight: bold; color: #9f1239; margin-bottom: 6px;">📝 អត្ថបទតែងសេចក្តីដែលអ្នកបានសរសេរ (${studentWriting.trim().split(/\s+/).length} ពាក្យ)៖</div>
+                    <div style="white-space: pre-wrap; font-style: italic; line-height: 1.6; color: #881337;">${escapeHtml(studentWriting)}</div>
+                    <div style="margin-top: 10px; font-size: 0.85rem; color: #be123c; font-weight: bold;">
+                        ✓ អត្ថបទនេះត្រូវបានរក្សាទុកក្នុងប្រព័ន្ធដោយជោគជ័យ ដើម្បីឱ្យលោកគ្រូ/អ្នកគ្រូវាយតម្លៃ និងបញ្ចូលពិន្ទុក្នុងបញ្ជីពិន្ទុ។
+                    </div>
+                </div>
+                ` : ''}
 
                 <div style="text-align: center; margin-top: 35px;">
                     <a href="/test/logout" style="display: inline-block; padding: 12px 30px; background: var(--primary); color:white; text-decoration:none; border-radius:8px; font-weight: bold; font-size: 1rem;">ចាកចេញ (Logout)</a>

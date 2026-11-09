@@ -345,9 +345,15 @@
                     </div>
 
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px;">
-                        <div style="font-weight: bold; color: #1e3a8a; margin-bottom: 10px;">ចម្លើយត្រូវសម្រាប់ចន្លោះទាំង ១០ (Correct word for each gap):</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                            <div style="font-weight: bold; color: #1e3a8a;">ចម្លើយត្រូវសម្រាប់ចន្លោះនីមួយៗ (Correct word for each gap):</div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-sm" onclick="addEnGap()" style="background: #2563eb; color: white; border: none; padding: 5px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">➕ បន្ថែមចន្លោះ (Add Gap)</button>
+                                <button type="button" class="btn btn-sm" onclick="removeLastEnGap()" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">➖ លុបចន្លោះចុងក្រោយ</button>
+                            </div>
+                        </div>
                         <div id="enGapsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;">
-                            <!-- 10 gap inputs rendered by JS -->
+                            <!-- gap inputs rendered by JS -->
                         </div>
                     </div>
                 </div>
@@ -367,6 +373,7 @@
                         <input type="text" id="enSec2Instruction" class="form-control" style="width: 100%;" value="Choose the best and correct only one answer A, B, C or D as the following: (15pts)">
                     </div>
                     <div id="enGrammarContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addEnGrammarQuestion()" style="margin-top: 12px; background: #0d9488; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរ Grammar</button>
                 </div>
 
                 <!-- Section III: Vocabulary Section -->
@@ -384,6 +391,37 @@
                         <input type="text" id="enSec3Instruction" class="form-control" style="width: 100%;" value="Choose the best and correct only one answer A, B, C or D as the following: (15pts)">
                     </div>
                     <div id="enVocabContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addEnVocabQuestion()" style="margin-top: 12px; background: #7c3aed; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរ Vocabulary</button>
+                </div>
+
+                <!-- Section IV: Writing Section -->
+                <div class="exam-section" style="border-left-color: #e11d48;" id="section-english-writing">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
+                        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; color: #be123c; font-size: 1.15rem; margin: 0;">
+                            <input type="checkbox" id="enWritingEnabled" onchange="toggleEnWritingSection()" style="width: 20px; height: 20px; cursor: pointer;" checked>
+                            <span>ផ្នែក IV៖ WRITING SECTION (សំណួរសរសេរតែងសេចក្តី)</span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <label style="font-weight: bold; font-size: 0.88rem; color: #475569;">ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="enWritingMaxPoints" class="form-control" style="width: 80px; text-align: center; font-weight: bold; color: #be123c;" value="15" min="1" max="50">
+                            <span style="font-weight: bold; font-size: 0.88rem; color: #475569;">ពិន្ទុ (pts)</span>
+                        </div>
+                    </div>
+
+                    <div id="enWritingContent" style="display: block;">
+                        <div style="margin-bottom: 14px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក (Section Title)</label>
+                            <input type="text" id="enSec4Title" class="form-control" style="width: 100%;" value="IV. WRITING SECTION:">
+                        </div>
+                        <div style="margin-bottom: 14px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ (Instruction)</label>
+                            <input type="text" id="enSec4Instruction" class="form-control" style="width: 100%;" value="Write a short composition (80-120 words) on the topic given below: (15pts)">
+                        </div>
+                        <div style="margin-bottom: 14px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ប្រធានបទសរសេរ (Writing Topic / Prompt)</label>
+                            <textarea id="enWritingPrompt" class="form-control" rows="4" style="width: 100%; font-family: inherit; font-size: 0.98rem; line-height: 1.5;" placeholder="Enter writing topic or questions for students to write essay about...">Write a letter to your friend telling them about your school life, your favorite subjects, and your plans after completing high school.</textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -492,8 +530,7 @@
             const optD = qData ? (qData.optionD || '') : '';
             const correct = qData ? (qData.correctOption || 'A') : 'A';
             const numLabel = fixedNum !== null ? `សំណួរទី ${fixedNum}៖` : 'សំណួរ៖';
-            const deleteBtn = (skillType === 'general') ? 
-                `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge();">លុបសំណួរ</button>` : '';
+            const deleteBtn = `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge();">លុបសំណួរ</button>`;
             
             div.innerHTML = `
                 ${deleteBtn}
@@ -543,35 +580,96 @@
             updateQuestionBadge();
         }
 
+        function toggleEnWritingSection() {
+            const enabled = document.getElementById('enWritingEnabled').checked;
+            document.getElementById('enWritingContent').style.display = enabled ? 'block' : 'none';
+        }
+
+        let enGapCounter = 0;
+
+        function addEnGap(val = '') {
+            enGapCounter++;
+            const i = enGapCounter;
+            const container = document.getElementById('enGapsContainer');
+            if (!container) return;
+
+            const div = document.createElement('div');
+            div.id = `gap_card_${i}`;
+            div.className = 'en-gap-card';
+            div.style.cssText = 'background: white; padding: 10px 12px; border-radius: 6px; border: 1px solid #cbd5e1; position: relative;';
+            div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-weight: bold; color: #1e3a8a; font-size: 0.9rem;">Gap ${i}:</span>
+                    <button type="button" onclick="this.closest('.en-gap-card').remove(); renumberEnGaps();" style="border: none; background: #fee2e2; color: #ef4444; border-radius: 4px; padding: 1px 6px; font-size: 0.75rem; cursor: pointer; font-weight: bold;">✕</button>
+                </div>
+                <input type="text" id="en_gap_${i}" class="form-control en-gap-input" placeholder="ពាក្យត្រូវចន្លោះទី ${i}..." style="width: 100%; font-size: 0.92rem;" value="${escapeHtml(val)}">
+            `;
+            container.appendChild(div);
+        }
+
+        function removeLastEnGap() {
+            const container = document.getElementById('enGapsContainer');
+            if (container && container.lastElementChild) {
+                container.lastElementChild.remove();
+                renumberEnGaps();
+            }
+        }
+
+        function renumberEnGaps() {
+            const cards = document.querySelectorAll('.en-gap-card');
+            enGapCounter = cards.length;
+            cards.forEach((card, idx) => {
+                const num = idx + 1;
+                card.id = `gap_card_${num}`;
+                const label = card.querySelector('span');
+                if (label) label.textContent = `Gap ${num}:`;
+                const input = card.querySelector('input');
+                if (input) {
+                    input.id = `en_gap_${num}`;
+                    input.placeholder = `ពាក្យត្រូវចន្លោះទី ${num}...`;
+                }
+            });
+        }
+
+        function addEnGrammarQuestion(qData = null) {
+            const container = document.getElementById('enGrammarContainer');
+            if (container) {
+                const currentCount = container.children.length + 1;
+                container.appendChild(createQuestionCard('grammar', qData, currentCount, true));
+            }
+        }
+
+        function addEnVocabQuestion(qData = null) {
+            const container = document.getElementById('enVocabContainer');
+            if (container) {
+                const currentCount = container.children.length + 1;
+                container.appendChild(createQuestionCard('vocabulary', qData, currentCount, true));
+            }
+        }
+
         function initEnglishContainers() {
-            // Render 10 gap inputs
+            // Render 10 gap inputs if empty
             const gapsContainer = document.getElementById('enGapsContainer');
             if (gapsContainer && gapsContainer.children.length === 0) {
-                let html = '';
+                enGapCounter = 0;
                 for (let i = 1; i <= 10; i++) {
-                    html += `
-                        <div style="background: white; padding: 10px 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                            <div style="font-weight: bold; color: #1e3a8a; font-size: 0.9rem; margin-bottom: 4px;">Gap ${i}:</div>
-                            <input type="text" id="en_gap_${i}" class="form-control en-gap-input" placeholder="ពាក្យត្រូវចន្លោះទី ${i}..." style="width: 100%; font-size: 0.92rem;">
-                        </div>
-                    `;
+                    addEnGap();
                 }
-                gapsContainer.innerHTML = html;
             }
 
-            // Render 5 Grammar items
+            // Render 5 Grammar items if empty
             const gramContainer = document.getElementById('enGrammarContainer');
             if (gramContainer && gramContainer.children.length === 0) {
                 for (let i = 1; i <= 5; i++) {
-                    gramContainer.appendChild(createQuestionCard('grammar', null, i));
+                    addEnGrammarQuestion();
                 }
             }
 
-            // Render 5 Vocab items
+            // Render 5 Vocab items if empty
             const vocContainer = document.getElementById('enVocabContainer');
             if (vocContainer && vocContainer.children.length === 0) {
                 for (let i = 1; i <= 5; i++) {
-                    vocContainer.appendChild(createQuestionCard('vocabulary', null, i));
+                    addEnVocabQuestion();
                 }
             }
         }
@@ -665,6 +763,14 @@
                     if (r) r.checked = true;
                 }
             });
+
+            // Populate Section IV: Writing
+            document.getElementById('enWritingEnabled').checked = true;
+            document.getElementById('enWritingContent').style.display = 'block';
+            document.getElementById('enSec4Title').value = 'IV. WRITING SECTION:';
+            document.getElementById('enSec4Instruction').value = 'Write a short composition (80-120 words) on the topic given below: (15pts)';
+            document.getElementById('enWritingPrompt').value = 'Write a letter to your friend telling them about your school life, your favorite subjects, and your plans after completing high school.';
+            document.getElementById('enWritingMaxPoints').value = 15;
 
             // Populate Section III: Vocabulary
             const vocData = [
@@ -794,42 +900,45 @@
             document.getElementById('enSec3Title').value = exam.section3Title || 'III. VOCABULARY SECTION:';
             document.getElementById('enSec3Instruction').value = exam.section3Instruction || 'Choose the best and correct only one answer A, B, C or D as the following: (15pts)';
 
+            // Section IV Writing
+            const hasWriting = !!(exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            document.getElementById('enWritingEnabled').checked = hasWriting;
+            document.getElementById('enWritingContent').style.display = hasWriting ? 'block' : 'none';
+            document.getElementById('enSec4Title').value = exam.section4Title || 'IV. WRITING SECTION:';
+            document.getElementById('enSec4Instruction').value = exam.section4Instruction || 'Write a short composition (80-120 words) on the topic given below: (15pts)';
+            document.getElementById('enWritingPrompt').value = exam.writingPrompt || '';
+            document.getElementById('enWritingMaxPoints').value = exam.writingMaxPoints || 15;
+
+            // Populate Gaps dynamically
             const gaps = questions.filter(q => q.skillType === 'gaps_filling');
-            for (let i = 1; i <= 10; i++) {
-                const el = document.getElementById(`en_gap_${i}`);
-                const q = gaps[i - 1];
-                if (el) el.value = q ? (q.correctOption || '') : '';
+            const gapsContainer = document.getElementById('enGapsContainer');
+            gapsContainer.innerHTML = '';
+            enGapCounter = 0;
+            if (gaps.length > 0) {
+                gaps.forEach(q => addEnGap(q.correctOption || ''));
+            } else {
+                for (let i = 1; i <= 10; i++) addEnGap();
             }
 
+            // Populate Grammar dynamically
             const grammar = questions.filter(q => q.skillType === 'grammar');
-            const gramCards = document.querySelectorAll('#enGrammarContainer .question-card');
-            gramCards.forEach((card, idx) => {
-                const q = grammar[idx];
-                if (q) {
-                    card.querySelector('.q-text').value = q.questionText || '';
-                    card.querySelector('.q-optA').value = q.optionA || '';
-                    card.querySelector('.q-optB').value = q.optionB || '';
-                    card.querySelector('.q-optC').value = q.optionC || '';
-                    card.querySelector('.q-optD').value = q.optionD || '';
-                    const r = card.querySelector(`input[value="${q.correctOption}"]`);
-                    if (r) r.checked = true;
-                }
-            });
+            const gramContainer = document.getElementById('enGrammarContainer');
+            gramContainer.innerHTML = '';
+            if (grammar.length > 0) {
+                grammar.forEach(q => addEnGrammarQuestion(q));
+            } else {
+                for (let i = 1; i <= 5; i++) addEnGrammarQuestion();
+            }
 
+            // Populate Vocab dynamically
             const vocab = questions.filter(q => q.skillType === 'vocabulary');
-            const vocCards = document.querySelectorAll('#enVocabContainer .question-card');
-            vocCards.forEach((card, idx) => {
-                const q = vocab[idx];
-                if (q) {
-                    card.querySelector('.q-text').value = q.questionText || '';
-                    card.querySelector('.q-optA').value = q.optionA || '';
-                    card.querySelector('.q-optB').value = q.optionB || '';
-                    card.querySelector('.q-optC').value = q.optionC || '';
-                    card.querySelector('.q-optD').value = q.optionD || '';
-                    const r = card.querySelector(`input[value="${q.correctOption}"]`);
-                    if (r) r.checked = true;
-                }
-            });
+            const vocContainer = document.getElementById('enVocabContainer');
+            vocContainer.innerHTML = '';
+            if (vocab.length > 0) {
+                vocab.forEach(q => addEnVocabQuestion(q));
+            } else {
+                for (let i = 1; i <= 5; i++) addEnVocabQuestion();
+            }
         }
 
         function onClassCheckboxChanged() {
@@ -914,6 +1023,7 @@
                     });
                 });
 
+                const writingEnabled = document.getElementById('enWritingEnabled').checked;
                 payload = {
                     id: examId ? parseInt(examId) : null,
                     month: month,
@@ -927,6 +1037,10 @@
                     section2Instruction: document.getElementById('enSec2Instruction').value,
                     section3Title: document.getElementById('enSec3Title').value,
                     section3Instruction: document.getElementById('enSec3Instruction').value,
+                    section4Title: writingEnabled ? document.getElementById('enSec4Title').value : null,
+                    section4Instruction: writingEnabled ? document.getElementById('enSec4Instruction').value : null,
+                    writingPrompt: writingEnabled ? document.getElementById('enWritingPrompt').value : null,
+                    writingMaxPoints: writingEnabled ? parseInt(document.getElementById('enWritingMaxPoints').value || 15) : null,
                     questions: questions
                 };
 

@@ -86,4 +86,22 @@ public class Exam {
 
     public String getSection3Instruction() { return section3Instruction; }
     public void setSection3Instruction(String section3Instruction) { this.section3Instruction = section3Instruction; }
+
+    private String section4Title;
+    private String section4Instruction;
+    @Column(columnDefinition = "TEXT")
+    private String writingPrompt;
+    private Integer writingMaxPoints;
+
+    public String getSection4Title() { return section4Title; }
+    public void setSection4Title(String section4Title) { this.section4Title = section4Title; }
+
+    public String getSection4Instruction() { return section4Instruction; }
+    public void setSection4Instruction(String section4Instruction) { this.section4Instruction = section4Instruction; }
+
+    public String getWritingPrompt() { return writingPrompt; }
+    public void setWritingPrompt(String writingPrompt) { this.writingPrompt = writingPrompt; }
+
+    public Integer getWritingMaxPoints() { return writingMaxPoints; }
+    public void setWritingMaxPoints(Integer writingMaxPoints) { this.writingMaxPoints = writingMaxPoints; }
 }

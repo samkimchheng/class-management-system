@@ -60,4 +60,15 @@ private Long studentId;
 
     public String getAcademicYear() { return academicYear; }
     public void setAcademicYear(String academicYear) { this.academicYear = academicYear; }
+
+    @Column(columnDefinition = "TEXT")
+    private String studentWriting;
+
+    private Double writingScore;
+
+    public String getStudentWriting() { return studentWriting; }
+    public void setStudentWriting(String studentWriting) { this.studentWriting = studentWriting; }
+
+    public Double getWritingScore() { return writingScore; }
+    public void setWritingScore(Double writingScore) { this.writingScore = writingScore; }
 }

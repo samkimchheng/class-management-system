@@ -68,11 +68,15 @@ public class StudentPortalApiController {
                     return stuAccId != 98L && exAccId != 98L;
                 })
                 .filter(e -> ExamApiController.classMatches(e.getClassName(), student.getClassName()))
+                .sorted((a, b) -> Long.compare(b.getId(), a.getId()))
                 .findFirst();
 
         if (examOpt.isPresent()) {
             Exam exam = examOpt.get();
             List<Question> questions = questionRepository.findByExamIdAndAccountId(exam.getId(), exam.getAccountId());
+            if (questions.isEmpty()) {
+                questions = questionRepository.findAll().stream().filter(q -> exam.getId().equals(q.getExamId())).toList();
+            }
             return ResponseEntity.ok(Map.of("exam", exam, "questions", questions));
         }
         return ResponseEntity.notFound().build();
@@ -98,6 +102,9 @@ public class StudentPortalApiController {
         }
 
         score.setMonthlyScore(payload.getTotalScore());
+        if (payload.getStudentWriting() != null && !payload.getStudentWriting().trim().isEmpty()) {
+            score.setStudentWriting(payload.getStudentWriting().trim());
+        }
         score.setTotal(score.getMonthlyScore() + score.getAttendanceScore() + score.getAssignmentScore());
 
         scoreRepository.save(score);
@@ -252,6 +259,10 @@ public class StudentPortalApiController {
         public void setSubjectName(String subjectName) { this.subjectName = subjectName; }
         public double getTotalScore() { return totalScore; }
         public void setTotalScore(double totalScore) { this.totalScore = totalScore; }
+
+        private String studentWriting;
+        public String getStudentWriting() { return studentWriting; }
+        public void setStudentWriting(String studentWriting) { this.studentWriting = studentWriting; }
     }
 
     public static class LeaveRequestPayload {
