@@ -39,6 +39,9 @@ public class LessonController {
     private ClassroomRepository classroomRepository;
 
     @Autowired
+    private com.nubb.classroom.config.StandardLessonSeeder standardLessonSeeder;
+
+    @Autowired
     private HttpSession session;
 
     @ModelAttribute("myClassrooms")
@@ -196,9 +199,19 @@ public class LessonController {
                 session.setAttribute("loggedInStudent", student);
             }
 
+            if (student != null && student.getAccountId() != null) {
+                List<Lesson> checkLessons = lessonRepository.findByAccountIdOrderByIdAsc(student.getAccountId());
+                if (checkLessons.isEmpty()) {
+                    standardLessonSeeder.seedLessonsForTeacher(student.getAccountId());
+                }
+            }
             lessons = resolveLessonsForStudent(lessonRepository, student);
         } else if (accountId != null) {
             List<Lesson> accountLessons = lessonRepository.findByAccountIdOrderByIdAsc(accountId);
+            if (accountLessons.isEmpty()) {
+                standardLessonSeeder.seedLessonsForTeacher(accountId);
+                accountLessons = lessonRepository.findByAccountIdOrderByIdAsc(accountId);
+            }
 
             if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
                 for (Lesson l : accountLessons) {

@@ -14,6 +14,8 @@ import java.util.List;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
+    List<Attendance> findByStudentId(Long studentId);
+    List<Attendance> findByStudent(Student student);
     List<Attendance> findByStudentIdAndDateBetween(Long studentId, LocalDate start, LocalDate end);
     List<Attendance> findByDateBetween(LocalDate start, LocalDate end);
     List<Attendance> findByStudentInAndDateBetween(List<Student> students, LocalDate start, LocalDate end);

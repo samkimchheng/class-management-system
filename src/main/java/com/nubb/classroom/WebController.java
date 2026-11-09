@@ -2402,6 +2402,7 @@ return "scores";
         if (student.getId() != null) { student = studentRepository.findById(student.getId()).orElse(student); session.setAttribute("loggedInStudent", student); }
         session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
         model.addAttribute("student", student);
+        model.addAttribute("attendanceSummary", com.nubb.classroom.controller.StudentPortalApiController.calculateAttendanceSummary(student, attendanceRepository));
         return "take-exam";
     }
 
@@ -2439,6 +2440,7 @@ return "scores";
         model.addAttribute("pendingCount", pendingCount);
         model.addAttribute("rejectedCount", rejectedCount);
         model.addAttribute("totalLeaveDays", totalLeaveDays);
+        model.addAttribute("attendanceSummary", com.nubb.classroom.controller.StudentPortalApiController.calculateAttendanceSummary(student, attendanceRepository));
         model.addAttribute("today", LocalDate.now().toString());
         return "student-leave";
     }

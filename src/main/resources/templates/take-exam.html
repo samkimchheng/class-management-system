@@ -450,6 +450,56 @@
             </div>
         </div>
 
+        <!-- Student Attendance Summary Banner -->
+        <div class="student-attendance-banner" style="margin-bottom: 22px; background: white; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); overflow: hidden;">
+            <div style="padding: 12px 18px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <div style="font-weight: 700; color: #1e293b; font-size: 0.98rem; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.15rem;">📊</span>
+                    <span>ស្ថិតិវត្តមាន និងអវត្តមានរបស់ខ្ញុំ</span>
+                    <span style="font-size: 0.82rem; font-weight: 600; color: #64748b; background: #e2e8f0; padding: 2px 8px; border-radius: 12px;" th:if="${student.academicYear != null}" th:text="'ឆ្នាំសិក្សា ' + ${student.academicYear}">ឆ្នាំសិក្សា ២០២៦-២០២៧</span>
+                </div>
+                <div>
+                    <a href="/test/leave" style="font-size: 0.85rem; font-weight: 700; color: #0284c7; text-decoration: none; background: #e0f2fe; padding: 5px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;">
+                        <span>📋</span> ស្នើសុំច្បាប់ឈប់សម្រាក
+                    </a>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; padding: 14px 18px;">
+                <!-- Total Absences -->
+                <div style="background: #fff5f5; border: 1.5px solid #fed7d7; border-radius: 12px; padding: 14px 12px; text-align: center;">
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #c53030; margin-bottom: 4px;">អវត្តមានសរុប</div>
+                    <div style="font-size: 1.55rem; font-weight: 800; color: #9b2c2c;" th:text="${attendanceSummary != null ? attendanceSummary.totalAbsences + ' ដង' : '0 ដង'}">0 ដង</div>
+                    <div style="font-size: 0.78rem; color: #e53e3e; margin-top: 3px;">
+                        អវត្តមាន <span style="font-weight: 700;" th:text="${attendanceSummary != null ? attendanceSummary.absenceRate + '%' : '0%'}">0%</span>
+                    </div>
+                </div>
+                <!-- Excused Absences -->
+                <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 14px 12px; text-align: center;">
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #15803d; margin-bottom: 4px;">មានច្បាប់</div>
+                    <div style="font-size: 1.55rem; font-weight: 800; color: #166534;" th:text="${attendanceSummary != null ? attendanceSummary.permissionCount + ' ដង' : '0 ដង'}">0 ដង</div>
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #16a34a; margin-top: 3px;">
+                        <span th:text="${attendanceSummary != null ? attendanceSummary.permissionPercent + '%' : '0%'}">0%</span> <span style="font-weight: normal; font-size: 0.73rem; color: #4b5563;">នៃអវត្តមាន</span>
+                    </div>
+                </div>
+                <!-- Unexcused Absences -->
+                <div style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 12px; padding: 14px 12px; text-align: center;">
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #be123c; margin-bottom: 4px;">គ្មានច្បាប់</div>
+                    <div style="font-size: 1.55rem; font-weight: 800; color: #9f1239;" th:text="${attendanceSummary != null ? attendanceSummary.unexcusedCount + ' ដង' : '0 ដង'}">0 ដង</div>
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #e11d48; margin-top: 3px;">
+                        <span th:text="${attendanceSummary != null ? attendanceSummary.unexcusedPercent + '%' : '0%'}">0%</span> <span style="font-weight: normal; font-size: 0.73rem; color: #4b5563;">នៃអវត្តមាន</span>
+                    </div>
+                </div>
+                <!-- Attendance Rate % -->
+                <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px 12px; text-align: center;">
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #1d4ed8; margin-bottom: 4px;">ភាគរយវត្តមាន</div>
+                    <div style="font-size: 1.55rem; font-weight: 800; color: #1e40af;" th:text="${attendanceSummary != null ? attendanceSummary.attendanceRate + '%' : '100%'}">100%</div>
+                    <div style="font-size: 0.78rem; color: #2563eb; margin-top: 3px;">
+                        វត្តមានល្អប្រសើរ
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="examContent">
             <!-- Questions or 3-Section Exam rendered here -->
         </div>

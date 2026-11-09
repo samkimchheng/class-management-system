@@ -108,6 +108,92 @@ public class StudentPortalApiController {
         return ResponseEntity.ok(Map.of("success", true, "totalScore", payload.getTotalScore()));
     }
 
+    @GetMapping("/attendance-summary")
+    public ResponseEntity<?> getAttendanceSummary(HttpSession session) {
+        Student student = (Student) session.getAttribute("loggedInStudent");
+        if (student == null) return ResponseEntity.status(401).build();
+        if (student.getId() != null) {
+            student = studentRepository.findById(student.getId()).orElse(student);
+            session.setAttribute("loggedInStudent", student);
+        }
+        return ResponseEntity.ok(calculateAttendanceSummary(student, attendanceRepository));
+    }
+
+    public static Map<String, Object> calculateAttendanceSummary(Student student, AttendanceRepository attendanceRepository) {
+        Map<String, Object> res = new LinkedHashMap<>();
+        if (student == null || student.getId() == null) {
+            res.put("totalAbsences", 0L);
+            res.put("permissionCount", 0L);
+            res.put("unexcusedCount", 0L);
+            res.put("permissionPercent", 0.0);
+            res.put("unexcusedPercent", 0.0);
+            res.put("attendanceRate", 100.0);
+            res.put("absenceRate", 0.0);
+            res.put("recordedDays", 0L);
+            res.put("presentDays", 0L);
+            return res;
+        }
+
+        List<Attendance> list = attendanceRepository.findByStudentId(student.getId());
+        if (list == null) list = Collections.emptyList();
+
+        List<Attendance> absences = list.stream().filter(a -> !a.isPresent()).toList();
+
+        Set<LocalDate> allDates = new HashSet<>();
+        Set<LocalDate> permDates = new HashSet<>();
+        Set<LocalDate> unexcusedDates = new HashSet<>();
+
+        for (Attendance a : absences) {
+            LocalDate d = a.getDate();
+            if (d != null) {
+                allDates.add(d);
+                if (a.isPermission()) {
+                    permDates.add(d);
+                } else {
+                    unexcusedDates.add(d);
+                }
+            }
+        }
+
+        long totalAbsences = allDates.size();
+        long permCount = permDates.size();
+        long unexcusedCount = Math.max(0, totalAbsences - permCount);
+
+        double permPercent = totalAbsences > 0 ? Math.round((permCount * 1000.0) / totalAbsences) / 10.0 : 0.0;
+        double unexcusedPercent = totalAbsences > 0 ? Math.round((unexcusedCount * 1000.0) / totalAbsences) / 10.0 : 0.0;
+
+        Long accountId = student.getAccountId();
+        long recordedDays = 0;
+        try {
+            if (accountId != null) {
+                recordedDays = attendanceRepository.findAll().stream()
+                        .filter(a -> Objects.equals(a.getAccountId(), accountId))
+                        .map(Attendance::getDate)
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .count();
+            }
+        } catch (Exception ignored) {}
+
+        if (recordedDays < totalAbsences) {
+            recordedDays = Math.max(totalAbsences, 1);
+        }
+        long presentDays = Math.max(0, recordedDays - totalAbsences);
+        double attendanceRate = recordedDays > 0 ? Math.round((presentDays * 1000.0) / recordedDays) / 10.0 : 100.0;
+        double absenceRate = recordedDays > 0 ? Math.round((totalAbsences * 1000.0) / recordedDays) / 10.0 : 0.0;
+
+        res.put("totalAbsences", totalAbsences);
+        res.put("permissionCount", permCount);
+        res.put("unexcusedCount", unexcusedCount);
+        res.put("permissionPercent", permPercent);
+        res.put("unexcusedPercent", unexcusedPercent);
+        res.put("attendanceRate", attendanceRate);
+        res.put("absenceRate", absenceRate);
+        res.put("recordedDays", recordedDays);
+        res.put("presentDays", presentDays);
+        return res;
+    }
+
     @GetMapping("/leave-requests")
     public ResponseEntity<?> getMyLeaveRequests(HttpSession session) {
         Student student = (Student) session.getAttribute("loggedInStudent");

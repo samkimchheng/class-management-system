@@ -226,6 +226,7 @@ public class DataInitializer {
                                      LessonRepository lessonRepository,
                                      ExamRepository examRepository,
                                      QuestionRepository questionRepository,
+                                     StandardLessonSeeder standardLessonSeeder,
                                      DataSource dataSource) {
         return args -> {
             // 1. Schema migration: Ensure active and profile columns exist in account table
@@ -329,26 +330,12 @@ public class DataInitializer {
                 }
             }
 
-            // 2c. Clean up legacy pre-seeded sample lessons (IDs 33, 65, 97, 98, 99) that the teacher deleted
-            try (Connection conn = dataSource.getConnection();
-                 Statement stmt = conn.createStatement()) {
-                String[] oldLessonCleanups = {
-                    "DELETE FROM lesson_progress WHERE lesson_id IN (SELECT id FROM lessons WHERE id IN (33, 65, 97, 98, 99) AND (title LIKE 'Unit1%' OR title LIKE 'Unit2%' OR title LIKE 'Unit3%' OR title LIKE 'Unit4%' OR title LIKE 'Unit5%'))",
-                    "DELETE FROM \"LESSON_PROGRESS\" WHERE \"LESSON_ID\" IN (SELECT \"ID\" FROM \"LESSONS\" WHERE \"ID\" IN (33, 65, 97, 98, 99) AND (\"TITLE\" LIKE 'Unit1%' OR \"TITLE\" LIKE 'Unit2%' OR \"TITLE\" LIKE 'Unit3%' OR \"TITLE\" LIKE 'Unit4%' OR \"TITLE\" LIKE 'Unit5%'))",
-                    "DELETE FROM lesson_transcripts WHERE lesson_id IN (SELECT id FROM lessons WHERE id IN (33, 65, 97, 98, 99) AND (title LIKE 'Unit1%' OR title LIKE 'Unit2%' OR title LIKE 'Unit3%' OR title LIKE 'Unit4%' OR title LIKE 'Unit5%'))",
-                    "DELETE FROM \"LESSON_TRANSCRIPTS\" WHERE \"LESSON_ID\" IN (SELECT \"ID\" FROM \"LESSONS\" WHERE \"ID\" IN (33, 65, 97, 98, 99) AND (\"TITLE\" LIKE 'Unit1%' OR \"TITLE\" LIKE 'Unit2%' OR \"TITLE\" LIKE 'Unit3%' OR \"TITLE\" LIKE 'Unit4%' OR \"TITLE\" LIKE 'Unit5%'))",
-                    "DELETE FROM lessons WHERE id IN (33, 65, 97, 98, 99) AND (title LIKE 'Unit1%' OR title LIKE 'Unit2%' OR title LIKE 'Unit3%' OR title LIKE 'Unit4%' OR title LIKE 'Unit5%')",
-                    "DELETE FROM \"LESSONS\" WHERE \"ID\" IN (33, 65, 97, 98, 99) AND (\"TITLE\" LIKE 'Unit1%' OR \"TITLE\" LIKE 'Unit2%' OR \"TITLE\" LIKE 'Unit3%' OR \"TITLE\" LIKE 'Unit4%' OR \"TITLE\" LIKE 'Unit5%')"
-                };
-                for (String q : oldLessonCleanups) {
-                    try { stmt.executeUpdate(q); } catch (Exception ignored) {}
-                }
-                if (isPostgres) {
-                    try { stmt.execute("SELECT setval(pg_get_serial_sequence('lessons', 'id'), GREATEST((SELECT COALESCE(MAX(id), 100) FROM lessons), 100))"); } catch (Exception ignored) {}
-                    try { stmt.execute("SELECT setval(pg_get_serial_sequence('lesson_transcripts', 'id'), GREATEST((SELECT COALESCE(MAX(id), 100) FROM lesson_transcripts), 100))"); } catch (Exception ignored) {}
-                    try { stmt.execute("SELECT setval(pg_get_serial_sequence('lesson_progress', 'id'), GREATEST((SELECT COALESCE(MAX(id), 100) FROM lesson_progress), 100))"); } catch (Exception ignored) {}
-                }
-            } catch (Exception ignored) {}
+            // 2c. Ensure standard English audio lessons (Unit 1 to Unit 5) and transcripts exist for all teachers
+            try {
+                standardLessonSeeder.seedLessonsForAllTeachers();
+            } catch (Exception e) {
+                System.err.println(">>> [DataInitializer] Notice seeding standard lessons: " + e.getMessage());
+            }
 
             // 2d. Ensure default schedule exists for Sam Kimchheng if empty
             try (Connection conn = dataSource.getConnection();
@@ -661,9 +648,9 @@ public class DataInitializer {
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
                 // Ensure account 98 exists
-                stmt.executeUpdate("INSERT INTO account (id, username, password, email, role, full_name, active, gender, school_name, province, position, teaching_classes, principal_name, current_academic_year) " +
-                        "VALUES (98, 'demo', 'demo@1234', 'demo@mitpukae.com', 'TEACHER', 'គ្រូបង្រៀន (គណនីសាកល្បង)', true, 'ប្រុស', 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត', 'ខេត្តពោធិ៍សាត់', 'គ្រូបង្រៀន (សាកល្បង)', 'ថ្នាក់សាកល្បង', 'លី ប៊ុនថេង', '២០២៦-២០២៧') " +
-                        "ON CONFLICT (id) DO NOTHING");
+                stmt.execute("INSERT INTO account (id, username, password, email, role, full_name, active, gender, school_name, province, position, teaching_classes, principal_name, current_academic_year) " +
+                        "SELECT 98, 'demo', 'demo@1234', 'demo@mitpukae.com', 'TEACHER', 'គ្រូបង្រៀន (គណនីសាកល្បង)', true, 'ប្រុស', 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត', 'ខេត្តពោធិ៍សាត់', 'គ្រូបង្រៀន (សាកល្បង)', 'ថ្នាក់សាកល្បង', 'លី ប៊ុនថេង', '២០២៦-២០២៧' " +
+                        "WHERE NOT EXISTS (SELECT 1 FROM account WHERE id = 98 OR username = 'demo')");
 
                 // Ensure classroom exists
                 stmt.execute("INSERT INTO classroom (account_id, class_name, academic_year) " +
