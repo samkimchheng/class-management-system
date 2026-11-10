@@ -594,22 +594,31 @@
             <li class="nav-item"><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
             <li class="nav-item"><a href="/feedback" class="nav-link"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
         </ul>
+    
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);"><span>🔐</span> <span>ផ្ទាំង Admin</span></a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
+            </ul>
+        </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
         <!-- Topbar -->
         <div class="topbar">
-            <div style="font-weight: 700; font-size: 1.15rem; color: #0f172a;">
+            <div class="topbar-left" style="font-weight: 700; font-size: 1.15rem; color: #0f172a;">
                 <span>🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (Grade 10 English Vocabulary)</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <span class="unit-badge" style="background: #eef2ff; color: #3730a3; border-color: #c7d2fe;">
                     📅 ឆ្នាំសិក្សា៖ <b th:text="${teacherAccount.currentAcademicYear != null ? teacherAccount.currentAcademicYear : '២០២៦-២០២៧'}">២០២៦-២០២៧</b>
                 </span>
                 <span style="font-size: 0.9rem; color: #475569;">
                     គ្រូទទួលបន្ទុក៖ <b th:text="${teacherAccount.fullName}">សំ គឹមឆេង</b>
                 </span>
+            
+                <a href="/logout" class="btn-logout-header" title="ចាកចេញពីប្រព័ន្ធ" style="background: #fee2e2; color: #b91c1c; text-decoration: none; font-weight: 700; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; border: 1px solid #fecaca; transition: all 0.2s; white-space: nowrap;"><span>🚪</span> <span>ចាកចេញ</span></a>
             </div>
         </div>
 
@@ -1080,5 +1089,7 @@
             });
         }
     </script>
+    <script src="/js/logout-confirm.js"></script>
+    <script src="/js/mobile-nav.js?v=20261029h"></script>
 </body>
 </html>

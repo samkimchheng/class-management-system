@@ -116,8 +116,9 @@
                 <h3>💬 គ្រប់គ្រងមតិកែលម្អ និងសំណូមពរពីគ្រូបង្រៀន</h3>
                 <span style="font-size: 0.88rem; color: #64748b;">ពិនិត្យចំណុចខ្វះខាត ផ្លាស់ប្តូរស្ថានភាព និងឆ្លើយតបទៅកាន់លោកគ្រូអ្នកគ្រូ</span>
             </div>
-            <div style="font-weight: 600; color: #1e293b;">
-                <span th:text="${session.ACCOUNT_NAME}">Admin Name</span>
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <span style="font-weight: 600; color: #1e293b;" th:text="${session.ACCOUNT_NAME}">Admin Name</span>
+                <a href="/logout" class="btn-logout-header" title="ចាកចេញពីប្រព័ន្ធ" style="background: #fee2e2; color: #b91c1c; text-decoration: none; font-weight: 700; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; border: 1px solid #fecaca; transition: all 0.2s; white-space: nowrap;"><span>🚪</span> <span>ចាកចេញ</span></a>
             </div>
         </div>
 
