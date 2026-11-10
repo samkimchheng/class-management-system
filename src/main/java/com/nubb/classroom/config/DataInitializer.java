@@ -506,12 +506,18 @@ public class DataInitializer {
                 String[] cleanupQueries = {
                     "DELETE FROM score WHERE student_id NOT IN (SELECT id FROM students)",
                     "DELETE FROM \"SCORE\" WHERE student_id NOT IN (SELECT id FROM \"STUDENTS\")",
-                    "DELETE FROM score WHERE account_id = 33 AND (class_name = '7A' OR student_id = 6)",
-                    "DELETE FROM \"SCORE\" WHERE account_id = 33 AND (class_name = '7A' OR student_id = 6)",
-                    "DELETE FROM classroom WHERE account_id = 33 AND class_name = '10E'",
-                    "DELETE FROM \"CLASSROOM\" WHERE account_id = 33 AND class_name = '10E'",
-                    "DELETE FROM score_rule WHERE account_id = 33",
-                    "DELETE FROM \"SCORE_RULE\" WHERE account_id = 33"
+                    "DELETE FROM attendance WHERE student_id IN (SELECT id FROM students WHERE class_name = '7A' OR class_name LIKE '%7%' OR account_id = 33)",
+                    "DELETE FROM \"ATTENDANCE\" WHERE student_id IN (SELECT id FROM \"STUDENTS\" WHERE \"CLASS_NAME\" = '7A' OR \"CLASS_NAME\" LIKE '%7%' OR \"ACCOUNT_ID\" = 33)",
+                    "DELETE FROM score WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM \"SCORE\" WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM classroom WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM \"CLASSROOM\" WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM score_rule WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM \"SCORE_RULE\" WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM score_rules WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM \"SCORE_RULES\" WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM students WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM \"STUDENTS\" WHERE \"ACCOUNT_ID\" = 33 OR \"CLASS_NAME\" = '7A' OR \"CLASS_NAME\" LIKE '%7%'"
                 };
                 for (String q : cleanupQueries) {
                     try { stmt.executeUpdate(q); } catch (Exception ignored) {}
@@ -662,9 +668,6 @@ public class DataInitializer {
 
                 // Ensure score rules for Seung Somuny (33)
                 stmt.execute("INSERT INTO score_rule (account_id, class_name, subject_name, max_monthly_score, max_attendance_score, max_assignment_score) " +
-                        "SELECT 33, '7A', 'គណិតវិទ្យា', 60, 20, 20 " +
-                        "WHERE NOT EXISTS (SELECT 1 FROM score_rule WHERE account_id = 33 AND class_name = '7A' AND subject_name = 'គណិតវិទ្យា')");
-                stmt.execute("INSERT INTO score_rule (account_id, class_name, subject_name, max_monthly_score, max_attendance_score, max_assignment_score) " +
                         "SELECT 33, 'ថ្នាក់រៀនទាំងអស់', 'គណិតវិទ្យា', 60, 20, 20 " +
                         "WHERE NOT EXISTS (SELECT 1 FROM score_rule WHERE account_id = 33 AND class_name = 'ថ្នាក់រៀនទាំងអស់' AND subject_name = 'គណិតវិទ្យា')");
             } catch (Exception e) {
@@ -698,16 +701,16 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
-            // 11. Ensure official students for 10E, 10F, 10G, 11F, 11G, 7A are seeded if missing
+            // 11. Ensure official students for 10E, 10F, 10G, 11F, 11G are seeded if missing
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
                 boolean needsStudents = false;
-                try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM students WHERE class_name IN ('១០G', '១១F', '១១G', '7A')")) {
+                try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM students WHERE class_name IN ('១០G', '១១F', '១១G')")) {
                     if (rs.next() && rs.getInt(1) < 10) {
                         needsStudents = true;
                     }
                 } catch (Exception ignored) {
-                    try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM \"STUDENTS\" WHERE \"CLASS_NAME\" IN ('១០G', '១១F', '១១G', '7A')")) {
+                    try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM \"STUDENTS\" WHERE \"CLASS_NAME\" IN ('១០G', '១១F', '១១G')")) {
                         if (rs.next() && rs.getInt(1) < 10) {
                             needsStudents = true;
                         }
@@ -717,7 +720,7 @@ public class DataInitializer {
                 }
 
                 if (needsStudents) {
-                    System.out.println(">>> [DataInitializer] Seeding official students for 10E, 10F, 10G, 11F, 11G, 7A from students_insert.sql...");
+                    System.out.println(">>> [DataInitializer] Seeding official students for 10E, 10F, 10G, 11F, 11G from students_insert.sql...");
                     try {
                         stmt.executeUpdate("DELETE FROM students WHERE id >= 101 AND id <= 500");
                     } catch (Exception ignored) {}
@@ -730,6 +733,10 @@ public class DataInitializer {
                     pop.setContinueOnError(true);
                     pop.execute(dataSource);
                     System.out.println(">>> [DataInitializer] Official students successfully seeded!");
+                    try {
+                        stmt.executeUpdate("DELETE FROM students WHERE class_name = '7A' OR class_name LIKE '%7%' OR account_id = 33");
+                        stmt.executeUpdate("DELETE FROM \"STUDENTS\" WHERE \"CLASS_NAME\" = '7A' OR \"CLASS_NAME\" LIKE '%7%' OR \"ACCOUNT_ID\" = 33");
+                    } catch (Exception ignored) {}
 
                     if (isPostgres) {
                         try (Connection connPost = dataSource.getConnection();

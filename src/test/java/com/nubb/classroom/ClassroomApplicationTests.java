@@ -14,6 +14,7 @@ import com.nubb.classroom.repository.LeaveRequestRepository;
 import com.nubb.classroom.repository.AttendanceRepository;
 import com.nubb.classroom.model.Classroom;
 import com.nubb.classroom.model.Score;
+import com.nubb.classroom.model.ScoreRule;
 import com.nubb.classroom.model.Lesson;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.model.Account;
@@ -478,5 +479,23 @@ class ClassroomApplicationTests {
                 .andExpect(model().attribute("hasTeachingToday", false))
                 .andExpect(model().attribute("presentToday", 0L))
                 .andExpect(model().attribute("absentToday", 0L));
+    }
+
+    @Test
+    void testSeungSomunyHasNoGrade7Students() {
+        Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(somuny);
+
+        // Verify Seung Somuny has 0 students in 7A or Grade 7
+        List<Student> somunyStudents = studentRepository.findByAccountId(somuny.getId());
+        assertTrue(somunyStudents.stream().noneMatch(s -> s.getClassName() != null && (s.getClassName().contains("7A") || s.getClassName().contains("7"))));
+
+        // Verify no 7A score rules exist for Seung Somuny
+        List<ScoreRule> somunyRules = scoreRuleRepository.findByAccountId(somuny.getId());
+        assertTrue(somunyRules.stream().noneMatch(r -> r.getClassName() != null && (r.getClassName().contains("7A") || r.getClassName().contains("7"))));
+
+        // Verify no 7A classrooms exist for Seung Somuny
+        List<Classroom> somunyClasses = classroomRepository.findByAccountId(somuny.getId());
+        assertTrue(somunyClasses.stream().noneMatch(c -> c.getClassName() != null && (c.getClassName().contains("7A") || c.getClassName().contains("7"))));
     }
 }

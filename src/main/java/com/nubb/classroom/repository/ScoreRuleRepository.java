@@ -11,6 +11,9 @@ public interface ScoreRuleRepository extends JpaRepository<ScoreRule, Long> {
     @Query("SELECT r FROM ScoreRule r WHERE r.className = :className AND r.subjectName = :subjectName AND r.accountId = :accountId")
     List<ScoreRule> findRules(@Param("className") String className, @Param("subjectName") String subjectName, @Param("accountId") Long accountId);
 
+    @Query("SELECT r FROM ScoreRule r WHERE r.accountId = :accountId")
+    List<ScoreRule> findByAccountId(@Param("accountId") Long accountId);
+
     Optional<ScoreRule> findByAccountIdAndClassNameAndSubjectName(Long accountId, String className, String subjectName);
     List<ScoreRule> findByClassNameAndSubjectNameAndAccountId(String className, String subjectName, Long accountId);
     List<ScoreRule> findByClassNameAndSubjectName(String className, String subjectName);
