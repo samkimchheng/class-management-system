@@ -498,4 +498,52 @@ class ClassroomApplicationTests {
         List<Classroom> somunyClasses = classroomRepository.findByAccountId(somuny.getId());
         assertTrue(somunyClasses.stream().noneMatch(c -> c.getClassName() != null && (c.getClassName().contains("7A") || c.getClassName().contains("7"))));
     }
+
+    @Test
+    void testBatchImportMultipleClassesWithoutSequenceCollision() throws Exception {
+        Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(somuny);
+
+        // 1. Import Class 8D
+        String payload8D = "{\"className\":\"ថ្នាក់ទី៨D\",\"overwrite\":false,\"students\":[" +
+                "{\"name\":\"សិស្ស តេស្ត ៨D-១\",\"gender\":\"ប្រុស\",\"studentCode\":\"\"}," +
+                "{\"name\":\"សិស្ស តេស្ត ៨D-២\",\"gender\":\"ស្រី\",\"studentCode\":\"\"}" +
+                "]}";
+
+        mockMvc.perform(post("/api/students/import-batch")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(payload8D)
+                .sessionAttr("ACCOUNT_ID", somuny.getId())
+                .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
+                .sessionAttr("ACCOUNT_NAME", somuny.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk());
+
+        // 2. Import Class 8E (Previously failed with HTTP 500 Primary Key violation)
+        String payload8E = "{\"className\":\"ថ្នាក់ទី៨E\",\"overwrite\":false,\"students\":[" +
+                "{\"name\":\"សិស្ស តេស្ត ៨E-១\",\"gender\":\"ប្រុស\",\"studentCode\":\"\"}," +
+                "{\"name\":\"សិស្ស តេស្ត ៨E-២\",\"gender\":\"ស្រី\",\"studentCode\":\"\"}" +
+                "]}";
+
+        mockMvc.perform(post("/api/students/import-batch")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(payload8E)
+                .sessionAttr("ACCOUNT_ID", somuny.getId())
+                .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
+                .sessionAttr("ACCOUNT_NAME", somuny.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk());
+
+        // 3. Verify students exist and have clean auto-formatted codes
+        List<Student> students8E = studentRepository.findByClassNameAndAccountIdAndAcademicYear("ថ្នាក់ទី៨E", somuny.getId(), "២០២៦-២០២៧");
+        assertNotNull(students8E);
+        assertEquals(2, students8E.size());
+        assertEquals("៨E-01", students8E.get(0).getStudentCode());
+        assertEquals("៨E-02", students8E.get(1).getStudentCode());
+
+        // Clean up test students so DB remains clean
+        studentRepository.deleteAll(students8E);
+        List<Student> students8D = studentRepository.findByClassNameAndAccountIdAndAcademicYear("ថ្នាក់ទី៨D", somuny.getId(), "២០២៦-២០២៧");
+        if (students8D != null) studentRepository.deleteAll(students8D);
+    }
 }

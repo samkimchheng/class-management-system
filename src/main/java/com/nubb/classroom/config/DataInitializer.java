@@ -343,6 +343,7 @@ public class DataInitializer {
                         try (Connection conn = dataSource.getConnection();
                              Statement stmt = conn.createStatement()) {
                             applySchemaMigrations(stmt);
+                            alignAllSequences(conn);
                         } catch (Exception e) {
                             System.err.println(">>> [DataInitializer] Error applying migrations after restore: " + e.getMessage());
                         }
@@ -738,12 +739,9 @@ public class DataInitializer {
                         stmt.executeUpdate("DELETE FROM \"STUDENTS\" WHERE \"CLASS_NAME\" = '7A' OR \"CLASS_NAME\" LIKE '%7%' OR \"ACCOUNT_ID\" = 33");
                     } catch (Exception ignored) {}
 
-                    if (isPostgres) {
-                        try (Connection connPost = dataSource.getConnection();
-                             Statement stmtPost = connPost.createStatement()) {
-                            stmtPost.execute("SELECT setval(pg_get_serial_sequence('students', 'id'), (SELECT COALESCE(MAX(id), 1) FROM students))");
-                        } catch (Exception ignored) {}
-                    }
+                    try (Connection connAlign = dataSource.getConnection()) {
+                        alignTableSequence(connAlign, "students", "id");
+                    } catch (Exception ignored) {}
                 }
             } catch (Exception e) {
                 System.err.println(">>> [DataInitializer] Notice seeding students: " + e.getMessage());
@@ -789,6 +787,14 @@ public class DataInitializer {
 
             // 13. Ensure Official Grade 11 Semester 2 English Exam exists
             seedEnglishExamIfMissing(examRepository, questionRepository);
+
+            // Align all table sequences for H2 and PostgreSQL so new auto-increment rows never collide with pre-seeded data
+            try {
+                alignAllSequences(dataSource);
+                System.out.println(">>> [DataInitializer] All database table sequences aligned successfully!");
+            } catch (Exception e) {
+                System.err.println(">>> [DataInitializer] Notice aligning sequences: " + e.getMessage());
+            }
         };
     }
 
@@ -914,5 +920,69 @@ public class DataInitializer {
         } catch (Exception e) {
             System.err.println(">>> [DataInitializer] Notice seeding English exam: " + e.getMessage());
         }
+    }
+
+    public static void alignAllSequences(DataSource dataSource) {
+        if (dataSource == null) return;
+        try (Connection conn = dataSource.getConnection()) {
+            alignAllSequences(conn);
+        } catch (Exception e) {
+            System.err.println(">>> [DataInitializer] Notice aligning all sequences: " + e.getMessage());
+        }
+    }
+
+    public static void alignAllSequences(Connection conn) {
+        if (conn == null) return;
+        String[] tables = {
+            "students", "classroom", "account", "lessons", "lesson_progress",
+            "lesson_transcript", "score", "score_rule", "score_rules", "exam",
+            "question", "attendance", "certificate_records", "leave_requests", "schedule"
+        };
+        for (String table : tables) {
+            alignTableSequence(conn, table, "id");
+        }
+    }
+
+    public static void alignTableSequence(Connection conn, String tableName, String idCol) {
+        if (conn == null || tableName == null || idCol == null) return;
+        try {
+            String dbProduct = conn.getMetaData().getDatabaseProductName().toLowerCase();
+            boolean isPg = dbProduct.contains("postgres");
+
+            long maxId = 0L;
+            try (Statement s = conn.createStatement();
+                 ResultSet rs = s.executeQuery("SELECT COALESCE(MAX(" + idCol + "), 0) FROM " + tableName)) {
+                if (rs.next()) {
+                    maxId = rs.getLong(1);
+                }
+            } catch (Exception ex1) {
+                try (Statement s = conn.createStatement();
+                     ResultSet rs = s.executeQuery("SELECT COALESCE(MAX(\"" + idCol.toUpperCase() + "\"), 0) FROM \"" + tableName.toUpperCase() + "\"")) {
+                    if (rs.next()) {
+                        maxId = rs.getLong(1);
+                    }
+                } catch (Exception ignored) {
+                    return;
+                }
+            }
+
+            long nextId = Math.max(1000L, maxId + 1);
+
+            try (Statement s = conn.createStatement()) {
+                if (isPg) {
+                    try {
+                        s.execute("SELECT setval(pg_get_serial_sequence('" + tableName.toLowerCase() + "', '" + idCol.toLowerCase() + "'), " + Math.max(maxId, 1L) + ", true)");
+                    } catch (Exception ignored) {}
+                } else {
+                    try {
+                        s.execute("ALTER TABLE " + tableName + " ALTER COLUMN " + idCol + " RESTART WITH " + nextId);
+                    } catch (Exception ex1) {
+                        try {
+                            s.execute("ALTER TABLE \"" + tableName.toUpperCase() + "\" ALTER COLUMN \"" + idCol.toUpperCase() + "\" RESTART WITH " + nextId);
+                        } catch (Exception ignored) {}
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
     }
 }

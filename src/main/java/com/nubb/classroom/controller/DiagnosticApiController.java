@@ -57,6 +57,20 @@ public class DiagnosticApiController {
         return res;
     }
 
+    @GetMapping("/api/diagnostic/fix-sequences")
+    public Map<String, Object> fixSequences() {
+        Map<String, Object> res = new LinkedHashMap<>();
+        try {
+            com.nubb.classroom.config.DataInitializer.alignAllSequences(dataSource);
+            res.put("status", "SUCCESS");
+            res.put("message", "All database table sequences aligned successfully!");
+        } catch (Exception e) {
+            res.put("status", "ERROR");
+            res.put("error", e.getMessage());
+        }
+        return res;
+    }
+
     @GetMapping("/api/diagnostic/reseed-students")
     public Map<String, Object> reseedStudents() {
         Map<String, Object> res = new LinkedHashMap<>();
@@ -72,6 +86,8 @@ public class DiagnosticApiController {
             pop.setContinueOnError(true);
             pop.execute(dataSource);
             try { stmt.executeUpdate("DELETE FROM students WHERE class_name = '7A' OR class_name LIKE '%7%' OR account_id = 33"); } catch (Exception ignored) {}
+
+            com.nubb.classroom.config.DataInitializer.alignTableSequence(conn, "students", "id");
 
             res.put("status", "SUCCESS");
             res.put("totalStudentsNow", studentRepository.count());

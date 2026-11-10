@@ -26,6 +26,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
 import java.util.Objects;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
@@ -306,6 +307,9 @@ public class WebController {
 
     @Autowired
     private com.nubb.classroom.repository.ScheduleRepository scheduleRepository;
+
+    @Autowired
+    private javax.sql.DataSource dataSource;
 
     public List<com.nubb.classroom.model.LeaveRequest> getLeaveRequestsForTeacher(Long teacherAccountId, String classNameFilter) {
         if (teacherAccountId == null) return new ArrayList<>();
@@ -1835,6 +1839,11 @@ public class WebController {
             }
         }
 
+        // Ensure student table sequence is aligned before inserting
+        try (Connection conn = dataSource.getConnection()) {
+            com.nubb.classroom.config.DataInitializer.alignTableSequence(conn, "students", "id");
+        } catch (Exception ignored) {}
+
         long baseCount = studentRepository.count();
         List<Student> toSave = new ArrayList<>();
         int importedCount = 0;
@@ -1854,8 +1863,9 @@ public class WebController {
             if ("ស្រី".equals(gender)) femaleCount++;
 
             String code = row.get("studentCode") != null ? row.get("studentCode").toString().trim() : "";
-            if (code.isEmpty()) {
-                code = "STU-" + (1000 + baseCount + toSave.size() + 1);
+            if (code.isEmpty() || code.matches("^\\d+$")) {
+                String cleanClass = targetClass.replace("ថ្នាក់ទី", "").replace("ថ្នាក់", "").trim();
+                code = cleanClass + "-" + String.format("%02d", i + 1);
             }
 
             Student s = new Student();
@@ -1885,7 +1895,15 @@ public class WebController {
                     .body(Map.of("success", false, "message", "រកមិនឃើញទិន្នន័យសិស្សដែលមានឈ្មោះត្រឹមត្រូវទេ!"));
         }
 
-        studentRepository.saveAll(toSave);
+        try {
+            studentRepository.saveAll(toSave);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            System.err.println(">>> [importStudentsBatch] DataIntegrityViolationException detected, aligning sequence and retrying: " + ex.getMessage());
+            try (Connection conn = dataSource.getConnection()) {
+                com.nubb.classroom.config.DataInitializer.alignTableSequence(conn, "students", "id");
+            } catch (Exception ignored) {}
+            studentRepository.saveAll(toSave);
+        }
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
