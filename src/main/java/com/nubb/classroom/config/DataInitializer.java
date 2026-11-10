@@ -1,5 +1,6 @@
 package com.nubb.classroom.config;
 
+import com.nubb.classroom.model.Account;
 import com.nubb.classroom.model.CertificateRecord;
 import com.nubb.classroom.model.Attendance;
 import com.nubb.classroom.model.Score;
@@ -600,30 +601,66 @@ public class DataInitializer {
                 });
 
                 // 2. Sam Kimchheng (chhengcl@mitpukae.com / techercl@%27)
-                accountRepository.findByUsername("samkimchheng").ifPresent(a -> {
-                    a.setPassword("techercl@%27");
-                    a.setEmail("chhengcl@mitpukae.com");
-                    accountRepository.save(a);
-                });
-                accountRepository.findById(97L).ifPresent(a -> {
-                    a.setPassword("techercl@%27");
-                    a.setEmail("chhengcl@mitpukae.com");
-                    accountRepository.save(a);
-                });
+                Account acc97 = accountRepository.findById(97L).orElse(accountRepository.findByUsername("samkimchheng").orElse(null));
+                if (acc97 != null) {
+                    acc97.setPassword("techercl@%27");
+                    acc97.setEmail("chhengcl@mitpukae.com");
+                    acc97.setFullName("សំ គឹមឆេង");
+                    acc97.setTeachingClasses("១០E, ១០F, ១០G, ១១F, ១១G");
+                    acc97.setSubject("ភាសាអង់គ្លេស");
+                    acc97.setSchoolName("វិទ្យាល័យ ហ៊ុន សែន ១០មករា បឹងកន្ទួត");
+                    acc97.setPrincipalName("លី ប៊ុនថេង");
+                    acc97.setProvince("ខេត្តពោធិ៍សាត់");
+                    acc97.setCurrentAcademicYear("២០២៦-២០២៧");
+                    accountRepository.save(acc97);
+                }
 
                 // 3. Seung Somuny (teachercl21@mitpukae.com / techercl@%21)
-                accountRepository.findByUsername("Teacher1001").ifPresent(a -> {
-                    a.setPassword("techercl@%21");
-                    a.setEmail("teachercl21@mitpukae.com");
-                    accountRepository.save(a);
-                });
-                accountRepository.findById(33L).ifPresent(a -> {
-                    a.setPassword("techercl@%21");
-                    a.setEmail("teachercl21@mitpukae.com");
-                    accountRepository.save(a);
-                });
+                Account acc33 = accountRepository.findById(33L).orElse(accountRepository.findByUsername("Teacher1001").orElse(null));
+                if (acc33 != null) {
+                    acc33.setPassword("techercl@%21");
+                    acc33.setEmail("teachercl21@mitpukae.com");
+                    acc33.setFullName("ស៊ឹង សុមុនី");
+                    acc33.setTeachingClasses("7A, 10E");
+                    acc33.setSubject("គណិតវិទ្យា");
+                    acc33.setSchoolName("វិទ្យាល័យ ហ៊ុន សែន ១០មករា បឹងកន្ទួត");
+                    acc33.setPrincipalName("លី ប៊ុនថេង");
+                    acc33.setProvince("ខេត្តពោធិ៍សាត់");
+                    acc33.setCurrentAcademicYear("២០២៦-២០២៧");
+                    accountRepository.save(acc33);
+                }
             } catch (Exception e) {
                 System.err.println(">>> [DataInitializer] Notice syncing official credentials: " + e.getMessage());
+            }
+
+            // Ensure classrooms for Sam Kimchheng (97) and Seung Somuny (33)
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                String[] kimchhengClasses = {"១០E", "១០F", "១០G", "១១F", "១១G"};
+                String[] somunyClasses = {"7A", "10E"};
+                String[] years = {"២០២៦-២០២៧", "២០២៧-២០២៨"};
+                for (String yr : years) {
+                    for (String cls : kimchhengClasses) {
+                        stmt.execute("INSERT INTO classroom (account_id, class_name, academic_year) " +
+                                "SELECT 97, '" + cls + "', '" + yr + "' " +
+                                "WHERE NOT EXISTS (SELECT 1 FROM classroom WHERE account_id = 97 AND class_name = '" + cls + "' AND academic_year = '" + yr + "')");
+                    }
+                    for (String cls : somunyClasses) {
+                        stmt.execute("INSERT INTO classroom (account_id, class_name, academic_year) " +
+                                "SELECT 33, '" + cls + "', '" + yr + "' " +
+                                "WHERE NOT EXISTS (SELECT 1 FROM classroom WHERE account_id = 33 AND class_name = '" + cls + "' AND academic_year = '" + yr + "')");
+                    }
+                }
+
+                // Ensure score rules for Seung Somuny (33)
+                stmt.execute("INSERT INTO score_rule (account_id, class_name, subject_name, max_monthly_score, max_attendance_score, max_assignment_score) " +
+                        "SELECT 33, '7A', 'គណិតវិទ្យា', 60, 20, 20 " +
+                        "WHERE NOT EXISTS (SELECT 1 FROM score_rule WHERE account_id = 33 AND class_name = '7A' AND subject_name = 'គណិតវិទ្យា')");
+                stmt.execute("INSERT INTO score_rule (account_id, class_name, subject_name, max_monthly_score, max_attendance_score, max_assignment_score) " +
+                        "SELECT 33, 'ថ្នាក់រៀនទាំងអស់', 'គណិតវិទ្យា', 60, 20, 20 " +
+                        "WHERE NOT EXISTS (SELECT 1 FROM score_rule WHERE account_id = 33 AND class_name = 'ថ្នាក់រៀនទាំងអស់' AND subject_name = 'គណិតវិទ្យា')");
+            } catch (Exception e) {
+                System.err.println(">>> [DataInitializer] Notice syncing teacher classrooms: " + e.getMessage());
             }
 
             // 9. Ensure default Score Rules exist for subjects (Max 60 / 20 / 20 = 100)
@@ -653,16 +690,16 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
-            // 11. Ensure official students for 10E and 10F are seeded if missing
+            // 11. Ensure official students for 10E, 10F, 10G, 11F, 11G, 7A are seeded if missing
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
                 boolean needsStudents = false;
-                try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM students WHERE class_name IN ('១០E', '១០F')")) {
+                try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM students WHERE class_name IN ('១០G', '១១F', '១១G', '7A')")) {
                     if (rs.next() && rs.getInt(1) < 10) {
                         needsStudents = true;
                     }
                 } catch (Exception ignored) {
-                    try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM \"STUDENTS\" WHERE \"CLASS_NAME\" IN ('១០E', '១០F')")) {
+                    try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM \"STUDENTS\" WHERE \"CLASS_NAME\" IN ('១០G', '១១F', '១១G', '7A')")) {
                         if (rs.next() && rs.getInt(1) < 10) {
                             needsStudents = true;
                         }
@@ -672,12 +709,12 @@ public class DataInitializer {
                 }
 
                 if (needsStudents) {
-                    System.out.println(">>> [DataInitializer] Seeding official students for 10E and 10F from students_insert.sql...");
+                    System.out.println(">>> [DataInitializer] Seeding official students for 10E, 10F, 10G, 11F, 11G, 7A from students_insert.sql...");
                     ResourceDatabasePopulator pop = new ResourceDatabasePopulator();
                     pop.addScript(new ClassPathResource("students_insert.sql"));
                     pop.setContinueOnError(true);
                     pop.execute(dataSource);
-                    System.out.println(">>> [DataInitializer] Official students for 10E and 10F successfully seeded!");
+                    System.out.println(">>> [DataInitializer] Official students successfully seeded!");
 
                     if (isPostgres) {
                         try (Connection connPost = dataSource.getConnection();
