@@ -2629,7 +2629,7 @@ return "scores";
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-            if ("/test/leave".equals(redirectTo) || "/lessons".equals(redirectTo) || "/certificate".equals(redirectTo)) {
+            if ("/test/leave".equals(redirectTo) || "/lessons".equals(redirectTo) || "/certificate".equals(redirectTo) || "/test/vocabulary".equals(redirectTo)) {
                 return "redirect:" + redirectTo;
             }
             return "redirect:/test/take";

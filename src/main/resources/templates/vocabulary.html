@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>គ្រប់គ្រងវាក្យសព្ទថ្នាក់ទី១០ (Grade 10 Vocabulary) - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3730a3;
+            --primary-light: #e0e7ff;
+            --secondary: #0ea5e9;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --sidebar-width: 260px;
+            --radius: 12px;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #f1f5f9;
+            color: var(--dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar styles matching application standard */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: #1e293b;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        .sidebar-brand {
+            padding: 20px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #0f172a;
+        }
+
+        .sidebar-user {
+            padding: 12px 16px;
+            background-color: rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 10px 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 18px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-item a:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active a {
+            color: white;
+            background-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .topbar {
+            background-color: white;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .content {
+            padding: 22px 26px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Hero Banner */
+        .vocab-hero {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            border-radius: 16px;
+            padding: 24px 28px;
+            color: white;
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.25);
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .vocab-hero-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .vocab-hero-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.1rem;
+            flex-shrink: 0;
+        }
+
+        .vocab-hero-title {
+            margin: 0;
+            font-size: 1.55rem;
+            font-weight: 800;
+        }
+
+        .vocab-hero-sub {
+            margin: 4px 0 0 0;
+            font-size: 0.92rem;
+            opacity: 0.9;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 18px 20px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .kpi-val {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1.2;
+        }
+
+        .kpi-lbl {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* Tabs */
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+            background: white;
+            padding: 8px 14px 0 14px;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Filter & Action Bar */
+        .action-bar {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .unit-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0;
+            margin-bottom: 14px;
+            scrollbar-width: thin;
+        }
+
+        .unit-pill {
+            display: inline-block;
+            white-space: nowrap;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.86rem;
+            font-weight: 700;
+            text-decoration: none;
+            background: white;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            transition: all 0.15s;
+        }
+
+        .unit-pill:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .unit-pill.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 3px 8px rgba(67, 97, 238, 0.3);
+        }
+
+        /* Table */
+        .data-card {
+            background: white;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .vocab-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        .vocab-table th, .vocab-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .vocab-table th {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        .vocab-table tr:hover {
+            background: #fafafa;
+        }
+
+        .pos-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            color: #475569;
+            margin-left: 6px;
+        }
+
+        .unit-badge {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            white-space: nowrap;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Audio Button */
+        .btn-audio {
+            background: #e0f2fe;
+            color: #0284c7;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-audio:hover {
+            background: #0284c7;
+            color: white;
+            transform: scale(1.08);
+        }
+
+        /* Progress Bar in Table */
+        .progress-bar-bg {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 10px;
+            width: 120px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #10b981, #059669);
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        /* Buttons */
+        .btn-custom {
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-custom-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-custom-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-custom-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-custom-success:hover {
+            background: #059669;
+        }
+
+        .btn-custom-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-custom-outline {
+            background: white;
+            border: 1.5px solid #cbd5e1;
+            color: #334155;
+        }
+        .btn-custom-outline:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.88rem;
+            margin-bottom: 5px;
+            color: #334155;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .content {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <span>🏫</span> <span>គ្រប់គ្រងថ្នាក់រៀន</span>
+        </div>
+        <div class="sidebar-user">
+            <span>សួស្តី, <b th:text="${teacherAccount.fullName}">សំ គឹមឆេង</b></span>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/" class="nav-link"><span>📊</span> <span>ទំព័រដើម</span></a></li>
+            <li class="nav-item"><a href="/profile" class="nav-link"><span>👤</span> <span>បំពេញព័ត៌មានផ្ទាល់ខ្លួន</span></a></li>
+            <li class="nav-item"><a href="/certificate" class="nav-link"><span>📜</span> <span>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span></a></li>
+            <li class="nav-item"><a href="/classrooms" class="nav-link"><span>🏫</span> <span>បញ្ជីថ្នាក់រៀនខ្ញុំ</span></a></li>
+            <li class="nav-item"><a href="/students" class="nav-link"><span>👥</span> <span>បញ្ជីឈ្មោះសិស្ស</span></a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link"><span>📅</span> <span>បញ្ជីអវត្តមាន</span></a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link"><span>📊</span> <span>បញ្ជីពិន្ទុ</span></a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link"><span>📈</span> <span>ស្ថិតិសិស្ស</span></a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
+            <li class="nav-item active"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>វាក្យសព្ទ (Vocab)</span></a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
+            <li class="nav-item"><a href="/daily-plan" class="nav-link"><span>📋</span> <span>សេវាប្រចាំថ្ងៃ</span></a></li>
+            <li class="nav-item"><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
+            <li class="nav-item"><a href="/feedback" class="nav-link"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div style="font-weight: 700; font-size: 1.15rem; color: #0f172a;">
+                <span>🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (Grade 10 English Vocabulary)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="unit-badge" style="background: #eef2ff; color: #3730a3; border-color: #c7d2fe;">
+                    📅 ឆ្នាំសិក្សា៖ <b th:text="${teacherAccount.currentAcademicYear != null ? teacherAccount.currentAcademicYear : '២០២៦-២០២៧'}">២០២៦-២០២៧</b>
+                </span>
+                <span style="font-size: 0.9rem; color: #475569;">
+                    គ្រូទទួលបន្ទុក៖ <b th:text="${teacherAccount.fullName}">សំ គឹមឆេង</b>
+                </span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Hero Banner -->
+            <div class="vocab-hero">
+                <div class="vocab-hero-info">
+                    <div class="vocab-hero-icon">🔤</div>
+                    <div>
+                        <h2 class="vocab-hero-title">មជ្ឈមណ្ឌលគ្រប់គ្រងវាក្យសព្ទថ្នាក់ទី១០ (Grade 10 Vocab Hub)</h2>
+                        <p class="vocab-hero-sub">
+                            គ្រប់គ្រងបញ្ជីវាក្យសព្ទស្តង់ដារ ៤៦០ ពាក្យ (Unit 1 ដល់ Unit 31) និងតាមដានការរៀនរបស់សិស្សគ្រប់ពេលវេលា
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="/test/vocabulary" target="_blank" class="btn-custom btn-custom-outline" style="color: white; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.15);">
+                        <span>👁️ សាកល្បងមើលផ្ទាំងសិស្ស</span>
+                    </a>
+                    <button type="button" onclick="openAddModal()" class="btn-custom btn-custom-success">
+                        <span>➕ បន្ថែមពាក្យថ្មី</span>
+                    </button>
+                    <button type="button" onclick="resetDefaultWords()" class="btn-custom btn-custom-warning" title="កំណត់ឡើងវិញនូវ ៤៦០ ពាក្យស្តង់ដា">
+                        <span>🔄 កំណត់ដើមឡើងវិញ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background: #e0e7ff; color: #4361ee;">📚</div>
+                    <div>
+                        <div class="kpi-val" th:text="${totalWords}">460</div>
+                        <div class="kpi-lbl">ពាក្យសរុបក្នុងប្រព័ន្ធ</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background: #d1fae5; color: #10b981;">✅</div>
+                    <div>
+                        <div class="kpi-val" th:text="${activeWords}">460</div>
+                        <div class="kpi-lbl">ពាក្យបើកដំណើរការ</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background: #e0f2fe; color: #0284c7;">📖</div>
+                    <div>
+                        <div class="kpi-val" th:text="${totalUnits}">31</div>
+                        <div class="kpi-lbl">ចំនួនមេរៀន (Units)</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background: #fef3c7; color: #d97706;">👥</div>
+                    <div>
+                        <div class="kpi-val" th:text="${totalStudentsCount}">50</div>
+                        <div class="kpi-lbl">សិស្សថ្នាក់ទី១០ សរុប</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-nav">
+                <button type="button" class="tab-btn active" onclick="switchTab('wordsTab', this)">
+                    <span>🔤 បញ្ជីវាក្យសព្ទ និងការកំណត់</span>
+                </button>
+                <button type="button" class="tab-btn" onclick="switchTab('progressTab', this)">
+                    <span>📊 តាមដានការរៀនរបស់សិស្ស</span>
+                    <span class="unit-badge" style="background: #ecfdf5; color: #059669;" th:text="${activePracticingStudents} + ' នាក់កំពុងរៀន'">0 នាក់</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: WORDS LIST & MANAGEMENT -->
+            <div id="wordsTab" class="tab-pane active">
+                <!-- Unit Pill Bar -->
+                <div class="unit-scroll">
+                    <a th:href="@{/vocabulary(unit='ALL', search=${searchQuery})}"
+                       class="unit-pill" th:classappend="${selectedUnit == 'ALL' ? 'active' : ''}">
+                        🌐 មេរៀនទាំងអស់ (All)
+                    </a>
+                    <th:block th:each="u : ${units}">
+                        <a th:href="@{/vocabulary(unit=${u}, search=${searchQuery})}"
+                           class="unit-pill" th:classappend="${selectedUnit.equalsIgnoreCase(u) ? 'active' : ''}"
+                           th:text="${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(u)}">
+                            Unit 1
+                        </a>
+                    </th:block>
+                </div>
+
+                <!-- Action Bar & Search -->
+                <div class="action-bar">
+                    <form method="get" action="/vocabulary" style="display: flex; gap: 8px; flex: 1; max-width: 450px;">
+                        <input type="hidden" name="unit" th:value="${selectedUnit}">
+                        <input type="text" name="search" th:value="${searchQuery}" class="form-control" placeholder="🔍 ស្វែងរកពាក្យ (អង់គ្លេស ឬខ្មែរ)...">
+                        <button type="submit" class="btn-custom btn-custom-primary">ស្វែងរក</button>
+                        <a th:if="${searchQuery != null and !searchQuery.isEmpty()}" th:href="@{/vocabulary(unit=${selectedUnit})}" class="btn-custom btn-custom-outline">សម្អាត</a>
+                    </form>
+
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;" th:if="${!selectedUnit.equalsIgnoreCase('ALL')}">
+                        <button type="button" onclick="bulkToggleUnit(true)" class="btn-custom btn-custom-outline" style="color: #059669; border-color: #a7f3d0; background: #ecfdf5;">
+                            <span>👁️ បើកទាំងអស់ក្នុងមេរៀននេះ</span>
+                        </button>
+                        <button type="button" onclick="bulkToggleUnit(false)" class="btn-custom btn-custom-outline" style="color: #b91c1c; border-color: #fecaca; background: #fef2f2;">
+                            <span>🔒 បិទទាំងអស់ក្នុងមេរៀននេះ</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vocabulary Table -->
+                <div class="data-card">
+                    <table class="vocab-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px; text-align: center;">ល.រ</th>
+                                <th style="width: 220px;">ពាក្យអង់គ្លេស (English)</th>
+                                <th style="width: 50px; text-align: center;">សំឡេង</th>
+                                <th>ការបកប្រែជាភាសាខ្មែរ (Khmer Translation)</th>
+                                <th style="width: 140px; text-align: center;">មេរៀន (Unit)</th>
+                                <th style="width: 100px; text-align: center;">បើកឱ្យសិស្សរៀន</th>
+                                <th style="width: 120px; text-align: center;">សកម្មភាព</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="w : ${words}" th:attr="data-word-id=${w.id}">
+                                <td style="text-align: center; font-weight: bold; color: #64748b;" th:text="${w.wordNumber != null ? w.wordNumber : '-'}">1</td>
+                                <td>
+                                    <span style="font-weight: 700; color: #1e293b; font-size: 1rem;" th:text="${w.cleanWord}">birthday</span>
+                                    <span class="pos-badge" th:if="${w.partOfSpeech != null and !w.partOfSpeech.isEmpty()}" th:text="${w.partOfSpeech}">(n)</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-audio" th:attr="onclick='playAudio(\'' + ${#strings.escapeJavaScript(w.cleanWord)} + '\')'" title="ស្តាប់សំឡេង">
+                                        <i class="fa fa-volume-up"></i>
+                                    </button>
+                                </td>
+                                <td style="font-weight: 500; color: #334155;" th:text="${w.khmerTranslation}">ថ្ងៃកំណើត</td>
+                                <td style="text-align: center;">
+                                    <span class="unit-badge" th:text="${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(w.unitName)}">Unit 1</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <label class="switch">
+                                        <input type="checkbox" th:checked="${w.active}" th:attr="onchange='toggleStatus(' + ${w.id} + ', this)'">
+                                        <span class="slider"></span>
+                                    </label>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-custom btn-custom-outline" style="padding: 4px 8px; font-size: 0.8rem;"
+                                            th:attr="onclick='openEditModal(' + ${w.id} + ', \'' + ${#strings.escapeJavaScript(w.englishWord)} + '\', \'' + ${#strings.escapeJavaScript(w.khmerTranslation)} + '\', \'' + ${#strings.escapeJavaScript(w.unitName)} + '\', \'' + ${#strings.escapeJavaScript(w.partOfSpeech != null ? w.partOfSpeech : '')} + '\')'">
+                                        ✏️ កែ
+                                    </button>
+                                    <button type="button" class="btn-custom btn-custom-outline" style="padding: 4px 8px; font-size: 0.8rem; color: #ef4444;"
+                                            th:attr="onclick='deleteWord(' + ${w.id} + ')'">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr th:if="${words.isEmpty()}">
+                                <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
+                                    <div style="font-size: 2.5rem; margin-bottom: 8px;">📭</div>
+                                    <div>មិនមានពាក្យក្នុងលក្ខខណ្ឌដែលអ្នកបានជ្រើសរើសឡើយ!</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: STUDENT PROGRESS TRACKING -->
+            <div id="progressTab" class="tab-pane">
+                <div class="action-bar">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: 700; color: #334155;">ជ្រើសរើសថ្នាក់រៀន៖</span>
+                        <select onchange="filterClass(this.value)" class="form-control" style="width: auto; min-width: 150px;">
+                            <option value="ALL" th:selected="${selectedClass == 'ALL'}">ថ្នាក់រៀនទាំងអស់</option>
+                            <option th:each="c : ${classes}" th:value="${c}" th:text="'ថ្នាក់ ' + ${c}" th:selected="${selectedClass == c}">ថ្នាក់ 10E</option>
+                        </select>
+                    </div>
+                    <div style="font-size: 0.9rem; color: #64748b;">
+                        ចំនួនសិស្ស៖ <b th:text="${studentProgressList.size()}">50</b> នាក់ | សិស្សសកម្ម៖ <b style="color: #10b981;" th:text="${activePracticingStudents}">12</b> នាក់
+                    </div>
+                </div>
+
+                <div class="data-card">
+                    <table class="vocab-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px; text-align: center;">ល.រ</th>
+                                <th style="width: 120px;">លេខកូដសិស្ស</th>
+                                <th>ឈ្មោះសិស្ស</th>
+                                <th style="width: 70px; text-align: center;">ភេទ</th>
+                                <th style="width: 90px; text-align: center;">ថ្នាក់</th>
+                                <th style="width: 220px;">វឌ្ឍនភាពចងចាំពាក្យ</th>
+                                <th style="width: 110px; text-align: center;">ហាត់រៀន (ដង)</th>
+                                <th style="width: 150px; text-align: center;">កាលបរិច្ឆេទចុងក្រោយ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="sp, stat : ${studentProgressList}">
+                                <td style="text-align: center; font-weight: bold; color: #64748b;" th:text="${stat.count}">1</td>
+                                <td>
+                                    <span style="font-family: monospace; font-weight: 700; color: #2563eb;" th:text="${sp.student.studentCode}">STU001</span>
+                                </td>
+                                <td style="font-weight: 700; color: #0f172a;" th:text="${sp.student.name}">ឈ្មោះសិស្ស</td>
+                                <td style="text-align: center;" th:text="${sp.student.gender}">ប្រុស</td>
+                                <td style="text-align: center;">
+                                    <span class="unit-badge" th:text="${sp.student.className}">10E</span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="progress-bar-bg">
+                                            <div class="progress-bar-fill" th:style="'width: ' + ${sp.percent} + '%;'"></div>
+                                        </div>
+                                        <b style="color: #059669;" th:text="${sp.percent} + '%'">0%</b>
+                                        <span style="font-size: 0.8rem; color: #64748b;" th:text="'(' + ${sp.masteredCount} + '/' + ${sp.totalWords} + ')'">(0/460)</span>
+                                    </div>
+                                </td>
+                                <td style="text-align: center; font-weight: bold;" th:text="${sp.totalPractice}">0</td>
+                                <td style="text-align: center; font-size: 0.85rem; color: #64748b;">
+                                    <span th:if="${sp.lastActive != null}" th:text="${#temporals.format(sp.lastActive, 'yyyy-MM-dd HH:mm')}">2026-11-10</span>
+                                    <span th:if="${sp.lastActive == null}" style="color: #cbd5e1;">មិនទាន់រៀន</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${studentProgressList.isEmpty()}">
+                                <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">
+                                    <div>មិនទាន់មានទិន្នន័យសិស្សសម្រាប់ថ្នាក់នេះនៅឡើយទេ!</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add/Edit Word -->
+    <div id="wordModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="margin-top: 0; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                <span>➕ បន្ថែមពាក្យថ្មី</span>
+            </h3>
+            <input type="hidden" id="modalWordId">
+            <div class="form-group">
+                <label class="form-label">ពាក្យជាភាសាអង់គ្លេស (English Word / Phrase) *</label>
+                <input type="text" id="modalEnglish" class="form-control" placeholder="ឧទាហរណ៍៖ birthday (n)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">ប្រភេទពាក្យ (Part of Speech e.g. n, v, adj, adv, phr v)</label>
+                <input type="text" id="modalPos" class="form-control" placeholder="ឧទាហរណ៍៖ n ឬ v ឬ adj">
+            </div>
+            <div class="form-group">
+                <label class="form-label">ការបកប្រែជាភាសាខ្មែរ (Khmer Translation) *</label>
+                <input type="text" id="modalKhmer" class="form-control" placeholder="ឧទាហរណ៍៖ ថ្ងៃកំណើត">
+            </div>
+            <div class="form-group">
+                <label class="form-label">មេរៀន (Unit) *</label>
+                <input type="text" id="modalUnit" class="form-control" placeholder="ឧទាហរណ៍៖ unit 1">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+                <button type="button" onclick="closeWordModal()" class="btn-custom btn-custom-outline">បោះបង់</button>
+                <button type="button" onclick="saveWordFromModal()" class="btn-custom btn-custom-primary">💾 រក្សាទុក</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script th:inline="javascript">
+        const currentUnit = /*[[${selectedUnit}]]*/ 'ALL';
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function filterClass(className) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('className', className);
+            window.location.href = url.toString();
+        }
+
+        // Web Speech API Native Text-to-Speech
+        function playAudio(text) {
+            if (!('speechSynthesis' in window)) {
+                Swal.fire({ icon: 'warning', title: 'ឧបករណ៍មិនគាំទ្រសំឡេង Web Speech ទេ' });
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Toggle active status
+        function toggleStatus(wordId, checkbox) {
+            const formData = new URLSearchParams();
+            formData.append('id', wordId);
+
+            fetch('/api/vocabulary/toggle-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    checkbox.checked = !checkbox.checked;
+                    Swal.fire({ icon: 'error', title: 'កំហុស', text: data.message });
+                }
+            })
+            .catch(err => {
+                checkbox.checked = !checkbox.checked;
+                Swal.fire({ icon: 'error', title: 'កំហុសបច្ចេកទេស' });
+            });
+        }
+
+        // Bulk toggle for current unit
+        function bulkToggleUnit(active) {
+            if (currentUnit === 'ALL') {
+                Swal.fire({ icon: 'info', title: 'សូមជ្រើសរើសមេរៀន (Unit) ជាមុនសិន!' });
+                return;
+            }
+
+            Swal.fire({
+                title: active ? 'បើកដំណើរការគ្រប់ពាក្យ?' : 'បិទដំណើរការគ្រប់ពាក្យ?',
+                text: 'តើលោកគ្រូ-អ្នកគ្រូពិតជាចង់ ' + (active ? 'បើក' : 'បិទ') + ' ពាក្យទាំងអស់ក្នុង ' + currentUnit + ' សម្រាប់សិស្សមែនទេ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'យល់ព្រម',
+                cancelButtonText: 'បោះបង់'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    const formData = new URLSearchParams();
+                    formData.append('unit', currentUnit);
+                    formData.append('active', active);
+
+                    fetch('/api/vocabulary/bulk-toggle', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({ icon: 'success', title: 'ជោគជ័យ', text: data.message }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'កំហុស', text: data.message });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Reset to default 460 words
+        function resetDefaultWords() {
+            Swal.fire({
+                title: 'កំណត់ឡើងវិញនូវ ៤៦០ ពាក្យស្តង់ដា?',
+                text: 'ប្រព័ន្ធនឹងបញ្ចូលបំពេញបន្ថែមនូវពាក្យស្តង់ដាថ្នាក់ទី១០ (Unit 1 ដល់ Unit 31) ដោយមិនប៉ះពាល់ទិន្នន័យផ្សេងៗឡើយ។',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'យល់ព្រម',
+                cancelButtonText: 'បោះបង់'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch('/api/vocabulary/reset-default', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        Swal.fire({ icon: 'success', title: 'ជោគជ័យ', text: data.message }).then(() => {
+                            window.location.reload();
+                        });
+                    });
+                }
+            });
+        }
+
+        // Add / Edit Modal
+        function openAddModal() {
+            document.getElementById('modalTitle').innerHTML = '<span>➕ បន្ថែមពាក្យថ្មី</span>';
+            document.getElementById('modalWordId').value = '';
+            document.getElementById('modalEnglish').value = '';
+            document.getElementById('modalPos').value = '';
+            document.getElementById('modalKhmer').value = '';
+            document.getElementById('modalUnit').value = currentUnit !== 'ALL' ? currentUnit : 'unit 1';
+            document.getElementById('wordModal').style.display = 'flex';
+        }
+
+        function openEditModal(id, english, khmer, unit, pos) {
+            document.getElementById('modalTitle').innerHTML = '<span>✏️ កែសម្រួលពាក្យ</span>';
+            document.getElementById('modalWordId').value = id;
+            document.getElementById('modalEnglish').value = english;
+            document.getElementById('modalPos').value = pos;
+            document.getElementById('modalKhmer').value = khmer;
+            document.getElementById('modalUnit').value = unit;
+            document.getElementById('wordModal').style.display = 'flex';
+        }
+
+        function closeWordModal() {
+            document.getElementById('wordModal').style.display = 'none';
+        }
+
+        function saveWordFromModal() {
+            const id = document.getElementById('modalWordId').value;
+            const english = document.getElementById('modalEnglish').value;
+            const pos = document.getElementById('modalPos').value;
+            const khmer = document.getElementById('modalKhmer').value;
+            const unit = document.getElementById('modalUnit').value;
+
+            if (!english || !khmer) {
+                Swal.fire({ icon: 'warning', title: 'សូមបំពេញពាក្យអង់គ្លេស និងខ្មែរ!' });
+                return;
+            }
+
+            const payload = {
+                id: id ? id : null,
+                englishWord: english,
+                partOfSpeech: pos,
+                khmerTranslation: khmer,
+                unitName: unit
+            };
+
+            fetch('/api/vocabulary/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({ icon: 'success', title: 'ជោគជ័យ', text: data.message }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'កំហុស', text: data.message });
+                }
+            });
+        }
+
+        function deleteWord(id) {
+            Swal.fire({
+                title: 'លុបពាក្យនេះ?',
+                text: 'តើលោកគ្រូ-អ្នកគ្រូពិតជាចង់លុបពាក្យនេះចេញពីប្រព័ន្ធមែនទេ?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'លុប',
+                cancelButtonText: 'បោះបង់'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    const formData = new URLSearchParams();
+                    formData.append('id', id);
+
+                    fetch('/api/vocabulary/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({ icon: 'success', title: 'ជោគជ័យ', text: data.message }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'កំហុស', text: data.message });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

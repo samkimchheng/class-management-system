@@ -1,6 +1,7 @@
 HELP.md
 target/
-data/
+/data/
+!src/main/resources/data/
 *.db
 /*.pdf
 .mvn/wrapper/maven-wrapper.jar

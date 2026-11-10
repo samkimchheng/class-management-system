@@ -1,0 +1,3682 @@
+[
+  {
+    "num": 1,
+    "english": "birthday (n)",
+    "cleanWord": "birthday",
+    "pos": "n",
+    "khmer": "ថ្ងៃកំណើត",
+    "unit": "unit 1"
+  },
+  {
+    "num": 2,
+    "english": "good afternoon",
+    "cleanWord": "good afternoon",
+    "pos": "",
+    "khmer": "ទិវាសួស្ដី (ពេលរសៀល)",
+    "unit": "unit 1"
+  },
+  {
+    "num": 3,
+    "english": "good morning",
+    "cleanWord": "good morning",
+    "pos": "",
+    "khmer": "អរុណសួស្ដី (ពេលព្រឹក)",
+    "unit": "unit 1"
+  },
+  {
+    "num": 4,
+    "english": "greeting (n)",
+    "cleanWord": "greeting",
+    "pos": "n",
+    "khmer": "ការស្វាគមន៍",
+    "unit": "unit 1"
+  },
+  {
+    "num": 5,
+    "english": "hello",
+    "cleanWord": "hello",
+    "pos": "",
+    "khmer": "សួស្ដី/ជម្រាបសួរ",
+    "unit": "unit 1"
+  },
+  {
+    "num": 6,
+    "english": "hey",
+    "cleanWord": "hey",
+    "pos": "",
+    "khmer": "សួស្ដី/ជម្រាបសួរ",
+    "unit": "unit 1"
+  },
+  {
+    "num": 7,
+    "english": "hi",
+    "cleanWord": "hi",
+    "pos": "",
+    "khmer": "សួស្ដី/ជម្រាបសួរ",
+    "unit": "unit 1"
+  },
+  {
+    "num": 8,
+    "english": "information (n)",
+    "cleanWord": "information",
+    "pos": "n",
+    "khmer": "ព័ត៌មាន",
+    "unit": "unit 1"
+  },
+  {
+    "num": 9,
+    "english": "months (n)",
+    "cleanWord": "months",
+    "pos": "n",
+    "khmer": "ខែ",
+    "unit": "unit 1"
+  },
+  {
+    "num": 10,
+    "english": "ordinal numbers (n)",
+    "cleanWord": "ordinal numbers",
+    "pos": "n",
+    "khmer": "លេខរៀងថ្នាក់",
+    "unit": "unit 1"
+  },
+  {
+    "num": 11,
+    "english": "personal (adj)",
+    "cleanWord": "personal",
+    "pos": "adj",
+    "khmer": "ផ្ទាល់ខ្លួន",
+    "unit": "unit 1"
+  },
+  {
+    "num": 12,
+    "english": "phone number (n)",
+    "cleanWord": "phone number",
+    "pos": "n",
+    "khmer": "លេខទូរស័ព្ទ",
+    "unit": "unit 1"
+  },
+  {
+    "num": 13,
+    "english": "spell (v)",
+    "cleanWord": "spell",
+    "pos": "v",
+    "khmer": "ប្រកប (អក្សរ)",
+    "unit": "unit 1"
+  },
+  {
+    "num": 14,
+    "english": "April (n)",
+    "cleanWord": "April",
+    "pos": "n",
+    "khmer": "ខែមេសា",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 15,
+    "english": "August (n)",
+    "cleanWord": "August",
+    "pos": "n",
+    "khmer": "ខែសីហា",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 16,
+    "english": "December (n)",
+    "cleanWord": "December",
+    "pos": "n",
+    "khmer": "ខែធ្នូ",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 17,
+    "english": "February (n)",
+    "cleanWord": "February",
+    "pos": "n",
+    "khmer": "ខែកុម្ភៈ",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 18,
+    "english": "January (n)",
+    "cleanWord": "January",
+    "pos": "n",
+    "khmer": "ខែមករា",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 19,
+    "english": "July (n)",
+    "cleanWord": "July",
+    "pos": "n",
+    "khmer": "ខែកក្កដា",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 20,
+    "english": "June (n)",
+    "cleanWord": "June",
+    "pos": "n",
+    "khmer": "ខែមិថុនា",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 21,
+    "english": "March (n)",
+    "cleanWord": "March",
+    "pos": "n",
+    "khmer": "ខែមីនា",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 22,
+    "english": "May (n)",
+    "cleanWord": "May",
+    "pos": "n",
+    "khmer": "ខែឧសភា",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 23,
+    "english": "November (n)",
+    "cleanWord": "November",
+    "pos": "n",
+    "khmer": "ខែវិច្ឆិកា",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 24,
+    "english": "October (n)",
+    "cleanWord": "October",
+    "pos": "n",
+    "khmer": "ខែតុលា",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 25,
+    "english": "September (n)",
+    "cleanWord": "September",
+    "pos": "n",
+    "khmer": "ខែកញ្ញា",
+    "unit": "unit 1 & 24"
+  },
+  {
+    "num": 26,
+    "english": "America",
+    "cleanWord": "America",
+    "pos": "",
+    "khmer": "ប្រទេសអាមេរិក",
+    "unit": "unit 2"
+  },
+  {
+    "num": 27,
+    "english": "American (n)",
+    "cleanWord": "American",
+    "pos": "n",
+    "khmer": "ជនជាតិអាមេរិក",
+    "unit": "unit 2"
+  },
+  {
+    "num": 28,
+    "english": "Britain",
+    "cleanWord": "Britain",
+    "pos": "",
+    "khmer": "ប្រទេសអង់គ្លេស",
+    "unit": "unit 2"
+  },
+  {
+    "num": 29,
+    "english": "British (adj)",
+    "cleanWord": "British",
+    "pos": "adj",
+    "khmer": "ជនជាតិអង់គ្លេស",
+    "unit": "unit 2"
+  },
+  {
+    "num": 30,
+    "english": "Cambodia",
+    "cleanWord": "Cambodia",
+    "pos": "",
+    "khmer": "ប្រទេសកម្ពុជា",
+    "unit": "unit 2"
+  },
+  {
+    "num": 31,
+    "english": "Cambodian (adj)",
+    "cleanWord": "Cambodian",
+    "pos": "adj",
+    "khmer": "ជនជាតិកម្ពុជា",
+    "unit": "unit 2"
+  },
+  {
+    "num": 32,
+    "english": "Canada",
+    "cleanWord": "Canada",
+    "pos": "",
+    "khmer": "ប្រទេសកាណាដា",
+    "unit": "unit 2"
+  },
+  {
+    "num": 33,
+    "english": "Canadian (adj)",
+    "cleanWord": "Canadian",
+    "pos": "adj",
+    "khmer": "ជនជាតិកាណាដា",
+    "unit": "unit 2"
+  },
+  {
+    "num": 34,
+    "english": "China",
+    "cleanWord": "China",
+    "pos": "",
+    "khmer": "ប្រទេសចិន",
+    "unit": "unit 2"
+  },
+  {
+    "num": 35,
+    "english": "Chinese (adj)",
+    "cleanWord": "Chinese",
+    "pos": "adj",
+    "khmer": "ជនជាតិចិន",
+    "unit": "unit 2"
+  },
+  {
+    "num": 36,
+    "english": "France",
+    "cleanWord": "France",
+    "pos": "",
+    "khmer": "ប្រទេសបារាំង",
+    "unit": "unit 2"
+  },
+  {
+    "num": 37,
+    "english": "French (adj)",
+    "cleanWord": "French",
+    "pos": "adj",
+    "khmer": "ជនជាតិបារាំង",
+    "unit": "unit 2"
+  },
+  {
+    "num": 38,
+    "english": "Japan",
+    "cleanWord": "Japan",
+    "pos": "",
+    "khmer": "ប្រទេសជប៉ុន",
+    "unit": "unit 2"
+  },
+  {
+    "num": 39,
+    "english": "Japanese (adj)",
+    "cleanWord": "Japanese",
+    "pos": "adj",
+    "khmer": "ជនជាតិជប៉ុន",
+    "unit": "unit 2"
+  },
+  {
+    "num": 40,
+    "english": "Spain",
+    "cleanWord": "Spain",
+    "pos": "",
+    "khmer": "ប្រទេសអេស្ប៉ាញ",
+    "unit": "unit 2"
+  },
+  {
+    "num": 41,
+    "english": "Spanish (adj)",
+    "cleanWord": "Spanish",
+    "pos": "adj",
+    "khmer": "ជនជាតិអេស្ប៉ាញ",
+    "unit": "unit 2"
+  },
+  {
+    "num": 42,
+    "english": "Thai (adj)",
+    "cleanWord": "Thai",
+    "pos": "adj",
+    "khmer": "ជនជាតិថៃ",
+    "unit": "unit 2"
+  },
+  {
+    "num": 43,
+    "english": "Thailand (n)",
+    "cleanWord": "Thailand",
+    "pos": "n",
+    "khmer": "ប្រទេសថៃ",
+    "unit": "unit 2"
+  },
+  {
+    "num": 44,
+    "english": "Vietnam",
+    "cleanWord": "Vietnam",
+    "pos": "",
+    "khmer": "ប្រទេសវៀតណាម",
+    "unit": "unit 2"
+  },
+  {
+    "num": 45,
+    "english": "Vietnamese (adj)",
+    "cleanWord": "Vietnamese",
+    "pos": "adj",
+    "khmer": "ជនជាតិវៀតណាម",
+    "unit": "unit 2"
+  },
+  {
+    "num": 46,
+    "english": "country (n)",
+    "cleanWord": "country",
+    "pos": "n",
+    "khmer": "ប្រទេស",
+    "unit": "unit 2"
+  },
+  {
+    "num": 47,
+    "english": "nationality (n)",
+    "cleanWord": "nationality",
+    "pos": "n",
+    "khmer": "សញ្ជាតិ",
+    "unit": "unit 2"
+  },
+  {
+    "num": 48,
+    "english": "bathroom (n)",
+    "cleanWord": "bathroom",
+    "pos": "n",
+    "khmer": "បន្ទប់ទឹក",
+    "unit": "unit 3"
+  },
+  {
+    "num": 49,
+    "english": "bed (n)",
+    "cleanWord": "bed",
+    "pos": "n",
+    "khmer": "គ្រែ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 50,
+    "english": "bedroom (n)",
+    "cleanWord": "bedroom",
+    "pos": "n",
+    "khmer": "បន្ទប់គេង",
+    "unit": "unit 3"
+  },
+  {
+    "num": 51,
+    "english": "behind (prep)",
+    "cleanWord": "behind",
+    "pos": "prep",
+    "khmer": "ខាងក្រោយ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 52,
+    "english": "big (adj)",
+    "cleanWord": "big",
+    "pos": "adj",
+    "khmer": "ធំ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 53,
+    "english": "bookshelf (n)",
+    "cleanWord": "bookshelf",
+    "pos": "n",
+    "khmer": "ទូដាក់សៀវភៅ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 54,
+    "english": "carry (v)",
+    "cleanWord": "carry",
+    "pos": "v",
+    "khmer": "យួរ/កាន់",
+    "unit": "unit 3"
+  },
+  {
+    "num": 55,
+    "english": "closet (n)",
+    "cleanWord": "closet",
+    "pos": "n",
+    "khmer": "ទូដាក់ខោអាវ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 56,
+    "english": "cupboard (n)",
+    "cleanWord": "cupboard",
+    "pos": "n",
+    "khmer": "ទូធ្នើ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 57,
+    "english": "desk (n)",
+    "cleanWord": "desk",
+    "pos": "n",
+    "khmer": "តុការិយាល័យ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 58,
+    "english": "dimensions (n)",
+    "cleanWord": "dimensions",
+    "pos": "n",
+    "khmer": "វិមាត្រ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 59,
+    "english": "drawers (n)",
+    "cleanWord": "drawers",
+    "pos": "n",
+    "khmer": "ថតតុ/ប័ណ្ណទូ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 60,
+    "english": "favourite (adj)",
+    "cleanWord": "favourite",
+    "pos": "adj",
+    "khmer": "ចំណូលចិត្ត",
+    "unit": "unit 3"
+  },
+  {
+    "num": 61,
+    "english": "fish tank (n)",
+    "cleanWord": "fish tank",
+    "pos": "n",
+    "khmer": "ទូ/អាងចិញ្ចឹមត្រី",
+    "unit": "unit 3"
+  },
+  {
+    "num": 62,
+    "english": "furniture (n)",
+    "cleanWord": "furniture",
+    "pos": "n",
+    "khmer": "គ្រឿងសង្ហារិម",
+    "unit": "unit 3"
+  },
+  {
+    "num": 63,
+    "english": "in (prep)",
+    "cleanWord": "in",
+    "pos": "prep",
+    "khmer": "ក្នុង",
+    "unit": "unit 3"
+  },
+  {
+    "num": 64,
+    "english": "in front of (prep phr)",
+    "cleanWord": "in front of",
+    "pos": "prep phr",
+    "khmer": "នៅខាងមុខ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 65,
+    "english": "kitchen (n)",
+    "cleanWord": "kitchen",
+    "pos": "n",
+    "khmer": "ផ្ទះបាយ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 66,
+    "english": "living room (n)",
+    "cleanWord": "living room",
+    "pos": "n",
+    "khmer": "បន្ទប់ទទួលភ្ញៀវ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 67,
+    "english": "mirror (n)",
+    "cleanWord": "mirror",
+    "pos": "n",
+    "khmer": "កញ្ចក់ឆ្លុះមុខ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 68,
+    "english": "on (prep)",
+    "cleanWord": "on",
+    "pos": "prep",
+    "khmer": "នៅលើ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 69,
+    "english": "poster (n)",
+    "cleanWord": "poster",
+    "pos": "n",
+    "khmer": "បណ្ណប្រកាស",
+    "unit": "unit 3"
+  },
+  {
+    "num": 70,
+    "english": "prepositions (n)",
+    "cleanWord": "prepositions",
+    "pos": "n",
+    "khmer": "ថ្នាក់ពាក្យប្រៀបធៀប/បុព្វបទ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 71,
+    "english": "sofa (n)",
+    "cleanWord": "sofa",
+    "pos": "n",
+    "khmer": "កៅអីសូហ្វា",
+    "unit": "unit 3"
+  },
+  {
+    "num": 72,
+    "english": "table (n)",
+    "cleanWord": "table",
+    "pos": "n",
+    "khmer": "តុ",
+    "unit": "unit 3"
+  },
+  {
+    "num": 73,
+    "english": "under (prep)",
+    "cleanWord": "under",
+    "pos": "prep",
+    "khmer": "ខាងក្រោម",
+    "unit": "unit 3"
+  },
+  {
+    "num": 74,
+    "english": "short (adj)",
+    "cleanWord": "short",
+    "pos": "adj",
+    "khmer": "ខ្លី",
+    "unit": "unit 3, 4 & 22"
+  },
+  {
+    "num": 75,
+    "english": "round (adj)",
+    "cleanWord": "round",
+    "pos": "adj",
+    "khmer": "រាងជារង្វង់មូល",
+    "unit": "unit 3 & 21"
+  },
+  {
+    "num": 76,
+    "english": "small (adj)",
+    "cleanWord": "small",
+    "pos": "adj",
+    "khmer": "តូច",
+    "unit": "unit 3 & 21"
+  },
+  {
+    "num": 77,
+    "english": "square (adj)",
+    "cleanWord": "square",
+    "pos": "adj",
+    "khmer": "រាងការ៉េ",
+    "unit": "unit 3 & 21"
+  },
+  {
+    "num": 78,
+    "english": "long (adj)",
+    "cleanWord": "long",
+    "pos": "adj",
+    "khmer": "វែង",
+    "unit": "unit 3 & 22"
+  },
+  {
+    "num": 79,
+    "english": "angry (adj)",
+    "cleanWord": "angry",
+    "pos": "adj",
+    "khmer": "ខឹង",
+    "unit": "unit 4"
+  },
+  {
+    "num": 80,
+    "english": "aunt (n)",
+    "cleanWord": "aunt",
+    "pos": "n",
+    "khmer": "មីងបង្កើត",
+    "unit": "unit 4"
+  },
+  {
+    "num": 81,
+    "english": "cousin (n)",
+    "cleanWord": "cousin",
+    "pos": "n",
+    "khmer": "បងប្អូនជីដូនមួយ",
+    "unit": "unit 4"
+  },
+  {
+    "num": 82,
+    "english": "dirty (adj)",
+    "cleanWord": "dirty",
+    "pos": "adj",
+    "khmer": "កខ្វក់",
+    "unit": "unit 4"
+  },
+  {
+    "num": 83,
+    "english": "father (n)",
+    "cleanWord": "father",
+    "pos": "n",
+    "khmer": "ឪពុក/បិតា",
+    "unit": "unit 4"
+  },
+  {
+    "num": 84,
+    "english": "grandma (n)",
+    "cleanWord": "grandma",
+    "pos": "n",
+    "khmer": "ជីដូន/យាយ",
+    "unit": "unit 4"
+  },
+  {
+    "num": 85,
+    "english": "grandpa (n)",
+    "cleanWord": "grandpa",
+    "pos": "n",
+    "khmer": "ជីតា/តា",
+    "unit": "unit 4"
+  },
+  {
+    "num": 86,
+    "english": "mother (n)",
+    "cleanWord": "mother",
+    "pos": "n",
+    "khmer": "ម្ដាយ/មាតា",
+    "unit": "unit 4"
+  },
+  {
+    "num": 87,
+    "english": "sister (n)",
+    "cleanWord": "sister",
+    "pos": "n",
+    "khmer": "បងប្អូនស្រី",
+    "unit": "unit 4"
+  },
+  {
+    "num": 88,
+    "english": "tall (adj)",
+    "cleanWord": "tall",
+    "pos": "adj",
+    "khmer": "ខ្ពស់",
+    "unit": "unit 4"
+  },
+  {
+    "num": 89,
+    "english": "uncle (n)",
+    "cleanWord": "uncle",
+    "pos": "n",
+    "khmer": "ឪពុកមា/ពូ/មី",
+    "unit": "unit 4"
+  },
+  {
+    "num": 90,
+    "english": "fat (adj)",
+    "cleanWord": "fat",
+    "pos": "adj",
+    "khmer": "ធាត់",
+    "unit": "unit 4 & 10"
+  },
+  {
+    "num": 91,
+    "english": "slim (adj)",
+    "cleanWord": "slim",
+    "pos": "adj",
+    "khmer": "រាងស្ដើង/ស្គមស្រឡូន",
+    "unit": "unit 4, 10 & 22"
+  },
+  {
+    "num": 92,
+    "english": "pretty (adj)",
+    "cleanWord": "pretty",
+    "pos": "adj",
+    "khmer": "ស្រស់ស្អាត",
+    "unit": "unit 4, 21 & 22"
+  },
+  {
+    "num": 93,
+    "english": "young (adj)",
+    "cleanWord": "young",
+    "pos": "adj",
+    "khmer": "វ័យក្មេង",
+    "unit": "unit 4, 21 & 22"
+  },
+  {
+    "num": 94,
+    "english": "old (adj)",
+    "cleanWord": "old",
+    "pos": "adj",
+    "khmer": "ចាស់",
+    "unit": "unit 4 & 22"
+  },
+  {
+    "num": 95,
+    "english": "black (adj)",
+    "cleanWord": "black",
+    "pos": "adj",
+    "khmer": "ពណ៌ខ្មៅ",
+    "unit": "unit 4 & 23"
+  },
+  {
+    "num": 96,
+    "english": "air conditioner (n)",
+    "cleanWord": "air conditioner",
+    "pos": "n",
+    "khmer": "ម៉ាស៊ីនត្រជាក់",
+    "unit": "unit 5"
+  },
+  {
+    "num": 97,
+    "english": "camera (n)",
+    "cleanWord": "camera",
+    "pos": "n",
+    "khmer": "ម៉ាស៊ីនថតរូប",
+    "unit": "unit 5"
+  },
+  {
+    "num": 98,
+    "english": "coach (n)",
+    "cleanWord": "coach",
+    "pos": "n",
+    "khmer": "គ្រូបង្វឹក",
+    "unit": "unit 5"
+  },
+  {
+    "num": 99,
+    "english": "comb (n)",
+    "cleanWord": "comb",
+    "pos": "n",
+    "khmer": "ក្រាស",
+    "unit": "unit 5"
+  },
+  {
+    "num": 100,
+    "english": "eraser (n)",
+    "cleanWord": "eraser",
+    "pos": "n",
+    "khmer": "ជ័រលុប",
+    "unit": "unit 5"
+  },
+  {
+    "num": 101,
+    "english": "medicine (n)",
+    "cleanWord": "medicine",
+    "pos": "n",
+    "khmer": "ឱសថ",
+    "unit": "unit 5"
+  },
+  {
+    "num": 102,
+    "english": "mobile phone (n)",
+    "cleanWord": "mobile phone",
+    "pos": "n",
+    "khmer": "ទូរស័ព្ទដៃ",
+    "unit": "unit 5"
+  },
+  {
+    "num": 103,
+    "english": "motorbike (n)",
+    "cleanWord": "motorbike",
+    "pos": "n",
+    "khmer": "ម៉ូតូ",
+    "unit": "unit 5"
+  },
+  {
+    "num": 104,
+    "english": "notebook (n)",
+    "cleanWord": "notebook",
+    "pos": "n",
+    "khmer": "សៀវភៅកត់ត្រា",
+    "unit": "unit 5"
+  },
+  {
+    "num": 105,
+    "english": "purse (n)",
+    "cleanWord": "purse",
+    "pos": "n",
+    "khmer": "កាបូបលុយស្រី",
+    "unit": "unit 5"
+  },
+  {
+    "num": 106,
+    "english": "television (n)",
+    "cleanWord": "television",
+    "pos": "n",
+    "khmer": "ទូរទស្សន៍",
+    "unit": "unit 5"
+  },
+  {
+    "num": 107,
+    "english": "umbrella (n)",
+    "cleanWord": "umbrella",
+    "pos": "n",
+    "khmer": "ឆ័ត្រ",
+    "unit": "unit 5"
+  },
+  {
+    "num": 108,
+    "english": "wallet (n)",
+    "cleanWord": "wallet",
+    "pos": "n",
+    "khmer": "កាបូបលុយបុរស",
+    "unit": "unit 5"
+  },
+  {
+    "num": 109,
+    "english": "water bottle (n)",
+    "cleanWord": "water bottle",
+    "pos": "n",
+    "khmer": "ដបទឹក",
+    "unit": "unit 5"
+  },
+  {
+    "num": 110,
+    "english": "shoes (n)",
+    "cleanWord": "shoes",
+    "pos": "n",
+    "khmer": "ស្បែកជើង",
+    "unit": "unit 5 & 23"
+  },
+  {
+    "num": 111,
+    "english": "always (adv)",
+    "cleanWord": "always",
+    "pos": "adv",
+    "khmer": "ជានិច្ច/ជាំនិច្ចកាល",
+    "unit": "unit 7"
+  },
+  {
+    "num": 112,
+    "english": "breakfast (n)",
+    "cleanWord": "breakfast",
+    "pos": "n",
+    "khmer": "អាហារពេលព្រឹក",
+    "unit": "unit 7"
+  },
+  {
+    "num": 113,
+    "english": "brush (v)",
+    "cleanWord": "brush",
+    "pos": "v",
+    "khmer": "ដុស (ធ្មេញ)",
+    "unit": "unit 7"
+  },
+  {
+    "num": 114,
+    "english": "daily (adj)",
+    "cleanWord": "daily",
+    "pos": "adj",
+    "khmer": "ប្រចាំថ្ងៃ",
+    "unit": "unit 7"
+  },
+  {
+    "num": 115,
+    "english": "dinner (n)",
+    "cleanWord": "dinner",
+    "pos": "n",
+    "khmer": "អាហារពេលល្ងាច",
+    "unit": "unit 7"
+  },
+  {
+    "num": 116,
+    "english": "get up (phr v)",
+    "cleanWord": "get up",
+    "pos": "phr v",
+    "khmer": "ក្រោកពីគេង",
+    "unit": "unit 7"
+  },
+  {
+    "num": 117,
+    "english": "lunch (n)",
+    "cleanWord": "lunch",
+    "pos": "n",
+    "khmer": "អាហារថ្ងៃត្រង់",
+    "unit": "unit 7"
+  },
+  {
+    "num": 118,
+    "english": "never (adv)",
+    "cleanWord": "never",
+    "pos": "adv",
+    "khmer": "មិនដែល",
+    "unit": "unit 7"
+  },
+  {
+    "num": 119,
+    "english": "occasionally (adv)",
+    "cleanWord": "occasionally",
+    "pos": "adv",
+    "khmer": "ម្តងម្កាល",
+    "unit": "unit 7"
+  },
+  {
+    "num": 120,
+    "english": "often (adv)",
+    "cleanWord": "often",
+    "pos": "adv",
+    "khmer": "ជាញឹកញាប់/ជាំញឹកញាប់",
+    "unit": "unit 7"
+  },
+  {
+    "num": 121,
+    "english": "rarely (adv)",
+    "cleanWord": "rarely",
+    "pos": "adv",
+    "khmer": "កម្រ",
+    "unit": "unit 7"
+  },
+  {
+    "num": 122,
+    "english": "shower (n)",
+    "cleanWord": "shower",
+    "pos": "n",
+    "khmer": "ងូតទឹក",
+    "unit": "unit 7"
+  },
+  {
+    "num": 123,
+    "english": "sometimes (adv)",
+    "cleanWord": "sometimes",
+    "pos": "adv",
+    "khmer": "ជួនកាល/ពេលខ្លះ",
+    "unit": "unit 7"
+  },
+  {
+    "num": 124,
+    "english": "transport (n)",
+    "cleanWord": "transport",
+    "pos": "n",
+    "khmer": "ការដឹកជញ្ជូន",
+    "unit": "unit 7"
+  },
+  {
+    "num": 125,
+    "english": "usually (adv)",
+    "cleanWord": "usually",
+    "pos": "adv",
+    "khmer": "ជាធម្មតា",
+    "unit": "unit 7"
+  },
+  {
+    "num": 126,
+    "english": "homework (n)",
+    "cleanWord": "homework",
+    "pos": "n",
+    "khmer": "កិច្ចការផ្ទះ",
+    "unit": "unit 7 & 11"
+  },
+  {
+    "num": 127,
+    "english": "chess (n)",
+    "cleanWord": "chess",
+    "pos": "n",
+    "khmer": "ល្បែងបាុក/ចត្រង្គ",
+    "unit": "unit 8"
+  },
+  {
+    "num": 128,
+    "english": "computer games (n)",
+    "cleanWord": "computer games",
+    "pos": "n",
+    "khmer": "ហ្គេមកុំព្យូទ័រ",
+    "unit": "unit 8"
+  },
+  {
+    "num": 129,
+    "english": "leisure activities (n)",
+    "cleanWord": "leisure activities",
+    "pos": "n",
+    "khmer": "សកម្មភាពពេលទំនេរ",
+    "unit": "unit 8"
+  },
+  {
+    "num": 130,
+    "english": "read (v)",
+    "cleanWord": "read",
+    "pos": "v",
+    "khmer": "អាន",
+    "unit": "unit 8"
+  },
+  {
+    "num": 131,
+    "english": "football (n)",
+    "cleanWord": "football",
+    "pos": "n",
+    "khmer": "កីឡាបាល់ទាត់",
+    "unit": "unit 8 & 9"
+  },
+  {
+    "num": 132,
+    "english": "swimming (n)",
+    "cleanWord": "swimming",
+    "pos": "n",
+    "khmer": "ការហែលទឹក",
+    "unit": "unit 8 & 9"
+  },
+  {
+    "num": 133,
+    "english": "listen (v)",
+    "cleanWord": "listen",
+    "pos": "v",
+    "khmer": "ស្តាប់",
+    "unit": "unit 8 & 11"
+  },
+  {
+    "num": 134,
+    "english": "music (n)",
+    "cleanWord": "music",
+    "pos": "n",
+    "khmer": "តន្ត្រី",
+    "unit": "unit 8 & 11"
+  },
+  {
+    "num": 135,
+    "english": "walk (n & v)",
+    "cleanWord": "walk",
+    "pos": "n & v",
+    "khmer": "ការដើរ/ដើរ",
+    "unit": "unit 8 & 11"
+  },
+  {
+    "num": 136,
+    "english": "badminton (n)",
+    "cleanWord": "badminton",
+    "pos": "n",
+    "khmer": "កីឡាវាយសី",
+    "unit": "unit 9"
+  },
+  {
+    "num": 137,
+    "english": "baseball (n)",
+    "cleanWord": "baseball",
+    "pos": "n",
+    "khmer": "កីឡាវាយកូនបាល់",
+    "unit": "unit 9"
+  },
+  {
+    "num": 138,
+    "english": "basketball (n)",
+    "cleanWord": "basketball",
+    "pos": "n",
+    "khmer": "កីឡាបាល់បោះ",
+    "unit": "unit 9"
+  },
+  {
+    "num": 139,
+    "english": "golf (n)",
+    "cleanWord": "golf",
+    "pos": "n",
+    "khmer": "កីឡាវាយកូនហ្គោល",
+    "unit": "unit 9"
+  },
+  {
+    "num": 140,
+    "english": "hiking (n)",
+    "cleanWord": "hiking",
+    "pos": "n",
+    "khmer": "ការដើរព្រៃ/ការឡើងភ្នំ",
+    "unit": "unit 9"
+  },
+  {
+    "num": 141,
+    "english": "jogging (n)",
+    "cleanWord": "jogging",
+    "pos": "n",
+    "khmer": "រត់ត្រកូវ",
+    "unit": "unit 9"
+  },
+  {
+    "num": 142,
+    "english": "judo (n)",
+    "cleanWord": "judo",
+    "pos": "n",
+    "khmer": "កីឡាយូដូ (ចំបាប់ជប៉ុន)",
+    "unit": "unit 9"
+  },
+  {
+    "num": 143,
+    "english": "karate (n)",
+    "cleanWord": "karate",
+    "pos": "n",
+    "khmer": "ការ៉ាតេ",
+    "unit": "unit 9"
+  },
+  {
+    "num": 144,
+    "english": "match (n)",
+    "cleanWord": "match",
+    "pos": "n",
+    "khmer": "ការប្រកួត",
+    "unit": "unit 9"
+  },
+  {
+    "num": 145,
+    "english": "players (n)",
+    "cleanWord": "players",
+    "pos": "n",
+    "khmer": "កីឡាករ/អ្នកលេង",
+    "unit": "unit 9"
+  },
+  {
+    "num": 146,
+    "english": "points (n)",
+    "cleanWord": "points",
+    "pos": "n",
+    "khmer": "ពិន្ទុ",
+    "unit": "unit 9"
+  },
+  {
+    "num": 147,
+    "english": "rules (n)",
+    "cleanWord": "rules",
+    "pos": "n",
+    "khmer": "ច្បាប់",
+    "unit": "unit 9"
+  },
+  {
+    "num": 148,
+    "english": "scores (n)",
+    "cleanWord": "scores",
+    "pos": "n",
+    "khmer": "ពិន្ទុ",
+    "unit": "unit 9"
+  },
+  {
+    "num": 149,
+    "english": "teams (n)",
+    "cleanWord": "teams",
+    "pos": "n",
+    "khmer": "ក្រុម",
+    "unit": "unit 9"
+  },
+  {
+    "num": 150,
+    "english": "volleyball (n)",
+    "cleanWord": "volleyball",
+    "pos": "n",
+    "khmer": "កីឡាបាល់ទះ",
+    "unit": "unit 9"
+  },
+  {
+    "num": 151,
+    "english": "yoga (n)",
+    "cleanWord": "yoga",
+    "pos": "n",
+    "khmer": "លំហាត់ប្រាណយូហ្គា",
+    "unit": "unit 9"
+  },
+  {
+    "num": 152,
+    "english": "bad (adj)",
+    "cleanWord": "bad",
+    "pos": "adj",
+    "khmer": "អាក្រក់",
+    "unit": "unit 10"
+  },
+  {
+    "num": 153,
+    "english": "dangerous (adj)",
+    "cleanWord": "dangerous",
+    "pos": "adj",
+    "khmer": "ដែលគ្រោះថ្នាក់",
+    "unit": "unit 10"
+  },
+  {
+    "num": 154,
+    "english": "enjoyable (adj)",
+    "cleanWord": "enjoyable",
+    "pos": "adj",
+    "khmer": "ដែលធ្វើឱ្យរីករាយ",
+    "unit": "unit 10"
+  },
+  {
+    "num": 155,
+    "english": "fast (adj)",
+    "cleanWord": "fast",
+    "pos": "adj",
+    "khmer": "លឿន",
+    "unit": "unit 10"
+  },
+  {
+    "num": 156,
+    "english": "fun (adj)",
+    "cleanWord": "fun",
+    "pos": "adj",
+    "khmer": "រីករាយ",
+    "unit": "unit 10"
+  },
+  {
+    "num": 157,
+    "english": "good (adj)",
+    "cleanWord": "good",
+    "pos": "adj",
+    "khmer": "ល្អ",
+    "unit": "unit 10"
+  },
+  {
+    "num": 158,
+    "english": "high (adj)",
+    "cleanWord": "high",
+    "pos": "adj",
+    "khmer": "ខ្ពស់",
+    "unit": "unit 10"
+  },
+  {
+    "num": 159,
+    "english": "important (adj)",
+    "cleanWord": "important",
+    "pos": "adj",
+    "khmer": "ដែលសំខាន់",
+    "unit": "unit 10"
+  },
+  {
+    "num": 160,
+    "english": "little/few (adj)",
+    "cleanWord": "little/few",
+    "pos": "adj",
+    "khmer": "តិចតួច/ខ្លះៗ",
+    "unit": "unit 10"
+  },
+  {
+    "num": 161,
+    "english": "low (adj)",
+    "cleanWord": "low",
+    "pos": "adj",
+    "khmer": "ទាប",
+    "unit": "unit 10"
+  },
+  {
+    "num": 162,
+    "english": "lucky (adj)",
+    "cleanWord": "lucky",
+    "pos": "adj",
+    "khmer": "ដែល្យមានសំណាង",
+    "unit": "unit 10"
+  },
+  {
+    "num": 163,
+    "english": "many/much (adj)",
+    "cleanWord": "many/much",
+    "pos": "adj",
+    "khmer": "ច្រើន",
+    "unit": "unit 10"
+  },
+  {
+    "num": 164,
+    "english": "normal (adj)",
+    "cleanWord": "normal",
+    "pos": "adj",
+    "khmer": "ធម្មតា",
+    "unit": "unit 10"
+  },
+  {
+    "num": 165,
+    "english": "pleasant (adj)",
+    "cleanWord": "pleasant",
+    "pos": "adj",
+    "khmer": "រីករាយ",
+    "unit": "unit 10"
+  },
+  {
+    "num": 166,
+    "english": "relaxing (adj)",
+    "cleanWord": "relaxing",
+    "pos": "adj",
+    "khmer": "ដែលធូរស្រាលក្នុងអារម្មណ៍",
+    "unit": "unit 10"
+  },
+  {
+    "num": 167,
+    "english": "social (adj)",
+    "cleanWord": "social",
+    "pos": "adj",
+    "khmer": "ដែលចុះសម្រុង",
+    "unit": "unit 10"
+  },
+  {
+    "num": 168,
+    "english": "strong (adj)",
+    "cleanWord": "strong",
+    "pos": "adj",
+    "khmer": "ខ្លាំង",
+    "unit": "unit 10"
+  },
+  {
+    "num": 169,
+    "english": "tiring (adj)",
+    "cleanWord": "tiring",
+    "pos": "adj",
+    "khmer": "ដែលធ្វើឱ្យហត់នឿយ",
+    "unit": "unit 10"
+  },
+  {
+    "num": 170,
+    "english": "weak (adj)",
+    "cleanWord": "weak",
+    "pos": "adj",
+    "khmer": "ខ្សោយ",
+    "unit": "unit 10"
+  },
+  {
+    "num": 171,
+    "english": "boring (adj)",
+    "cleanWord": "boring",
+    "pos": "adj",
+    "khmer": "គួរឱ្យធុញទ្រាន់/ធុញថប់",
+    "unit": "unit 10, 11 & 27"
+  },
+  {
+    "num": 172,
+    "english": "exciting (adj)",
+    "cleanWord": "exciting",
+    "pos": "adj",
+    "khmer": "ដែលធ្វើឱ្យរំភើប",
+    "unit": "unit 10, 11 & 27"
+  },
+  {
+    "num": 173,
+    "english": "difficult (adj)",
+    "cleanWord": "difficult",
+    "pos": "adj",
+    "khmer": "លំបាក/ពិបាក",
+    "unit": "unit 10 & 22"
+  },
+  {
+    "num": 174,
+    "english": "slow (adj)",
+    "cleanWord": "slow",
+    "pos": "adj",
+    "khmer": "យឺត",
+    "unit": "unit 10 & 27"
+  },
+  {
+    "num": 175,
+    "english": "amazed (adj)",
+    "cleanWord": "amazed",
+    "pos": "adj",
+    "khmer": "ភ្ញាក់ផ្អើល",
+    "unit": "unit 11"
+  },
+  {
+    "num": 176,
+    "english": "amazing (adj)",
+    "cleanWord": "amazing",
+    "pos": "adj",
+    "khmer": "ដែលគួរឱ្យភ្ញាក់ផ្អើល",
+    "unit": "unit 11"
+  },
+  {
+    "num": 177,
+    "english": "bored (adj)",
+    "cleanWord": "bored",
+    "pos": "adj",
+    "khmer": "ធុញទ្រាន់/ធុញថប់",
+    "unit": "unit 11"
+  },
+  {
+    "num": 178,
+    "english": "disappointed (adj)",
+    "cleanWord": "disappointed",
+    "pos": "adj",
+    "khmer": "ខកចិត្ត",
+    "unit": "unit 11"
+  },
+  {
+    "num": 179,
+    "english": "disappointing (adj)",
+    "cleanWord": "disappointing",
+    "pos": "adj",
+    "khmer": "ដែលធ្វើឱ្យខកចិត្ត",
+    "unit": "unit 11"
+  },
+  {
+    "num": 180,
+    "english": "excited (adj)",
+    "cleanWord": "excited",
+    "pos": "adj",
+    "khmer": "រំភើប",
+    "unit": "unit 11"
+  },
+  {
+    "num": 181,
+    "english": "film (n)",
+    "cleanWord": "film",
+    "pos": "n",
+    "khmer": "ភាពយន្ត",
+    "unit": "unit 11"
+  },
+  {
+    "num": 182,
+    "english": "interested (adj)",
+    "cleanWord": "interested",
+    "pos": "adj",
+    "khmer": "ចាប់អារម្មណ៍",
+    "unit": "unit 11"
+  },
+  {
+    "num": 183,
+    "english": "paintings (n)",
+    "cleanWord": "paintings",
+    "pos": "n",
+    "khmer": "គំនូរ",
+    "unit": "unit 11"
+  },
+  {
+    "num": 184,
+    "english": "relaxed (adj)",
+    "cleanWord": "relaxed",
+    "pos": "adj",
+    "khmer": "ធូរស្រាលក្នុងអារម្មណ៍",
+    "unit": "unit 11"
+  },
+  {
+    "num": 185,
+    "english": "spend (v)",
+    "cleanWord": "spend",
+    "pos": "v",
+    "khmer": "ចំណាយ",
+    "unit": "unit 11"
+  },
+  {
+    "num": 186,
+    "english": "interesting (adj)",
+    "cleanWord": "interesting",
+    "pos": "adj",
+    "khmer": "ចំណាប់អារម្មណ៍",
+    "unit": "unit 11 & 27"
+  },
+  {
+    "num": 187,
+    "english": "French fries (n)",
+    "cleanWord": "French fries",
+    "pos": "n",
+    "khmer": "ដំឡូងបារាំងបំពង",
+    "unit": "unit 13"
+  },
+  {
+    "num": 188,
+    "english": "after (adv)",
+    "cleanWord": "after",
+    "pos": "adv",
+    "khmer": "បន្ទាប់ពី/ក្រោយពី",
+    "unit": "unit 13"
+  },
+  {
+    "num": 189,
+    "english": "after that (adv)",
+    "cleanWord": "after that",
+    "pos": "adv",
+    "khmer": "បន្ទាប់ពីនោះ/ក្រោយពីនោះ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 190,
+    "english": "boiled egg (n)",
+    "cleanWord": "boiled egg",
+    "pos": "n",
+    "khmer": "ស៊ុតស្ងោរ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 191,
+    "english": "bread (n)",
+    "cleanWord": "bread",
+    "pos": "n",
+    "khmer": "នំប៉័ង",
+    "unit": "unit 13"
+  },
+  {
+    "num": 192,
+    "english": "chili sauce (n)",
+    "cleanWord": "chili sauce",
+    "pos": "n",
+    "khmer": "ទឹកម្ទេស",
+    "unit": "unit 13"
+  },
+  {
+    "num": 193,
+    "english": "chop (v)",
+    "cleanWord": "chop",
+    "pos": "v",
+    "khmer": "ចិញ្ច្រាំ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 194,
+    "english": "coke (n)",
+    "cleanWord": "coke",
+    "pos": "n",
+    "khmer": "កូកាកូឡា (ភេសជ្ជៈ)",
+    "unit": "unit 13"
+  },
+  {
+    "num": 195,
+    "english": "cut (v)",
+    "cleanWord": "cut",
+    "pos": "v",
+    "khmer": "កាត់",
+    "unit": "unit 13"
+  },
+  {
+    "num": 196,
+    "english": "finally (adv)",
+    "cleanWord": "finally",
+    "pos": "adv",
+    "khmer": "ទីបំផុត",
+    "unit": "unit 13"
+  },
+  {
+    "num": 197,
+    "english": "first (adv)",
+    "cleanWord": "first",
+    "pos": "adv",
+    "khmer": "ទី១",
+    "unit": "unit 13"
+  },
+  {
+    "num": 198,
+    "english": "fry (v)",
+    "cleanWord": "fry",
+    "pos": "v",
+    "khmer": "ឆា/ចៀន/បំពង",
+    "unit": "unit 13"
+  },
+  {
+    "num": 199,
+    "english": "hamburger (n)",
+    "cleanWord": "hamburger",
+    "pos": "n",
+    "khmer": "ហាំប៊ឺហ្គឺ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 200,
+    "english": "hot dog (n)",
+    "cleanWord": "hot dog",
+    "pos": "n",
+    "khmer": "សាច់ក្រក",
+    "unit": "unit 13"
+  },
+  {
+    "num": 201,
+    "english": "milk (n)",
+    "cleanWord": "milk",
+    "pos": "n",
+    "khmer": "ទឹកដោះគោគោសល់",
+    "unit": "unit 13"
+  },
+  {
+    "num": 202,
+    "english": "mix (v)",
+    "cleanWord": "mix",
+    "pos": "v",
+    "khmer": "លាយ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 203,
+    "english": "next (adv)",
+    "cleanWord": "next",
+    "pos": "adv",
+    "khmer": "បន្ទាប់",
+    "unit": "unit 13"
+  },
+  {
+    "num": 204,
+    "english": "oil (n)",
+    "cleanWord": "oil",
+    "pos": "n",
+    "khmer": "ប្រេងឆា",
+    "unit": "unit 13"
+  },
+  {
+    "num": 205,
+    "english": "orange juice (n)",
+    "cleanWord": "orange juice",
+    "pos": "n",
+    "khmer": "ទឹកក្រូចៀបស្រស់",
+    "unit": "unit 13"
+  },
+  {
+    "num": 206,
+    "english": "peel (v)",
+    "cleanWord": "peel",
+    "pos": "v",
+    "khmer": "បកសំបក",
+    "unit": "unit 13"
+  },
+  {
+    "num": 207,
+    "english": "pepper (n)",
+    "cleanWord": "pepper",
+    "pos": "n",
+    "khmer": "ម្រេច",
+    "unit": "unit 13"
+  },
+  {
+    "num": 208,
+    "english": "pizza (n)",
+    "cleanWord": "pizza",
+    "pos": "n",
+    "khmer": "ភីហ្សា",
+    "unit": "unit 13"
+  },
+  {
+    "num": 209,
+    "english": "pour (v)",
+    "cleanWord": "pour",
+    "pos": "v",
+    "khmer": "ចាក់ចេញ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 210,
+    "english": "salt (n)",
+    "cleanWord": "salt",
+    "pos": "n",
+    "khmer": "អំបិល",
+    "unit": "unit 13"
+  },
+  {
+    "num": 211,
+    "english": "sandwich (n)",
+    "cleanWord": "sandwich",
+    "pos": "n",
+    "khmer": "សាំងវិច",
+    "unit": "unit 13"
+  },
+  {
+    "num": 212,
+    "english": "serve (v)",
+    "cleanWord": "serve",
+    "pos": "v",
+    "khmer": "បម្រើ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 213,
+    "english": "slice (v)",
+    "cleanWord": "slice",
+    "pos": "v",
+    "khmer": "ហាន់ជាចំណិត",
+    "unit": "unit 13"
+  },
+  {
+    "num": 214,
+    "english": "soup (n)",
+    "cleanWord": "soup",
+    "pos": "n",
+    "khmer": "ស៊ុប/សម្ល",
+    "unit": "unit 13"
+  },
+  {
+    "num": 215,
+    "english": "soy sauce (n)",
+    "cleanWord": "soy sauce",
+    "pos": "n",
+    "khmer": "ទឹកស៊ីអ៊ីវ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 216,
+    "english": "stir (v)",
+    "cleanWord": "stir",
+    "pos": "v",
+    "khmer": "កូរ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 217,
+    "english": "sugar (n)",
+    "cleanWord": "sugar",
+    "pos": "n",
+    "khmer": "ស្ករ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 218,
+    "english": "tea (n)",
+    "cleanWord": "tea",
+    "pos": "n",
+    "khmer": "តែ",
+    "unit": "unit 13"
+  },
+  {
+    "num": 219,
+    "english": "then (adv)",
+    "cleanWord": "then",
+    "pos": "adv",
+    "khmer": "បន្ទាប់មក",
+    "unit": "unit 13"
+  },
+  {
+    "num": 220,
+    "english": "wash (v)",
+    "cleanWord": "wash",
+    "pos": "v",
+    "khmer": "លាងសម្អាត",
+    "unit": "unit 13"
+  },
+  {
+    "num": 221,
+    "english": "(a) bottle of",
+    "cleanWord": "(a) bottle of",
+    "pos": "",
+    "khmer": "... (យីស) ដប",
+    "unit": "unit 14"
+  },
+  {
+    "num": 222,
+    "english": "(a) carton of",
+    "cleanWord": "(a) carton of",
+    "pos": "",
+    "khmer": "... (យីស) កេស",
+    "unit": "unit 14"
+  },
+  {
+    "num": 223,
+    "english": "(a) cup of",
+    "cleanWord": "(a) cup of",
+    "pos": "",
+    "khmer": "... (យីស) ពែង",
+    "unit": "unit 14"
+  },
+  {
+    "num": 224,
+    "english": "(a) glass of",
+    "cleanWord": "(a) glass of",
+    "pos": "",
+    "khmer": "... (យីស) កែវ",
+    "unit": "unit 14"
+  },
+  {
+    "num": 225,
+    "english": "(a) jar of",
+    "cleanWord": "(a) jar of",
+    "pos": "",
+    "khmer": "... (យីស) ក្រឡ",
+    "unit": "unit 14"
+  },
+  {
+    "num": 226,
+    "english": "(a) packet of",
+    "cleanWord": "(a) packet of",
+    "pos": "",
+    "khmer": "... (យីស) កញ្ចប់",
+    "unit": "unit 14"
+  },
+  {
+    "num": 227,
+    "english": "(a) slice of",
+    "cleanWord": "(a) slice of",
+    "pos": "",
+    "khmer": "... (យីស) ចំណិត",
+    "unit": "unit 14"
+  },
+  {
+    "num": 228,
+    "english": "chicken (n)",
+    "cleanWord": "chicken",
+    "pos": "n",
+    "khmer": "សាច់មាន់",
+    "unit": "unit 14"
+  },
+  {
+    "num": 229,
+    "english": "coffee (n)",
+    "cleanWord": "coffee",
+    "pos": "n",
+    "khmer": "កាហ្វេ",
+    "unit": "unit 14"
+  },
+  {
+    "num": 230,
+    "english": "cucumbers (n)",
+    "cleanWord": "cucumbers",
+    "pos": "n",
+    "khmer": "ផ្លែត្រសក់",
+    "unit": "unit 14"
+  },
+  {
+    "num": 231,
+    "english": "dried fish (n)",
+    "cleanWord": "dried fish",
+    "pos": "n",
+    "khmer": "ត្រីងៀត",
+    "unit": "unit 14"
+  },
+  {
+    "num": 232,
+    "english": "fish sauce (n)",
+    "cleanWord": "fish sauce",
+    "pos": "n",
+    "khmer": "ទឹកត្រី",
+    "unit": "unit 14"
+  },
+  {
+    "num": 233,
+    "english": "fruits (n)",
+    "cleanWord": "fruits",
+    "pos": "n",
+    "khmer": "ផ្លែឈើ",
+    "unit": "unit 14"
+  },
+  {
+    "num": 234,
+    "english": "onions (n)",
+    "cleanWord": "onions",
+    "pos": "n",
+    "khmer": "ខ្ទឹមបារាំង",
+    "unit": "unit 14"
+  },
+  {
+    "num": 235,
+    "english": "rice (n)",
+    "cleanWord": "rice",
+    "pos": "n",
+    "khmer": "បាយ",
+    "unit": "unit 14"
+  },
+  {
+    "num": 236,
+    "english": "vegetables (n)",
+    "cleanWord": "vegetables",
+    "pos": "n",
+    "khmer": "បន្លែ",
+    "unit": "unit 14"
+  },
+  {
+    "num": 237,
+    "english": "bill (n)",
+    "cleanWord": "bill",
+    "pos": "n",
+    "khmer": "វិក្កយបត្រ",
+    "unit": "unit 15"
+  },
+  {
+    "num": 238,
+    "english": "bland (adj)",
+    "cleanWord": "bland",
+    "pos": "adj",
+    "khmer": "សាបជាតិសាប",
+    "unit": "unit 15"
+  },
+  {
+    "num": 239,
+    "english": "check (n)",
+    "cleanWord": "check",
+    "pos": "n",
+    "khmer": "សែក/មូលប្បទានប័ត្រ",
+    "unit": "unit 15"
+  },
+  {
+    "num": 240,
+    "english": "come with (phr v)",
+    "cleanWord": "come with",
+    "pos": "phr v",
+    "khmer": "មកជាមួយ",
+    "unit": "unit 15"
+  },
+  {
+    "num": 241,
+    "english": "complain about (phr v)",
+    "cleanWord": "complain about",
+    "pos": "phr v",
+    "khmer": "ត្អូញត្អែរអំពី/ជំនាន់អំពី",
+    "unit": "unit 15"
+  },
+  {
+    "num": 242,
+    "english": "consist of (phr v)",
+    "cleanWord": "consist of",
+    "pos": "phr v",
+    "khmer": "រួមមាន",
+    "unit": "unit 15"
+  },
+  {
+    "num": 243,
+    "english": "crisps (n)",
+    "cleanWord": "crisps",
+    "pos": "n",
+    "khmer": "នំចំណីស្រួយ",
+    "unit": "unit 15"
+  },
+  {
+    "num": 244,
+    "english": "decide on (phr v)",
+    "cleanWord": "decide on",
+    "pos": "phr v",
+    "khmer": "សម្រេចចិត្តលើ/អំពី",
+    "unit": "unit 15"
+  },
+  {
+    "num": 245,
+    "english": "dessert (n)",
+    "cleanWord": "dessert",
+    "pos": "n",
+    "khmer": "បង្អែម",
+    "unit": "unit 15"
+  },
+  {
+    "num": 246,
+    "english": "diet (n)",
+    "cleanWord": "diet",
+    "pos": "n",
+    "khmer": "របបអាហារ",
+    "unit": "unit 15"
+  },
+  {
+    "num": 247,
+    "english": "dry (adj)",
+    "cleanWord": "dry",
+    "pos": "adj",
+    "khmer": "ហួត/ស្ងួត",
+    "unit": "unit 15"
+  },
+  {
+    "num": 248,
+    "english": "greasy (adj)",
+    "cleanWord": "greasy",
+    "pos": "adj",
+    "khmer": "ដែលមានខ្លាញ់ច្រើន",
+    "unit": "unit 15"
+  },
+  {
+    "num": 249,
+    "english": "healthy (adj)",
+    "cleanWord": "healthy",
+    "pos": "adj",
+    "khmer": "ដែលមានសុខភាពល្អ/សុខភាពមាំមួន",
+    "unit": "unit 15"
+  },
+  {
+    "num": 250,
+    "english": "hear about (phr v)",
+    "cleanWord": "hear about",
+    "pos": "phr v",
+    "khmer": "ឮអំពី",
+    "unit": "unit 15"
+  },
+  {
+    "num": 251,
+    "english": "look for (phr v)",
+    "cleanWord": "look for",
+    "pos": "phr v",
+    "khmer": "ស្វែងរក",
+    "unit": "unit 15"
+  },
+  {
+    "num": 252,
+    "english": "menu (n)",
+    "cleanWord": "menu",
+    "pos": "n",
+    "khmer": "បញ្ជីមុខម្ហូប",
+    "unit": "unit 15"
+  },
+  {
+    "num": 253,
+    "english": "pay for (phr v)",
+    "cleanWord": "pay for",
+    "pos": "phr v",
+    "khmer": "បង់ប្រាក់ឱ្យ",
+    "unit": "unit 15"
+  },
+  {
+    "num": 254,
+    "english": "ripe (adj)",
+    "cleanWord": "ripe",
+    "pos": "adj",
+    "khmer": "ទុំ",
+    "unit": "unit 15"
+  },
+  {
+    "num": 255,
+    "english": "salad (n)",
+    "cleanWord": "salad",
+    "pos": "n",
+    "khmer": "សាឡាត់/ញ៉ាំ",
+    "unit": "unit 15"
+  },
+  {
+    "num": 256,
+    "english": "suffer from (phr v)",
+    "cleanWord": "suffer from",
+    "pos": "phr v",
+    "khmer": "រងគ្រោះពី",
+    "unit": "unit 15"
+  },
+  {
+    "num": 257,
+    "english": "sweets (n)",
+    "cleanWord": "sweets",
+    "pos": "n",
+    "khmer": "នំផ្អែម/ស្ករគ្រាប់",
+    "unit": "unit 15"
+  },
+  {
+    "num": 258,
+    "english": "tasty (adj)",
+    "cleanWord": "tasty",
+    "pos": "adj",
+    "khmer": "មានរសជាតិឆ្ងាញ់",
+    "unit": "unit 15"
+  },
+  {
+    "num": 259,
+    "english": "think about (phr v)",
+    "cleanWord": "think about",
+    "pos": "phr v",
+    "khmer": "គិតអំពី",
+    "unit": "unit 15"
+  },
+  {
+    "num": 260,
+    "english": "tips (n)",
+    "cleanWord": "tips",
+    "pos": "n",
+    "khmer": "លុយទឹកតែ/គន្លឹះ",
+    "unit": "unit 15"
+  },
+  {
+    "num": 261,
+    "english": "unhealthy (adj)",
+    "cleanWord": "unhealthy",
+    "pos": "adj",
+    "khmer": "មិនល្អសម្រាប់សុខភាព/មិនជាសុខភាព",
+    "unit": "unit 15"
+  },
+  {
+    "num": 262,
+    "english": "unripe (adj)",
+    "cleanWord": "unripe",
+    "pos": "adj",
+    "khmer": "មិនទាន់ទុំ",
+    "unit": "unit 15"
+  },
+  {
+    "num": 263,
+    "english": "waiter (n)",
+    "cleanWord": "waiter",
+    "pos": "n",
+    "khmer": "អ្នករត់តុប្រុស",
+    "unit": "unit 15"
+  },
+  {
+    "num": 264,
+    "english": "cardinal numbers (n)",
+    "cleanWord": "cardinal numbers",
+    "pos": "n",
+    "khmer": "លេខរៀង",
+    "unit": "unit 16"
+  },
+  {
+    "num": 265,
+    "english": "pitch in (phr v)",
+    "cleanWord": "pitch in",
+    "pos": "phr v",
+    "khmer": "ជួយធ្វើ",
+    "unit": "unit 16"
+  },
+  {
+    "num": 266,
+    "english": "bakery (n)",
+    "cleanWord": "bakery",
+    "pos": "n",
+    "khmer": "កន្លែងធ្វើនំ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 267,
+    "english": "bookshop (n)",
+    "cleanWord": "bookshop",
+    "pos": "n",
+    "khmer": "ហាងលក់សៀវភៅ/បណ្ណាល័យ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 268,
+    "english": "cinema (n)",
+    "cleanWord": "cinema",
+    "pos": "n",
+    "khmer": "រោងភាពយន្ត",
+    "unit": "unit 17"
+  },
+  {
+    "num": 269,
+    "english": "fishing (n)",
+    "cleanWord": "fishing",
+    "pos": "n",
+    "khmer": "នេសាទ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 270,
+    "english": "forest (n)",
+    "cleanWord": "forest",
+    "pos": "n",
+    "khmer": "ព្រៃ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 271,
+    "english": "island (n)",
+    "cleanWord": "island",
+    "pos": "n",
+    "khmer": "កោះ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 272,
+    "english": "library (n)",
+    "cleanWord": "library",
+    "pos": "n",
+    "khmer": "បណ្ណាល័យ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 273,
+    "english": "mountain (n)",
+    "cleanWord": "mountain",
+    "pos": "n",
+    "khmer": "ភ្នំ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 274,
+    "english": "park (n)",
+    "cleanWord": "park",
+    "pos": "n",
+    "khmer": "ចំណត/សួនច្បារ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 275,
+    "english": "picnic (n)",
+    "cleanWord": "picnic",
+    "pos": "n",
+    "khmer": "អាហារពេលនេសាទ/អាហារពេលលំហែរកាយ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 276,
+    "english": "restaurant (n)",
+    "cleanWord": "restaurant",
+    "pos": "n",
+    "khmer": "ភោជនីយដ្ឋាន",
+    "unit": "unit 17"
+  },
+  {
+    "num": 277,
+    "english": "river (n)",
+    "cleanWord": "river",
+    "pos": "n",
+    "khmer": "ទន្លេ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 278,
+    "english": "royal palace (n)",
+    "cleanWord": "royal palace",
+    "pos": "n",
+    "khmer": "ព្រះបរមរាជវាំង",
+    "unit": "unit 17"
+  },
+  {
+    "num": 279,
+    "english": "supermarket (n)",
+    "cleanWord": "supermarket",
+    "pos": "n",
+    "khmer": "ផ្សារទំនើប",
+    "unit": "unit 17"
+  },
+  {
+    "num": 280,
+    "english": "temple (n)",
+    "cleanWord": "temple",
+    "pos": "n",
+    "khmer": "ប្រាសាទ",
+    "unit": "unit 17"
+  },
+  {
+    "num": 281,
+    "english": "beach (n)",
+    "cleanWord": "beach",
+    "pos": "n",
+    "khmer": "ឆ្នេរខ្សាច់",
+    "unit": "unit 17 & 31"
+  },
+  {
+    "num": 282,
+    "english": "museum (n)",
+    "cleanWord": "museum",
+    "pos": "n",
+    "khmer": "សារមន្ទីរ",
+    "unit": "unit 17 & 31"
+  },
+  {
+    "num": 283,
+    "english": "circular (adj)",
+    "cleanWord": "circular",
+    "pos": "adj",
+    "khmer": "រាងមូល",
+    "unit": "unit 21"
+  },
+  {
+    "num": 284,
+    "english": "clever (adj)",
+    "cleanWord": "clever",
+    "pos": "adj",
+    "khmer": "ឆ្លាត",
+    "unit": "unit 21"
+  },
+  {
+    "num": 285,
+    "english": "colourful (adj)",
+    "cleanWord": "colourful",
+    "pos": "adj",
+    "khmer": "ចម្រុះពណ៌",
+    "unit": "unit 21"
+  },
+  {
+    "num": 286,
+    "english": "large (adj)",
+    "cleanWord": "large",
+    "pos": "adj",
+    "khmer": "ធំ",
+    "unit": "unit 21"
+  },
+  {
+    "num": 287,
+    "english": "modern (adj)",
+    "cleanWord": "modern",
+    "pos": "adj",
+    "khmer": "ទំនើប",
+    "unit": "unit 21"
+  },
+  {
+    "num": 288,
+    "english": "nice (adj)",
+    "cleanWord": "nice",
+    "pos": "adj",
+    "khmer": "ស្អាត",
+    "unit": "unit 21"
+  },
+  {
+    "num": 289,
+    "english": "rectangular (adj)",
+    "cleanWord": "rectangular",
+    "pos": "adj",
+    "khmer": "រាងចតុកោណកែង",
+    "unit": "unit 21"
+  },
+  {
+    "num": 290,
+    "english": "shapes (n)",
+    "cleanWord": "shapes",
+    "pos": "n",
+    "khmer": "ទ្រង់ទ្រាយ",
+    "unit": "unit 21"
+  },
+  {
+    "num": 291,
+    "english": "smart (adj)",
+    "cleanWord": "smart",
+    "pos": "adj",
+    "khmer": "ឆ្លាត",
+    "unit": "unit 21"
+  },
+  {
+    "num": 292,
+    "english": "stone (n)",
+    "cleanWord": "stone",
+    "pos": "n",
+    "khmer": "ថ្ម/ដុំថ្ម",
+    "unit": "unit 21"
+  },
+  {
+    "num": 293,
+    "english": "triangular (adj)",
+    "cleanWord": "triangular",
+    "pos": "adj",
+    "khmer": "រាងត្រីកោណ",
+    "unit": "unit 21"
+  },
+  {
+    "num": 294,
+    "english": "kind (adj)",
+    "cleanWord": "kind",
+    "pos": "adj",
+    "khmer": "ចិត្តល្អ",
+    "unit": "unit 21 & 22"
+  },
+  {
+    "num": 295,
+    "english": "pink (adj)",
+    "cleanWord": "pink",
+    "pos": "adj",
+    "khmer": "ពណ៌ផ្កាឈូក",
+    "unit": "unit 21 & 23"
+  },
+  {
+    "num": 296,
+    "english": "yellow (adj)",
+    "cleanWord": "yellow",
+    "pos": "adj",
+    "khmer": "ពណ៌លឿង",
+    "unit": "unit 21 & 23"
+  },
+  {
+    "num": 297,
+    "english": "bald (adj)",
+    "cleanWord": "bald",
+    "pos": "adj",
+    "khmer": "ទំពែក",
+    "unit": "unit 22"
+  },
+  {
+    "num": 298,
+    "english": "beard (n)",
+    "cleanWord": "beard",
+    "pos": "n",
+    "khmer": "ពុកចង្ការ",
+    "unit": "unit 22"
+  },
+  {
+    "num": 299,
+    "english": "blonde (adj)",
+    "cleanWord": "blonde",
+    "pos": "adj",
+    "khmer": "ពណ៌សក់ខ្សែក",
+    "unit": "unit 22"
+  },
+  {
+    "num": 300,
+    "english": "blue (adj)",
+    "cleanWord": "blue",
+    "pos": "adj",
+    "khmer": "ពណ៌ខៀវ",
+    "unit": "unit 22"
+  },
+  {
+    "num": 301,
+    "english": "brown (adj)",
+    "cleanWord": "brown",
+    "pos": "adj",
+    "khmer": "ពណ៌ត្នោត",
+    "unit": "unit 22"
+  },
+  {
+    "num": 302,
+    "english": "curly (adj)",
+    "cleanWord": "curly",
+    "pos": "adj",
+    "khmer": "រួញ (សក់)",
+    "unit": "unit 22"
+  },
+  {
+    "num": 303,
+    "english": "dark brown (adj)",
+    "cleanWord": "dark brown",
+    "pos": "adj",
+    "khmer": "ពណ៌ត្នោតចាស់",
+    "unit": "unit 22"
+  },
+  {
+    "num": 304,
+    "english": "easygoing (adj)",
+    "cleanWord": "easygoing",
+    "pos": "adj",
+    "khmer": "ដែលមិនរវល់រវាំ",
+    "unit": "unit 22"
+  },
+  {
+    "num": 305,
+    "english": "friendly (adj)",
+    "cleanWord": "friendly",
+    "pos": "adj",
+    "khmer": "រាក់ទាក់",
+    "unit": "unit 22"
+  },
+  {
+    "num": 306,
+    "english": "good looking (adj)",
+    "cleanWord": "good looking",
+    "pos": "adj",
+    "khmer": "ស្អាត/សង្ហា",
+    "unit": "unit 22"
+  },
+  {
+    "num": 307,
+    "english": "grey (adj)",
+    "cleanWord": "grey",
+    "pos": "adj",
+    "khmer": "ពណ៌ប្រផេះ",
+    "unit": "unit 22"
+  },
+  {
+    "num": 308,
+    "english": "handsome (adj)",
+    "cleanWord": "handsome",
+    "pos": "adj",
+    "khmer": "សង្ហា",
+    "unit": "unit 22"
+  },
+  {
+    "num": 309,
+    "english": "hardworking (adj)",
+    "cleanWord": "hardworking",
+    "pos": "adj",
+    "khmer": "ដែលខិតខំធ្វើការ",
+    "unit": "unit 22"
+  },
+  {
+    "num": 310,
+    "english": "impatient (adj)",
+    "cleanWord": "impatient",
+    "pos": "adj",
+    "khmer": "ដែលគ្មានកំណត់",
+    "unit": "unit 22"
+  },
+  {
+    "num": 311,
+    "english": "lazy (adj)",
+    "cleanWord": "lazy",
+    "pos": "adj",
+    "khmer": "ខ្ជិល",
+    "unit": "unit 22"
+  },
+  {
+    "num": 312,
+    "english": "light brown (adj)",
+    "cleanWord": "light brown",
+    "pos": "adj",
+    "khmer": "ពណ៌ត្នោតខ្ចី",
+    "unit": "unit 22"
+  },
+  {
+    "num": 313,
+    "english": "mean (adj)",
+    "cleanWord": "mean",
+    "pos": "adj",
+    "khmer": "កំណាញ់/ចិត្តអាក្រក់",
+    "unit": "unit 22"
+  },
+  {
+    "num": 314,
+    "english": "middle-aged (adj)",
+    "cleanWord": "middle-aged",
+    "pos": "adj",
+    "khmer": "វ័យកណ្ដាល",
+    "unit": "unit 22"
+  },
+  {
+    "num": 315,
+    "english": "moustache (n)",
+    "cleanWord": "moustache",
+    "pos": "n",
+    "khmer": "ពុកមាត់",
+    "unit": "unit 22"
+  },
+  {
+    "num": 316,
+    "english": "outgoing (adj)",
+    "cleanWord": "outgoing",
+    "pos": "adj",
+    "khmer": "រួសរាយ",
+    "unit": "unit 22"
+  },
+  {
+    "num": 317,
+    "english": "patient (adj)",
+    "cleanWord": "patient",
+    "pos": "adj",
+    "khmer": "ដែលមានសេចក្ដីអត់ធ្មត់/ដែលអត់ធ្មត់",
+    "unit": "unit 22"
+  },
+  {
+    "num": 318,
+    "english": "polite (adj)",
+    "cleanWord": "polite",
+    "pos": "adj",
+    "khmer": "គួរសម",
+    "unit": "unit 22"
+  },
+  {
+    "num": 319,
+    "english": "rude (adj)",
+    "cleanWord": "rude",
+    "pos": "adj",
+    "khmer": "រដុប/គំរោះគំរើយ",
+    "unit": "unit 22"
+  },
+  {
+    "num": 320,
+    "english": "sensible (adj)",
+    "cleanWord": "sensible",
+    "pos": "adj",
+    "khmer": "ដែលមានសុភវិនិច្ឆ័យ",
+    "unit": "unit 22"
+  },
+  {
+    "num": 321,
+    "english": "shoulder-length (adj)",
+    "cleanWord": "shoulder-length",
+    "pos": "adj",
+    "khmer": "ប្រវែងស្មា",
+    "unit": "unit 22"
+  },
+  {
+    "num": 322,
+    "english": "shy (adj)",
+    "cleanWord": "shy",
+    "pos": "adj",
+    "khmer": "អៀន",
+    "unit": "unit 22"
+  },
+  {
+    "num": 323,
+    "english": "straight (adj)",
+    "cleanWord": "straight",
+    "pos": "adj",
+    "khmer": "ត្រង់ (សក់)",
+    "unit": "unit 22"
+  },
+  {
+    "num": 324,
+    "english": "stupid (adj)",
+    "cleanWord": "stupid",
+    "pos": "adj",
+    "khmer": "ល្ងង់/ល្ងង់ខ្លៅ",
+    "unit": "unit 22"
+  },
+  {
+    "num": 325,
+    "english": "thin (adj)",
+    "cleanWord": "thin",
+    "pos": "adj",
+    "khmer": "ស្ដើង/ស្គម",
+    "unit": "unit 22"
+  },
+  {
+    "num": 326,
+    "english": "ugly (adj)",
+    "cleanWord": "ugly",
+    "pos": "adj",
+    "khmer": "អាក្រក់",
+    "unit": "unit 22"
+  },
+  {
+    "num": 327,
+    "english": "unfriendly (adj)",
+    "cleanWord": "unfriendly",
+    "pos": "adj",
+    "khmer": "មិនរាក់ទាក់",
+    "unit": "unit 22"
+  },
+  {
+    "num": 328,
+    "english": "wavy (adj)",
+    "cleanWord": "wavy",
+    "pos": "adj",
+    "khmer": "ដែលមានសក់កោង",
+    "unit": "unit 22"
+  },
+  {
+    "num": 329,
+    "english": "glasses (n)",
+    "cleanWord": "glasses",
+    "pos": "n",
+    "khmer": "វ៉ែនតា",
+    "unit": "unit 22 & 5"
+  },
+  {
+    "num": 330,
+    "english": "green (adj)",
+    "cleanWord": "green",
+    "pos": "adj",
+    "khmer": "ពណ៌បៃតង",
+    "unit": "unit 22 & 23"
+  },
+  {
+    "num": 331,
+    "english": "red (adj)",
+    "cleanWord": "red",
+    "pos": "adj",
+    "khmer": "ពណ៌ក្រហម",
+    "unit": "unit 22 & 23"
+  },
+  {
+    "num": 332,
+    "english": "blouse (n)",
+    "cleanWord": "blouse",
+    "pos": "n",
+    "khmer": "អាវស្រី",
+    "unit": "unit 23"
+  },
+  {
+    "num": 333,
+    "english": "dress (n)",
+    "cleanWord": "dress",
+    "pos": "n",
+    "khmer": "សម្លៀកបំពាក់",
+    "unit": "unit 23"
+  },
+  {
+    "num": 334,
+    "english": "hat (n)",
+    "cleanWord": "hat",
+    "pos": "n",
+    "khmer": "មួក",
+    "unit": "unit 23"
+  },
+  {
+    "num": 335,
+    "english": "jeans (n)",
+    "cleanWord": "jeans",
+    "pos": "n",
+    "khmer": "ខោខូវប៊យ",
+    "unit": "unit 23"
+  },
+  {
+    "num": 336,
+    "english": "shirt (n)",
+    "cleanWord": "shirt",
+    "pos": "n",
+    "khmer": "អាវយឺត/អាវ",
+    "unit": "unit 23"
+  },
+  {
+    "num": 337,
+    "english": "shorts (n)",
+    "cleanWord": "shorts",
+    "pos": "n",
+    "khmer": "ខោខ្លី",
+    "unit": "unit 23"
+  },
+  {
+    "num": 338,
+    "english": "skirt (n)",
+    "cleanWord": "skirt",
+    "pos": "n",
+    "khmer": "សំពត់",
+    "unit": "unit 23"
+  },
+  {
+    "num": 339,
+    "english": "socks (n)",
+    "cleanWord": "socks",
+    "pos": "n",
+    "khmer": "ស្រោមជើង",
+    "unit": "unit 23"
+  },
+  {
+    "num": 340,
+    "english": "t-shirt (n)",
+    "cleanWord": "t-shirt",
+    "pos": "n",
+    "khmer": "អាវយឺត",
+    "unit": "unit 23"
+  },
+  {
+    "num": 341,
+    "english": "trousers (n)",
+    "cleanWord": "trousers",
+    "pos": "n",
+    "khmer": "ខោជើងវែងបុរស",
+    "unit": "unit 23"
+  },
+  {
+    "num": 342,
+    "english": "white (adj)",
+    "cleanWord": "white",
+    "pos": "adj",
+    "khmer": "ពណ៌ស",
+    "unit": "unit 23"
+  },
+  {
+    "num": 343,
+    "english": "get off (phr v)",
+    "cleanWord": "get off",
+    "pos": "phr v",
+    "khmer": "ចុះ",
+    "unit": "unit 23 & 27"
+  },
+  {
+    "num": 344,
+    "english": "Friday (n)",
+    "cleanWord": "Friday",
+    "pos": "n",
+    "khmer": "ថ្ងៃសុក្រ",
+    "unit": "unit 24"
+  },
+  {
+    "num": 345,
+    "english": "Monday (n)",
+    "cleanWord": "Monday",
+    "pos": "n",
+    "khmer": "ថ្ងៃចន្ទ",
+    "unit": "unit 24"
+  },
+  {
+    "num": 346,
+    "english": "Saturday (n)",
+    "cleanWord": "Saturday",
+    "pos": "n",
+    "khmer": "ថ្ងៃសៅរ៍",
+    "unit": "unit 24"
+  },
+  {
+    "num": 347,
+    "english": "Sunday (n)",
+    "cleanWord": "Sunday",
+    "pos": "n",
+    "khmer": "ថ្ងៃអាទិត្យ",
+    "unit": "unit 24"
+  },
+  {
+    "num": 348,
+    "english": "Thursday (n)",
+    "cleanWord": "Thursday",
+    "pos": "n",
+    "khmer": "ថ្ងៃព្រហស្បតិ៍",
+    "unit": "unit 24"
+  },
+  {
+    "num": 349,
+    "english": "Tuesday (n)",
+    "cleanWord": "Tuesday",
+    "pos": "n",
+    "khmer": "ថ្ងៃអង្គារ",
+    "unit": "unit 24"
+  },
+  {
+    "num": 350,
+    "english": "Wednesday (n)",
+    "cleanWord": "Wednesday",
+    "pos": "n",
+    "khmer": "ថ្ងៃពុធ",
+    "unit": "unit 24"
+  },
+  {
+    "num": 351,
+    "english": "advice (n)",
+    "cleanWord": "advice",
+    "pos": "n",
+    "khmer": "ដំបូន្មាន/បណ្ដាំ/ឱវាទ",
+    "unit": "unit 24"
+  },
+  {
+    "num": 352,
+    "english": "afternoon (n)",
+    "cleanWord": "afternoon",
+    "pos": "n",
+    "khmer": "ពេលរសៀល",
+    "unit": "unit 24"
+  },
+  {
+    "num": 353,
+    "english": "biology (n)",
+    "cleanWord": "biology",
+    "pos": "n",
+    "khmer": "ជីវវិទ្យា",
+    "unit": "unit 24"
+  },
+  {
+    "num": 354,
+    "english": "chemistry (n)",
+    "cleanWord": "chemistry",
+    "pos": "n",
+    "khmer": "គីមីវិទ្យា",
+    "unit": "unit 24"
+  },
+  {
+    "num": 355,
+    "english": "energy (n)",
+    "cleanWord": "energy",
+    "pos": "n",
+    "khmer": "ថាមពល",
+    "unit": "unit 24"
+  },
+  {
+    "num": 356,
+    "english": "evening (n)",
+    "cleanWord": "evening",
+    "pos": "n",
+    "khmer": "ពេលល្ងាច",
+    "unit": "unit 24"
+  },
+  {
+    "num": 357,
+    "english": "events (n)",
+    "cleanWord": "events",
+    "pos": "n",
+    "khmer": "ព្រឹត្តិការណ៍",
+    "unit": "unit 24"
+  },
+  {
+    "num": 358,
+    "english": "formulas (n)",
+    "cleanWord": "formulas",
+    "pos": "n",
+    "khmer": "រូបមន្ត",
+    "unit": "unit 24"
+  },
+  {
+    "num": 359,
+    "english": "geography (n)",
+    "cleanWord": "geography",
+    "pos": "n",
+    "khmer": "ភូមិសាស្ត្រ",
+    "unit": "unit 24"
+  },
+  {
+    "num": 360,
+    "english": "history (n)",
+    "cleanWord": "history",
+    "pos": "n",
+    "khmer": "ប្រវត្តិវិទ្យា",
+    "unit": "unit 24"
+  },
+  {
+    "num": 361,
+    "english": "liquids (n)",
+    "cleanWord": "liquids",
+    "pos": "n",
+    "khmer": "វត្ថុរាវ",
+    "unit": "unit 24"
+  },
+  {
+    "num": 362,
+    "english": "locations (n)",
+    "cleanWord": "locations",
+    "pos": "n",
+    "khmer": "ទីតាំង",
+    "unit": "unit 24"
+  },
+  {
+    "num": 363,
+    "english": "maths (n)",
+    "cleanWord": "maths",
+    "pos": "n",
+    "khmer": "គណិតវិទ្យា",
+    "unit": "unit 24"
+  },
+  {
+    "num": 364,
+    "english": "morning (n)",
+    "cleanWord": "morning",
+    "pos": "n",
+    "khmer": "ពេលព្រឹក",
+    "unit": "unit 24"
+  },
+  {
+    "num": 365,
+    "english": "physics (n)",
+    "cleanWord": "physics",
+    "pos": "n",
+    "khmer": "រូបវិទ្យា",
+    "unit": "unit 24"
+  },
+  {
+    "num": 366,
+    "english": "plants (n)",
+    "cleanWord": "plants",
+    "pos": "n",
+    "khmer": "ដំណាំ",
+    "unit": "unit 24"
+  },
+  {
+    "num": 367,
+    "english": "army/police (n)",
+    "cleanWord": "army/police",
+    "pos": "n",
+    "khmer": "កងទ័ព/ប៉ូលិស",
+    "unit": "unit 25"
+  },
+  {
+    "num": 368,
+    "english": "avoid (v)",
+    "cleanWord": "avoid",
+    "pos": "v",
+    "khmer": "ជៀសវាង",
+    "unit": "unit 25"
+  },
+  {
+    "num": 369,
+    "english": "consider (v)",
+    "cleanWord": "consider",
+    "pos": "v",
+    "khmer": "ពិចារណា",
+    "unit": "unit 25"
+  },
+  {
+    "num": 370,
+    "english": "continue (v)",
+    "cleanWord": "continue",
+    "pos": "v",
+    "khmer": "បន្ត",
+    "unit": "unit 25"
+  },
+  {
+    "num": 371,
+    "english": "discuss (v)",
+    "cleanWord": "discuss",
+    "pos": "v",
+    "khmer": "ពិភាក្សា",
+    "unit": "unit 25"
+  },
+  {
+    "num": 372,
+    "english": "enjoy (v)",
+    "cleanWord": "enjoy",
+    "pos": "v",
+    "khmer": "រីករាយ",
+    "unit": "unit 25"
+  },
+  {
+    "num": 373,
+    "english": "fail (v)",
+    "cleanWord": "fail",
+    "pos": "v",
+    "khmer": "បរាជ័យ",
+    "unit": "unit 25"
+  },
+  {
+    "num": 374,
+    "english": "forget (v)",
+    "cleanWord": "forget",
+    "pos": "v",
+    "khmer": "ភ្លេច",
+    "unit": "unit 25"
+  },
+  {
+    "num": 375,
+    "english": "intend (v)",
+    "cleanWord": "intend",
+    "pos": "v",
+    "khmer": "មានបំណង",
+    "unit": "unit 25"
+  },
+  {
+    "num": 376,
+    "english": "late (adj)",
+    "cleanWord": "late",
+    "pos": "adj",
+    "khmer": "យឺត",
+    "unit": "unit 25"
+  },
+  {
+    "num": 377,
+    "english": "pass (v)",
+    "cleanWord": "pass",
+    "pos": "v",
+    "khmer": "ប្រឡងជាប់",
+    "unit": "unit 25"
+  },
+  {
+    "num": 378,
+    "english": "practical (adj)",
+    "cleanWord": "practical",
+    "pos": "adj",
+    "khmer": "ដែលអាចអនុវត្តបានជាក់ស្តែង",
+    "unit": "unit 25"
+  },
+  {
+    "num": 379,
+    "english": "practice (v)",
+    "cleanWord": "practice",
+    "pos": "v",
+    "khmer": "អនុវត្ត",
+    "unit": "unit 25"
+  },
+  {
+    "num": 380,
+    "english": "presentation (n)",
+    "cleanWord": "presentation",
+    "pos": "n",
+    "khmer": "បទបង្ហាញ",
+    "unit": "unit 25"
+  },
+  {
+    "num": 381,
+    "english": "promise (v)",
+    "cleanWord": "promise",
+    "pos": "v",
+    "khmer": "សន្យា",
+    "unit": "unit 25"
+  },
+  {
+    "num": 382,
+    "english": "remember (v)",
+    "cleanWord": "remember",
+    "pos": "v",
+    "khmer": "ចងចាំ",
+    "unit": "unit 25"
+  },
+  {
+    "num": 383,
+    "english": "revise (v)",
+    "cleanWord": "revise",
+    "pos": "v",
+    "khmer": "កែសម្រួល",
+    "unit": "unit 25"
+  },
+  {
+    "num": 384,
+    "english": "suggest (v)",
+    "cleanWord": "suggest",
+    "pos": "v",
+    "khmer": "ស្នើឡើង (យោបល់/គំនិត/ផែនការ...)",
+    "unit": "unit 25"
+  },
+  {
+    "num": 385,
+    "english": "trouble (n)",
+    "cleanWord": "trouble",
+    "pos": "n",
+    "khmer": "បញ្ហា/ឧបសគ្គ",
+    "unit": "unit 25"
+  },
+  {
+    "num": 386,
+    "english": "decide (v)",
+    "cleanWord": "decide",
+    "pos": "v",
+    "khmer": "សម្រេចចិត្ត",
+    "unit": "unit 25 & 31"
+  },
+  {
+    "num": 387,
+    "english": "bike (n)",
+    "cleanWord": "bike",
+    "pos": "n",
+    "khmer": "កង់",
+    "unit": "unit 27"
+  },
+  {
+    "num": 388,
+    "english": "boat (n)",
+    "cleanWord": "boat",
+    "pos": "n",
+    "khmer": "ទូក",
+    "unit": "unit 27"
+  },
+  {
+    "num": 389,
+    "english": "convenient (adj)",
+    "cleanWord": "convenient",
+    "pos": "adj",
+    "khmer": "ងាយស្រួល",
+    "unit": "unit 27"
+  },
+  {
+    "num": 390,
+    "english": "drop off (phr v)",
+    "cleanWord": "drop off",
+    "pos": "phr v",
+    "khmer": "ដាក់ចុះ",
+    "unit": "unit 27"
+  },
+  {
+    "num": 391,
+    "english": "far (adj)",
+    "cleanWord": "far",
+    "pos": "adj",
+    "khmer": "ឆ្ងាយ",
+    "unit": "unit 27"
+  },
+  {
+    "num": 392,
+    "english": "get in (phr v)",
+    "cleanWord": "get in",
+    "pos": "phr v",
+    "khmer": "ចូល",
+    "unit": "unit 27"
+  },
+  {
+    "num": 393,
+    "english": "get on (phr v)",
+    "cleanWord": "get on",
+    "pos": "phr v",
+    "khmer": "ឡើងជិះ",
+    "unit": "unit 27"
+  },
+  {
+    "num": 394,
+    "english": "pick up (phr v)",
+    "cleanWord": "pick up",
+    "pos": "phr v",
+    "khmer": "ទទួល",
+    "unit": "unit 27"
+  },
+  {
+    "num": 395,
+    "english": "plane (n)",
+    "cleanWord": "plane",
+    "pos": "n",
+    "khmer": "យន្តហោះ",
+    "unit": "unit 27"
+  },
+  {
+    "num": 396,
+    "english": "scooter (n)",
+    "cleanWord": "scooter",
+    "pos": "n",
+    "khmer": "ម៉ូតូកុយ",
+    "unit": "unit 27"
+  },
+  {
+    "num": 397,
+    "english": "ship (n)",
+    "cleanWord": "ship",
+    "pos": "n",
+    "khmer": "នាវា/ទូកធំ",
+    "unit": "unit 27"
+  },
+  {
+    "num": 398,
+    "english": "take off (phr v)",
+    "cleanWord": "take off",
+    "pos": "phr v",
+    "khmer": "ហោះឡើង",
+    "unit": "unit 27"
+  },
+  {
+    "num": 399,
+    "english": "taxi (n)",
+    "cleanWord": "taxi",
+    "pos": "n",
+    "khmer": "តាក់ស៊ី",
+    "unit": "unit 27"
+  },
+  {
+    "num": 400,
+    "english": "touch down (phr v)",
+    "cleanWord": "touch down",
+    "pos": "phr v",
+    "khmer": "ចុះចត",
+    "unit": "unit 27"
+  },
+  {
+    "num": 401,
+    "english": "train (n)",
+    "cleanWord": "train",
+    "pos": "n",
+    "khmer": "រថភ្លើង",
+    "unit": "unit 27"
+  },
+  {
+    "num": 402,
+    "english": "tuk tuk (n)",
+    "cleanWord": "tuk tuk",
+    "pos": "n",
+    "khmer": "ម៉ូតូកង់បី",
+    "unit": "unit 27"
+  },
+  {
+    "num": 403,
+    "english": "attraction (n)",
+    "cleanWord": "attraction",
+    "pos": "n",
+    "khmer": "ភាពទាក់ទាញ",
+    "unit": "unit 28"
+  },
+  {
+    "num": 404,
+    "english": "bellboy (n)",
+    "cleanWord": "bellboy",
+    "pos": "n",
+    "khmer": "អ្នកជួយលើកវ៉ាន់តាមសណ្ឋាគារ",
+    "unit": "unit 28"
+  },
+  {
+    "num": 405,
+    "english": "chair (n)",
+    "cleanWord": "chair",
+    "pos": "n",
+    "khmer": "កៅអី",
+    "unit": "unit 28"
+  },
+  {
+    "num": 406,
+    "english": "check-in (phr v)",
+    "cleanWord": "check-in",
+    "pos": "phr v",
+    "khmer": "ចុះឈ្មោះ (ចូល)",
+    "unit": "unit 28"
+  },
+  {
+    "num": 407,
+    "english": "check-out (phr v)",
+    "cleanWord": "check-out",
+    "pos": "phr v",
+    "khmer": "ចុះឈ្មោះ (ចេញ)",
+    "unit": "unit 28"
+  },
+  {
+    "num": 408,
+    "english": "entertainer (n)",
+    "cleanWord": "entertainer",
+    "pos": "n",
+    "khmer": "សិល្បករ",
+    "unit": "unit 28"
+  },
+  {
+    "num": 409,
+    "english": "itinerary (n)",
+    "cleanWord": "itinerary",
+    "pos": "n",
+    "khmer": "កាលវិភាគសម្រាប់ដំណើរទេសចរណ៍",
+    "unit": "unit 28"
+  },
+  {
+    "num": 410,
+    "english": "jobs (n)",
+    "cleanWord": "jobs",
+    "pos": "n",
+    "khmer": "ការងារ",
+    "unit": "unit 28"
+  },
+  {
+    "num": 411,
+    "english": "luggage (n)",
+    "cleanWord": "luggage",
+    "pos": "n",
+    "khmer": "វ៉ាន់ ឬកាបូបយួរដាក់សម្ភារៈ",
+    "unit": "unit 28"
+  },
+  {
+    "num": 412,
+    "english": "photographer (n)",
+    "cleanWord": "photographer",
+    "pos": "n",
+    "khmer": "ជាងថតរូប",
+    "unit": "unit 28"
+  },
+  {
+    "num": 413,
+    "english": "receptionist (n)",
+    "cleanWord": "receptionist",
+    "pos": "n",
+    "khmer": "អ្នកទទួលភ្ញៀវ",
+    "unit": "unit 28"
+  },
+  {
+    "num": 414,
+    "english": "recommend (v)",
+    "cleanWord": "recommend",
+    "pos": "v",
+    "khmer": "ណែនាំ/ផ្តល់អនុសាសន៍/យោបល់",
+    "unit": "unit 28"
+  },
+  {
+    "num": 415,
+    "english": "schedule (n)",
+    "cleanWord": "schedule",
+    "pos": "n",
+    "khmer": "កាលវិភាគ",
+    "unit": "unit 28"
+  },
+  {
+    "num": 416,
+    "english": "souvenirs (n)",
+    "cleanWord": "souvenirs",
+    "pos": "n",
+    "khmer": "វត្ថុអនុស្សាវរីយ៍",
+    "unit": "unit 28"
+  },
+  {
+    "num": 417,
+    "english": "tour guide (n)",
+    "cleanWord": "tour guide",
+    "pos": "n",
+    "khmer": "មគ្គុទ្ទេសក៍ទេសចរណ៍",
+    "unit": "unit 28"
+  },
+  {
+    "num": 418,
+    "english": "tour operator (n)",
+    "cleanWord": "tour operator",
+    "pos": "n",
+    "khmer": "អ្នកប្រតិបត្តិករទេសចរណ៍",
+    "unit": "unit 28"
+  },
+  {
+    "num": 419,
+    "english": "tourism (n)",
+    "cleanWord": "tourism",
+    "pos": "n",
+    "khmer": "ទេសចរណ៍",
+    "unit": "unit 28"
+  },
+  {
+    "num": 420,
+    "english": "tourists (n)",
+    "cleanWord": "tourists",
+    "pos": "n",
+    "khmer": "ភ្ញៀវទេសចរ",
+    "unit": "unit 28"
+  },
+  {
+    "num": 421,
+    "english": "unfrequented (adj)",
+    "cleanWord": "unfrequented",
+    "pos": "adj",
+    "khmer": "មិនញឹកញាប់",
+    "unit": "unit 28"
+  },
+  {
+    "num": 422,
+    "english": "waitress (n)",
+    "cleanWord": "waitress",
+    "pos": "n",
+    "khmer": "អ្នករត់តុស្រី",
+    "unit": "unit 28"
+  },
+  {
+    "num": 423,
+    "english": "well-travelled (adj)",
+    "cleanWord": "well-travelled",
+    "pos": "adj",
+    "khmer": "ដែលមានបទពិសោធន៍ច្រើនក្នុងការធ្វើដំណើរ",
+    "unit": "unit 28"
+  },
+  {
+    "num": 424,
+    "english": "advantages (n)",
+    "cleanWord": "advantages",
+    "pos": "n",
+    "khmer": "អត្ថប្រយោជន៍",
+    "unit": "unit 29"
+  },
+  {
+    "num": 425,
+    "english": "countryside (n)",
+    "cleanWord": "countryside",
+    "pos": "n",
+    "khmer": "ជនបទ",
+    "unit": "unit 29"
+  },
+  {
+    "num": 426,
+    "english": "crowds (n)",
+    "cleanWord": "crowds",
+    "pos": "n",
+    "khmer": "ហ្វូង",
+    "unit": "unit 29"
+  },
+  {
+    "num": 427,
+    "english": "damage (v)",
+    "cleanWord": "damage",
+    "pos": "v",
+    "khmer": "ធ្វើឱ្យខូច",
+    "unit": "unit 29"
+  },
+  {
+    "num": 428,
+    "english": "disadvantages (n)",
+    "cleanWord": "disadvantages",
+    "pos": "n",
+    "khmer": "គុណវិបត្តិ",
+    "unit": "unit 29"
+  },
+  {
+    "num": 429,
+    "english": "disagree (v)",
+    "cleanWord": "disagree",
+    "pos": "v",
+    "khmer": "មិនឯកភាព/មិនយល់ព្រម",
+    "unit": "unit 29"
+  },
+  {
+    "num": 430,
+    "english": "expressions (n)",
+    "cleanWord": "expressions",
+    "pos": "n",
+    "khmer": "ការបញ្ជាក់ (ទឹកមុខ ឬមតិ...)",
+    "unit": "unit 29"
+  },
+  {
+    "num": 431,
+    "english": "increase (v)",
+    "cleanWord": "increase",
+    "pos": "v",
+    "khmer": "បង្កើន/កើនឡើង",
+    "unit": "unit 29"
+  },
+  {
+    "num": 432,
+    "english": "opinion (n)",
+    "cleanWord": "opinion",
+    "pos": "n",
+    "khmer": "មតិយោបល់",
+    "unit": "unit 29"
+  },
+  {
+    "num": 433,
+    "english": "respect (v)",
+    "cleanWord": "respect",
+    "pos": "v",
+    "khmer": "គោរព",
+    "unit": "unit 29"
+  },
+  {
+    "num": 434,
+    "english": "agree (v)",
+    "cleanWord": "agree",
+    "pos": "v",
+    "khmer": "ឯកភាព/យល់ព្រម",
+    "unit": "unit 29 & 15"
+  },
+  {
+    "num": 435,
+    "english": "arrangement (n)",
+    "cleanWord": "arrangement",
+    "pos": "n",
+    "khmer": "ការរៀបចំ",
+    "unit": "unit 30"
+  },
+  {
+    "num": 436,
+    "english": "arrival (n)",
+    "cleanWord": "arrival",
+    "pos": "n",
+    "khmer": "ការមកដល់",
+    "unit": "unit 30"
+  },
+  {
+    "num": 437,
+    "english": "departure (n)",
+    "cleanWord": "departure",
+    "pos": "n",
+    "khmer": "ការចេញដំណើរ",
+    "unit": "unit 30"
+  },
+  {
+    "num": 438,
+    "english": "provinces (n)",
+    "cleanWord": "provinces",
+    "pos": "n",
+    "khmer": "ខេត្ត",
+    "unit": "unit 30"
+  },
+  {
+    "num": 439,
+    "english": "riverside (n)",
+    "cleanWord": "riverside",
+    "pos": "n",
+    "khmer": "មាត់ទន្លេ",
+    "unit": "unit 30"
+  },
+  {
+    "num": 440,
+    "english": "timetable (n)",
+    "cleanWord": "timetable",
+    "pos": "n",
+    "khmer": "កាលវិភាគ",
+    "unit": "unit 30"
+  },
+  {
+    "num": 441,
+    "english": "tourist spots (n)",
+    "cleanWord": "tourist spots",
+    "pos": "n",
+    "khmer": "កន្លែងទេសចរណ៍",
+    "unit": "unit 30"
+  },
+  {
+    "num": 442,
+    "english": "travel tips (n)",
+    "cleanWord": "travel tips",
+    "pos": "n",
+    "khmer": "គន្លឹះក្នុងការធ្វើដំណើរ",
+    "unit": "unit 30"
+  },
+  {
+    "num": 443,
+    "english": "brochure (n)",
+    "cleanWord": "brochure",
+    "pos": "n",
+    "khmer": "ប័ណ្ណផាត់",
+    "unit": "unit 31"
+  },
+  {
+    "num": 444,
+    "english": "choose (v)",
+    "cleanWord": "choose",
+    "pos": "v",
+    "khmer": "ជ្រើសរើស",
+    "unit": "unit 31"
+  },
+  {
+    "num": 445,
+    "english": "cruise (n)",
+    "cleanWord": "cruise",
+    "pos": "n",
+    "khmer": "ការជិះទូកកម្សាន្ដ",
+    "unit": "unit 31"
+  },
+  {
+    "num": 446,
+    "english": "guesthouse (n)",
+    "cleanWord": "guesthouse",
+    "pos": "n",
+    "khmer": "ផ្ទះសំណាក់",
+    "unit": "unit 31"
+  },
+  {
+    "num": 447,
+    "english": "holiday (n)",
+    "cleanWord": "holiday",
+    "pos": "n",
+    "khmer": "ថ្ងៃឈប់សម្រាក",
+    "unit": "unit 31"
+  },
+  {
+    "num": 448,
+    "english": "hostel (n)",
+    "cleanWord": "hostel",
+    "pos": "n",
+    "khmer": "កន្លែងសម្រាប់ជួលស្នាក់នៅ",
+    "unit": "unit 31"
+  },
+  {
+    "num": 449,
+    "english": "hotel (n)",
+    "cleanWord": "hotel",
+    "pos": "n",
+    "khmer": "សណ្ឋាគារ",
+    "unit": "unit 31"
+  },
+  {
+    "num": 450,
+    "english": "journey (n)",
+    "cleanWord": "journey",
+    "pos": "n",
+    "khmer": "ការធ្វើដំណើរ",
+    "unit": "unit 31"
+  },
+  {
+    "num": 451,
+    "english": "kayaking (v)",
+    "cleanWord": "kayaking",
+    "pos": "v",
+    "khmer": "ការជិះទូកកាយ៉ាក់/ទូកកំសាន្ត",
+    "unit": "unit 31"
+  },
+  {
+    "num": 452,
+    "english": "kickboxing (n)",
+    "cleanWord": "kickboxing",
+    "pos": "n",
+    "khmer": "ប្រដាល់សេរី",
+    "unit": "unit 31"
+  },
+  {
+    "num": 453,
+    "english": "lake (n)",
+    "cleanWord": "lake",
+    "pos": "n",
+    "khmer": "បឹង",
+    "unit": "unit 31"
+  },
+  {
+    "num": 454,
+    "english": "local (adj)",
+    "cleanWord": "local",
+    "pos": "adj",
+    "khmer": "ក្នុងស្រុក",
+    "unit": "unit 31"
+  },
+  {
+    "num": 455,
+    "english": "local dishes (n)",
+    "cleanWord": "local dishes",
+    "pos": "n",
+    "khmer": "ម្ហូបប្រចាំតំបន់",
+    "unit": "unit 31"
+  },
+  {
+    "num": 456,
+    "english": "rent (v)",
+    "cleanWord": "rent",
+    "pos": "v",
+    "khmer": "ជួល",
+    "unit": "unit 31"
+  },
+  {
+    "num": 457,
+    "english": "resort (n)",
+    "cleanWord": "resort",
+    "pos": "n",
+    "khmer": "កន្លែងលំហែរកាយ",
+    "unit": "unit 31"
+  },
+  {
+    "num": 458,
+    "english": "sunrise (n)",
+    "cleanWord": "sunrise",
+    "pos": "n",
+    "khmer": "ព្រះអាទិត្យរះ",
+    "unit": "unit 31"
+  },
+  {
+    "num": 459,
+    "english": "sunset (n)",
+    "cleanWord": "sunset",
+    "pos": "n",
+    "khmer": "ព្រះអាទិត្យលិច",
+    "unit": "unit 31"
+  },
+  {
+    "num": 460,
+    "english": "watersports (n)",
+    "cleanWord": "watersports",
+    "pos": "n",
+    "khmer": "កីឡាលើទឹក",
+    "unit": "unit 31"
+  }
+]

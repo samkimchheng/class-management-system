@@ -72,6 +72,12 @@ class ClassroomApplicationTests {
     private com.nubb.classroom.repository.DailyTeachingLogRepository dailyTeachingLogRepository;
 
     @Autowired
+    private com.nubb.classroom.repository.VocabularyWordRepository vocabularyWordRepository;
+
+    @Autowired
+    private com.nubb.classroom.repository.StudentVocabularyProgressRepository studentVocabularyProgressRepository;
+
+    @Autowired
     private WebController webController;
 
     @Test
@@ -609,5 +615,99 @@ class ClassroomApplicationTests {
 
         // Clean up test logs
         dailyTeachingLogRepository.deleteAll(logs);
+    }
+
+    @Test
+    void testGrade10VocabularySystem() throws Exception {
+        // 1. Verify 460 words were seeded
+        long count = vocabularyWordRepository.countByGradeLevel(10);
+        assertTrue(count >= 460, "Expected at least 460 Grade 10 vocabulary words but found " + count);
+
+        // Verify specific words
+        var firstWordOpt = vocabularyWordRepository.findByWordNumber(1);
+        assertTrue(firstWordOpt.isPresent());
+        assertEquals("birthday (n)", firstWordOpt.get().getEnglishWord());
+        assertEquals("birthday", firstWordOpt.get().getCleanWord());
+        assertEquals("n", firstWordOpt.get().getPartOfSpeech());
+        assertEquals("ថ្ងៃកំណើត", firstWordOpt.get().getKhmerTranslation());
+
+        var lastWordOpt = vocabularyWordRepository.findByWordNumber(460);
+        assertTrue(lastWordOpt.isPresent());
+        assertEquals("watersports (n)", lastWordOpt.get().getEnglishWord());
+
+        // 2. Verify Teacher Vocabulary Management View (/vocabulary)
+        Account kimchheng = accountRepository.findByUsername("samkimchheng").orElse(null);
+        assertNotNull(kimchheng);
+
+        mockMvc.perform(get("/vocabulary")
+                .sessionAttr("ACCOUNT_ID", kimchheng.getId())
+                .sessionAttr("ACCOUNT_ROLE", kimchheng.getRole())
+                .sessionAttr("ACCOUNT_NAME", kimchheng.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("words"))
+                .andExpect(model().attributeExists("units"))
+                .andExpect(model().attributeExists("totalWords"))
+                .andExpect(model().attributeExists("studentProgressList"));
+
+        // 3. Verify Student Interactive Vocabulary Portal (/test/vocabulary)
+        List<Student> students = studentRepository.findAll();
+        assertFalse(students.isEmpty());
+        Student testStudent = students.stream()
+                .filter(s -> s.getClassName() != null && s.getClassName().contains("10"))
+                .findFirst()
+                .orElse(students.get(0));
+
+        mockMvc.perform(get("/test/vocabulary")
+                .sessionAttr("loggedInStudent", testStudent)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("words"))
+                .andExpect(model().attributeExists("units"))
+                .andExpect(model().attributeExists("masteredWordIds"))
+                .andExpect(model().attributeExists("totalMastered"));
+
+        // 4. Verify Student toggle mastered API
+        Long testWordId = firstWordOpt.get().getId();
+        mockMvc.perform(post("/api/student-portal/vocabulary/toggle-mastered")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"wordId\":" + testWordId + ",\"mastered\":true}")
+                .sessionAttr("loggedInStudent", testStudent))
+                .andExpect(status().isOk());
+
+        var progOpt = studentVocabularyProgressRepository.findByStudentIdAndWordId(testStudent.getId(), testWordId);
+        assertTrue(progOpt.isPresent());
+        assertTrue(progOpt.get().getMastered());
+
+        // 5. Verify Student Quiz record API
+        String quizJson = "{\"unitName\":\"unit 1\",\"totalQuestions\":1,\"correctAnswers\":1," +
+                "\"results\":[{\"wordId\":" + testWordId + ",\"correct\":true}]}";
+
+        mockMvc.perform(post("/api/student-portal/vocabulary/record-quiz")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(quizJson)
+                .sessionAttr("loggedInStudent", testStudent))
+                .andExpect(status().isOk());
+
+        // 6. Verify Dynamic Quiz generator
+        mockMvc.perform(get("/api/student-portal/vocabulary/quiz-data")
+                .param("unit", "unit 1")
+                .sessionAttr("loggedInStudent", testStudent))
+                .andExpect(status().isOk());
+
+        // 7. Verify Teacher Word status toggle API
+        mockMvc.perform(post("/api/vocabulary/toggle-status")
+                .param("id", testWordId.toString())
+                .sessionAttr("ACCOUNT_ID", kimchheng.getId()))
+                .andExpect(status().isOk());
+
+        // Toggle back to true
+        mockMvc.perform(post("/api/vocabulary/toggle-status")
+                .param("id", testWordId.toString())
+                .sessionAttr("ACCOUNT_ID", kimchheng.getId()))
+                .andExpect(status().isOk());
+
+        // Clean up progress created for testStudent
+        studentVocabularyProgressRepository.delete(progOpt.get());
     }
 }
