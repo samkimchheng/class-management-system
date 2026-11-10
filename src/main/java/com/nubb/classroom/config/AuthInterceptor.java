@@ -94,6 +94,38 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
 
+        // Friendly route aliases so teachers/students typing common variations never encounter 404
+        if ("/home".equals(path) || "/dashboard".equals(path) || "/index".equals(path)) {
+            response.sendRedirect("/");
+            return false;
+        }
+        if ("/exam".equals(path)) {
+            response.sendRedirect("/exams");
+            return false;
+        }
+        if ("/lesson".equals(path)) {
+            response.sendRedirect("/lessons");
+            return false;
+        }
+        if ("/student".equals(path)) {
+            response.sendRedirect("/students");
+            return false;
+        }
+        if ("/score".equals(path)) {
+            response.sendRedirect("/scores");
+            return false;
+        }
+        if ("/classes".equals(path) || "/classroom".equals(path)) {
+            response.sendRedirect("/classrooms");
+            return false;
+        }
+
+        // If a student is logged in and visits root "/", redirect to their student portal /test/take
+        if ("/".equals(path) && session.getAttribute("loggedInStudent") != null && session.getAttribute("ACCOUNT_ID") == null) {
+            response.sendRedirect("/test/take");
+            return false;
+        }
+
         // Admin paths require ADMIN role
         if (path.startsWith("/admin")) {
             String role = (String) session.getAttribute("ACCOUNT_ROLE");

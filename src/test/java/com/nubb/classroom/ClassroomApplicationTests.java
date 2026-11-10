@@ -23,8 +23,18 @@ import com.nubb.classroom.controller.LessonController;
 import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest
+@AutoConfigureMockMvc
 class ClassroomApplicationTests {
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Autowired
     private ClassroomRepository classroomRepository;
@@ -95,12 +105,12 @@ class ClassroomApplicationTests {
         List<Lesson> studentLessonsInitial = LessonController.resolveLessonsForStudent(lessonRepository, s);
         int initialCount = studentLessonsInitial.size();
 
-        // 2. Teacher (account 97 or 33) creates new lesson with Arabic numerals "10E"
+        // 2. Teacher creates new lesson with Arabic numerals "10E"
         Lesson newL = new Lesson();
         newL.setTitle("Lesson Unit Test 10E");
         newL.setClassName("10E");
         newL.setSubjectName("ភាសាអង់គ្លេស");
-        newL.setAccountId(33L);
+        newL.setAccountId(s.getAccountId() != null ? s.getAccountId() : 97L);
         lessonRepository.save(newL);
 
         // 3. Student immediately sees the new lesson (even though student className is in Khmer numerals "១០E" and account is 97)
@@ -189,5 +199,88 @@ class ClassroomApplicationTests {
         assertEquals("អ៊ុក សម្បត្តិ", sorted.get(2).getName());
         assertEquals("កែវ សុខា", sorted.get(3).getName());
         assertEquals("សុខ ចាន់ថន", sorted.get(4).getName());
+    }
+
+    @Test
+    void testEndpointsRendering() throws Exception {
+        // 1. Unauthenticated root redirects to /login
+        mockMvc.perform(get("/"))
+                .andExpect(status().is3xxRedirection());
+
+        // 2. /login page renders successfully (HTTP 200)
+        mockMvc.perform(get("/login"))
+                .andExpect(status().isOk());
+
+        // 3. /test student login page renders successfully (HTTP 200)
+        mockMvc.perform(get("/test"))
+                .andExpect(status().isOk());
+
+        // 4. Authenticated Teacher dashboard / renders successfully (HTTP 200)
+        Account teacher = accountRepository.findByUsername("samkimchheng").orElse(null);
+        assertNotNull(teacher);
+        mockMvc.perform(get("/")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole())
+                .sessionAttr("ACCOUNT_NAME", teacher.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk());
+
+        // 5. Authenticated Student portal /test/take renders successfully (HTTP 200)
+        Student student = studentRepository.findByStudentCode("10E-01").orElse(null);
+        assertNotNull(student);
+        mockMvc.perform(get("/test/take")
+                .sessionAttr("loggedInStudent", student)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isOk());
+
+        // 6. Authenticated Student leave page /test/leave renders successfully (HTTP 200)
+        mockMvc.perform(get("/test/leave")
+                .sessionAttr("loggedInStudent", student)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isOk());
+
+        // 7. Authenticated Teacher lessons page /lessons renders successfully (HTTP 200)
+        mockMvc.perform(get("/lessons")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole()))
+                .andExpect(status().isOk());
+
+        // 8. Authenticated Teacher exams page /exams renders successfully (HTTP 200)
+        mockMvc.perform(get("/exams")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole()))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testAllStudentsAndTeachersLoginAndRender() throws Exception {
+        // Test all teachers
+        List<Account> accounts = accountRepository.findAll();
+        System.out.println(">>> Testing all " + accounts.size() + " accounts...");
+        for (Account acc : accounts) {
+            if ("TEACHER".equals(acc.getRole())) {
+                mockMvc.perform(get("/")
+                        .sessionAttr("ACCOUNT_ID", acc.getId())
+                        .sessionAttr("ACCOUNT_ROLE", acc.getRole())
+                        .sessionAttr("ACCOUNT_NAME", acc.getFullName() != null ? acc.getFullName() : acc.getUsername())
+                        .sessionAttr("CURRENT_ACADEMIC_YEAR", acc.getCurrentAcademicYear() != null ? acc.getCurrentAcademicYear() : "២០២៦-២០២៧"))
+                        .andExpect(status().isOk());
+            }
+        }
+
+        // Test all students
+        List<Student> students = studentRepository.findAll();
+        System.out.println(">>> Testing all " + students.size() + " students...");
+        for (Student s : students) {
+            mockMvc.perform(get("/test/take")
+                    .sessionAttr("loggedInStudent", s)
+                    .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                    .andExpect(status().isOk());
+
+            mockMvc.perform(get("/test/leave")
+                    .sessionAttr("loggedInStudent", s)
+                    .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                    .andExpect(status().isOk());
+        }
     }
 }

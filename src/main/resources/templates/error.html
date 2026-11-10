@@ -78,13 +78,21 @@
 <body>
     <div class="error-card">
         <div class="error-icon">⚠️</div>
-        <h2>មានបញ្ហាបច្ចេកទេសបន្តិចបន្តួច</h2>
-        <p>
-            ប្រព័ន្ធកំពុងធ្វើបច្ចុប្បន្នភាពទិន្នន័យ ឬមិនអាចស្វែងរកទំព័រដែលលោកអ្នកស្នើសុំបានឡើយ។ សូមព្យាយាមម្តងទៀត ឬត្រឡប់ទៅគេហទំព័រដើម។
+        <h2 th:text="${status == 404 ? 'រកមិនឃើញទំព័រដែលលោកអ្នកស្នើសុំ (404)' : 'មានបញ្ហាបច្ចេកទេសបន្តិចបន្តួច'}">មានបញ្ហាបច្ចេកទេសបន្តិចបន្តួច</h2>
+        <p th:if="${status == 404}">
+            ទំព័រដែលលោកអ្នកចង់បើកមិនមានក្នុងប្រព័ន្ធ ឬត្រូវបានផ្លាស់ប្តូរអាសយដ្ឋាន។ សូមចុចប៊ូតុងខាងក្រោមដើម្បីត្រឡប់ទៅផ្ទាំងដើមវិញ។
         </p>
+        <p th:unless="${status == 404}">
+            ប្រព័ន្ធកំពុងដំណើរការ ឬកំពុងធ្វើបច្ចុប្បន្នភាពទិន្នន័យ។ ប្រសិនបើមានបញ្ហាជាប់រហូត សូមព្យាយាមចូលប្រព័ន្ធម្តងទៀត ឬត្រឡប់ទៅគេហទំព័រដើម។
+        </p>
+        <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px;" th:if="${status}">
+            <span th:text="'កូដសម្គាល់៖ ' + ${status}"></span>
+        </div>
         <div class="btn-group">
             <a href="/" class="btn btn-primary">&larr; ត្រឡប់ទៅទំព័រដើម</a>
-            <a href="/lessons" class="btn btn-secondary">📚 ទៅកាន់មេរៀន</a>
+            <a href="/login" class="btn btn-secondary">🔐 ចូលប្រព័ន្ធគ្រូ</a>
+            <a href="/test" class="btn btn-secondary">📝 គណនីសិស្ស</a>
+            <a href="/lessons" class="btn btn-secondary">📚 មេរៀន</a>
             <a href="javascript:history.back()" class="btn btn-secondary">🔄 ថយក្រោយ</a>
         </div>
     </div>

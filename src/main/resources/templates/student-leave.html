@@ -223,9 +223,9 @@
                     📋 ប្រព័ន្ធសុំច្បាប់ឈប់សម្រាក (Student Leave Request)
                 </h2>
                 <div style="margin-top: 6px; color: var(--muted); font-size: 0.95rem; line-height: 1.6;">
-                    សិស្សឈ្មោះ៖ <b style="color: var(--primary);" th:text="${student.name}">ឈ្មោះសិស្ស</b>
-                    • ថ្នាក់៖ <b style="color: #0284c7;" th:text="${student.className}">10A</b>
-                    • អត្តលេខ៖ <b th:text="${student.studentCode}">STU-001</b>
+                    សិស្សឈ្មោះ៖ <b style="color: var(--primary);" th:text="${student != null ? student.name : 'សិស្ស'}">ឈ្មោះសិស្ស</b>
+                    • ថ្នាក់៖ <b style="color: #0284c7;" th:text="${student != null ? student.className : ''}">10A</b>
+                    • អត្តលេខ៖ <b th:text="${student != null ? student.studentCode : ''}">STU-001</b>
                     <span th:if="${studentTeacher != null}">
                         • គ្រូបង្រៀន៖ <b style="color: #059669;" th:text="${studentTeacher.fullName}">ឈ្មោះគ្រូ</b>
                     </span>
