@@ -817,9 +817,13 @@
                                     </span>
                                 </td>
                                 <td style="text-align: center; white-space: nowrap;">
+                                    <button type="button" class="btn" style="padding: 5px 10px; font-size: 0.82rem; border-radius: 6px; font-weight: 600; margin-right: 5px; background: #fff1f2; color: #e11d48; border: 1.5px solid #fecdd3;"
+                                            th:data-name="${c.className}" onclick="deleteStudentsOfClass(this.getAttribute('data-name'))" title="លុបសិស្សទាំងអស់ក្នុងថ្នាក់នេះ">
+                                        <span>🗑️</span> <span>លុបសិស្ស</span>
+                                    </button>
                                     <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.82rem; border-radius: 6px; font-weight: 500;"
-                                            th:data-id="${c.id}" onclick="deleteClass(this.getAttribute('data-id'))">
-                                        <span>🗑️</span> <span>លុប</span>
+                                            th:data-id="${c.id}" onclick="deleteClass(this.getAttribute('data-id'))" title="លុបថ្នាក់នេះចេញពីបញ្ជី">
+                                        <span>🗑️</span> <span>លុបថ្នាក់</span>
                                     </button>
                                 </td>
                             </tr>
@@ -1180,6 +1184,55 @@
                     }
                 } catch (e) {
                     Swal.fire('បរាជ័យ!', 'មានបញ្ហាក្នុងការតភ្ជាប់។', 'error');
+                }
+            }
+        }
+
+        async function deleteStudentsOfClass(className) {
+            if (!className) return;
+            const result = await Swal.fire({
+                title: `⚠️ លុបសិស្សទាំងអស់ក្នុងថ្នាក់ ${className}?`,
+                html: `
+                    <div style="text-align: left; background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 10px; padding: 12px 14px; margin: 10px 0; color: #9f1239; font-size: 0.92rem;">
+                        សិស្សទាំងអស់ក្នុង <b>ថ្នាក់ ${className}</b> រួមទាំងវត្តមាន និងពិន្ទុ នឹងត្រូវលុបចេញពីប្រព័ន្ធ!<br>
+                        <b style="color: #e11d48;">⚠️ សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានទេ!</b>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 0.92rem; color: #475569;">
+                        តើលោកគ្រូ-អ្នកគ្រូពិតជាប្រាកដថានឹងលុបសិស្សទាំងអស់ក្នុងថ្នាក់នេះមែនទេ?
+                    </p>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: `🗑️ បាទ/ចាស លុបសិស្សថ្នាក់ ${className}`,
+                cancelButtonText: 'បោះបង់'
+            });
+
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'កំពុងលុប...',
+                    text: `សូមរង់ចាំបន្តិច កំពុងលុបសិស្សថ្នាក់ ${className}...`,
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                try {
+                    const res = await fetch('/api/students/delete-by-class?className=' + encodeURIComponent(className), { method: 'POST' });
+                    const data = await res.json();
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ជោគជ័យ!',
+                            text: data.message,
+                            timer: 1600,
+                            showConfirmButton: false
+                        }).then(() => window.location.reload());
+                    } else {
+                        Swal.fire('បរាជ័យ!', data.message || 'មានបញ្ហាបច្ចេកទេស', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('បរាជ័យ!', 'មានបញ្ហាក្នុងការតភ្ជាប់បណ្តាញ', 'error');
                 }
             }
         }

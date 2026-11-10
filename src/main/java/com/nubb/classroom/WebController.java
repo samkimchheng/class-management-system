@@ -1854,6 +1854,85 @@ public class WebController {
         return "redirect:/students";
     }
 
+    @PostMapping("/api/students/delete-by-class")
+    @ResponseBody
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> deleteStudentsByClass(
+            @org.springframework.web.bind.annotation.RequestParam("className") String className,
+            @org.springframework.web.bind.annotation.RequestParam(value = "academicYear", required = false) String academicYear) {
+        Long accId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accId == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
+        }
+        if (className == null || className.trim().isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className.trim())) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "សូមជ្រើសរើសថ្នាក់ដែលត្រូវលុប!"));
+        }
+        String cleanClass = className.trim();
+        String currentYear = (academicYear != null && !academicYear.trim().isEmpty()) ? academicYear.trim() : getCurrentAcademicYear();
+
+        List<Student> students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(cleanClass, accId, currentYear);
+        if (students == null || students.isEmpty()) {
+            students = studentRepository.findByClassNameAndAccountId(cleanClass, accId);
+        }
+
+        if (students == null || students.isEmpty()) {
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "មិនមានទិន្នន័យសិស្សនៅក្នុងថ្នាក់ " + cleanClass + " ទេ!",
+                    "deletedCount", 0,
+                    "className", cleanClass
+            ));
+        }
+
+        int count = students.size();
+        for (Student s : students) {
+            try { leaveRequestRepository.deleteByStudent(s); } catch (Exception ignored) {}
+            try { attendanceRepository.deleteByStudent(s); } catch (Exception ignored) {}
+            try { scoreRepository.deleteByStudentId(s.getId()); } catch (Exception ignored) {}
+            try { certificateRecordRepository.deleteAll(certificateRecordRepository.findAllByStudentId(s.getId())); } catch (Exception ignored) {}
+        }
+        studentRepository.deleteAll(students);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "បានលុបសិស្សទាំងអស់ក្នុងថ្នាក់ " + cleanClass + " ចំនួន " + count + " នាក់ដោយជោគជ័យ!",
+                "deletedCount", count,
+                "className", cleanClass
+        ));
+    }
+
+    @PostMapping("/student/delete-class")
+    @org.springframework.transaction.annotation.Transactional
+    public String deleteStudentsByClassForm(
+            @org.springframework.web.bind.annotation.RequestParam("className") String className,
+            @org.springframework.web.bind.annotation.RequestParam(value = "academicYear", required = false) String academicYear,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        Long accId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accId == null) return "redirect:/login";
+        if (className != null && !className.trim().isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className.trim())) {
+            String cleanClass = className.trim();
+            String currentYear = (academicYear != null && !academicYear.trim().isEmpty()) ? academicYear.trim() : getCurrentAcademicYear();
+            List<Student> students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(cleanClass, accId, currentYear);
+            if (students == null || students.isEmpty()) {
+                students = studentRepository.findByClassNameAndAccountId(cleanClass, accId);
+            }
+            if (students != null && !students.isEmpty()) {
+                int count = students.size();
+                for (Student s : students) {
+                    try { leaveRequestRepository.deleteByStudent(s); } catch (Exception ignored) {}
+                    try { attendanceRepository.deleteByStudent(s); } catch (Exception ignored) {}
+                    try { scoreRepository.deleteByStudentId(s.getId()); } catch (Exception ignored) {}
+                    try { certificateRecordRepository.deleteAll(certificateRecordRepository.findAllByStudentId(s.getId())); } catch (Exception ignored) {}
+                }
+                studentRepository.deleteAll(students);
+                redirectAttributes.addFlashAttribute("successMessage", "បានលុបសិស្សចំនួន " + count + " នាក់ក្នុងថ្នាក់ " + cleanClass + " រួចរាល់!");
+            }
+        }
+        return "redirect:/students";
+    }
+
     @GetMapping("/scores")
     public String scores(@org.springframework.web.bind.annotation.RequestParam(required = false) String className, Model model) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");

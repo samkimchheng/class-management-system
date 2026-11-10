@@ -6,7 +6,36 @@
     <title>បញ្ជីឈ្មោះសិស្ស - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css?v=20261029h}" href="../static/css/style.css?v=20261029h">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        .btn-delete-class-students {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 15px;
+            border-radius: 8px;
+            border: 1.5px solid #ef4444;
+            background: #fff1f2;
+            color: #b91c1c;
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.12);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .btn-delete-class-students:hover {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+            transform: translateY(-1px);
+        }
+        .btn-delete-class-students:active {
+            transform: translateY(0);
+        }
         .sticky-col {
             position: sticky;
             background-color: white;
@@ -438,6 +467,16 @@
                         </a>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <!-- Button to delete students of an entire class at once -->
+                        <button type="button" 
+                                id="btnDeleteClassStudents" 
+                                class="btn-delete-class-students" 
+                                onclick="handleDeleteClassStudents()"
+                                th:data-selected-class="${selectedClass}"
+                                th:title="${selectedClass != null and selectedClass != 'ថ្នាក់រៀនទាំងអស់' ? 'លុបសិស្សទាំងអស់ក្នុងថ្នាក់ ' + selectedClass : 'ជ្រើសរើសថ្នាក់ដើម្បីលុបសិស្សទាំងអស់ក្នុងថ្នាក់នោះ'}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            <span th:text="${selectedClass != null and selectedClass != 'ថ្នាក់រៀនទាំងអស់' ? '🗑️ លុបសិស្សថ្នាក់ ' + selectedClass + ' ទាំងអស់' : '🗑️ លុបសិស្សម្តង១ថ្នាក់'}">🗑️ លុបសិស្សម្តង១ថ្នាក់</span>
+                        </button>
                         <button type="button" id="btnOpenExcelImport" class="btn btn-excel-import" onclick="openExcelImportModal()" title="នាំចូលបញ្ជីឈ្មោះសិស្សពី Excel ម្តងមួយថ្នាក់">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                             <span>📥 នាំចូលពី Excel</span>
@@ -506,6 +545,123 @@
         </div>
     </div>
     <script>
+        async function handleDeleteClassStudents() {
+            const selectEl = document.getElementById('classNameSelect');
+            let currentSelected = selectEl ? selectEl.value : '';
+
+            // Get available classes from select options
+            const availableClasses = [];
+            if (selectEl) {
+                for (let i = 0; i < selectEl.options.length; i++) {
+                    const val = selectEl.options[i].value;
+                    if (val && val !== 'ថ្នាក់រៀនទាំងអស់') {
+                        availableClasses.push(val);
+                    }
+                }
+            }
+
+            if (availableClasses.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'មិនមានថ្នាក់រៀន!',
+                    text: 'លោកគ្រូ-អ្នកគ្រូមិនទាន់មានថ្នាក់រៀននៅក្នុងប្រព័ន្ធនៅឡើយទេ។',
+                    confirmButtonColor: '#4f46e5'
+                });
+                return;
+            }
+
+            let targetClass = '';
+
+            if (currentSelected && currentSelected !== 'ថ្នាក់រៀនទាំងអស់') {
+                targetClass = currentSelected;
+            } else {
+                let optionsHtml = '';
+                availableClasses.forEach(cls => {
+                    optionsHtml += `<option value="${cls}">ថ្នាក់ ${cls}</option>`;
+                });
+
+                const { value: chosenClass } = await Swal.fire({
+                    title: '🗑️ លុបសិស្សម្តង១ថ្នាក់',
+                    html: `
+                        <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 12px;">
+                            សូមជ្រើសរើសថ្នាក់ដែលលោកគ្រូ-អ្នកគ្រូចង់លុបសិស្សទាំងអស់៖
+                        </p>
+                        <select id="swalSelectClass" class="swal2-select" style="width: 85%; padding: 10px 14px; font-size: 1.05rem; font-weight: 700; border-radius: 8px; border: 1.5px solid #cbd5e1; font-family: inherit;">
+                            ${optionsHtml}
+                        </select>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'បន្តទៅមុខ &rarr;',
+                    cancelButtonText: 'បោះបង់',
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#64748b',
+                    preConfirm: () => {
+                        const sel = document.getElementById('swalSelectClass');
+                        return sel ? sel.value : null;
+                    }
+                });
+
+                if (!chosenClass) return;
+                targetClass = chosenClass;
+            }
+
+            // Confirm deletion
+            const result = await Swal.fire({
+                title: `⚠️ បញ្ជាក់ការលុបសិស្សថ្នាក់ ${targetClass}`,
+                html: `
+                    <div style="text-align: left; background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 10px; padding: 14px 16px; margin: 10px 0; color: #9f1239;">
+                        <div style="font-weight: 700; font-size: 1rem; margin-bottom: 6px;">⚠️ ការព្រមានសំខាន់៖</div>
+                        <ul style="margin: 0; padding-left: 20px; font-size: 0.9rem; line-height: 1.6;">
+                            <li>សិស្សទាំងអស់នៅក្នុង <b>ថ្នាក់ ${targetClass}</b> នឹងត្រូវលុបចេញពីប្រព័ន្ធ!</li>
+                            <li>រាល់ទិន្នន័យ <b>វត្តមាន</b>, <b>ពិន្ទុ</b>, និង <b>ច្បាប់ឈប់សម្រាក</b> របស់សិស្សក្នុងថ្នាក់នេះ ក៏នឹងត្រូវលុបជាមួយគ្នាផងដែរ!</li>
+                            <li><b style="color: #e11d48;">ទិន្នន័យដែលបានលុប មិនអាចត្រឡប់ក្រោយវិញបានទេ!</b></li>
+                        </ul>
+                    </div>
+                    <p style="margin-top: 14px; font-size: 0.95rem; color: #475569;">
+                        តើលោកគ្រូ-អ្នកគ្រូពិតជាប្រាកដថានឹងលុបសិស្សទាំងអស់ក្នុង <b>ថ្នាក់ ${targetClass}</b> មែនទេ?
+                    </p>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: `🗑️ បាទ/ចាស លុបសិស្សថ្នាក់ ${targetClass} ទាំងអស់`,
+                cancelButtonText: 'បោះបង់ (Cancel)'
+            });
+
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'កំពុងលុបទិន្នន័យ...',
+                    text: `សូមរង់ចាំបន្តិច កំពុងសម្អាតសិស្សថ្នាក់ ${targetClass}...`,
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                try {
+                    const resp = await fetch('/api/students/delete-by-class?className=' + encodeURIComponent(targetClass), {
+                        method: 'POST'
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'បានលុបជោគជ័យ!',
+                            text: data.message,
+                            timer: 1800,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = '/students';
+                        });
+                    } else {
+                        Swal.fire('មិនអាចលុបបាន!', data.message || 'មានបញ្ហាបច្ចេកទេស', 'error');
+                    }
+                } catch (err) {
+                    Swal.fire('បរាជ័យ!', 'មានបញ្ហាក្នុងការតភ្ជាប់បណ្តាញ សូមព្យាយាមម្តងទៀត', 'error');
+                }
+            }
+        }
+
         function cleanKhmerStr(s) {
             if (!s) return '';
             return s.replace(/[\u200B-\u200D\uFEFF]/g, '')
