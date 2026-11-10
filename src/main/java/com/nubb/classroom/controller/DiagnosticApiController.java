@@ -3,15 +3,19 @@ package com.nubb.classroom.controller;
 import com.nubb.classroom.model.Account;
 import com.nubb.classroom.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 @RestController
 public class DiagnosticApiController {
@@ -38,15 +42,41 @@ public class DiagnosticApiController {
         }
 
         check(res, "accountCount", () -> accountRepository.count());
-        check(res, "samkimchheng", () -> accountRepository.findByUsername("samkimchheng").map(Account::getFullName).orElse("NOT_FOUND"));
-        check(res, "myClassroomsCount", () -> classroomRepository.findByAccountIdAndAcademicYear(97L, "២០២៦-២០២៧").size());
-        check(res, "studentsCount", () -> studentRepository.findByAccountIdAndAcademicYear(97L, "២០២៦-២០२៧").size());
-        check(res, "recentAbsentsCount", () -> attendanceRepository.findByDateAndPresentFalseAndStudentAccountId(LocalDate.now(), 97L).size());
+        check(res, "samkimchheng", () -> accountRepository.findByUsername("samkimchheng").map(a -> a.getId() + ":" + a.getFullName() + ":" + a.getTeachingClasses()).orElse("NOT_FOUND"));
+        check(res, "seungsomuny", () -> accountRepository.findByUsername("Teacher1001").map(a -> a.getId() + ":" + a.getFullName() + ":" + a.getTeachingClasses()).orElse("NOT_FOUND"));
+        check(res, "totalStudentsInDb", () -> studentRepository.count());
+        check(res, "sampleStudents", () -> studentRepository.findAll().stream().limit(3).map(s -> s.getId() + ":" + s.getName() + ":" + s.getClassName() + ":" + s.getAcademicYear() + ":acc=" + s.getAccountId()).collect(Collectors.toList()));
+        check(res, "kimchhengStudentsCount", () -> studentRepository.findByAccountIdAndAcademicYear(97L, "២០២៦-២០២៧").size());
+        check(res, "somunyStudentsCount", () -> studentRepository.findByAccountIdAndAcademicYear(33L, "២០២៦-២០២៧").size());
+        check(res, "classroomsList", () -> classroomRepository.findAll().stream().map(c -> c.getAccountId() + ":" + c.getClassName() + ":" + c.getAcademicYear()).collect(Collectors.toList()));
         check(res, "lessonsCount", () -> lessonRepository.findByAccountIdOrderByIdAsc(97L).size());
-        check(res, "leaveRequestsCount", () -> leaveRequestRepository.findAllByOrderByCreatedAtDesc().size());
         check(res, "examsCount", () -> examRepository.findByAccountId(97L).size());
-        check(res, "scoresCount", () -> scoreRepository.findByAccountId(97L).size());
 
+        return res;
+    }
+
+    @GetMapping("/api/diagnostic/reseed-students")
+    public Map<String, Object> reseedStudents() {
+        Map<String, Object> res = new LinkedHashMap<>();
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement()) {
+            int deleted = stmt.executeUpdate("DELETE FROM students WHERE id >= 101 AND id <= 500");
+            res.put("deletedOld", deleted);
+
+            ResourceDatabasePopulator pop = new ResourceDatabasePopulator();
+            pop.setSqlScriptEncoding("UTF-8");
+            pop.addScript(new ClassPathResource("students_insert.sql"));
+            pop.setContinueOnError(true);
+            pop.execute(dataSource);
+
+            res.put("status", "SUCCESS");
+            res.put("totalStudentsNow", studentRepository.count());
+            res.put("kimchhengStudents", studentRepository.findByAccountIdAndAcademicYear(97L, "២០២៦-២០២៧").size());
+            res.put("somunyStudents", studentRepository.findByAccountIdAndAcademicYear(33L, "២០២៦-២០២៧").size());
+        } catch (Exception e) {
+            res.put("status", "ERROR");
+            res.put("error", e.getMessage());
+        }
         return res;
     }
 

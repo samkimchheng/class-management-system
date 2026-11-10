@@ -326,6 +326,7 @@ public class DataInitializer {
 
                     try {
                         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+                        populator.setSqlScriptEncoding("UTF-8");
                         populator.addScript(new ClassPathResource("data_dump.sql"));
                         populator.setContinueOnError(true);
                         populator.setIgnoreFailedDrops(true);
@@ -710,7 +711,14 @@ public class DataInitializer {
 
                 if (needsStudents) {
                     System.out.println(">>> [DataInitializer] Seeding official students for 10E, 10F, 10G, 11F, 11G, 7A from students_insert.sql...");
+                    try {
+                        stmt.executeUpdate("DELETE FROM students WHERE id >= 101 AND id <= 500");
+                    } catch (Exception ignored) {}
+                    try {
+                        stmt.executeUpdate("DELETE FROM \"STUDENTS\" WHERE \"ID\" >= 101 AND \"ID\" <= 500");
+                    } catch (Exception ignored) {}
                     ResourceDatabasePopulator pop = new ResourceDatabasePopulator();
+                    pop.setSqlScriptEncoding("UTF-8");
                     pop.addScript(new ClassPathResource("students_insert.sql"));
                     pop.setContinueOnError(true);
                     pop.execute(dataSource);
