@@ -279,17 +279,31 @@
                         <h3 th:text="${isToday ? 'វត្តមានថ្ងៃនេះ' : 'វត្តមានថ្ងៃទី ' + selectedDateDisplay}">វត្តមានថ្ងៃនេះ</h3>
                         <span class="date-pill-badge" th:text="'📅 ' + ${selectedDateDisplay}">📅 08-11-2026</span>
                     </div>
-                    <div class="stat-value-row">
-                        <div class="value" style="color: var(--success);" th:text="${presentToday} + ' នាក់'">៣៩ នាក់</div>
-                        <span class="pct-badge-success" th:text="${presentPercent} + '%'">92.9%</span>
-                    </div>
-                    <div class="progress-track">
-                        <div class="progress-fill-success" th:style="'width: ' + ${presentPercent} + '%;'"></div>
-                    </div>
-                    <div style="font-size: 1rem; color: #065f46; margin-top: 10px; font-weight: 700;"
-                         th:text="'✅ សិស្សបានមករៀន៖ ' + ${presentToday} + ' នាក់ (' + ${presentPercent} + '%)'">✅ សិស្សបានមករៀន៖ ៣៩ នាក់ (92.9%)</div>
-                    <div style="font-size: 0.98rem; color: #64748b; margin-top: 4px;"
-                         th:text="'ស្រី៖ ' + ${presentFemale} + ' នាក់'">ស្រី៖ ១៨ នាក់</div>
+                    <th:block th:if="${hasTeachingToday}">
+                        <div class="stat-value-row">
+                            <div class="value" style="color: var(--success);" th:text="${presentToday} + ' នាក់'">៣៩ នាក់</div>
+                            <span class="pct-badge-success" th:text="${presentPercent} + '%'">92.9%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill-success" th:style="'width: ' + ${presentPercent} + '%;'"></div>
+                        </div>
+                        <div style="font-size: 1rem; color: #065f46; margin-top: 10px; font-weight: 700;"
+                             th:text="'✅ សិស្សបានមករៀន៖ ' + ${presentToday} + ' នាក់ (' + ${presentPercent} + '%)'">✅ សិស្សបានមករៀន៖ ៣៩ នាក់ (92.9%)</div>
+                        <div style="font-size: 0.98rem; color: #64748b; margin-top: 4px;"
+                             th:text="'ស្រី៖ ' + ${presentFemale} + ' នាក់'">ស្រី៖ ១៨ នាក់</div>
+                    </th:block>
+                    <th:block th:unless="${hasTeachingToday}">
+                        <div class="stat-value-row">
+                            <div class="value" style="color: #64748b; font-size: 1.4rem;">គ្មានម៉ោងបង្រៀន</div>
+                            <span style="background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">-</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill-success" style="width: 0%;"></div>
+                        </div>
+                        <div style="font-size: 0.92rem; color: #475569; margin-top: 10px; font-weight: 600;"
+                             th:text="${nonTeachingReason ?: 'ថ្ងៃសម្រាក ឬគ្មានម៉ោងបង្រៀនតាមកាលវិភាគ'}">ថ្ងៃសម្រាក ឬគ្មានម៉ោងបង្រៀន</div>
+                        <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">មិនមានការកត់ត្រាវត្តមាន</div>
+                    </th:block>
                 </div>
 
                 <!-- Card 3: Absent Today / Selected Date -->
@@ -298,20 +312,34 @@
                         <h3 th:text="${isToday ? 'អវត្តមានថ្ងៃនេះ' : 'អវត្តមានថ្ងៃទី ' + selectedDateDisplay}">អវត្តមានថ្ងៃនេះ</h3>
                         <span class="date-pill-badge" th:text="'📅 ' + ${selectedDateDisplay}">📅 08-11-2026</span>
                     </div>
-                    <div class="stat-value-row">
-                        <div class="value" style="color: var(--danger);" th:text="${absentToday} + ' នាក់'">៣ នាក់</div>
-                        <span class="pct-badge-danger" th:text="${absentPercent} + '%'">7.1%</span>
-                    </div>
-                    <div class="progress-track">
-                        <div class="progress-fill-danger" th:style="'width: ' + ${absentPercent} + '%;'"></div>
-                    </div>
-                    <div style="font-size: 1rem; color: #991b1b; margin-top: 10px; font-weight: 700;"
-                         th:text="'❌ សិស្សមិនបានមករៀន៖ ' + ${absentToday} + ' នាក់ (' + ${absentPercent} + '%)'">❌ សិស្សមិនបានមករៀន៖ ៣ នាក់ (7.1%)</div>
-                    <div style="font-size: 0.95rem; color: #64748b; margin-top: 4px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
-                        <span th:text="'ស្រី៖ ' + ${absentFemale} + ' នាក់'">ស្រី៖ ២ នាក់</span>
-                        <span style="font-weight: 600; color: #475569;"
-                              th:text="'(ច្បាប់៖ ' + ${absentPermissionToday} + ' | គ្មានច្បាប់៖ ' + ${absentUnexcusedToday} + ')'">(ច្បាប់៖ 1 | គ្មានច្បាប់៖ 2)</span>
-                    </div>
+                    <th:block th:if="${hasTeachingToday}">
+                        <div class="stat-value-row">
+                            <div class="value" style="color: var(--danger);" th:text="${absentToday} + ' នាក់'">៣ នាក់</div>
+                            <span class="pct-badge-danger" th:text="${absentPercent} + '%'">7.1%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill-danger" th:style="'width: ' + ${absentPercent} + '%;'"></div>
+                        </div>
+                        <div style="font-size: 1rem; color: #991b1b; margin-top: 10px; font-weight: 700;"
+                             th:text="'❌ សិស្សមិនបានមករៀន៖ ' + ${absentToday} + ' នាក់ (' + ${absentPercent} + '%)'">❌ សិស្សមិនបានមករៀន៖ ៣ នាក់ (7.1%)</div>
+                        <div style="font-size: 0.95rem; color: #64748b; margin-top: 4px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                            <span th:text="'ស្រី៖ ' + ${absentFemale} + ' នាក់'">ស្រី៖ ២ នាក់</span>
+                            <span style="font-weight: 600; color: #475569;"
+                                  th:text="'(ច្បាប់៖ ' + ${absentPermissionToday} + ' | គ្មានច្បាប់៖ ' + ${absentUnexcusedToday} + ')'">(ច្បាប់៖ 1 | គ្មានច្បាប់៖ 2)</span>
+                        </div>
+                    </th:block>
+                    <th:block th:unless="${hasTeachingToday}">
+                        <div class="stat-value-row">
+                            <div class="value" style="color: #64748b; font-size: 1.4rem;">គ្មានម៉ោងបង្រៀន</div>
+                            <span style="background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">-</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill-danger" style="width: 0%;"></div>
+                        </div>
+                        <div style="font-size: 0.92rem; color: #475569; margin-top: 10px; font-weight: 600;"
+                             th:text="${nonTeachingReason ?: 'ថ្ងៃសម្រាក ឬគ្មានម៉ោងបង្រៀនតាមកាលវិភាគ'}">ថ្ងៃសម្រាក ឬគ្មានម៉ោងបង្រៀន</div>
+                        <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">មិនមានការកត់ត្រាអវត្តមាន</div>
+                    </th:block>
                 </div>
             </div>
 
@@ -374,7 +402,14 @@
                             </td>
                             <td th:text="${#temporals.format(attendance.date, 'dd-MM-yyyy')}">កាលបរិច្ឆេទ</td>
                         </tr>
-                        <tr th:if="${#lists.isEmpty(recentAbsents)}">
+                        <tr th:if="${!hasTeachingToday}">
+                            <td colspan="6" style="text-align: center; padding: 25px 15px; background: #f8fafc; color: #64748b;">
+                                <div style="font-size: 1.6rem; margin-bottom: 6px;">☕</div>
+                                <div style="font-weight: 700; color: #334155; font-size: 1.05rem;" th:text="${nonTeachingReason}">ថ្ងៃនេះមិនមានម៉ោងបង្រៀនតាមកាលវិភាគឡើយ</div>
+                                <div style="font-size: 0.88rem; color: #94a3b8; margin-top: 4px;">ប្រព័ន្ធមិនបង្ហាញទិន្នន័យវត្តមាន និងអវត្តមានសម្រាប់ថ្ងៃដែលគ្មានម៉ោងបង្រៀនឡើយ</div>
+                            </td>
+                        </tr>
+                        <tr th:if="${hasTeachingToday and #lists.isEmpty(recentAbsents)}">
                             <td colspan="6" style="text-align: center;"
                                 th:text="${isToday ? 'មិនមានសិស្សអវត្តមានទេថ្ងៃនេះ (' + selectedDateDisplay + ')' : 'មិនមានសិស្សអវត្តមានទេនៅថ្ងៃទី ' + selectedDateDisplay}">មិនមានសិស្សអវត្តមានទេថ្ងៃនេះ</td>
                         </tr>

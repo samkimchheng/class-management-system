@@ -304,6 +304,9 @@ public class WebController {
     @Autowired
     private com.nubb.classroom.repository.LeaveRequestRepository leaveRequestRepository;
 
+    @Autowired
+    private com.nubb.classroom.repository.ScheduleRepository scheduleRepository;
+
     public List<com.nubb.classroom.model.LeaveRequest> getLeaveRequestsForTeacher(Long teacherAccountId, String classNameFilter) {
         if (teacherAccountId == null) return new ArrayList<>();
         try {
@@ -443,6 +446,81 @@ public class WebController {
         return "guide";
     }
 
+    public boolean checkTeacherHasTeaching(Long accountId, String classNameFilter, java.time.LocalDate targetDate, java.util.concurrent.atomic.AtomicReference<String> reasonRef) {
+        if (targetDate == null) {
+            targetDate = java.time.LocalDate.now();
+        }
+        java.time.DayOfWeek dow = targetDate.getDayOfWeek();
+        if (dow == java.time.DayOfWeek.SUNDAY) {
+            if (reasonRef != null) reasonRef.set("ថ្ងៃអាទិត្យ (ថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍)");
+            return false;
+        }
+
+        String khmerDay;
+        switch (dow) {
+            case MONDAY: khmerDay = "ច័ន្ទ"; break;
+            case TUESDAY: khmerDay = "អង្គារ"; break;
+            case WEDNESDAY: khmerDay = "ពុធ"; break;
+            case THURSDAY: khmerDay = "ព្រហស្បតិ៍"; break;
+            case FRIDAY: khmerDay = "សុក្រ"; break;
+            case SATURDAY: khmerDay = "សៅរ៍"; break;
+            default: khmerDay = "អាទិត្យ"; break;
+        }
+
+        if (accountId == null || scheduleRepository == null) {
+            return true;
+        }
+
+        List<com.nubb.classroom.model.Schedule> weekly = scheduleRepository.findByClassNameAndAccountId("WEEKLY", accountId);
+        if (weekly == null || weekly.isEmpty()) {
+            weekly = scheduleRepository.findByAccountId(accountId);
+        }
+
+        if (weekly == null || weekly.isEmpty()) {
+            return true;
+        }
+
+        List<com.nubb.classroom.model.Schedule> validBlocks = weekly.stream()
+                .filter(s -> s != null && s.getSubjectName() != null && !s.getSubjectName().trim().isEmpty() && !s.getSubjectName().trim().equals("-"))
+                .collect(Collectors.toList());
+
+        if (validBlocks.isEmpty()) {
+            return true;
+        }
+
+        int targetCol = dow.getValue() - 1; // 0 for Mon to 5 for Sat
+        List<com.nubb.classroom.model.Schedule> dayBlocks = validBlocks.stream()
+                .filter(s -> (s.getBlockIndex() % 6) == targetCol)
+                .collect(Collectors.toList());
+
+        boolean hasClassFilter = (classNameFilter != null && !classNameFilter.trim().isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(classNameFilter.trim()));
+
+        if (hasClassFilter) {
+            String targetClass = classNameFilter.trim();
+            boolean match = dayBlocks.stream().anyMatch(s -> {
+                String sub = s.getSubjectName();
+                if (sub == null) return false;
+                return com.nubb.classroom.controller.LessonController.isClassMatching(sub, targetClass)
+                        || sub.replaceAll("\\s+", "").toLowerCase().contains(targetClass.replaceAll("\\s+", "").toLowerCase());
+            });
+            if (!match) {
+                if (reasonRef != null) {
+                    reasonRef.set("មិនមានម៉ោងបង្រៀនថ្នាក់ «" + targetClass + "» នៅថ្ងៃ" + khmerDay + " តាមកាលវិភាគឡើយ");
+                }
+                return false;
+            }
+            return true;
+        } else {
+            if (dayBlocks.isEmpty()) {
+                if (reasonRef != null) {
+                    reasonRef.set("ថ្ងៃ" + khmerDay + " មិនមានម៉ោងបង្រៀនតាមកាលវិភាគឡើយ (ថ្ងៃសម្រាក/គ្មានម៉ោងបង្រៀន)");
+                }
+                return false;
+            }
+            return true;
+        }
+    }
+
     @GetMapping("/")
     public String index(
             @org.springframework.web.bind.annotation.RequestParam(required = false) String className,
@@ -575,9 +653,23 @@ public class WebController {
                 presentFemale = Math.max(0L, totalFemale - absentFemale);
             }
 
+            java.util.concurrent.atomic.AtomicReference<String> nonTeachingReasonRef = new java.util.concurrent.atomic.AtomicReference<>("");
+            boolean hasTeachingToday = checkTeacherHasTeaching(accountId, className, targetDate, nonTeachingReasonRef);
+            String nonTeachingReason = nonTeachingReasonRef.get();
+
+            if (!hasTeachingToday) {
+                presentToday = 0;
+                presentFemale = 0;
+                absentToday = 0;
+                absentFemale = 0;
+                absentPermissionToday = 0;
+                absentUnexcusedToday = 0;
+                recentAbsents = new java.util.ArrayList<>();
+            }
+
             String presentPercent = "0";
             String absentPercent = "0";
-            if (totalStudents > 0) {
+            if (totalStudents > 0 && hasTeachingToday) {
                 double pPct = (presentToday * 100.0) / totalStudents;
                 double aPct = (absentToday * 100.0) / totalStudents;
                 presentPercent = (Math.abs(pPct - Math.round(pPct)) < 0.05)
@@ -604,6 +696,8 @@ public class WebController {
             model.addAttribute("absentUnexcusedToday", absentUnexcusedToday);
             model.addAttribute("recentAbsents", recentAbsents);
             model.addAttribute("pendingLeaveRequests", pendingLeaveRequests);
+            model.addAttribute("hasTeachingToday", hasTeachingToday);
+            model.addAttribute("nonTeachingReason", nonTeachingReason);
             model.addAttribute("pendingLeaveCount", pendingLeaveRequests.size());
             model.addAttribute("selectedClass", className);
             model.addAttribute("selectedDate", selectedDateStr);
@@ -627,6 +721,8 @@ public class WebController {
             model.addAttribute("absentPermissionToday", 0);
             model.addAttribute("absentUnexcusedToday", 0);
             model.addAttribute("recentAbsents", new java.util.ArrayList<>());
+            model.addAttribute("hasTeachingToday", true);
+            model.addAttribute("nonTeachingReason", "");
             model.addAttribute("selectedClass", className);
             model.addAttribute("selectedDate", selectedDateStr);
             model.addAttribute("selectedDateDisplay", selectedDateDisplay);

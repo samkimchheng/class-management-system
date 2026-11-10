@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -426,5 +427,56 @@ class ClassroomApplicationTests {
                 .ifPresent(s -> scoreRepository.delete(s));
         questionRepository.delete(q);
         examRepository.delete(exam);
+    }
+    @Test
+    void testTimetableAttendanceVerificationOnDashboard() throws Exception {
+        Account teacher = accountRepository.findByUsername("samkimchheng").orElse(null);
+        assertNotNull(teacher);
+
+        // 1. Sunday (2026-11-08) is weekend -> hasTeachingToday must be false, attendance counts are 0
+        mockMvc.perform(get("/")
+                .param("date", "2026-11-08")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole())
+                .sessionAttr("ACCOUNT_NAME", teacher.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("hasTeachingToday", false))
+                .andExpect(model().attribute("presentToday", 0L))
+                .andExpect(model().attribute("absentToday", 0L));
+
+        // 2. Wednesday (2026-11-11) all classes -> teacher teaches 10E/10F -> hasTeachingToday must be true
+        mockMvc.perform(get("/")
+                .param("date", "2026-11-11")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole())
+                .sessionAttr("ACCOUNT_NAME", teacher.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("hasTeachingToday", true));
+
+        // 3. Wednesday (2026-11-11) for class 10E -> teacher teaches 10E on Wednesday -> true
+        mockMvc.perform(get("/")
+                .param("date", "2026-11-11")
+                .param("className", "10E")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole())
+                .sessionAttr("ACCOUNT_NAME", teacher.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("hasTeachingToday", true));
+
+        // 4. Wednesday (2026-11-11) for class 11G -> teacher does NOT teach 11G on Wednesday (taught Tue/Thu) -> false
+        mockMvc.perform(get("/")
+                .param("date", "2026-11-11")
+                .param("className", "11G")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole())
+                .sessionAttr("ACCOUNT_NAME", teacher.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("hasTeachingToday", false))
+                .andExpect(model().attribute("presentToday", 0L))
+                .andExpect(model().attribute("absentToday", 0L));
     }
 }
