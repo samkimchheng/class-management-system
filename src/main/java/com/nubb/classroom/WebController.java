@@ -147,17 +147,29 @@ public class WebController {
 
     @ModelAttribute("currentAcademicYear")
     public String currentAcademicYear() {
-        return getCurrentAcademicYear();
+        try {
+            return getCurrentAcademicYear();
+        } catch (Exception e) {
+            return "២០២៦-២០២៧";
+        }
     }
 
     @ModelAttribute("availableAcademicYears")
     public List<String> availableAcademicYears() {
-        return getAvailableAcademicYears();
+        try {
+            return getAvailableAcademicYears();
+        } catch (Exception e) {
+            return List.of("២០២៤-២០២៥", "២០២៥-២០២៦", "២០២៦-២០២៧", "២០២៧-២០២៨", "២០២៨-២០២៩", "២០២៩-២០៣០");
+        }
     }
 
     @ModelAttribute("monthsList")
     public List<String> monthsList() {
-        return getMonthsForAcademicYear(getCurrentAcademicYear());
+        try {
+            return getMonthsForAcademicYear(getCurrentAcademicYear());
+        } catch (Exception e) {
+            return List.of("តេស្តដើមឆ្នាំ", "ខែវិច្ឆិកា ២០២៦", "ខែធ្នូ ២០២៦", "ខែមករា ២០២៧", "ខែកុម្ភៈ ២០២៧", "ឆមាសទី១", "ខែមីនា ២០២៧", "ខែមេសា ២០២៧", "ខែឧសភា ២០២៧", "ខែមិថុនា ២០២៧", "ខែកក្កដា ២០២៧", "ឆមាសទី២", "ខែសីហា ២០២៧", "ប្រចាំឆ្នាំ");
+        }
     }
 
     public List<String> getAvailableAcademicYears() {
@@ -246,19 +258,27 @@ public class WebController {
 
     @ModelAttribute("teacherAccount")
     public Account getTeacherAccount(jakarta.servlet.http.HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId != null) {
-            return accountRepository.findById(accountId).orElse(null);
+        try {
+            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (accountId != null) {
+                return accountRepository.findById(accountId).orElse(null);
+            }
+        } catch (Exception e) {
+            System.err.println(">>> [WebController] Error fetching teacherAccount: " + e.getMessage());
         }
         return null;
     }
 
     @ModelAttribute("myClassrooms")
     public List<Classroom> getMyClassrooms(jakarta.servlet.http.HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId != null) {
-            String academicYear = getCurrentAcademicYear();
-            return classroomRepository.findByAccountIdAndAcademicYear(accountId, academicYear);
+        try {
+            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (accountId != null) {
+                String academicYear = getCurrentAcademicYear();
+                return classroomRepository.findByAccountIdAndAcademicYear(accountId, academicYear);
+            }
+        } catch (Exception e) {
+            System.err.println(">>> [WebController] Error fetching myClassrooms: " + e.getMessage());
         }
         return new java.util.ArrayList<>();
     }

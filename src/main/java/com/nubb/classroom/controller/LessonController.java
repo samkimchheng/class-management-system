@@ -46,36 +46,40 @@ public class LessonController {
 
     @ModelAttribute("myClassrooms")
     public List<Classroom> getMyClassrooms() {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId != null) {
-            List<Classroom> list = new ArrayList<>();
-            Set<String> seen = new LinkedHashSet<>();
-            List<Classroom> dbClasses = classroomRepository.findByAccountId(accountId);
-            if (dbClasses != null) {
-                for (Classroom c : dbClasses) {
-                    if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
-                        String norm = normalizeClass(c.getClassName());
-                        if (seen.add(norm)) {
-                            list.add(c);
+        try {
+            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (accountId != null) {
+                List<Classroom> list = new ArrayList<>();
+                Set<String> seen = new LinkedHashSet<>();
+                List<Classroom> dbClasses = classroomRepository.findByAccountId(accountId);
+                if (dbClasses != null) {
+                    for (Classroom c : dbClasses) {
+                        if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
+                            String norm = normalizeClass(c.getClassName());
+                            if (seen.add(norm)) {
+                                list.add(c);
+                            }
                         }
                     }
                 }
-            }
-            List<Student> dbStudents = studentRepository.findByAccountId(accountId);
-            if (dbStudents != null) {
-                for (Student s : dbStudents) {
-                    if (s.getClassName() != null && !s.getClassName().trim().isEmpty()) {
-                        String norm = normalizeClass(s.getClassName());
-                        if (seen.add(norm)) {
-                            Classroom extra = new Classroom();
-                            extra.setAccountId(accountId);
-                            extra.setClassName(s.getClassName().trim());
-                            list.add(extra);
+                List<Student> dbStudents = studentRepository.findByAccountId(accountId);
+                if (dbStudents != null) {
+                    for (Student s : dbStudents) {
+                        if (s.getClassName() != null && !s.getClassName().trim().isEmpty()) {
+                            String norm = normalizeClass(s.getClassName());
+                            if (seen.add(norm)) {
+                                Classroom extra = new Classroom();
+                                extra.setAccountId(accountId);
+                                extra.setClassName(s.getClassName().trim());
+                                list.add(extra);
+                            }
                         }
                     }
                 }
+                return list;
             }
-            return list;
+        } catch (Exception e) {
+            System.err.println(">>> [LessonController] Error in getMyClassrooms: " + e.getMessage());
         }
         return new ArrayList<>();
     }

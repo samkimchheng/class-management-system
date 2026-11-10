@@ -33,18 +33,39 @@ public class CustomErrorController implements ErrorController {
                 ? messageObj.toString()
                 : (statusCode == 404 ? "រកមិនឃើញទំព័រដែលបានស្នើសុំ" : "មានបញ្ហាបច្ចេកទេសក្នុងដំណើរការប្រព័ន្ធ");
 
+        Throwable throwable = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+        if (throwable == null) {
+            throwable = (Throwable) request.getAttribute("jakarta.servlet.error.exception");
+        }
+        if (throwable == null) {
+            throwable = (Throwable) request.getAttribute("org.springframework.web.servlet.DispatcherServlet.EXCEPTION");
+        }
+        String detailedEx = throwable != null ? throwable.toString() : (exceptionObj != null ? exceptionObj.toString() : "No exception object");
+        Throwable current = throwable;
+        while (current != null && current.getCause() != null && current.getCause() != current) {
+            current = current.getCause();
+            detailedEx += " | Caused by: " + current.toString();
+        }
+
+        java.io.StringWriter sw = new java.io.StringWriter();
+        if (throwable != null) {
+            throwable.printStackTrace(new java.io.PrintWriter(sw));
+        }
+
         System.err.println(">>> [CustomErrorController] Handled error status " + statusCode +
                 " on URI: " + requestUri + " | Message: " + message +
-                (exceptionObj != null ? " | Exception: " + exceptionObj : ""));
+                " | Exception: " + detailedEx);
 
         // If JSON/API request, return JSON response
         String acceptHeader = request.getHeader("Accept");
-        if (requestUri != null && requestUri.startsWith("/api/") || (acceptHeader != null && acceptHeader.contains("application/json"))) {
+        if (requestUri != null && requestUri.startsWith("/api/") || (acceptHeader != null && acceptHeader.contains("application/json")) || "true".equalsIgnoreCase(request.getParameter("json"))) {
             Map<String, Object> errBody = new LinkedHashMap<>();
             errBody.put("status", statusCode);
             errBody.put("error", HttpStatus.valueOf(statusCode).getReasonPhrase());
             errBody.put("message", message);
             errBody.put("path", requestUri);
+            errBody.put("exception", detailedEx);
+            errBody.put("stackTrace", sw.toString());
             return ResponseEntity.status(statusCode).body(errBody);
         }
 
@@ -52,6 +73,7 @@ public class CustomErrorController implements ErrorController {
         model.addAttribute("error", HttpStatus.valueOf(statusCode).getReasonPhrase());
         model.addAttribute("message", message);
         model.addAttribute("requestUri", requestUri);
+        model.addAttribute("detailedEx", detailedEx);
 
         return "error";
     }

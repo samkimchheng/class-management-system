@@ -88,6 +88,10 @@
         <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px;" th:if="${status}">
             <span th:text="'កូដសម្គាល់៖ ' + ${status}"></span>
         </div>
+        <details style="text-align: left; margin: 15px 0 20px 0; font-size: 0.78rem; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px;" th:if="${detailedEx != null}">
+            <summary style="cursor: pointer; font-weight: 600; color: #475569;">🔍 ព័ត៌មានលម្អិតបច្ចេកទេស (Technical Details)</summary>
+            <div style="margin-top: 8px; word-break: break-all; font-family: monospace; color: #b91c1c;" th:text="${detailedEx}"></div>
+        </details>
         <div class="btn-group">
             <a href="/" class="btn btn-primary">&larr; ត្រឡប់ទៅទំព័រដើម</a>
             <a href="/login" class="btn btn-secondary">🔐 ចូលប្រព័ន្ធគ្រូ</a>

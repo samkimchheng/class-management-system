@@ -73,8 +73,36 @@ public class DataInitializer {
         try { stmt.execute("ALTER TABLE IF EXISTS \"SCORE\" ADD COLUMN IF NOT EXISTS \"STUDENT_WRITING\" TEXT"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS score ADD COLUMN IF NOT EXISTS writing_score DOUBLE PRECISION"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS \"SCORE\" ADD COLUMN IF NOT EXISTS \"WRITING_SCORE\" DOUBLE PRECISION"); } catch (Exception ignored) {}
-        try { stmt.execute("ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS account_id BIGINT"); } catch (Exception ignored) {}
-        try { stmt.execute("ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT"); } catch (Exception ignored) {}
+        // 1. Ensure account_id exists on ALL multi-tenant tables
+        String[] accountIdCols = {
+            "ALTER TABLE IF EXISTS students ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"STUDENTS\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS classroom ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"CLASSROOM\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS attendance ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"ATTENDANCE\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS score ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"SCORE\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS score_rule ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"SCORE_RULE\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS score_rules ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"SCORE_RULES\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS lessons ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"LESSONS\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS question ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"QUESTION\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS leave_requests ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"LEAVE_REQUESTS\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT"
+        };
+        for (String q : accountIdCols) {
+            try { stmt.execute(q); } catch (Exception ignored) {}
+        }
+
+        // 2. Default legacy rows to account_id = 97 (samkimchheng)
         try { stmt.execute("UPDATE certificate_records SET account_id = 97 WHERE account_id IS NULL"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE \"CERTIFICATE_RECORDS\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE students SET account_id = 97 WHERE account_id IS NULL OR account_id = 1"); } catch (Exception ignored) {}
@@ -83,12 +111,16 @@ public class DataInitializer {
         try { stmt.execute("UPDATE \"CLASSROOM\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL OR \"ACCOUNT_ID\" = 1"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE score SET account_id = 97 WHERE account_id IS NULL OR account_id = 1"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE \"SCORE\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL OR \"ACCOUNT_ID\" = 1"); } catch (Exception ignored) {}
+        try { stmt.execute("UPDATE score_rule SET account_id = 97 WHERE account_id IS NULL OR account_id = 1"); } catch (Exception ignored) {}
+        try { stmt.execute("UPDATE \"SCORE_RULE\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL OR \"ACCOUNT_ID\" = 1"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE attendance SET account_id = 97 WHERE account_id IS NULL OR account_id = 1"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE \"ATTENDANCE\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL OR \"ACCOUNT_ID\" = 1"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE lessons SET account_id = 97 WHERE account_id IS NULL OR account_id = 1"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE \"LESSONS\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL OR \"ACCOUNT_ID\" = 1"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE exam SET account_id = 97 WHERE account_id IS NULL OR account_id = 1"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE \"EXAM\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL OR \"ACCOUNT_ID\" = 1"); } catch (Exception ignored) {}
+        try { stmt.execute("UPDATE question SET account_id = 97 WHERE account_id IS NULL OR account_id = 1"); } catch (Exception ignored) {}
+        try { stmt.execute("UPDATE \"QUESTION\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL OR \"ACCOUNT_ID\" = 1"); } catch (Exception ignored) {}
 
         String createCertTable = "CREATE TABLE IF NOT EXISTS \"PUBLIC\".\"CERTIFICATE_RECORDS\"(" +
                 "\"ID\" BIGINT GENERATED BY DEFAULT AS IDENTITY NOT NULL PRIMARY KEY, " +
@@ -165,6 +197,18 @@ public class DataInitializer {
         try { stmt.execute("ALTER TABLE IF EXISTS \"ATTENDANCE\" ADD COLUMN IF NOT EXISTS \"ABSENCE_TYPE\" VARCHAR(50)"); } catch (Exception ignored) {}
 
         String[] yearCols = {
+            "CREATE TABLE IF NOT EXISTS leave_requests (id BIGINT GENERATED BY DEFAULT AS IDENTITY NOT NULL PRIMARY KEY, account_id BIGINT, student_id BIGINT NOT NULL, class_name VARCHAR(100), academic_year VARCHAR(50), start_date DATE NOT NULL, end_date DATE NOT NULL, leave_type VARCHAR(100), leave_session VARCHAR(100), reason VARCHAR(1000), parent_phone VARCHAR(100), status VARCHAR(50), teacher_note VARCHAR(500), created_at TIMESTAMP, reviewed_at TIMESTAMP)",
+            "CREATE TABLE IF NOT EXISTS \"PUBLIC\".\"LEAVE_REQUESTS\" (\"ID\" BIGINT GENERATED BY DEFAULT AS IDENTITY NOT NULL PRIMARY KEY, \"ACCOUNT_ID\" BIGINT, \"STUDENT_ID\" BIGINT NOT NULL, \"CLASS_NAME\" VARCHAR(100), \"ACADEMIC_YEAR\" VARCHAR(50), \"START_DATE\" DATE NOT NULL, \"END_DATE\" DATE NOT NULL, \"LEAVE_TYPE\" VARCHAR(100), \"LEAVE_SESSION\" VARCHAR(100), \"REASON\" VARCHAR(1000), \"PARENT_PHONE\" VARCHAR(100), \"STATUS\" VARCHAR(50), \"TEACHER_NOTE\" VARCHAR(500), \"CREATED_AT\" TIMESTAMP, \"REVIEWED_AT\" TIMESTAMP)",
+            "ALTER TABLE IF EXISTS leave_requests ADD COLUMN IF NOT EXISTS account_id BIGINT",
+            "ALTER TABLE IF EXISTS \"LEAVE_REQUESTS\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS leave_requests ADD COLUMN IF NOT EXISTS academic_year VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+            "ALTER TABLE IF EXISTS \"LEAVE_REQUESTS\" ADD COLUMN IF NOT EXISTS \"ACADEMIC_YEAR\" VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
+            "ALTER TABLE IF EXISTS leave_requests ADD COLUMN IF NOT EXISTS class_name VARCHAR(100)",
+            "ALTER TABLE IF EXISTS \"LEAVE_REQUESTS\" ADD COLUMN IF NOT EXISTS \"CLASS_NAME\" VARCHAR(100)",
+            "UPDATE leave_requests SET account_id = 97 WHERE account_id IS NULL OR account_id = 1",
+            "UPDATE \"LEAVE_REQUESTS\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL OR \"ACCOUNT_ID\" = 1",
+            "UPDATE leave_requests SET academic_year = '២០២៦-២០២៧' WHERE academic_year IS NULL OR academic_year = ''",
+            "UPDATE \"LEAVE_REQUESTS\" SET \"ACADEMIC_YEAR\" = '២០២៦-២០២៧' WHERE \"ACADEMIC_YEAR\" IS NULL OR \"ACADEMIC_YEAR\" = ''",
             "ALTER TABLE IF EXISTS students ADD COLUMN IF NOT EXISTS academic_year VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
             "ALTER TABLE IF EXISTS \"STUDENTS\" ADD COLUMN IF NOT EXISTS \"ACADEMIC_YEAR\" VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
             "ALTER TABLE IF EXISTS classroom ADD COLUMN IF NOT EXISTS academic_year VARCHAR(50) DEFAULT '២០២៦-២០២៧'",
