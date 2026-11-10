@@ -193,6 +193,7 @@
             <li class="nav-item "><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
             <li class="nav-item "><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
             <li class="nav-item "><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
+            <li class="nav-item "><a href="/daily-plan" class="nav-link"><span>📋</span> <span>សេវាប្រចាំថ្ងៃ</span></a></li>
             <li class="nav-item "><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
             <li class="nav-item "><a href="/feedback" class="nav-link"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
             <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8;"><span>✈️</span> <span>ទាក់ទងខ្ញុំ (Telegram)</span></a></li>
@@ -258,6 +259,42 @@
                     <a href="/guide" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
                         <span>📖 សៀវភៅណែនាំការប្រើប្រាស់ (.pdf)</span>
                     </a>
+                </div>
+            </div>
+
+            <!-- Daily Teaching Preparation Card (សេវាប្រចាំថ្ងៃ និងខ្លឹមសារមេរៀន) -->
+            <div class="table-container" style="margin-bottom: 20px; border-left: 5px solid #2563eb; background: linear-gradient(to right, #f8fafc, #ffffff); padding: 18px 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 50px; height: 50px; border-radius: 12px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,0.12);">
+                            📋
+                        </div>
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <h3 style="margin: 0; color: #0f172a; font-size: 1.15rem; font-weight: 700;">សេវាប្រចាំថ្ងៃ (កិច្ចតែងការ និងខ្លឹមសារមេរៀនបង្រៀន)</h3>
+                                <span style="background: #e0e7ff; color: #3730a3; padding: 2px 10px; border-radius: 12px; font-weight: 700; font-size: 0.78rem;">ត្រៀមសម្រាប់ថ្ងៃស្អែក</span>
+                            </div>
+                            <p style="margin: 5px 0 0 0; color: #64748b; font-size: 0.88rem; line-height: 1.4;">
+                                <span style="font-weight: 600; color: #334155;" th:text="${tomorrowDateKhmer}">ថ្ងៃពុធ ទី១១ ខែវិច្ឆិកា ឆ្នាំ២០២៦</span>
+                                <th:block th:if="${hasTomorrowTeaching}">
+                                    • មានបង្រៀន <b><span th:text="${tomorrowClasses.size()}">៤</span> ម៉ោង</b> 
+                                    (ថ្នាក់៖ <span th:each="tc, sStat : ${tomorrowClasses}" th:text="${tc + (!sStat.last ? ', ' : '')}" style="font-weight: 700; color: #1e40af;">10G</span>)
+                                </th:block>
+                                <th:block th:unless="${hasTomorrowTeaching}">
+                                    • <span style="color: #64748b;">ថ្ងៃស្អែកមិនមានម៉ោងបង្រៀនតាមកាលវិភាគឡើយ</span>
+                                </th:block>
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <a th:href="@{/daily-plan(date=${tomorrowDateStr})}" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; box-shadow: 0 4px 12px rgba(37,99,235,0.25);">
+                            <span>✍️ កត់ត្រាខ្លឹមសារមេរៀនថ្ងៃស្អែក</span>
+                            <span>&rarr;</span>
+                        </a>
+                        <a href="/daily-plan" class="btn" style="background: #f1f5f9; color: #334155; text-decoration: none; border: 1px solid #cbd5e1; font-weight: 600;">
+                            <span>មើលសេវាប្រចាំថ្ងៃ</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 

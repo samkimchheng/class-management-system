@@ -69,6 +69,9 @@ class ClassroomApplicationTests {
     private com.nubb.classroom.repository.QuestionRepository questionRepository;
 
     @Autowired
+    private com.nubb.classroom.repository.DailyTeachingLogRepository dailyTeachingLogRepository;
+
+    @Autowired
     private WebController webController;
 
     @Test
@@ -545,5 +548,66 @@ class ClassroomApplicationTests {
         studentRepository.deleteAll(students8E);
         List<Student> students8D = studentRepository.findByClassNameAndAccountIdAndAcademicYear("ថ្នាក់ទី៨D", somuny.getId(), "២០២៦-២០២៧");
         if (students8D != null) studentRepository.deleteAll(students8D);
+    }
+
+    @Test
+    void testDailyPlanWorkflowAndScheduleIntegration() throws Exception {
+        Account kimchheng = accountRepository.findByUsername("samkimchheng").orElse(null);
+        assertNotNull(kimchheng);
+
+        // 1. GET /daily-plan for Wednesday (2026-11-11)
+        // Sam Kimchheng has 4 hours on Wednesday: 10G, 11G, 10F, 11F
+        mockMvc.perform(get("/daily-plan")
+                .param("date", "2026-11-11")
+                .sessionAttr("ACCOUNT_ID", kimchheng.getId())
+                .sessionAttr("ACCOUNT_ROLE", kimchheng.getRole())
+                .sessionAttr("ACCOUNT_NAME", kimchheng.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("hasTeachingSlots", true))
+                .andExpect(model().attribute("totalSlots", 4));
+
+        // 2. POST /api/daily-plan/save for Wednesday (2026-11-11)
+        String saveJson = "{\"date\":\"2026-11-11\",\"items\":[" +
+                "{\"slotIndex\":0,\"periodNumber\":1,\"className\":\"10G\",\"subjectName\":\"ភាសាអង់គ្លេស\"," +
+                "\"lessonTitle\":\"Unit 4: Environment - Reading Passage 1\"," +
+                "\"contentSummary\":\"ពន្យល់ពាក្យគន្លឹះ និងអានអត្ថបទអំពីការការពារបរិស្ថាន\"," +
+                "\"objectives\":\"សិស្សយល់ដឹងពីវិធីកាត់បន្ថយប្លាស្ទិក\"," +
+                "\"homework\":\"ធ្វើលំហាត់ទំព័រ ៥០\",\"notes\":\"សិស្សចូលរួមយ៉ាងសកម្ម\"}," +
+                "{\"slotIndex\":1,\"periodNumber\":2,\"className\":\"11G\",\"subjectName\":\"ភាសាអង់គ្លេស\"," +
+                "\"lessonTitle\":\"Unit 4: Grammar Practice\"," +
+                "\"contentSummary\":\"វេយ្យាករណ៍ Present Perfect Continuous\"," +
+                "\"objectives\":\"សិស្សចេះប្រើប្រាស់កាលបានត្រឹមត្រូវ\"," +
+                "\"homework\":\"តែងប្រយោគ ៥ ប្រយោគ\",\"notes\":\"ល្អ\"}" +
+                "]}";
+
+        mockMvc.perform(post("/api/daily-plan/save")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(saveJson)
+                .sessionAttr("ACCOUNT_ID", kimchheng.getId())
+                .sessionAttr("ACCOUNT_ROLE", kimchheng.getRole())
+                .sessionAttr("ACCOUNT_NAME", kimchheng.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk());
+
+        // 3. Verify in repository
+        var logs = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(kimchheng.getId(), LocalDate.parse("2026-11-11"));
+        assertEquals(2, logs.size());
+        assertEquals("Unit 4: Environment - Reading Passage 1", logs.get(0).getLessonTitle());
+        assertEquals("10G", logs.get(0).getClassName());
+        assertEquals("Unit 4: Grammar Practice", logs.get(1).getLessonTitle());
+
+        // 4. Verify homepage dashboard has tomorrow daily plan model attributes
+        mockMvc.perform(get("/")
+                .sessionAttr("ACCOUNT_ID", kimchheng.getId())
+                .sessionAttr("ACCOUNT_ROLE", kimchheng.getRole())
+                .sessionAttr("ACCOUNT_NAME", kimchheng.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("tomorrowDateStr"))
+                .andExpect(model().attributeExists("tomorrowClasses"));
+
+        // Clean up test logs
+        dailyTeachingLogRepository.deleteAll(logs);
     }
 }

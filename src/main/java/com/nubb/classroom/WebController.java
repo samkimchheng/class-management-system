@@ -710,6 +710,32 @@ public class WebController {
             model.addAttribute("nextDate", nextDateStr);
             model.addAttribute("todayDate", todayDateStr);
             model.addAttribute("isToday", isToday);
+
+            // Tomorrow's Daily Teaching Plan summary for dashboard card
+            LocalDate tomorrowDate = today.plusDays(1);
+            if (tomorrowDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
+                tomorrowDate = today.plusDays(2);
+            }
+            int tomorrowCol = tomorrowDate.getDayOfWeek().getValue() - 1;
+            List<com.nubb.classroom.model.Schedule> weeklySched = scheduleRepository.findByClassNameAndAccountId("WEEKLY", accountId);
+            if (weeklySched == null || weeklySched.isEmpty()) {
+                weeklySched = scheduleRepository.findByAccountId(accountId);
+            }
+            List<String> tomorrowClasses = new ArrayList<>();
+            if (tomorrowCol >= 0 && tomorrowCol <= 5 && weeklySched != null) {
+                for (com.nubb.classroom.model.Schedule s : weeklySched) {
+                    if (s != null && s.getSubjectName() != null && !s.getSubjectName().trim().isEmpty() && !"-".equals(s.getSubjectName().trim())) {
+                        if ((s.getBlockIndex() % 6) == tomorrowCol) {
+                            tomorrowClasses.add(s.getSubjectName().trim());
+                        }
+                    }
+                }
+            }
+            model.addAttribute("tomorrowDateStr", tomorrowDate.toString());
+            model.addAttribute("tomorrowDateKhmer", com.nubb.classroom.controller.DailyPlanController.toKhmerDateString(tomorrowDate));
+            model.addAttribute("tomorrowClasses", tomorrowClasses);
+            model.addAttribute("hasTomorrowTeaching", !tomorrowClasses.isEmpty());
+
             return "index";
         } catch (Exception e) {
             System.err.println("Error in index dashboard: " + e.getMessage());
@@ -734,6 +760,12 @@ public class WebController {
             model.addAttribute("nextDate", nextDateStr);
             model.addAttribute("todayDate", todayDateStr);
             model.addAttribute("isToday", isToday);
+
+            model.addAttribute("tomorrowDateStr", today.plusDays(1).toString());
+            model.addAttribute("tomorrowDateKhmer", "");
+            model.addAttribute("tomorrowClasses", Collections.emptyList());
+            model.addAttribute("hasTomorrowTeaching", false);
+
             return "index";
         }
     }

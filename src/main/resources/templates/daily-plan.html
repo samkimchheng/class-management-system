@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>សេវាប្រចាំថ្ងៃ និងកំណត់ត្រាខ្លឹមសារមេរៀន - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Main Style -->
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029i}" href="../static/css/style.css?v=20261029i">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- html2pdf for direct PDF export -->
+    <script src="/js/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a0ca3;
+            --primary-light: #4895ef;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .main-content {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .content {
+            padding: 18px 20px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* Hero Banner */
+        .plan-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            border-radius: 16px;
+            padding: 18px 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .plan-hero-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .plan-hero-icon {
+            width: 52px;
+            height: 52px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .plan-hero-title {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .plan-hero-sub {
+            margin: 4px 0 0 0;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        /* Control Toolbar */
+        .plan-toolbar {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .date-control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-date-nav {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 7px 12px;
+            border-radius: 8px;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.88rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-date-nav:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-date-nav.active-pill {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .date-input-field {
+            border: 1.5px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #0f172a;
+            outline: none;
+        }
+
+        .date-input-field:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .target-khmer-badge {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toolbar-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-plan {
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-plan-primary {
+            background: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-plan-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .btn-plan-success {
+            background: #059669;
+            color: #ffffff;
+            box-shadow: 0 3px 10px rgba(5, 150, 105, 0.25);
+        }
+
+        .btn-plan-success:hover {
+            background: #047857;
+            transform: translateY(-1px);
+        }
+
+        .btn-plan-outline {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            color: #334155;
+        }
+
+        .btn-plan-outline:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        /* KPI / Progress card */
+        .plan-kpi-bar {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .plan-kpi-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .plan-kpi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        /* Slots Grid / List */
+        .slots-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .slot-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .slot-card:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.08);
+        }
+
+        .slot-card-header {
+            padding: 12px 18px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .slot-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slot-badge-num {
+            background: #1e293b;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .slot-class-badge {
+            background: #e0e7ff;
+            color: #3730a3;
+            border: 1px solid #c7d2fe;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 0.98rem;
+        }
+
+        .slot-time-text {
+            color: #64748b;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .slot-status-pill {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .status-saved {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
+        }
+
+        .status-draft {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .slot-card-body {
+            padding: 18px;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 14px;
+        }
+
+        .col-span-12 { grid-column: span 12; }
+        .col-span-6 { grid-column: span 6; }
+        .col-span-4 { grid-column: span 4; }
+        .col-span-3 { grid-column: span 3; }
+
+        .form-group-plan {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group-plan label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-control-plan {
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-control-plan:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        textarea.form-control-plan {
+            resize: vertical;
+            min-height: 70px;
+            line-height: 1.45;
+        }
+
+        .quick-pick-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            color: #2563eb;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .quick-pick-btn:hover {
+            background: #e2e8f0;
+        }
+
+        /* Empty State */
+        .empty-plan-card {
+            background: #ffffff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        /* History Table Card */
+        .history-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+            margin-top: 24px;
+        }
+
+        .history-header {
+            padding: 14px 18px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .history-table th, .history-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: left;
+        }
+
+        .history-table th {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        /* Print Container (Hidden on Screen, Visible on Print) */
+        .print-official-container {
+            display: none;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 9.5pt !important;
+            }
+            .sidebar, .topbar, .plan-hero, .plan-toolbar, .plan-kpi-bar, .slots-container, .history-card, .no-print {
+                display: none !important;
+            }
+            .main-content, .content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .print-official-container {
+                display: block !important;
+            }
+
+            .moeys-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 12px;
+                line-height: 1.4;
+            }
+            .moeys-left {
+                text-align: left;
+            }
+            .moeys-right {
+                text-align: center;
+            }
+            .moeys-title-section {
+                text-align: center;
+                margin: 12px 0 14px 0;
+            }
+            .moeys-title-section h2 {
+                font-size: 13.5pt;
+                font-weight: bold;
+                margin: 0;
+            }
+            .moeys-meta-box {
+                border: 1px solid #000000;
+                padding: 6px 10px;
+                margin-bottom: 10px;
+                font-size: 9pt;
+                display: flex;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                background: #f8fafc !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .moeys-table {
+                width: 100%;
+                border-collapse: collapse;
+                border: 1.5px solid #000000;
+                font-size: 8.5pt;
+            }
+            .moeys-table th, .moeys-table td {
+                border: 1px solid #000000;
+                padding: 6px 5px;
+                vertical-align: top;
+            }
+            .moeys-table th {
+                background: #e2e8f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                text-align: center;
+                font-weight: bold;
+            }
+            .moeys-signatures {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 20px;
+                page-break-inside: avoid;
+            }
+            .sig-block {
+                text-align: center;
+                width: 250px;
+                line-height: 1.4;
+            }
+            .sig-space {
+                height: 55px;
+            }
+            @page {
+                size: A4 landscape;
+                margin: 8mm 10mm;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content { padding: 10px; }
+            .col-span-6, .col-span-4, .col-span-3 { grid-column: span 12; }
+            .plan-kpi-bar { grid-template-columns: 1fr; }
+            .plan-toolbar { flex-direction: column; align-items: stretch; }
+            .toolbar-buttons { width: 100%; }
+            .btn-plan { flex: 1; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.92rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b id="sidebarTeacherName" th:text="${teacherAccount != null ? teacherAccount.fullName : session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item "><a href="/" class="nav-link"><span>🏠</span> <span>ទំព័រដើម</span></a></li>
+            <li class="nav-item "><a href="/profile" class="nav-link"><span>👤</span> <span>បំពេញព័ត៌មានផ្ទាល់ខ្លួន</span></a></li>
+            <li class="nav-item "><a href="/certificate" class="nav-link"><span>📜</span> <span>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span></a></li>
+            <li class="nav-item "><a href="/classrooms" class="nav-link"><span>🏫</span> <span>បញ្ជីថ្នាក់រៀនខ្ញុំ</span></a></li>
+            <li class="nav-item "><a href="/students" class="nav-link"><span>👥</span> <span>បញ្ជីឈ្មោះសិស្ស</span></a></li>
+            <li class="nav-item "><a href="/attendance" class="nav-link"><span>📅</span> <span>បញ្ជីអវត្តមាន</span></a></li>
+            <li class="nav-item "><a href="/scores" class="nav-link"><span>📊</span> <span>បញ្ជីពិន្ទុ</span></a></li>
+            <li class="nav-item "><a href="/statistics" class="nav-link"><span>📈</span> <span>ស្ថិតិសិស្ស</span></a></li>
+            <li class="nav-item "><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
+            <li class="nav-item "><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
+            <li class="nav-item "><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
+            <li class="nav-item active"><a href="/daily-plan" class="nav-link"><span>📋</span> <span>សេវាប្រចាំថ្ងៃ</span></a></li>
+            <li class="nav-item "><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
+            <li class="nav-item "><a href="/feedback" class="nav-link"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
+            <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8;"><span>✈️</span> <span>ទាក់ទងខ្ញុំ (Telegram)</span></a></li>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);"><span>🔒</span> <span>ផ្ទាំង Admin</span></a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <h3 style="display: flex; align-items: center; gap: 8px; margin: 0;">
+                    <span>📋 សេវាប្រចាំថ្ងៃ និងកំណត់ត្រាខ្លឹមសារមេរៀនបង្រៀន</span>
+                </h3>
+            </div>
+            <div class="topbar-right" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; color: #3730a3; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.88rem; border: 1px solid #c7d2fe; white-space: nowrap;">
+                    <span>📅<span class="year-label-text"> ឆ្នាំសិក្សា៖ </span></span>
+                    <span th:text="${currentAcademicYear}">២០២៦-២០២៧</span>
+                </div>
+                <span>គ្រូបង្រៀន៖ <b th:text="${teacherAccount.fullName}">សំ គឹមឆេង</b></span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Hero Header -->
+            <div class="plan-hero">
+                <div class="plan-hero-info">
+                    <div class="plan-hero-icon">📋</div>
+                    <div>
+                        <h2 class="plan-hero-title">សេវាប្រចាំថ្ងៃ និងកំណត់ត្រាខ្លឹមសារមេរៀន</h2>
+                        <p class="plan-hero-sub">
+                            រៀបចំខ្លឹមសារបង្រៀនតាមកាលវិភាគប្រចាំថ្ងៃ ស្របតាមស្តង់ដាក្រសួងអប់រំ យុវជន និងកីឡា
+                            <span th:if="${teacherAccount.schoolName != null and !teacherAccount.schoolName.isEmpty()}"> • <b style="color: #a7f3d0;" th:text="${teacherAccount.schoolName}">វិទ្យាល័យពោធិ៍សាត់</b></span>
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="/schedule" class="btn-plan btn-plan-outline" style="color: #ffffff; border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.1);">
+                        <span>🗓️ មើលកាលវិភាគ</span>
+                    </a>
+                    <button type="button" onclick="window.print()" class="btn-plan btn-plan-outline" style="color: #ffffff; border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.1);">
+                        <span>🖨️ បោះពុម្ពទម្រង់ស្តង់ដា</span>
+                    </button>
+                    <button type="button" onclick="saveAllDailyPlan()" class="btn-plan btn-plan-success">
+                        <span>💾 រក្សាទុកទាំងអស់</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Toolbar & Date Switcher -->
+            <div class="plan-toolbar">
+                <div class="date-control-group">
+                    <a th:href="@{/daily-plan(date=${prevDateStr})}" class="btn-date-nav" title="ថ្ងៃមុន">◀ ថ្ងៃមុន</a>
+                    <a th:href="@{/daily-plan(date=${todayStr})}" class="btn-date-nav" th:classappend="${isToday} ? 'active-pill' : ''">📍 ថ្ងៃនេះ</a>
+                    <a th:href="@{/daily-plan(date=${tomorrowStr})}" class="btn-date-nav" th:classappend="${isTomorrow} ? 'active-pill' : ''">⚡ ថ្ងៃស្អែក</a>
+                    <a th:href="@{/daily-plan(date=${nextDateStr})}" class="btn-date-nav" title="ថ្ងៃបន្ទាប់">ថ្ងៃបន្ទាប់ ▶</a>
+                    
+                    <span style="color: #cbd5e1; margin: 0 4px;">|</span>
+                    
+                    <label style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.88rem;">
+                        <span>📅 ជ្រើសរើសថ្ងៃ៖</span>
+                        <input type="date" id="targetDateInput" class="date-input-field" th:value="${targetDate}" onchange="changePlanDate(this.value)">
+                    </label>
+
+                    <div class="target-khmer-badge">
+                        <span>🗓️</span>
+                        <span th:text="${targetDateKhmer}">ថ្ងៃពុធ ទី១១ ខែវិច្ឆិកា ឆ្នាំ២០២៦</span>
+                    </div>
+                </div>
+
+                <div class="toolbar-buttons">
+                    <button type="button" onclick="copyFromFirstSlot()" class="btn-plan btn-plan-outline" title="ចម្លងខ្លឹមសារពីម៉ោងទី១ ទៅគ្រប់ម៉ោងផ្សេងទៀត">
+                        <span>📑 ចម្លងខ្លឹមសារទៅគ្រប់ថ្នាក់</span>
+                    </button>
+                    <button type="button" onclick="saveAllDailyPlan()" class="btn-plan btn-plan-primary">
+                        <span>💾 រក្សាទុកសេវាប្រចាំថ្ងៃ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Summary Bar -->
+            <div class="plan-kpi-bar">
+                <div class="plan-kpi-item">
+                    <div class="plan-kpi-icon" style="background: #eff6ff; color: #2563eb;">📚</div>
+                    <div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: #0f172a;" th:text="${totalSlots} + ' ម៉ោង'">៤ ម៉ោង</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">ម៉ោងបង្រៀនតាមកាលវិភាគ</div>
+                    </div>
+                </div>
+                <div class="plan-kpi-item">
+                    <div class="plan-kpi-icon" style="background: #ecfdf5; color: #059669;">✍️</div>
+                    <div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: #0f172a;" th:text="${completedSlots} + ' / ' + ${totalSlots} + ' ម៉ោង'">២ / ៤ ម៉ោង</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">បានកត់ត្រាខ្លឹមសាររួចរាល់</div>
+                    </div>
+                </div>
+                <div class="plan-kpi-item">
+                    <div class="plan-kpi-icon" style="background: #fef3c7; color: #d97706;">🏫</div>
+                    <div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: #0f172a;" th:text="${khmerDayName}">ថ្ងៃពុធ</div>
+                        <div style="font-size: 0.8rem; color: #64748b;" th:text="${isTomorrow ? 'កិច្ចតែងការត្រៀមសម្រាប់ថ្ងៃស្អែក' : (isToday ? 'កិច្ចតែងការសម្រាប់ថ្ងៃនេះ' : 'កិច្ចតែងការតាមកាលវិភាគ')}">កិច្ចតែងការត្រៀមសម្រាប់ថ្ងៃស្អែក</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduled Slots / Input Cards -->
+            <div th:if="${hasTeachingSlots}" class="slots-container" id="slotsContainer">
+                <div th:each="slot : ${slots}" class="slot-card" th:attr="data-slot=${slot.slotIndex}">
+                    <!-- Card Header -->
+                    <div class="slot-card-header">
+                        <div class="slot-header-left">
+                            <div class="slot-badge-num" th:text="${slot.periodKhmer}">១</div>
+                            <div>
+                                <span style="font-size: 1rem; font-weight: 800; color: #0f172a;" th:text="'ម៉ោងទី ' + ${slot.periodKhmer}">ម៉ោងទី ១</span>
+                                <span class="slot-class-badge" th:text="'ថ្នាក់ ' + ${slot.className}">ថ្នាក់ 10E</span>
+                                <span class="slot-time-text" th:text="'(' + ${slot.timeRange} + ')'">(07:00 - 08:00 ព្រឹក)</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span th:if="${slot.hasSaved}" class="slot-status-pill status-saved">✅ បានរក្សាទុក</span>
+                            <span th:unless="${slot.hasSaved}" class="slot-status-pill status-draft">✏️ មិនទាន់កត់ត្រា</span>
+                            <button type="button" class="quick-pick-btn" th:attr="onclick='openLessonPicker(' + ${slot.slotIndex} + ')'">
+                                <span>📖 ជ្រើសមេរៀនខ្ញុំ</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card Body / Form Inputs -->
+                    <div class="slot-card-body">
+                        <!-- Hidden meta -->
+                        <input type="hidden" class="input-slot-index" th:value="${slot.slotIndex}">
+                        <input type="hidden" class="input-period-number" th:value="${slot.periodNumber}">
+                        <input type="hidden" class="input-time-range" th:value="${slot.timeRange}">
+                        <input type="hidden" class="input-class-name" th:value="${slot.className}">
+
+                        <!-- Subject -->
+                        <div class="form-group-plan col-span-4">
+                            <label>
+                                <span>📘 មុខវិជ្ជា</span>
+                            </label>
+                            <input type="text" class="form-control-plan input-subject-name" th:value="${slot.subjectName}" placeholder="ឧ. ភាសាអង់គ្លេស">
+                        </div>
+
+                        <!-- Lesson Title / Chapter -->
+                        <div class="form-group-plan col-span-8">
+                            <label>
+                                <span>📑 ជំពូក និងចំណងជើងមេរៀន</span>
+                            </label>
+                            <input type="text" class="form-control-plan input-lesson-title" th:value="${slot.lessonTitle}" placeholder="ឧ. Unit 3: Technology in Education - Reading Passage 1">
+                        </div>
+
+                        <!-- Core Content Summary -->
+                        <div class="form-group-plan col-span-6">
+                            <label>
+                                <span>📝 ខ្លឹមសារមេរៀនសង្ខេបដែលត្រូវបង្រៀន</span>
+                            </label>
+                            <textarea class="form-control-plan input-content-summary" rows="3" placeholder="សរសេរខ្លឹមសារសំខាន់ៗដែលត្រូវបង្រៀន... (ឧ. ពន្យល់ពាក្យគន្លឹះថ្មីៗចំនួន ១០, អានអត្ថបទ និងឆ្លើយសំណួរទី១ ដល់ទី៥)" th:text="${slot.contentSummary}"></textarea>
+                        </div>
+
+                        <!-- Objectives & Activities -->
+                        <div class="form-group-plan col-span-6">
+                            <label>
+                                <span>🎯 វត្ថុបំណង និងសកម្មភាពបង្រៀន</span>
+                            </label>
+                            <textarea class="form-control-plan input-objectives" rows="3" placeholder="វត្ថុបំណង៖ សិស្សអាចយល់អត្ថន័យពាក្យ និងឆ្លើយសំណួរបានត្រឹមត្រូវយ៉ាងតិច ៧០%។ សកម្មភាព៖ ពិភាក្សាជាគូ និងធ្វើលំហាត់..." th:text="${slot.objectives}"></textarea>
+                        </div>
+
+                        <!-- Homework & Materials -->
+                        <div class="form-group-plan col-span-6">
+                            <label>
+                                <span>📦 កិច្ចការផ្ទះ ឬ សម្ភារឧបទេស</span>
+                            </label>
+                            <input type="text" class="form-control-plan input-homework" th:value="${slot.homework}" placeholder="ឧ. សៀវភៅពុម្ពទំព័រ ៤២, រូបភាពជំនួយស្មារតី, ធ្វើលំហាត់ Gap Filling">
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="form-group-plan col-span-6">
+                            <label>
+                                <span>💡 កំណត់ចំណាំ ឬ ស្ថានភាពជាក់ស្តែង</span>
+                            </label>
+                            <input type="text" class="form-control-plan input-notes" th:value="${slot.notes}" placeholder="ឧ. យកចិត្តទុកដាក់លើសិស្សរៀនយឺត, ត្រួតពិនិត្យវត្តមាន...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State if no classes scheduled -->
+            <div th:unless="${hasTeachingSlots}" class="empty-plan-card">
+                <div style="font-size: 3rem; margin-bottom: 10px;">☕</div>
+                <h3 style="margin: 0 0 6px 0; color: #1e293b;" th:text="${'ថ្ងៃ' + khmerDayName + ' មិនមានម៉ោងបង្រៀនតាមកាលវិភាគឡើយ'}">មិនមានម៉ោងបង្រៀនតាមកាលវិភាគឡើយ</h3>
+                <p style="margin: 0 0 16px 0; color: #64748b; font-size: 0.95rem;">លោកគ្រូ/អ្នកគ្រូមិនមានម៉ោងបង្រៀននៅថ្ងៃនេះទេ (ថ្ងៃសម្រាក ឬគ្មានម៉ោងក្នុងកាលវិភាគ)។</p>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <a th:href="@{/daily-plan(date=${tomorrowStr})}" class="btn-plan btn-plan-primary">
+                        <span>⚡ ពិនិត្យថ្ងៃស្អែក</span>
+                    </a>
+                    <a href="/schedule" class="btn-plan btn-plan-outline">
+                        <span>🗓️ កែប្រែកាលវិភាគ</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bottom Save Bar (Sticky or prominent) -->
+            <div th:if="${hasTeachingSlots}" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+                <button type="button" onclick="window.print()" class="btn-plan btn-plan-outline">
+                    <span>🖨️ បោះពុម្ពទម្រង់ស្តង់ដា</span>
+                </button>
+                <button type="button" onclick="saveAllDailyPlan()" class="btn-plan btn-plan-success" style="font-size: 1rem; padding: 10px 24px;">
+                    <span>💾 រក្សាទុកសេវាប្រចាំថ្ងៃ</span>
+                </button>
+            </div>
+
+            <!-- History Section -->
+            <div class="history-card" th:if="${logsByDate != null and !logsByDate.isEmpty()}">
+                <div class="history-header">
+                    <h4 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                        <span>📚</span> <span>ប្រវត្តិសេវាប្រចាំថ្ងៃ និងកំណត់ត្រាកន្លងមក</span>
+                    </h4>
+                    <span style="font-size: 0.85rem; color: #64748b;" th:text="'សរុប ' + ${logsByDate.size()} + ' ថ្ងៃ'">សរុប ៥ ថ្ងៃ</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>កាលបរិច្ឆេទ</th>
+                                <th>ថ្ងៃ</th>
+                                <th>ចំនួនម៉ោង</th>
+                                <th>ថ្នាក់បង្រៀន</th>
+                                <th>ខ្លឹមសារសង្ខេប</th>
+                                <th style="text-align: right;">សកម្មភាព</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="entry : ${logsByDate}">
+                                <td style="font-weight: 700; color: #1e293b;" th:text="${entry.key}">2026-11-10</td>
+                                <td th:text="${entry.value[0].dayOfWeek}">ពុធ</td>
+                                <td>
+                                    <span style="background: #eff6ff; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-weight: 700; font-size: 0.8rem;"
+                                          th:text="${entry.value.size()} + ' ម៉ោង'">៤ ម៉ោង</span>
+                                </td>
+                                <td>
+                                    <span th:each="l : ${entry.value}" style="display: inline-block; background: #e0e7ff; color: #3730a3; padding: 1px 6px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; margin-right: 4px;" th:text="${l.className}">10E</span>
+                                </td>
+                                <td style="color: #475569; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                    th:text="${entry.value[0].lessonTitle != null and !entry.value[0].lessonTitle.isEmpty() ? entry.value[0].lessonTitle : entry.value[0].contentSummary}">ខ្លឹមសារ...</td>
+                                <td style="text-align: right;">
+                                    <a th:href="@{/daily-plan(date=${entry.key})}" class="btn-plan btn-plan-outline" style="padding: 4px 10px; font-size: 0.8rem;">
+                                        <span>👁️ មើល / កែប្រែ</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Official MoEYS Print Document Layout (Rendered only on Print / PDF) -->
+    <div class="print-official-container" id="printOfficialDocument">
+        <!-- Header -->
+        <div class="moeys-header">
+            <div class="moeys-left">
+                <div style="font-weight: bold; font-size: 10.5pt;">ក្រសួងអប់រំ យុវជន និងកីឡា</div>
+                <div style="font-size: 10pt;" th:text="${teacherAccount.province != null ? teacherAccount.province : 'ខេត្តពោធិ៍សាត់'}">ខេត្តពោធិ៍សាត់</div>
+                <div style="font-weight: bold; font-size: 10.5pt;" th:text="${teacherAccount.schoolName != null ? teacherAccount.schoolName : 'វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត'}">វិទ្យាល័យ ហ៊ុនសែន១០មករាបឹងកន្ទួត</div>
+            </div>
+            <div class="moeys-right">
+                <div style="font-weight: bold; font-size: 11.5pt;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                <div style="font-weight: bold; font-size: 10.5pt; letter-spacing: 1px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <div class="moeys-title-section">
+            <h2>សេវាប្រចាំថ្ងៃ និងកំណត់ត្រាខ្លឹមសារមេរៀនបង្រៀន</h2>
+            <div style="font-weight: bold; font-size: 9.5pt; margin-top: 3px;" th:text="'ឆ្នាំសិក្សា៖ ' + ${currentAcademicYear}">ឆ្នាំសិក្សា៖ ២០២៦-២០២៧</div>
+        </div>
+
+        <!-- Meta Bar -->
+        <div class="moeys-meta-box">
+            <div><b>កាលបរិច្ឆេទបង្រៀន៖</b> <span th:text="${targetDateKhmer}">ថ្ងៃពុធ ទី១១ ខែវិច្ឆិកា ឆ្នាំ២០២៦</span></div>
+            <div><b>គ្រូបង្រៀន៖</b> <span th:text="${teacherAccount.fullName}">សំ គឹមឆេង</span></div>
+            <div><b>មុខវិជ្ជា៖</b> <span th:text="${teacherAccount.subject != null ? teacherAccount.subject : 'ភាសាអង់គ្លេស'}">ភាសាអង់គ្លេស</span></div>
+        </div>
+
+        <!-- Official Table -->
+        <table class="moeys-table">
+            <thead>
+                <tr>
+                    <th style="width: 35px;">ល.រ</th>
+                    <th style="width: 100px;">ម៉ោងបង្រៀន</th>
+                    <th style="width: 65px;">ថ្នាក់</th>
+                    <th style="width: 80px;">មុខវិជ្ជា</th>
+                    <th style="width: 170px;">ជំពូក / ចំណងជើងមេរៀន</th>
+                    <th>ខ្លឹមសារមេរៀនដែលត្រូវបង្រៀន</th>
+                    <th style="width: 170px;">វត្ថុបំណង និងសកម្មភាព</th>
+                    <th style="width: 120px;">កិច្ចការផ្ទះ / សម្ភារ</th>
+                    <th style="width: 80px;">កំណត់ចំណាំ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="slot, stat : ${slots}">
+                    <td style="text-align: center; font-weight: bold;" th:text="${stat.count}">1</td>
+                    <td style="text-align: center;">
+                        <b th:text="'ម៉ោងទី ' + ${slot.periodKhmer}">ម៉ោងទី ១</b><br>
+                        <span style="font-size: 7.5pt; color: #475569;" th:text="${slot.timeRange}">07:00-08:00</span>
+                    </td>
+                    <td style="text-align: center; font-weight: bold;" th:text="${slot.className}">10E</td>
+                    <td style="text-align: center;" th:text="${slot.subjectName}">ភាសាអង់គ្លេស</td>
+                    <td th:text="${slot.lessonTitle != null and !slot.lessonTitle.isEmpty() ? slot.lessonTitle : '-'}">-</td>
+                    <td th:text="${slot.contentSummary != null and !slot.contentSummary.isEmpty() ? slot.contentSummary : '-'}">-</td>
+                    <td th:text="${slot.objectives != null and !slot.objectives.isEmpty() ? slot.objectives : '-'}">-</td>
+                    <td th:text="${slot.homework != null and !slot.homework.isEmpty() ? slot.homework : '-'}">-</td>
+                    <td th:text="${slot.notes != null and !slot.notes.isEmpty() ? slot.notes : '-'}">-</td>
+                </tr>
+                <tr th:if="${slots.isEmpty()}">
+                    <td colspan="9" style="text-align: center; padding: 20px;">មិនមានម៉ោងបង្រៀនតាមកាលវិភាគឡើយ</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Signatures Section -->
+        <div class="moeys-signatures">
+            <div class="sig-block">
+                <div>បានឃើញ និងឯកភាព</div>
+                <div style="font-weight: bold; margin-top: 2px;">នាយកសាលា</div>
+                <div class="sig-space"></div>
+                <div style="font-weight: bold;" th:text="${teacherAccount.principalName != null ? teacherAccount.principalName : 'លី ប៊ុនថេង'}">លី ប៊ុនថេង</div>
+            </div>
+            <div class="sig-block">
+                <div th:text="${targetDateKhmer}">ថ្ងៃពុធ ទី១១ ខែវិច្ឆិកា ឆ្នាំ២០២៦</div>
+                <div style="font-weight: bold; margin-top: 2px;">ហត្ថលេខាគ្រូបង្រៀន</div>
+                <div class="sig-space"></div>
+                <div style="font-weight: bold;" th:text="${teacherAccount.fullName}">សំ គឹមឆេង</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Lesson Picker Modal -->
+    <div id="lessonPickerModal" style="display: none;">
+        <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px;">
+            <p style="font-size: 0.88rem; color: #64748b; margin-top: 0;">ជ្រើសរើសមេរៀនដើម្បីទាញយកចំណងជើង និងខ្លឹមសារដោយស្វ័យប្រវត្តិ៖</p>
+            <div th:if="${teacherLessons.isEmpty()}" style="color: #94a3b8; font-style: italic; padding: 10px 0;">
+                មិនទាន់មានមេរៀនដែលបានបង្កើតក្នុងប្រព័ន្ធនៅឡើយទេ។
+            </div>
+            <div th:each="l : ${teacherLessons}" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s;"
+                 th:attr="onclick='applyLessonToSlot(\'' + ${#strings.escapeJavaScript(l.title)} + '\', \'' + ${#strings.escapeJavaScript(l.content != null ? l.content : '')} + '\')'"
+                 onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
+                <div style="font-weight: 700; color: #1e293b;" th:text="${l.title}">Lesson Title</div>
+                <div style="font-size: 0.8rem; color: #64748b;" th:text="${l.className + ' | ' + l.subjectName}">Class | Subject</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script th:inline="javascript">
+        let currentPickingSlot = null;
+
+        function changePlanDate(dateVal) {
+            if (dateVal) {
+                window.location.href = '/daily-plan?date=' + encodeURIComponent(dateVal);
+            }
+        }
+
+        function openLessonPicker(slotIndex) {
+            currentPickingSlot = slotIndex;
+            const content = document.getElementById('lessonPickerModal').innerHTML;
+            Swal.fire({
+                title: '📖 ជ្រើសរើសមេរៀនដែលបានរៀបចំ',
+                html: content,
+                showConfirmButton: false,
+                showCloseButton: true,
+                width: '600px'
+            });
+        }
+
+        function applyLessonToSlot(title, desc) {
+            if (currentPickingSlot !== null) {
+                const card = document.querySelector(`.slot-card[data-slot="${currentPickingSlot}"]`);
+                if (card) {
+                    const titleInput = card.querySelector('.input-lesson-title');
+                    const descInput = card.querySelector('.input-content-summary');
+                    if (titleInput) titleInput.value = title || '';
+                    if (descInput && desc) descInput.value = desc;
+                }
+            }
+            Swal.close();
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'បានទាញយកទិន្នន័យមេរៀន!',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
+        function copyFromFirstSlot() {
+            const cards = document.querySelectorAll('.slot-card');
+            if (cards.length < 2) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'ព័ត៌មាន',
+                    text: 'ត្រូវការយ៉ាងតិច ២ ម៉ោងឡើងទៅដើម្បីចម្លង!'
+                });
+                return;
+            }
+
+            const firstCard = cards[0];
+            const subject = firstCard.querySelector('.input-subject-name')?.value || '';
+            const title = firstCard.querySelector('.input-lesson-title')?.value || '';
+            const summary = firstCard.querySelector('.input-content-summary')?.value || '';
+            const objectives = firstCard.querySelector('.input-objectives')?.value || '';
+            const homework = firstCard.querySelector('.input-homework')?.value || '';
+            const notes = firstCard.querySelector('.input-notes')?.value || '';
+
+            if (!title && !summary) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'មិនទាន់មានខ្លឹមសារ',
+                    text: 'សូមបញ្ចូលចំណងជើង ឬខ្លឹមសារក្នុងម៉ោងទី១ ជាមុនសិន!'
+                });
+                return;
+            }
+
+            for (let i = 1; i < cards.length; i++) {
+                const c = cards[i];
+                if (subject && c.querySelector('.input-subject-name')) c.querySelector('.input-subject-name').value = subject;
+                if (title && c.querySelector('.input-lesson-title')) c.querySelector('.input-lesson-title').value = title;
+                if (summary && c.querySelector('.input-content-summary')) c.querySelector('.input-content-summary').value = summary;
+                if (objectives && c.querySelector('.input-objectives')) c.querySelector('.input-objectives').value = objectives;
+                if (homework && c.querySelector('.input-homework')) c.querySelector('.input-homework').value = homework;
+                if (notes && c.querySelector('.input-notes')) c.querySelector('.input-notes').value = notes;
+            }
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'បានចម្លងខ្លឹមសារទៅគ្រប់ម៉ោងទាំងអស់!',
+                showConfirmButton: false,
+                timer: 1800
+            });
+        }
+
+        async function saveAllDailyPlan() {
+            const targetDate = document.getElementById('targetDateInput')?.value;
+            if (!targetDate) {
+                Swal.fire({ icon: 'warning', title: 'សូមបញ្ជាក់កាលបរិច្ឆេទ!' });
+                return;
+            }
+
+            const cards = document.querySelectorAll('.slot-card');
+            if (cards.length === 0) {
+                Swal.fire({ icon: 'info', title: 'ព័ត៌មាន', text: 'មិនមានម៉ោងបង្រៀនត្រូវរក្សាទុកទេ!' });
+                return;
+            }
+
+            const items = [];
+            cards.forEach(card => {
+                const slotIndex = card.querySelector('.input-slot-index')?.value;
+                const periodNumber = card.querySelector('.input-period-number')?.value;
+                const timeRange = card.querySelector('.input-time-range')?.value;
+                const className = card.querySelector('.input-class-name')?.value;
+                const subjectName = card.querySelector('.input-subject-name')?.value;
+                const lessonTitle = card.querySelector('.input-lesson-title')?.value;
+                const contentSummary = card.querySelector('.input-content-summary')?.value;
+                const objectives = card.querySelector('.input-objectives')?.value;
+                const homework = card.querySelector('.input-homework')?.value;
+                const notes = card.querySelector('.input-notes')?.value;
+
+                items.push({
+                    slotIndex: slotIndex ? parseInt(slotIndex) : 0,
+                    periodNumber: periodNumber ? parseInt(periodNumber) : 1,
+                    timeRange: timeRange || '',
+                    className: className || '',
+                    subjectName: subjectName || '',
+                    lessonTitle: lessonTitle || '',
+                    contentSummary: contentSummary || '',
+                    objectives: objectives || '',
+                    homework: homework || '',
+                    notes: notes || ''
+                });
+            });
+
+            // Loading state
+            Swal.fire({
+                title: 'កំពុងរក្សាទុក...',
+                text: 'សូមរង់ចាំមួយភ្លែត',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                const res = await fetch('/api/daily-plan/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        date: targetDate,
+                        items: items
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ជោគជ័យ!',
+                        text: data.message || 'បានរក្សាទុកសេវាប្រចាំថ្ងៃដោយជោគជ័យ!',
+                        timer: 1800,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'កំហុស!',
+                        text: data.message || 'មិនអាចរក្សាទុកបានទេ!'
+                    });
+                }
+            } catch (e) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'កំហុសបច្ចេកទេស!',
+                    text: e.message
+                });
+            }
+        }
+    </script>
+</body>
+</html>
