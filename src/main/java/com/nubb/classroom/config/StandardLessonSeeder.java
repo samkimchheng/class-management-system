@@ -26,28 +26,34 @@ public class StandardLessonSeeder {
 
     @Transactional
     public void seedLessonsForAllTeachers() {
-        Set<Long> teacherIds = new LinkedHashSet<>();
+        // ONLY seed and maintain official MoEYS Grade 10 & 11 English lessons for Sam Kimchheng (Account 97)
+        Long kimchhengId = 97L;
         try {
-            List<Account> teachers = accountRepository.findByRole("TEACHER");
-            if (teachers != null) {
-                for (Account t : teachers) {
-                    if (t.getId() != null) teacherIds.add(t.getId());
-                }
+            Account kAcc = accountRepository.findByUsername("samkimchheng").orElse(null);
+            if (kAcc != null && kAcc.getId() != null) {
+                kimchhengId = kAcc.getId();
             }
         } catch (Exception ignored) {}
 
-        teacherIds.add(97L); // samkimchheng
-        teacherIds.add(33L); // Teacher1001 / seungsomuny
-        teacherIds.add(98L); // demo
+        seedLessonsForTeacher(kimchhengId);
 
-        for (Long accId : teacherIds) {
-            seedLessonsForTeacher(accId);
-        }
+        // Strictly protect each teacher's privacy: clean up any mistakenly cloned English lessons from non-97 teachers
+        try {
+            List<Lesson> nonKimchhengLessons = lessonRepository.findAll().stream()
+                    .filter(l -> l.getAccountId() != null && !Objects.equals(l.getAccountId(), 97L))
+                    .collect(java.util.stream.Collectors.toList());
+            for (Lesson l : nonKimchhengLessons) {
+                if (l.getTitle() != null && (l.getTitle().startsWith("Unit") || l.getTitle().startsWith("Grade 11"))) {
+                    lessonTranscriptRepository.deleteByLessonId(l.getId());
+                    lessonRepository.delete(l);
+                }
+            }
+        } catch (Exception ignored) {}
     }
 
     @Transactional
     public void seedLessonsForTeacher(Long accountId) {
-        if (accountId == null) return;
+        if (accountId == null || !accountId.equals(97L)) return;
         List<Lesson> existing = lessonRepository.findByAccountIdOrderByIdAsc(accountId);
 
         // ----------------------------------------------------

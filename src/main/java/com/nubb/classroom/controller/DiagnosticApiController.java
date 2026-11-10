@@ -49,7 +49,9 @@ public class DiagnosticApiController {
         check(res, "kimchhengStudentsCount", () -> studentRepository.findByAccountIdAndAcademicYear(97L, "២០២៦-២០២៧").size());
         check(res, "somunyStudentsCount", () -> studentRepository.findByAccountIdAndAcademicYear(33L, "២០២៦-២០២៧").size());
         check(res, "classroomsList", () -> classroomRepository.findAll().stream().map(c -> c.getAccountId() + ":" + c.getClassName() + ":" + c.getAcademicYear()).collect(Collectors.toList()));
-        check(res, "lessonsCount", () -> lessonRepository.findByAccountIdOrderByIdAsc(97L).size());
+        check(res, "kimchhengLessonsCount", () -> lessonRepository.findByAccountIdOrderByIdAsc(97L).size());
+        check(res, "somunyLessonsCount", () -> lessonRepository.findByAccountIdOrderByIdAsc(33L).size());
+        check(res, "somunyClassroomsCount", () -> classroomRepository.findByAccountIdAndAcademicYear(33L, "២០២៦-២០២៧").size());
         check(res, "examsCount", () -> examRepository.findByAccountId(97L).size());
 
         return res;

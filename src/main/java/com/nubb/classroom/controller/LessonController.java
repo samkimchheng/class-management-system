@@ -39,44 +39,38 @@ public class LessonController {
     private ClassroomRepository classroomRepository;
 
     @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
     private com.nubb.classroom.config.StandardLessonSeeder standardLessonSeeder;
 
     @Autowired
     private HttpSession session;
+
+    private String getCurrentAcademicYear() {
+        String year = (String) session.getAttribute("CURRENT_ACADEMIC_YEAR");
+        if (year == null || year.trim().isEmpty()) {
+            Long accId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (accId != null) {
+                Account acc = accountRepository.findById(accId).orElse(null);
+                if (acc != null && acc.getCurrentAcademicYear() != null && !acc.getCurrentAcademicYear().trim().isEmpty()) {
+                    year = acc.getCurrentAcademicYear().trim();
+                }
+            }
+        }
+        if (year == null || year.trim().isEmpty()) {
+            year = "២០២៦-២០២៧";
+        }
+        return year;
+    }
 
     @ModelAttribute("myClassrooms")
     public List<Classroom> getMyClassrooms() {
         try {
             Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
             if (accountId != null) {
-                List<Classroom> list = new ArrayList<>();
-                Set<String> seen = new LinkedHashSet<>();
-                List<Classroom> dbClasses = classroomRepository.findByAccountId(accountId);
-                if (dbClasses != null) {
-                    for (Classroom c : dbClasses) {
-                        if (c.getClassName() != null && !c.getClassName().trim().isEmpty()) {
-                            String norm = normalizeClass(c.getClassName());
-                            if (seen.add(norm)) {
-                                list.add(c);
-                            }
-                        }
-                    }
-                }
-                List<Student> dbStudents = studentRepository.findByAccountId(accountId);
-                if (dbStudents != null) {
-                    for (Student s : dbStudents) {
-                        if (s.getClassName() != null && !s.getClassName().trim().isEmpty()) {
-                            String norm = normalizeClass(s.getClassName());
-                            if (seen.add(norm)) {
-                                Classroom extra = new Classroom();
-                                extra.setAccountId(accountId);
-                                extra.setClassName(s.getClassName().trim());
-                                list.add(extra);
-                            }
-                        }
-                    }
-                }
-                return list;
+                String academicYear = getCurrentAcademicYear();
+                return classroomRepository.findByAccountIdAndAcademicYear(accountId, academicYear);
             }
         } catch (Exception e) {
             System.err.println(">>> [LessonController] Error in getMyClassrooms: " + e.getMessage());
@@ -203,17 +197,15 @@ public class LessonController {
                 session.setAttribute("loggedInStudent", student);
             }
 
-            if (student != null && student.getAccountId() != null) {
-                List<Lesson> checkLessons = lessonRepository.findByAccountIdOrderByIdAsc(student.getAccountId());
-                if (checkLessons.isEmpty()) {
-                    standardLessonSeeder.seedLessonsForTeacher(student.getAccountId());
-                }
-            }
             lessons = resolveLessonsForStudent(lessonRepository, student);
         } else if (accountId != null) {
-            List<Lesson> accountLessons = lessonRepository.findByAccountIdOrderByIdAsc(accountId);
-            if (accountLessons.isEmpty()) {
-                standardLessonSeeder.seedLessonsForTeacher(accountId);
+            String role = (String) session.getAttribute("ACCOUNT_ROLE");
+            boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+
+            List<Lesson> accountLessons;
+            if (isAdmin) {
+                accountLessons = lessonRepository.findAll();
+            } else {
                 accountLessons = lessonRepository.findByAccountIdOrderByIdAsc(accountId);
             }
 
@@ -236,7 +228,7 @@ public class LessonController {
                     }
                 }
             } else {
-                lessons = accountLessons;
+                lessons = new ArrayList<>(accountLessons);
             }
         }
 

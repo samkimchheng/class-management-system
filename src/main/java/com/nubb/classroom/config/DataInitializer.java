@@ -622,7 +622,6 @@ public class DataInitializer {
                     acc33.setPassword("techercl@%21");
                     acc33.setEmail("teachercl21@mitpukae.com");
                     acc33.setFullName("ស៊ឹង សុមុនី");
-                    acc33.setTeachingClasses("7A, 10E");
                     acc33.setSubject("គណិតវិទ្យា");
                     acc33.setSchoolName("វិទ្យាល័យ ហ៊ុន សែន ១០មករា បឹងកន្ទួត");
                     acc33.setPrincipalName("លី ប៊ុនថេង");
@@ -634,11 +633,10 @@ public class DataInitializer {
                 System.err.println(">>> [DataInitializer] Notice syncing official credentials: " + e.getMessage());
             }
 
-            // Ensure classrooms for Sam Kimchheng (97) and Seung Somuny (33)
+            // Ensure classrooms for Sam Kimchheng (97)
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
                 String[] kimchhengClasses = {"១០E", "១០F", "១០G", "១១F", "១១G"};
-                String[] somunyClasses = {"7A", "10E"};
                 String[] years = {"២០២៦-២០២៧", "២០២៧-២០២៨"};
                 for (String yr : years) {
                     for (String cls : kimchhengClasses) {
@@ -646,12 +644,15 @@ public class DataInitializer {
                                 "SELECT 97, '" + cls + "', '" + yr + "' " +
                                 "WHERE NOT EXISTS (SELECT 1 FROM classroom WHERE account_id = 97 AND class_name = '" + cls + "' AND academic_year = '" + yr + "')");
                     }
-                    for (String cls : somunyClasses) {
-                        stmt.execute("INSERT INTO classroom (account_id, class_name, academic_year) " +
-                                "SELECT 33, '" + cls + "', '" + yr + "' " +
-                                "WHERE NOT EXISTS (SELECT 1 FROM classroom WHERE account_id = 33 AND class_name = '" + cls + "' AND academic_year = '" + yr + "')");
-                    }
                 }
+
+                // Clean up any classrooms and seeded lessons for Seung Somuny (33) to respect her privacy and deletions
+                try {
+                    stmt.execute("DELETE FROM classroom WHERE account_id = 33");
+                    stmt.execute("DELETE FROM lesson_transcript WHERE lesson_id IN (SELECT id FROM lesson WHERE account_id != 97 AND (title LIKE 'Unit%' OR title LIKE 'Grade 11%'))");
+                    stmt.execute("DELETE FROM lesson_progress WHERE lesson_id IN (SELECT id FROM lesson WHERE account_id != 97 AND (title LIKE 'Unit%' OR title LIKE 'Grade 11%'))");
+                    stmt.execute("DELETE FROM lesson WHERE account_id != 97 AND (title LIKE 'Unit%' OR title LIKE 'Grade 11%')");
+                } catch (Exception ignored) {}
 
                 // Ensure score rules for Seung Somuny (33)
                 stmt.execute("INSERT INTO score_rule (account_id, class_name, subject_name, max_monthly_score, max_attendance_score, max_assignment_score) " +
