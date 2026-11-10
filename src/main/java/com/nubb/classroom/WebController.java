@@ -2502,6 +2502,10 @@ return "scores";
         session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
         model.addAttribute("student", student);
         model.addAttribute("attendanceSummary", com.nubb.classroom.controller.StudentPortalApiController.calculateAttendanceSummary(student, attendanceRepository));
+        LocalDate today = LocalDate.now();
+        boolean isAbsentToday = attendanceRepository.findByStudentId(student.getId()).stream()
+                .anyMatch(a -> today.equals(a.getDate()) && !a.isPresent());
+        model.addAttribute("isAbsentToday", isAbsentToday);
         return "take-exam";
     }
 

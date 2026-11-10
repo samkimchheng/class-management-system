@@ -15,6 +15,9 @@ public class Exam {
     private String className;
     private String subjectName;
 
+    @Column(length = 2000)
+    private String openClasses; // Comma-separated list of classes currently open for taking exam
+
     public Long getId() {
         return id;
     }
@@ -118,4 +121,19 @@ public class Exam {
 
     public Integer getWritingMaxPoints() { return writingMaxPoints; }
     public void setWritingMaxPoints(Integer writingMaxPoints) { this.writingMaxPoints = writingMaxPoints; }
+
+    public String getOpenClasses() { return openClasses; }
+    public void setOpenClasses(String openClasses) { this.openClasses = openClasses; }
+
+    public boolean isOpenForClass(String targetClass) {
+        if (targetClass == null || targetClass.trim().isEmpty()) return false;
+        if (this.openClasses == null || this.openClasses.trim().isEmpty()) return false;
+        String[] parts = this.openClasses.split("[,;]+");
+        for (String p : parts) {
+            if (com.nubb.classroom.controller.LessonController.isClassMatching(p.trim(), targetClass.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

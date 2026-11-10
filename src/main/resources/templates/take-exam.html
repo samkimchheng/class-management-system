@@ -450,6 +450,21 @@
             </div>
         </div>
 
+        <!-- Blocked If Absent Today Banner -->
+        <div th:if="${isAbsentToday}" style="background: #fef2f2; border: 2px solid #ef4444; border-radius: 14px; padding: 25px 20px; text-align: center; margin-bottom: 22px; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.12);">
+            <div style="font-size: 3.2rem; line-height: 1; margin-bottom: 10px;">🚫</div>
+            <h3 style="color: #991b1b; font-size: 1.3rem; font-weight: 800; margin: 0 0 10px 0;">ប្អូនត្រូវបានកត់ត្រាថា «អវត្តមាន» នៅថ្ងៃនេះ</h3>
+            <p style="color: #b91c1c; font-size: 0.98rem; line-height: 1.7; max-width: 650px; margin: 0 auto 16px auto;">
+                យោងតាមបទបញ្ជាផ្ទៃក្នុងនៃការប្រឡង សិស្សដែលត្រូវបានកត់ត្រាអវត្តមាននៅថ្ងៃនេះ <strong>មិនមានសិទ្ធិចូលប្រឡងតាមប្រព័ន្ធពីផ្ទះបានឡើយ</strong>។<br>
+                សូមទាក់ទងលោកគ្រូ-អ្នកគ្រូបន្ទុកថ្នាក់ ប្រសិនបើប្អូនមានបញ្ហា ឬមូលហេតុចាំបាច់។
+            </p>
+            <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <a href="/lessons" style="background: #0284c7; color: white; padding: 9px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.92rem;">📚 ចូលរៀនមេរៀន</a>
+                <a href="/test/leave" style="background: #059669; color: white; padding: 9px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.92rem;">📋 សុំច្បាប់សម្រាក</a>
+                <a href="/test/logout" style="background: #ef4444; color: white; padding: 9px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.92rem;">🚪 ចាកចេញ</a>
+            </div>
+        </div>
+
         <!-- Student Attendance Summary Banner -->
         <div class="student-attendance-banner" style="margin-bottom: 22px; background: white; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); overflow: hidden;">
             <div style="padding: 12px 18px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
@@ -577,21 +592,64 @@
             
             try {
                 const res = await fetch('/api/student-portal/exam?month=' + encodeURIComponent(month) + '&subjectName=' + encodeURIComponent(subjectName));
-                if (res.ok) {
-                    const data = await res.json();
-                    currentExam = data.exam || null;
-                    currentQuestions = data.questions || [];
+                const data = await res.json().catch(() => ({}));
 
-                    if (currentQuestions.length > 0) {
-                        renderExam(currentExam, currentQuestions);
-                        startTimer();
-                    } else {
-                        container.innerHTML = '<h3 style="text-align: center; color: #ef4444; margin-top: 50px;">មិនទាន់មានសំណួរនៅក្នុងវិញ្ញាសានេះទេ!</h3>';
+                if (!res.ok || data.blocked) {
+                    let icon = '⚠️';
+                    let title = 'មិនអាចចូលប្រឡងបានទេ';
+                    let color = '#b91c1c';
+                    let bg = '#fef2f2';
+                    let border = '#fca5a5';
+
+                    if (data.reason === 'ABSENT') {
+                        icon = '🚫';
+                        title = 'ប្អូនត្រូវបានកត់ត្រាថា «អវត្តមាន» នៅថ្ងៃនេះ';
+                        color = '#991b1b';
+                    } else if (data.reason === 'CLASS_CLOSED') {
+                        icon = '🔒';
+                        title = 'ម៉ោងប្រឡងសម្រាប់ថ្នាក់របស់ប្អូនមិនទាន់បើក ឬត្រូវបានបិទ';
+                        color = '#b45309';
+                        bg = '#fffbeb';
+                        border = '#fde68a';
+                    } else if (data.reason === 'ALREADY_SUBMITTED') {
+                        icon = '✅';
+                        title = 'ប្អូនបានប្រឡងវិញ្ញាសានេះរួចរាល់ហើយ';
+                        color = '#1e40af';
+                        bg = '#eff6ff';
+                        border = '#bfdbfe';
                     }
+
+                    container.innerHTML = `
+                        <div style="background: ${bg}; border: 2px solid ${border}; border-radius: 14px; padding: 32px 22px; text-align: center; margin: 30px auto; max-width: 650px; box-shadow: 0 4px 14px rgba(0,0,0,0.06);">
+                            <div style="font-size: 3.6rem; margin-bottom: 12px; line-height: 1;">${icon}</div>
+                            <h3 style="color: ${color}; font-size: 1.35rem; font-weight: 800; margin: 0 0 12px 0;">${title}</h3>
+                            <p style="color: #334155; font-size: 1rem; line-height: 1.7; margin: 0 0 18px 0;">
+                                ${escapeHtml(data.message || 'មិនមានសិទ្ធិចូលប្រឡងវិញ្ញាសានេះឡើយ')}
+                            </p>
+                            ${data.reason === 'ALREADY_SUBMITTED' ? `
+                                <div style="display: inline-block; background: white; border: 1.5px solid ${border}; border-radius: 8px; padding: 8px 18px; margin-bottom: 18px; font-weight: bold; color: ${color}; font-size: 1.05rem;">
+                                    ពិន្ទុដែលទទួលបាន៖ ${data.score !== undefined ? data.score : '--'} ពិន្ទុ
+                                </div><br>
+                            ` : ''}
+                            <button type="button" onclick="window.location.reload()" style="background: #475569; color: white; border: none; padding: 9px 22px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95rem;">
+                                🔄 ផ្ទុកទំព័រឡើងវិញ
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                currentExam = data.exam || null;
+                currentQuestions = data.questions || [];
+
+                if (currentQuestions.length > 0) {
+                    renderExam(currentExam, currentQuestions);
+                    startTimer();
                 } else {
-                    container.innerHTML = '<h3 style="text-align: center; color: #ef4444; margin-top: 50px;">រកមិនឃើញវិញ្ញាសាសម្រាប់ថ្នាក់របស់ប្អូនទេ!</h3>';
+                    container.innerHTML = '<h3 style="text-align: center; color: #ef4444; margin-top: 50px;">មិនទាន់មានសំណួរនៅក្នុងវិញ្ញាសានេះទេ!</h3>';
                 }
             } catch (e) {
+                console.error(e);
                 container.innerHTML = '<h3 style="text-align: center; color: #ef4444; margin-top: 50px;">មានបញ្ហាក្នុងការភ្ជាប់បណ្តាញ!</h3>';
             }
         }
@@ -1094,7 +1152,7 @@
             
             try {
                 const studentWritingText = document.getElementById('studentWritingTextarea') ? document.getElementById('studentWritingTextarea').value.trim() : '';
-            await fetch('/api/student-portal/submit', {
+                const subRes = await fetch('/api/student-portal/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1104,6 +1162,11 @@
                         studentWriting: studentWritingText
                     })
                 });
+                const subData = await subRes.json().catch(() => ({}));
+                if (!subRes.ok || subData.blocked) {
+                    alert(subData.message || '⚠️ មិនអាចបញ្ជូនចម្លើយបានឡើយ!');
+                    return;
+                }
             } catch(e) {
                 console.error("Failed to sync score to db", e);
             }
@@ -1230,7 +1293,7 @@
             const subjectName = document.getElementById('subjectSelect').value;
             
             try {
-                await fetch('/api/student-portal/submit', {
+                const subRes = await fetch('/api/student-portal/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1239,6 +1302,11 @@
                         totalScore: totalScore
                     })
                 });
+                const subData = await subRes.json().catch(() => ({}));
+                if (!subRes.ok || subData.blocked) {
+                    alert(subData.message || '⚠️ មិនអាចបញ្ជូនចម្លើយបានឡើយ!');
+                    return;
+                }
             } catch(e) {
                 console.error("Failed to sync score to db", e);
             }

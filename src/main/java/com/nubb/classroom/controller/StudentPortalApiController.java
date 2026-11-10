@@ -60,6 +60,19 @@ public class StudentPortalApiController {
         Long stuAccId = student.getAccountId();
         if (stuAccId == null) return ResponseEntity.notFound().build();
 
+        // Rule 1: Check if student is absent today
+        LocalDate today = LocalDate.now();
+        boolean isAbsentToday = attendanceRepository.findByStudentId(student.getId()).stream()
+                .anyMatch(a -> today.equals(a.getDate()) && !a.isPresent());
+        if (isAbsentToday) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "blocked", true,
+                    "reason", "ABSENT",
+                    "message", "🚫 ប្អូនត្រូវបានកត់ត្រាថា «អវត្តមាន» នៅថ្ងៃនេះ (" + today + ")! មិនមានសិទ្ធិចូលប្រឡងតាមប្រព័ន្ធពីផ្ទះបានឡើយ។ សូមទាក់ទងលោកគ្រូ-អ្នកគ្រូបន្ទុកថ្នាក់!"
+            ));
+        }
+
+        // Rule 2: Find exam for this month, subject, and student's class
         Optional<Exam> examOpt = examRepository.findAll().stream()
                 .filter(e -> month != null && month.equals(e.getMonth()) && subjectName != null && subjectName.equals(e.getSubjectName()))
                 .filter(e -> Objects.equals(stuAccId, e.getAccountId()))
@@ -67,15 +80,45 @@ public class StudentPortalApiController {
                 .sorted(Comparator.comparing(Exam::getId).reversed())
                 .findFirst();
 
-        if (examOpt.isPresent()) {
-            Exam exam = examOpt.get();
-            List<Question> questions = questionRepository.findByExamIdAndAccountId(exam.getId(), exam.getAccountId());
-            if (questions.isEmpty()) {
-                questions = questionRepository.findAll().stream().filter(q -> exam.getId().equals(q.getExamId())).toList();
-            }
-            return ResponseEntity.ok(Map.of("exam", exam, "questions", questions));
+        if (examOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of(
+                    "blocked", true,
+                    "reason", "NOT_FOUND",
+                    "message", "រកមិនឃើញវិញ្ញាសាសម្រាប់ថ្នាក់របស់ប្អូនទេ!"
+            ));
         }
-        return ResponseEntity.notFound().build();
+        Exam exam = examOpt.get();
+
+        // Rule 2: Check if teacher has opened exam hours for this class
+        if (!exam.isOpenForClass(student.getClassName())) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "blocked", true,
+                    "reason", "CLASS_CLOSED",
+                    "message", "🔒 ម៉ោងប្រឡងសម្រាប់ថ្នាក់ «" + student.getClassName() + "» មិនទាន់បើក ឬត្រូវបានបិទរួចរាល់ហើយ! សូមរង់ចាំលោកគ្រូ-អ្នកគ្រូបើកដំណើរការ។"
+            ));
+        }
+
+        // Rule 3: Check if already submitted and retake not allowed
+        Optional<Score> existingOpt = scoreRepository.findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(
+                student.getId(), month, student.getClassName(), subjectName, stuAccId);
+        if (existingOpt.isPresent()) {
+            Score sc = existingOpt.get();
+            boolean submitted = Boolean.TRUE.equals(sc.getExamSubmitted()) || (sc.getMonthlyScore() > 0 && !Boolean.TRUE.equals(sc.getRetakeAllowed()));
+            if (submitted && !Boolean.TRUE.equals(sc.getRetakeAllowed())) {
+                return ResponseEntity.status(403).body(Map.of(
+                        "blocked", true,
+                        "reason", "ALREADY_SUBMITTED",
+                        "score", sc.getMonthlyScore(),
+                        "message", "⚠️ ប្អូនបានប្រឡងវិញ្ញាសានេះរួចរាល់ហើយ (ពិន្ទុទទួលបាន៖ " + sc.getMonthlyScore() + " ពិន្ទុ)! មិនមានសិទ្ធិចូលប្រឡងម្តងទៀតឡើយ លើកលែងតែមានការអនុញ្ញាតពីលោកគ្រូ-អ្នកគ្រូ។"
+                ));
+            }
+        }
+
+        List<Question> questions = questionRepository.findByExamIdAndAccountId(exam.getId(), exam.getAccountId());
+        if (questions.isEmpty()) {
+            questions = questionRepository.findAll().stream().filter(q -> exam.getId().equals(q.getExamId())).toList();
+        }
+        return ResponseEntity.ok(Map.of("exam", exam, "questions", questions));
     }
 
     @PostMapping("/submit")
@@ -84,8 +127,52 @@ public class StudentPortalApiController {
         if (student == null) return ResponseEntity.status(401).build();
 
         Long stuAccId = student.getAccountId();
+
+        // Rule 1: Verify not absent today
+        LocalDate today = LocalDate.now();
+        boolean isAbsentToday = attendanceRepository.findByStudentId(student.getId()).stream()
+                .anyMatch(a -> today.equals(a.getDate()) && !a.isPresent());
+        if (isAbsentToday) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "blocked", true,
+                    "reason", "ABSENT",
+                    "message", "🚫 ប្អូនត្រូវបានកត់ត្រាថា «អវត្តមាន» នៅថ្ងៃនេះ មិនអាចបញ្ជូនចម្លើយប្រឡងបានឡើយ!"
+            ));
+        }
+
+        // Rule 2: Verify exam class access is currently open
+        Optional<Exam> examOpt = examRepository.findAll().stream()
+                .filter(e -> payload.getMonth() != null && payload.getMonth().equals(e.getMonth()) && payload.getSubjectName() != null && payload.getSubjectName().equals(e.getSubjectName()))
+                .filter(e -> Objects.equals(stuAccId, e.getAccountId()))
+                .filter(e -> ExamApiController.classMatches(e.getClassName(), student.getClassName()))
+                .sorted(Comparator.comparing(Exam::getId).reversed())
+                .findFirst();
+
+        if (examOpt.isPresent() && !examOpt.get().isOpenForClass(student.getClassName())) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "blocked", true,
+                    "reason", "CLASS_CLOSED",
+                    "message", "🔒 ម៉ោងប្រឡងត្រូវបានបិទរួចរាល់ហើយ មិនអាចបញ្ជូនចម្លើយបានទៀតទេ!"
+            ));
+        }
+
+        // Rule 3: Verify not already submitted without retake permission
         Optional<Score> existingOpt = scoreRepository.findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(
                 student.getId(), payload.getMonth(), student.getClassName(), payload.getSubjectName(), stuAccId);
+        if (existingOpt.isPresent()) {
+            Score sc = existingOpt.get();
+            boolean submitted = Boolean.TRUE.equals(sc.getExamSubmitted()) || (sc.getMonthlyScore() > 0 && !Boolean.TRUE.equals(sc.getRetakeAllowed()));
+            if (submitted && !Boolean.TRUE.equals(sc.getRetakeAllowed())) {
+                return ResponseEntity.status(403).body(Map.of(
+                        "success", false,
+                        "blocked", true,
+                        "reason", "ALREADY_SUBMITTED",
+                        "message", "⚠️ ប្អូនបានប្រឡងរួចរាល់ហើយ មិនអាចបញ្ជូនម្តងទៀតបានទេ លើកលែងតែមានការអនុញ្ញាតពីគ្រូ!"
+                ));
+            }
+        }
 
         Score score = existingOpt.orElse(new Score());
         score.setStudentId(student.getId());
@@ -102,10 +189,29 @@ public class StudentPortalApiController {
             score.setStudentWriting(payload.getStudentWriting().trim());
         }
         score.setTotal(score.getMonthlyScore() + score.getAttendanceScore() + score.getAssignmentScore());
+        score.setExamSubmitted(true);
+        score.setRetakeAllowed(false); // Retake used up upon submission
 
         scoreRepository.save(score);
 
         return ResponseEntity.ok(Map.of("success", true, "totalScore", payload.getTotalScore()));
+    }
+
+    @GetMapping("/check-status")
+    public ResponseEntity<?> checkStatus(HttpSession session) {
+        Student student = (Student) session.getAttribute("loggedInStudent");
+        if (student == null) return ResponseEntity.status(401).build();
+
+        LocalDate today = LocalDate.now();
+        boolean isAbsentToday = attendanceRepository.findByStudentId(student.getId()).stream()
+                .anyMatch(a -> today.equals(a.getDate()) && !a.isPresent());
+
+        return ResponseEntity.ok(Map.of(
+                "isAbsentToday", isAbsentToday,
+                "studentName", student.getName(),
+                "className", student.getClassName(),
+                "date", today.toString()
+        ));
     }
 
     @GetMapping("/attendance-summary")

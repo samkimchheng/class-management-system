@@ -74,6 +74,12 @@ public class DataInitializer {
         try { stmt.execute("ALTER TABLE IF EXISTS \"SCORE\" ADD COLUMN IF NOT EXISTS \"STUDENT_WRITING\" TEXT"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS score ADD COLUMN IF NOT EXISTS writing_score DOUBLE PRECISION"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS \"SCORE\" ADD COLUMN IF NOT EXISTS \"WRITING_SCORE\" DOUBLE PRECISION"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS open_classes VARCHAR(2000)"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"OPEN_CLASSES\" VARCHAR(2000)"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS score ADD COLUMN IF NOT EXISTS exam_submitted BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"SCORE\" ADD COLUMN IF NOT EXISTS \"EXAM_SUBMITTED\" BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS score ADD COLUMN IF NOT EXISTS retake_allowed BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"SCORE\" ADD COLUMN IF NOT EXISTS \"RETAKE_ALLOWED\" BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
         // 1. Ensure account_id exists on ALL multi-tenant tables
         String[] accountIdCols = {
             "ALTER TABLE IF EXISTS students ADD COLUMN IF NOT EXISTS account_id BIGINT",

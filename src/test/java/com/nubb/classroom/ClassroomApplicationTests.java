@@ -61,6 +61,12 @@ class ClassroomApplicationTests {
     private AttendanceRepository attendanceRepository;
 
     @Autowired
+    private com.nubb.classroom.repository.ExamRepository examRepository;
+
+    @Autowired
+    private com.nubb.classroom.repository.QuestionRepository questionRepository;
+
+    @Autowired
     private WebController webController;
 
     @Test
@@ -282,5 +288,143 @@ class ClassroomApplicationTests {
                     .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
                     .andExpect(status().isOk());
         }
+    }
+
+    @Test
+    void testExamSecurityAndRetakeRules() throws Exception {
+        Account teacher = accountRepository.findByUsername("samkimchheng").orElse(null);
+        assertNotNull(teacher);
+        Student student = studentRepository.findByStudentCode("10E-01").orElse(null);
+        assertNotNull(student);
+
+        // 1. Create a test exam for student's class (10E)
+        com.nubb.classroom.model.Exam exam = new com.nubb.classroom.model.Exam();
+        exam.setAccountId(teacher.getId());
+        exam.setMonth("ខែវិច្ឆិកា ២០២៦");
+        exam.setSubjectName("ភាសាខ្មែរ-តេស្តសុវត្ថិភាព");
+        exam.setClassName("10E");
+        exam.setOpenClasses(""); // Initially CLOSED
+        exam = examRepository.save(exam);
+
+        com.nubb.classroom.model.Question q = new com.nubb.classroom.model.Question();
+        q.setExamId(exam.getId());
+        q.setAccountId(teacher.getId());
+        q.setSkillType("grammar");
+        q.setQuestionText("សំណួរតេស្ត?");
+        q.setOptionA("A");
+        q.setOptionB("B");
+        q.setOptionC("C");
+        q.setOptionD("D");
+        q.setCorrectOption("A");
+        questionRepository.save(q);
+
+        // Rule 1 Test: When student is absent today, entrance & submit are BLOCKED
+        LocalDate today = LocalDate.now();
+        attendanceRepository.findByStudentId(student.getId()).forEach(a -> {
+            if (today.equals(a.getDate())) attendanceRepository.delete(a);
+        });
+        Attendance absentAtt = new Attendance(student, today, false, "UNEXCUSED");
+        absentAtt.setAccountId(teacher.getId());
+        attendanceRepository.save(absentAtt);
+
+        // Student tries to load exam while absent -> HTTP 403 Forbidden with ABSENT
+        mockMvc.perform(get("/api/student-portal/exam")
+                .param("month", exam.getMonth())
+                .param("subjectName", exam.getSubjectName())
+                .sessionAttr("loggedInStudent", student)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isForbidden())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.reason").value("ABSENT"));
+
+        // Student tries to submit while absent -> HTTP 403 Forbidden
+        mockMvc.perform(post("/api/student-portal/submit")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"month\":\"" + exam.getMonth() + "\",\"subjectName\":\"" + exam.getSubjectName() + "\",\"totalScore\":80}")
+                .sessionAttr("loggedInStudent", student)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isForbidden())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.reason").value("ABSENT"));
+
+        // Rule 2 Test: When student is present but class is CLOSED -> BLOCKED
+        absentAtt.setPresent(true);
+        absentAtt.setAbsenceType(null);
+        attendanceRepository.save(absentAtt);
+
+        // Exam is still closed (openClasses = "")
+        mockMvc.perform(get("/api/student-portal/exam")
+                .param("month", exam.getMonth())
+                .param("subjectName", exam.getSubjectName())
+                .sessionAttr("loggedInStudent", student)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isForbidden())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.reason").value("CLASS_CLOSED"));
+
+        // Teacher opens class access via /api/exams/toggle-class-access
+        mockMvc.perform(post("/api/exams/toggle-class-access")
+                .param("examId", String.valueOf(exam.getId()))
+                .param("className", "10E")
+                .param("open", "true")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole()))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.isOpen").value(true));
+
+        // Now student CAN access the exam
+        mockMvc.perform(get("/api/student-portal/exam")
+                .param("month", exam.getMonth())
+                .param("subjectName", exam.getSubjectName())
+                .sessionAttr("loggedInStudent", student)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.exam.id").value(exam.getId()));
+
+        // Rule 3 Test: One Attempt & Teacher Retake Permission
+        // Clean any old score for this test subject
+        scoreRepository.findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(
+                student.getId(), exam.getMonth(), student.getClassName(), exam.getSubjectName(), teacher.getId())
+                .ifPresent(s -> scoreRepository.delete(s));
+
+        // Submit the exam
+        mockMvc.perform(post("/api/student-portal/submit")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"month\":\"" + exam.getMonth() + "\",\"subjectName\":\"" + exam.getSubjectName() + "\",\"totalScore\":85}")
+                .sessionAttr("loggedInStudent", student)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isOk());
+
+        // Student tries to enter exam again -> BLOCKED with ALREADY_SUBMITTED
+        mockMvc.perform(get("/api/student-portal/exam")
+                .param("month", exam.getMonth())
+                .param("subjectName", exam.getSubjectName())
+                .sessionAttr("loggedInStudent", student)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isForbidden())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.reason").value("ALREADY_SUBMITTED"));
+
+        // Teacher grants retake permission via /api/exams/allow-retake
+        mockMvc.perform(post("/api/exams/allow-retake")
+                .param("studentId", String.valueOf(student.getId()))
+                .param("month", exam.getMonth())
+                .param("subjectName", exam.getSubjectName())
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole()))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.success").value(true));
+
+        // Student can now take exam again
+        mockMvc.perform(get("/api/student-portal/exam")
+                .param("month", exam.getMonth())
+                .param("subjectName", exam.getSubjectName())
+                .sessionAttr("loggedInStudent", student)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isOk());
+
+        // Cleanup test data
+        attendanceRepository.delete(absentAtt);
+        scoreRepository.findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(
+                student.getId(), exam.getMonth(), student.getClassName(), exam.getSubjectName(), teacher.getId())
+                .ifPresent(s -> scoreRepository.delete(s));
+        questionRepository.delete(q);
+        examRepository.delete(exam);
     }
 }

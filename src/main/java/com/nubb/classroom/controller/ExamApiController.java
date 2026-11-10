@@ -2,13 +2,19 @@ package com.nubb.classroom.controller;
 
 import com.nubb.classroom.model.Exam;
 import com.nubb.classroom.model.Question;
+import com.nubb.classroom.model.Score;
+import com.nubb.classroom.model.Student;
+import com.nubb.classroom.repository.AttendanceRepository;
 import com.nubb.classroom.repository.ExamRepository;
 import com.nubb.classroom.repository.QuestionRepository;
+import com.nubb.classroom.repository.ScoreRepository;
+import com.nubb.classroom.repository.StudentRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @RestController
@@ -23,6 +29,15 @@ public class ExamApiController {
 
     @Autowired
     private QuestionRepository questionRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
+    private ScoreRepository scoreRepository;
+
+    @Autowired
+    private AttendanceRepository attendanceRepository;
 
     public static boolean classMatches(String examClassName, String targetClass) {
         return LessonController.isClassMatching(examClassName, targetClass);
@@ -103,6 +118,11 @@ public class ExamApiController {
         exam.setSection4Instruction(payload.getSection4Instruction());
         exam.setWritingPrompt(payload.getWritingPrompt());
         exam.setWritingMaxPoints(payload.getWritingMaxPoints());
+        if (payload.getOpenClasses() != null) {
+            exam.setOpenClasses(payload.getOpenClasses());
+        } else if (exam.getOpenClasses() == null) {
+            exam.setOpenClasses("");
+        }
         examRepository.save(exam);
 
         // Delete old questions for this exam
@@ -168,10 +188,172 @@ public class ExamApiController {
             map.put("month", e.getMonth() != null ? e.getMonth() : "");
             map.put("className", e.getClassName() != null ? e.getClassName() : "");
             map.put("subjectName", e.getSubjectName() != null ? e.getSubjectName() : "");
+            map.put("openClasses", e.getOpenClasses() != null ? e.getOpenClasses() : "");
             map.put("questionCount", qCount);
             result.add(map);
         }
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/toggle-class-access")
+    public ResponseEntity<?> toggleClassAccess(
+            @RequestParam Long examId,
+            @RequestParam(required = false) String className,
+            @RequestParam(required = false) Boolean open,
+            @RequestParam(required = false) Boolean openAll) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន"));
+
+        Optional<Exam> examOpt = examRepository.findByIdAndAccountId(examId, accountId);
+        if (examOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "រកមិនឃើញវិញ្ញាសា"));
+        }
+        Exam exam = examOpt.get();
+
+        Set<String> openSet = new LinkedHashSet<>();
+        if (exam.getOpenClasses() != null && !exam.getOpenClasses().trim().isEmpty()) {
+            for (String c : exam.getOpenClasses().split("[,;]+")) {
+                if (!c.trim().isEmpty()) openSet.add(c.trim());
+            }
+        }
+
+        if (Boolean.TRUE.equals(openAll)) {
+            if (exam.getClassName() != null) {
+                for (String c : exam.getClassName().split("[,;]+")) {
+                    if (!c.trim().isEmpty()) openSet.add(c.trim());
+                }
+            }
+        } else if (Boolean.FALSE.equals(openAll)) {
+            openSet.clear();
+        } else if (className != null) {
+            String trimmed = className.trim();
+            if (Boolean.TRUE.equals(open)) {
+                openSet.add(trimmed);
+            } else {
+                openSet.removeIf(c -> c.equalsIgnoreCase(trimmed));
+            }
+        }
+
+        exam.setOpenClasses(String.join(", ", openSet));
+        examRepository.save(exam);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "examId", exam.getId(),
+                "openClasses", exam.getOpenClasses() != null ? exam.getOpenClasses() : "",
+                "className", className != null ? className : "",
+                "isOpen", className != null && exam.isOpenForClass(className),
+                "message", "បានកែប្រែស្ថានភាពម៉ោងប្រឡងដោយជោគជ័យ"
+        ));
+    }
+
+    @PostMapping("/allow-retake")
+    public ResponseEntity<?> allowRetake(
+            @RequestParam(required = false) Long scoreId,
+            @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) String month,
+            @RequestParam(required = false) String subjectName) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន"));
+
+        Optional<Score> scoreOpt = Optional.empty();
+        if (scoreId != null) {
+            scoreOpt = scoreRepository.findById(scoreId).filter(s -> Objects.equals(s.getAccountId(), accountId));
+        } else if (studentId != null && month != null && subjectName != null) {
+            scoreOpt = scoreRepository.findAll().stream()
+                    .filter(s -> Objects.equals(s.getAccountId(), accountId)
+                            && Objects.equals(s.getStudentId(), studentId)
+                            && Objects.equals(s.getMonth(), month)
+                            && Objects.equals(s.getSubjectName(), subjectName))
+                    .findFirst();
+        }
+
+        if (scoreOpt.isPresent()) {
+            Score sc = scoreOpt.get();
+            sc.setRetakeAllowed(true);
+            sc.setExamSubmitted(false);
+            scoreRepository.save(sc);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "studentId", sc.getStudentId(),
+                    "message", "បានអនុញ្ញាតឱ្យសិស្សប្រឡងឡើងវិញដោយជោគជ័យ!"
+            ));
+        }
+        return ResponseEntity.status(404).body(Map.of("success", false, "message", "រកមិនឃើញកំណត់ត្រាពិន្ទុរបស់សិស្សឡើយ"));
+    }
+
+    @GetMapping("/submissions")
+    public ResponseEntity<?> getExamSubmissions(
+            @RequestParam Long examId,
+            @RequestParam(required = false) String className) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) return ResponseEntity.status(401).build();
+
+        Optional<Exam> examOpt = examRepository.findByIdAndAccountId(examId, accountId);
+        if (examOpt.isEmpty()) return ResponseEntity.notFound().build();
+        Exam exam = examOpt.get();
+
+        List<String> assignedClasses = new ArrayList<>();
+        if (exam.getClassName() != null) {
+            for (String c : exam.getClassName().split("[,;]+")) {
+                if (!c.trim().isEmpty()) assignedClasses.add(c.trim());
+            }
+        }
+
+        List<String> targetClasses = new ArrayList<>();
+        if (className != null && !className.trim().isEmpty() && !className.equals("ថ្នាក់ទាំងអស់")) {
+            targetClasses.add(className.trim());
+        } else {
+            targetClasses.addAll(assignedClasses);
+        }
+
+        List<Student> students = studentRepository.findAll().stream()
+                .filter(s -> Objects.equals(s.getAccountId(), accountId))
+                .filter(s -> targetClasses.stream().anyMatch(c -> c.equalsIgnoreCase(s.getClassName())))
+                .sorted(Comparator.comparing(Student::getClassName).thenComparing(Student::getName))
+                .toList();
+
+        LocalDate today = LocalDate.now();
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Student s : students) {
+            boolean isAbsentToday = attendanceRepository.findByStudentId(s.getId()).stream()
+                    .anyMatch(a -> today.equals(a.getDate()) && !a.isPresent());
+
+            Optional<Score> scoreOpt = scoreRepository.findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(
+                    s.getId(), exam.getMonth(), s.getClassName(), exam.getSubjectName(), accountId);
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("studentId", s.getId());
+            item.put("studentName", s.getName());
+            item.put("studentIdCard", s.getStudentCode() != null ? s.getStudentCode() : "");
+            item.put("gender", s.getGender() != null ? s.getGender() : "");
+            item.put("className", s.getClassName());
+            item.put("isAbsentToday", isAbsentToday);
+            item.put("attendanceToday", isAbsentToday ? "អវត្តមាន" : "វត្តមាន");
+
+            if (scoreOpt.isPresent()) {
+                Score sc = scoreOpt.get();
+                item.put("scoreId", sc.getId());
+                item.put("monthlyScore", sc.getMonthlyScore());
+                boolean hasSubmitted = Boolean.TRUE.equals(sc.getExamSubmitted()) || (sc.getMonthlyScore() > 0 && !Boolean.TRUE.equals(sc.getRetakeAllowed()));
+                item.put("submitted", hasSubmitted);
+                item.put("retakeAllowed", Boolean.TRUE.equals(sc.getRetakeAllowed()));
+            } else {
+                item.put("scoreId", null);
+                item.put("monthlyScore", null);
+                item.put("submitted", false);
+                item.put("retakeAllowed", false);
+            }
+            result.add(item);
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "exam", exam,
+                "classes", assignedClasses,
+                "openClasses", exam.getOpenClasses() != null ? exam.getOpenClasses() : "",
+                "students", result
+        ));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -194,6 +376,7 @@ public class ExamApiController {
         private String month;
         private String className;
         private List<String> classes;
+        private String openClasses;
         private String subjectName;
         private List<Question> questions;
         private String readingPassage;
@@ -253,6 +436,8 @@ public class ExamApiController {
         public void setClassName(String className) { this.className = className; }
         public List<String> getClasses() { return classes; }
         public void setClasses(List<String> classes) { this.classes = classes; }
+        public String getOpenClasses() { return openClasses; }
+        public void setOpenClasses(String openClasses) { this.openClasses = openClasses; }
         public String getSubjectName() { return subjectName; }
         public void setSubjectName(String subjectName) { this.subjectName = subjectName; }
         public List<Question> getQuestions() { return questions; }

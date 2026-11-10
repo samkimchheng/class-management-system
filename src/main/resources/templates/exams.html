@@ -134,6 +134,52 @@
             margin-right: 4px;
             margin-bottom: 2px;
         }
+        .badge-exam-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            margin-right: 5px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .badge-exam-toggle.open {
+            background-color: #ecfdf5;
+            color: #065f46;
+            border-color: #a7f3d0;
+        }
+        .badge-exam-toggle.open:hover {
+            background-color: #d1fae5;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+        }
+        .badge-exam-toggle.closed {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+        .badge-exam-toggle.closed:hover {
+            background-color: #fee2e2;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+        }
+        .btn-quick-toggle {
+            background: none;
+            border: none;
+            color: #2563eb;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+        .btn-quick-toggle:hover {
+            background: #eff6ff;
+        }
     
         .exam-list-title {
             white-space: nowrap !important;
@@ -1264,21 +1310,48 @@
 
                     let rows = '';
                     list.forEach((item, index) => {
-                        const classes = item.className ? item.className.split(',').map(c => c.trim()) : [];
-                        const classBadges = classes.map(c => `<span class="badge-class">${escapeHtml(c)}</span>`).join(' ');
+                        const classes = item.className ? item.className.split(',').map(c => c.trim()).filter(Boolean) : [];
+                        const openClassesStr = item.openClasses || '';
+                        const openList = openClassesStr.split(',').map(s => s.trim().toLowerCase());
+
+                        const classBadges = classes.map(c => {
+                            const isOpen = openList.includes(c.toLowerCase());
+                            if (isOpen) {
+                                return `<button type="button" class="badge-exam-toggle open" onclick="toggleExamClassAccess(${item.id}, '${escapeHtml(c)}', false)" title="ម៉ោងប្រឡងកំពុងបើក! ចុចដើម្បីបិទ">
+                                    <span>🟢</span> <span>${escapeHtml(c)}</span> <span style="font-size:0.75rem; opacity:0.85;">(បើក)</span>
+                                </button>`;
+                            } else {
+                                return `<button type="button" class="badge-exam-toggle closed" onclick="toggleExamClassAccess(${item.id}, '${escapeHtml(c)}', true)" title="ម៉ោងប្រឡងត្រូវបានបិទ! ចុចដើម្បីបើក">
+                                    <span>🔴</span> <span>${escapeHtml(c)}</span> <span style="font-size:0.75rem; opacity:0.85;">(បិទ)</span>
+                                </button>`;
+                            }
+                        }).join('');
+
+                        const quickActions = classes.length > 0 ? `
+                            <div style="margin-top: 5px; display: flex; gap: 8px; font-size: 0.78rem;">
+                                <button type="button" class="btn-quick-toggle" onclick="toggleAllExamClasses(${item.id}, true)">🟢 បើកគ្រប់ថ្នាក់</button>
+                                <button type="button" class="btn-quick-toggle" style="color: #ef4444;" onclick="toggleAllExamClasses(${item.id}, false)">🔴 បិទគ្រប់ថ្នាក់</button>
+                            </div>
+                        ` : '';
                         
                         rows += `
                             <tr style="border-bottom: 1px solid #f1f5f9;">
                                 <td style="padding: 12px 10px; font-weight: bold; color: #64748b;">${index + 1}</td>
                                 <td style="padding: 12px 10px; font-weight: 600; color: #1e293b;">${escapeHtml(item.month)}</td>
                                 <td style="padding: 12px 10px; color: var(--primary); font-weight: bold;">${escapeHtml(item.subjectName)}</td>
-                                <td style="padding: 12px 10px;">${classBadges || '<span style="color:#ef4444;">មិនទាន់មានថ្នាក់</span>'}</td>
+                                <td style="padding: 12px 10px;">
+                                    ${classBadges || '<span style="color:#ef4444;">មិនទាន់មានថ្នាក់</span>'}
+                                    ${quickActions}
+                                </td>
                                 <td style="padding: 12px 10px; text-align: center; white-space: nowrap;">
                                     <span class="question-count-badge" style="background: #ecfdf5; color: #059669; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 0.85rem; white-space: nowrap !important; display: inline-block;">
                                         ${item.questionCount} សំណួរ
                                     </span>
                                 </td>
-                                <td style="padding: 12px 10px; text-align: center;">
+                                <td style="padding: 12px 10px; text-align: center; white-space: nowrap;">
+                                    <button type="button" class="btn btn-sm" onclick="openSubmissionsModal(${item.id})" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-right: 5px;" title="តាមដានការប្រឡង និងអនុញ្ញាតឱ្យប្រឡងឡើងវិញ">
+                                        📋 សិស្សប្រឡង
+                                    </button>
                                     <button type="button" class="btn btn-sm" onclick="loadExamById(${item.id})" style="background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-right: 5px;">
                                         ✏️ កែប្រែ
                                     </button>
@@ -1336,6 +1409,205 @@
             }
         }
 
+        async function toggleExamClassAccess(examId, className, open) {
+            try {
+                const res = await fetch(`/api/exams/toggle-class-access?examId=${examId}&className=${encodeURIComponent(className)}&open=${open}`, {
+                    method: 'POST'
+                });
+                if (res.ok) {
+                    loadExamsList();
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    Swal.fire({ icon: 'error', title: 'បរាជ័យ', text: err.message || 'មិនអាចកែប្រែស្ថានភាពបានទេ' });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function toggleAllExamClasses(examId, openAll) {
+            try {
+                const res = await fetch(`/api/exams/toggle-class-access?examId=${examId}&openAll=${openAll}`, {
+                    method: 'POST'
+                });
+                if (res.ok) {
+                    loadExamsList();
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    Swal.fire({ icon: 'error', title: 'បរាជ័យ', text: err.message || 'មិនអាចកែប្រែស្ថានភាពបានទេ' });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        let currentSubmissionsExamId = null;
+        let currentSubmissionsData = [];
+        let currentExamInfo = null;
+
+        async function openSubmissionsModal(examId) {
+            currentSubmissionsExamId = examId;
+            const modal = document.getElementById('examSubmissionsModal');
+            const tbody = document.getElementById('submissionsTableBody');
+            modal.style.display = 'flex';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 25px; color: #64748b;">កំពុងទាញយកទិន្នន័យសិស្ស...</td></tr>';
+
+            try {
+                const res = await fetch(`/api/exams/submissions?examId=${examId}`);
+                if (!res.ok) throw new Error('Failed to load submissions');
+                const data = await res.json();
+                currentSubmissionsData = data.students || [];
+                currentExamInfo = data.exam || {};
+
+                document.getElementById('submissionsModalTitle').innerText = `📋 តាមដានការប្រឡង & អនុញ្ញាតប្រឡងឡើងវិញ: ${currentExamInfo.subjectName || ''}`;
+                document.getElementById('submissionsModalSubtitle').innerText = `ខែ៖ ${currentExamInfo.month || ''} | ថ្នាក់៖ ${currentExamInfo.className || ''}`;
+
+                // Populate Class Filter
+                const classFilter = document.getElementById('submissionsClassFilter');
+                const classes = data.classes || [];
+                let optHtml = '<option value="ថ្នាក់ទាំងអស់">ថ្នាក់ទាំងអស់</option>';
+                classes.forEach(c => {
+                    optHtml += `<option value="${escapeHtml(c.trim())}">${escapeHtml(c.trim())}</option>`;
+                });
+                classFilter.innerHTML = optHtml;
+
+                filterSubmissions();
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 25px; color: #ef4444;">មានបញ្ហាក្នុងការទាញយកទិន្នន័យ!</td></tr>';
+            }
+        }
+
+        function filterSubmissions() {
+            const classVal = document.getElementById('submissionsClassFilter').value;
+            const searchVal = (document.getElementById('submissionsSearchInput').value || '').toLowerCase().trim();
+            const tbody = document.getElementById('submissionsTableBody');
+
+            let filtered = currentSubmissionsData.filter(s => {
+                if (classVal !== 'ថ្នាក់ទាំងអស់' && s.className !== classVal) return false;
+                if (searchVal) {
+                    const matchName = (s.studentName || '').toLowerCase().includes(searchVal);
+                    const matchId = (s.studentIdCard || '').toLowerCase().includes(searchVal);
+                    if (!matchName && !matchId) return false;
+                }
+                return true;
+            });
+
+            // Update Summary Badges
+            const total = filtered.length;
+            const submitted = filtered.filter(s => s.submitted).length;
+            const pending = filtered.filter(s => !s.submitted).length;
+            const absentToday = filtered.filter(s => s.isAbsentToday).length;
+
+            document.getElementById('submissionsSummaryCounts').innerHTML = `
+                <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 6px;">សរុប៖ ${total} នាក់</span>
+                <span style="background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 6px;">បានប្រឡង៖ ${submitted} នាក់</span>
+                <span style="background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 6px;">មិនទាន់ប្រឡង៖ ${pending} នាក់</span>
+                <span style="background: #fee2e2; color: #b91c1c; padding: 4px 10px; border-radius: 6px;">អវត្តមានថ្ងៃនេះ៖ ${absentToday} នាក់</span>
+            `;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 25px; color: #94a3b8;">មិនមានទិន្នន័យសិស្សឡើយ</td></tr>';
+                return;
+            }
+
+            let html = '';
+            filtered.forEach((s, idx) => {
+                let attBadge = s.isAbsentToday
+                    ? `<span style="background: #fee2e2; color: #b91c1c; padding: 3px 8px; border-radius: 6px; font-weight: bold; font-size: 0.8rem;">🚫 អវត្តមាន</span>`
+                    : `<span style="background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 6px; font-weight: bold; font-size: 0.8rem;">✅ វត្តមាន</span>`;
+
+                let statusBadge = '';
+                if (s.submitted) {
+                    statusBadge = `<span style="background: #ecfdf5; color: #047857; padding: 3px 8px; border-radius: 6px; font-weight: bold; font-size: 0.8rem;">✅ បានប្រឡងរួច</span>`;
+                } else if (s.retakeAllowed) {
+                    statusBadge = `<span style="background: #eff6ff; color: #1d4ed8; padding: 3px 8px; border-radius: 6px; font-weight: bold; font-size: 0.8rem;">🔄 អនុញ្ញាតឡើងវិញ</span>`;
+                } else {
+                    statusBadge = `<span style="background: #f8fafc; color: #64748b; padding: 3px 8px; border-radius: 6px; font-weight: bold; font-size: 0.8rem;">⏳ មិនទាន់ប្រឡង</span>`;
+                }
+
+                let scoreText = (s.monthlyScore !== null && s.monthlyScore !== undefined) ? `<strong style="color: #2563eb;">${s.monthlyScore}</strong>` : `<span style="color: #94a3b8;">--</span>`;
+
+                let actionBtn = '';
+                if (s.submitted) {
+                    actionBtn = `
+                        <button type="button" onclick="grantRetake(${s.scoreId || 'null'}, ${s.studentId}, '${escapeHtml(currentExamInfo.month || '')}', '${escapeHtml(currentExamInfo.subjectName || '')}')" style="background: #f59e0b; color: white; border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.82rem; cursor: pointer; font-weight: 700; transition: all 0.2s;" title="អនុញ្ញាតឱ្យសិស្សនេះចូលប្រឡងម្តងទៀត">
+                            🔄 អនុញ្ញាតឱ្យប្រឡងឡើងវិញ
+                        </button>
+                    `;
+                } else if (s.retakeAllowed) {
+                    actionBtn = `<span style="color: #059669; font-weight: 700; font-size: 0.82rem;">✅ អាចប្រឡងឡើងវិញបាន</span>`;
+                } else {
+                    actionBtn = `<span style="color: #94a3b8; font-size: 0.82rem;">--</span>`;
+                }
+
+                html += `
+                    <tr style="border-bottom: 1px solid #f1f5f9; text-align: left;">
+                        <td style="padding: 10px; color: #64748b; font-weight: bold;">${idx + 1}</td>
+                        <td style="padding: 10px; color: #1e293b; font-weight: 600;">${escapeHtml(s.studentIdCard || '')}</td>
+                        <td style="padding: 10px; font-weight: 700; color: #0f172a;">${escapeHtml(s.studentName || '')}</td>
+                        <td style="padding: 10px; color: #475569;">${escapeHtml(s.gender || '')}</td>
+                        <td style="padding: 10px; font-weight: 700; color: #2563eb;">${escapeHtml(s.className || '')}</td>
+                        <td style="padding: 10px; text-align: center;">${attBadge}</td>
+                        <td style="padding: 10px; text-align: center;">${statusBadge}</td>
+                        <td style="padding: 10px; text-align: center;">${scoreText}</td>
+                        <td style="padding: 10px; text-align: center;">${actionBtn}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function closeSubmissionsModal() {
+            document.getElementById('examSubmissionsModal').style.display = 'none';
+        }
+
+        async function grantRetake(scoreId, studentId, month, subjectName) {
+            const confirm = await Swal.fire({
+                title: 'អនុញ្ញាតឱ្យសិស្សប្រឡងឡើងវិញ?',
+                text: 'នៅពេលអនុញ្ញាត សិស្សរូបនេះនឹងអាចចូលប្រឡងវិញ្ញាសានេះឡើងវិញតាមគណនីរបស់គាត់!',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#f59e0b',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'បាទ/ចាស, អនុញ្ញាត!',
+                cancelButtonText: 'បោះបង់'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            try {
+                let url = `/api/exams/allow-retake?`;
+                if (scoreId) url += `scoreId=${scoreId}`;
+                else url += `studentId=${studentId}&month=${encodeURIComponent(month)}&subjectName=${encodeURIComponent(subjectName)}`;
+
+                const res = await fetch(url, { method: 'POST' });
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ជោគជ័យ!',
+                        text: 'បានអនុញ្ញាតឱ្យសិស្សប្រឡងឡើងវិញរួចរាល់!',
+                        timer: 1600,
+                        showConfirmButton: false
+                    });
+                    if (currentSubmissionsExamId) {
+                        openSubmissionsModal(currentSubmissionsExamId);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'បរាជ័យ',
+                        text: data.message || 'មិនអាចអនុញ្ញាតបានឡើយ'
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
         document.getElementById('monthSelect').addEventListener('change', loadExam);
         document.getElementById('subjectSelect').addEventListener('change', () => {
             onSubjectChanged();
@@ -1364,6 +1636,66 @@ function switchAcademicYear(year) {
     }
 }
 </script>
+
+    <!-- Exam Submissions & Retake Modal -->
+    <div id="examSubmissionsModal" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 15px;">
+        <div style="background: white; width: 100%; max-width: 950px; max-height: 90vh; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; overflow: hidden;">
+            
+            <!-- Modal Header -->
+            <div style="padding: 18px 24px; background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 id="submissionsModalTitle" style="margin: 0; font-size: 1.2rem; font-weight: 700;">📋 តាមដានការប្រឡង & អនុញ្ញាតប្រឡងឡើងវិញ</h3>
+                    <div id="submissionsModalSubtitle" style="font-size: 0.85rem; opacity: 0.9; margin-top: 4px;">មុខវិជ្ជា និងខែប្រឡង</div>
+                </div>
+                <button type="button" onclick="closeSubmissionsModal()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 34px; height: 34px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+            </div>
+
+            <!-- Modal Body Toolbar & Summary -->
+            <div style="padding: 14px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <label style="font-weight: 700; font-size: 0.88rem; color: #334155;">ជ្រើសរើសថ្នាក់៖</label>
+                    <select id="submissionsClassFilter" onchange="filterSubmissions()" style="padding: 7px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.88rem;">
+                        <option value="ថ្នាក់ទាំងអស់">ថ្នាក់ទាំងអស់</option>
+                    </select>
+                    <input type="text" id="submissionsSearchInput" onkeyup="filterSubmissions()" placeholder="🔍 ស្វែងរកឈ្មោះ ឬអត្តលេខ..." style="padding: 7px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.88rem; width: 220px;">
+                </div>
+                <div id="submissionsSummaryCounts" style="display: flex; gap: 8px; font-size: 0.82rem; font-weight: 700; flex-wrap: wrap;">
+                    <!-- Badges populated by JS -->
+                </div>
+            </div>
+
+            <!-- Modal Table -->
+            <div style="padding: 16px 24px; overflow-y: auto; flex: 1;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; text-align: left;">
+                            <th style="padding: 10px; width: 50px;">ល.រ</th>
+                            <th style="padding: 10px;">អត្តលេខ</th>
+                            <th style="padding: 10px;">ឈ្មោះសិស្ស</th>
+                            <th style="padding: 10px; width: 65px;">ភេទ</th>
+                            <th style="padding: 10px; width: 75px;">ថ្នាក់</th>
+                            <th style="padding: 10px; text-align: center;">វត្តមានថ្ងៃនេះ</th>
+                            <th style="padding: 10px; text-align: center;">ស្ថានភាពប្រឡង</th>
+                            <th style="padding: 10px; text-align: center; width: 90px;">ពិន្ទុ</th>
+                            <th style="padding: 10px; text-align: center; width: 190px;">សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTableBody">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 25px; color: #64748b;">កំពុងទាញយកទិន្នន័យ...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal Footer -->
+            <div style="padding: 12px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
+                <button type="button" onclick="closeSubmissionsModal()" class="btn" style="background: #64748b; color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    បិទផ្ទាំង
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="/js/logout-confirm.js"></script>
     <script src="/js/mobile-nav.js?v=20261029h"></script>

@@ -71,4 +71,16 @@ private Long studentId;
 
     public Double getWritingScore() { return writingScore; }
     public void setWritingScore(Double writingScore) { this.writingScore = writingScore; }
+
+    @Column(name = "exam_submitted")
+    private Boolean examSubmitted = false;
+
+    @Column(name = "retake_allowed")
+    private Boolean retakeAllowed = false;
+
+    public Boolean getExamSubmitted() { return examSubmitted; }
+    public void setExamSubmitted(Boolean examSubmitted) { this.examSubmitted = examSubmitted; }
+
+    public Boolean getRetakeAllowed() { return retakeAllowed; }
+    public void setRetakeAllowed(Boolean retakeAllowed) { this.retakeAllowed = retakeAllowed; }
 }
