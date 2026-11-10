@@ -586,7 +586,7 @@
             <li class="nav-item "><a href="/statistics" class="nav-link"><span>📈</span> <span>ស្ថិតិសិស្ស</span></a></li>
             <li class="nav-item "><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
             <li class="nav-item "><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
-            <li class="nav-item"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>វាក្យសព្ទ (Vocab)</span></a></li>
+            <li class="nav-item" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN' or session.ACCOUNT_ID == 97 or session.ACCOUNT_USERNAME == 'samkimchheng' or (teacherAccount != null and (teacherAccount.username == 'samkimchheng' or teacherAccount.id == 97 or teacherAccount.vocabularyPermission == true))}"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>វាក្យសព្ទ (Vocab)</span></a></li>
             <li class="nav-item "><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
             <li class="nav-item active"><a href="/daily-plan" class="nav-link"><span>📋</span> <span>សេវាប្រចាំថ្ងៃ</span></a></li>
             <li class="nav-item "><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
@@ -650,8 +650,18 @@
             <div class="plan-toolbar">
                 <div class="date-control-group">
                     <a th:href="@{/daily-plan(date=${prevDateStr})}" class="btn-date-nav" title="ថ្ងៃមុន">◀ ថ្ងៃមុន</a>
-                    <a th:href="@{/daily-plan(date=${todayStr})}" class="btn-date-nav" th:classappend="${isToday} ? 'active-pill' : ''">📍 ថ្ងៃនេះ</a>
-                    <a th:href="@{/daily-plan(date=${tomorrowStr})}" class="btn-date-nav" th:classappend="${isTomorrow} ? 'active-pill' : ''">⚡ ថ្ងៃស្អែក</a>
+                    <a th:href="@{/daily-plan(date=${yesterdayStr})}" class="btn-date-nav" th:classappend="${isYesterday} ? 'active-pill' : ''">
+                        <span>⏮️ ម្សិលមិញ</span>
+                        <span th:if="${yesterdaySavedCount != null and yesterdaySavedCount > 0}" style="font-size: 0.72rem; background: #dcfce7; color: #15803d; padding: 1px 5px; border-radius: 8px; margin-left: 2px;">✔</span>
+                    </a>
+                    <a th:href="@{/daily-plan(date=${todayStr})}" class="btn-date-nav" th:classappend="${isToday} ? 'active-pill' : ''">
+                        <span>📍 ថ្ងៃនេះ</span>
+                        <span th:if="${todaySavedCount != null and todaySavedCount > 0}" style="font-size: 0.72rem; background: #dcfce7; color: #15803d; padding: 1px 5px; border-radius: 8px; margin-left: 2px;" th:text="${todaySavedCount} + ' ម៉ោង'">៤ ម៉ោង</span>
+                    </a>
+                    <a th:href="@{/daily-plan(date=${tomorrowStr})}" class="btn-date-nav" th:classappend="${isTomorrow} ? 'active-pill' : ''">
+                        <span>⚡ ថ្ងៃស្អែក</span>
+                        <span th:if="${tomorrowSavedCount != null and tomorrowSavedCount > 0}" style="font-size: 0.72rem; background: #dcfce7; color: #15803d; padding: 1px 5px; border-radius: 8px; margin-left: 2px;" th:text="${tomorrowSavedCount} + ' ម៉ោង'">៤ ម៉ោង</span>
+                    </a>
                     <a th:href="@{/daily-plan(date=${nextDateStr})}" class="btn-date-nav" title="ថ្ងៃបន្ទាប់">ថ្ងៃបន្ទាប់ ▶</a>
                     
                     <span style="color: #cbd5e1; margin: 0 4px;">|</span>
@@ -1101,6 +1111,10 @@
                 });
                 const data = await res.json();
                 if (data.success) {
+                    try {
+                        const dKey = `DAILY_PLAN_DRAFT_${targetDate}`;
+                        localStorage.removeItem(dKey);
+                    } catch (e) {}
                     Swal.fire({
                         icon: 'success',
                         title: 'ជោគជ័យ!',
@@ -1125,6 +1139,75 @@
                 });
             }
         }
+
+        // Auto-save draft into localStorage whenever user types
+        function getDraftKey() {
+            const date = document.getElementById('targetDateInput')?.value || 'DEFAULT';
+            return `DAILY_PLAN_DRAFT_${date}`;
+        }
+
+        function autoSaveDraft() {
+            try {
+                const cards = document.querySelectorAll('.slot-card');
+                const draft = {};
+                cards.forEach(card => {
+                    const slotIndex = card.querySelector('.input-slot-index')?.value;
+                    if (slotIndex !== undefined) {
+                        draft[slotIndex] = {
+                            lessonTitle: card.querySelector('.input-lesson-title')?.value || '',
+                            contentSummary: card.querySelector('.input-content-summary')?.value || '',
+                            objectives: card.querySelector('.input-objectives')?.value || '',
+                            homework: card.querySelector('.input-homework')?.value || '',
+                            notes: card.querySelector('.input-notes')?.value || ''
+                        };
+                    }
+                });
+                localStorage.setItem(getDraftKey(), JSON.stringify(draft));
+            } catch (e) {}
+        }
+
+        function restoreDraftIfAvailable() {
+            try {
+                const savedDraftStr = localStorage.getItem(getDraftKey());
+                if (!savedDraftStr) return;
+                const draft = JSON.parse(savedDraftStr);
+                let restoredCount = 0;
+                document.querySelectorAll('.slot-card').forEach(card => {
+                    const slotIndex = card.querySelector('.input-slot-index')?.value;
+                    const slotDraft = draft[slotIndex];
+                    if (slotDraft) {
+                        const titleInput = card.querySelector('.input-lesson-title');
+                        const summaryInput = card.querySelector('.input-content-summary');
+                        const objInput = card.querySelector('.input-objectives');
+                        const hwInput = card.querySelector('.input-homework');
+                        const notesInput = card.querySelector('.input-notes');
+
+                        if (titleInput && !titleInput.value && slotDraft.lessonTitle) { titleInput.value = slotDraft.lessonTitle; restoredCount++; }
+                        if (summaryInput && !summaryInput.value && slotDraft.contentSummary) { summaryInput.value = slotDraft.contentSummary; restoredCount++; }
+                        if (objInput && !objInput.value && slotDraft.objectives) { objInput.value = slotDraft.objectives; restoredCount++; }
+                        if (hwInput && !hwInput.value && slotDraft.homework) { hwInput.value = slotDraft.homework; restoredCount++; }
+                        if (notesInput && !notesInput.value && slotDraft.notes) { notesInput.value = slotDraft.notes; restoredCount++; }
+                    }
+                });
+                if (restoredCount > 0) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'info',
+                        title: 'បានស្រង់សេចក្តីព្រាងទុកដោយស្វ័យប្រវត្តិ!',
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
+                }
+            } catch (e) {}
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            restoreDraftIfAvailable();
+            document.querySelectorAll('.slot-card input, .slot-card textarea').forEach(el => {
+                el.addEventListener('input', autoSaveDraft);
+            });
+        });
     </script>
     <script src="/js/logout-confirm.js"></script>
 </body>

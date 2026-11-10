@@ -99,6 +99,20 @@ public class VocabularyController {
             return "redirect:/login";
         }
 
+        // Strict access control: Only Sam Kimchheng or ADMIN or account with explicit permission
+        String role = (String) session.getAttribute("ACCOUNT_ROLE");
+        String username = (String) session.getAttribute("ACCOUNT_USERNAME");
+        Boolean vocabPerm = (Boolean) session.getAttribute("VOCABULARY_PERMISSION");
+        boolean allowed = Boolean.TRUE.equals(vocabPerm)
+                || "ADMIN".equalsIgnoreCase(role)
+                || Long.valueOf(97L).equals(accountId)
+                || "samkimchheng".equalsIgnoreCase(username)
+                || (teacher != null && ("samkimchheng".equalsIgnoreCase(teacher.getUsername()) || Boolean.TRUE.equals(teacher.getVocabularyPermission())));
+
+        if (!allowed) {
+            return "redirect:/?accessDenied=vocab";
+        }
+
         // Auto-seed if empty
         if (vocabularyWordRepository.countByGradeLevel(10) < 460) {
             standardVocabularySeeder.seedGrade10Vocabulary();
@@ -144,7 +158,6 @@ public class VocabularyController {
         // Student Progress Tracking under teacher supervision
         // ----------------------------------------------------
         List<Student> allStudents;
-        String role = (String) session.getAttribute("ACCOUNT_ROLE");
         boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
 
         if (isAdmin) {
@@ -341,9 +354,24 @@ public class VocabularyController {
     // ==========================================
     // 3. REST APIS FOR TEACHER
     // ==========================================
+    private boolean isAuthorizedForVocabulary() {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) return false;
+        String role = (String) session.getAttribute("ACCOUNT_ROLE");
+        String username = (String) session.getAttribute("ACCOUNT_USERNAME");
+        Boolean vocabPerm = (Boolean) session.getAttribute("VOCABULARY_PERMISSION");
+        return Boolean.TRUE.equals(vocabPerm)
+                || "ADMIN".equalsIgnoreCase(role)
+                || Long.valueOf(97L).equals(accountId)
+                || "samkimchheng".equalsIgnoreCase(username);
+    }
+
     @PostMapping("/api/vocabulary/save")
     @ResponseBody
     public ResponseEntity<?> saveWord(@RequestBody Map<String, Object> payload) {
+        if (!isAuthorizedForVocabulary()) {
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
+        }
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាគ្រូបង្រៀនជាមុនសិន!"));
@@ -400,6 +428,9 @@ public class VocabularyController {
     @PostMapping("/api/vocabulary/toggle-status")
     @ResponseBody
     public ResponseEntity<?> toggleWordStatus(@RequestParam Long id) {
+        if (!isAuthorizedForVocabulary()) {
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
+        }
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
@@ -424,6 +455,9 @@ public class VocabularyController {
     @PostMapping("/api/vocabulary/bulk-toggle")
     @ResponseBody
     public ResponseEntity<?> bulkToggleByUnit(@RequestParam String unit, @RequestParam boolean active) {
+        if (!isAuthorizedForVocabulary()) {
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
+        }
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
@@ -449,6 +483,9 @@ public class VocabularyController {
     @PostMapping("/api/vocabulary/delete")
     @ResponseBody
     public ResponseEntity<?> deleteWord(@RequestParam Long id) {
+        if (!isAuthorizedForVocabulary()) {
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
+        }
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
@@ -466,6 +503,9 @@ public class VocabularyController {
     @PostMapping("/api/vocabulary/reset-default")
     @ResponseBody
     public ResponseEntity<?> resetDefaultVocabulary() {
+        if (!isAuthorizedForVocabulary()) {
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
+        }
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));

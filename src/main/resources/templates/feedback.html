@@ -91,7 +91,7 @@
             <li class="nav-item "><a href="/statistics" class="nav-link"><span>📈</span> <span>ស្ថិតិសិស្ស</span></a></li>
             <li class="nav-item "><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
             <li class="nav-item "><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
-            <li class="nav-item"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>វាក្យសព្ទ (Vocab)</span></a></li>
+            <li class="nav-item" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN' or session.ACCOUNT_ID == 97 or session.ACCOUNT_USERNAME == 'samkimchheng' or (teacherAccount != null and (teacherAccount.username == 'samkimchheng' or teacherAccount.id == 97 or teacherAccount.vocabularyPermission == true))}"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>វាក្យសព្ទ (Vocab)</span></a></li>
             <li class="nav-item "><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
             <li class="nav-item "><a href="/daily-plan" class="nav-link"><span>📋</span> <span>សេវាប្រចាំថ្ងៃ</span></a></li>
             <li class="nav-item "><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>

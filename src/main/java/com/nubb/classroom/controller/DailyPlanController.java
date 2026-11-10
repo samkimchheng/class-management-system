@@ -91,6 +91,7 @@ public class DailyPlanController {
         }
 
         LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
         LocalDate tomorrow = today.plusDays(1);
         if (tomorrow.getDayOfWeek() == DayOfWeek.SUNDAY) {
             tomorrow = today.plusDays(2); // If tomorrow is Sunday, default to next Monday
@@ -101,10 +102,16 @@ public class DailyPlanController {
             try {
                 targetDate = LocalDate.parse(dateStr.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
             } catch (Exception e) {
-                targetDate = tomorrow;
+                targetDate = today;
             }
         } else {
-            targetDate = tomorrow;
+            // Default to today if today has logs or is a regular school day, otherwise tomorrow
+            List<DailyTeachingLog> todayLogs = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(accountId, today);
+            if (!todayLogs.isEmpty() || today.getDayOfWeek() != DayOfWeek.SUNDAY) {
+                targetDate = today;
+            } else {
+                targetDate = tomorrow;
+            }
         }
 
         DayOfWeek dow = targetDate.getDayOfWeek();
@@ -199,12 +206,21 @@ public class DailyPlanController {
         model.addAttribute("targetDate", targetDate.toString());
         model.addAttribute("targetDateKhmer", toKhmerDateString(targetDate));
         model.addAttribute("isToday", targetDate.equals(today));
-        model.addAttribute("isTomorrow", targetDate.equals(today.plusDays(1)));
+        model.addAttribute("isTomorrow", targetDate.equals(tomorrow));
+        model.addAttribute("isYesterday", targetDate.equals(yesterday));
         model.addAttribute("todayStr", today.toString());
-        model.addAttribute("tomorrowStr", today.plusDays(1).toString());
+        model.addAttribute("tomorrowStr", tomorrow.toString());
+        model.addAttribute("yesterdayStr", yesterday.toString());
         model.addAttribute("prevDateStr", targetDate.minusDays(1).toString());
         model.addAttribute("nextDateStr", targetDate.plusDays(1).toString());
         model.addAttribute("khmerDayName", khmerDay);
+
+        long todaySavedCount = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(accountId, today).size();
+        long tomorrowSavedCount = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(accountId, tomorrow).size();
+        long yesterdaySavedCount = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(accountId, yesterday).size();
+        model.addAttribute("todaySavedCount", todaySavedCount);
+        model.addAttribute("tomorrowSavedCount", tomorrowSavedCount);
+        model.addAttribute("yesterdaySavedCount", yesterdaySavedCount);
         model.addAttribute("hasTeachingSlots", !slots.isEmpty());
         model.addAttribute("slots", slots);
         model.addAttribute("teacherLessons", teacherLessons);

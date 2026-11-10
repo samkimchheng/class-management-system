@@ -40,6 +40,8 @@ public class Account {
     private String currentAcademicYear;
       // គោត្តនាម និងនាម នាយកសាលា (Principal Full Name)
 
+    private Boolean vocabularyPermission = false;
+
     public Account() {}
 
     public Account(String username, String password, String role, String fullName) {
@@ -122,4 +124,7 @@ public class Account {
 
     public String getCurrentAcademicYear() { return currentAcademicYear; }
     public void setCurrentAcademicYear(String currentAcademicYear) { this.currentAcademicYear = currentAcademicYear; }
+
+    public Boolean getVocabularyPermission() { return vocabularyPermission != null ? vocabularyPermission : false; }
+    public void setVocabularyPermission(Boolean vocabularyPermission) { this.vocabularyPermission = vocabularyPermission; }
 }

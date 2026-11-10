@@ -77,7 +77,7 @@ public class DiagnosticApiController {
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
             int deleted = stmt.executeUpdate("DELETE FROM students WHERE id >= 101 AND id <= 500");
-            try { stmt.executeUpdate("DELETE FROM students WHERE class_name = '7A' OR class_name LIKE '%7%' OR account_id = 33"); } catch (Exception ignored) {}
+            try { stmt.executeUpdate("DELETE FROM students WHERE class_name = '7A' OR class_name LIKE '%7%'"); } catch (Exception ignored) {}
             res.put("deletedOld", deleted);
 
             ResourceDatabasePopulator pop = new ResourceDatabasePopulator();
@@ -85,7 +85,7 @@ public class DiagnosticApiController {
             pop.addScript(new ClassPathResource("students_insert.sql"));
             pop.setContinueOnError(true);
             pop.execute(dataSource);
-            try { stmt.executeUpdate("DELETE FROM students WHERE class_name = '7A' OR class_name LIKE '%7%' OR account_id = 33"); } catch (Exception ignored) {}
+            try { stmt.executeUpdate("DELETE FROM students WHERE class_name = '7A' OR class_name LIKE '%7%'"); } catch (Exception ignored) {}
 
             com.nubb.classroom.config.DataInitializer.alignTableSequence(conn, "students", "id");
 

@@ -124,6 +124,7 @@ public class AdminController {
             @RequestParam(value = "teachingClasses", required = false) String teachingClasses,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "telegram", required = false) String telegram,
+            @RequestParam(value = "vocabularyPermission", required = false) Boolean vocabularyPermission,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
@@ -140,6 +141,9 @@ public class AdminController {
             if (teachingClasses != null) acc.setTeachingClasses(teachingClasses.trim());
             if (phone != null) acc.setPhone(phone.trim());
             if (telegram != null) acc.setTelegram(telegram.trim());
+            if (vocabularyPermission != null) {
+                acc.setVocabularyPermission(vocabularyPermission);
+            }
             accountRepository.save(acc);
 
             // Update session name if Admin edited their own account
@@ -220,6 +224,20 @@ public class AdminController {
         }
         accountRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("successMessage", "បានលុបគណនីដោយជោគជ័យ!");
+        return "redirect:/admin/accounts";
+    }
+
+    @PostMapping("/accounts/toggle-vocabulary/{id}")
+    public String toggleVocabularyPermission(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Optional<Account> accOpt = accountRepository.findById(id);
+        if (accOpt.isPresent()) {
+            Account acc = accOpt.get();
+            boolean current = Boolean.TRUE.equals(acc.getVocabularyPermission());
+            acc.setVocabularyPermission(!current);
+            accountRepository.save(acc);
+            String state = !current ? "បានបើកសិទ្ធិប្រើប្រាស់វាក្យសព្ទ" : "បានបិទសិទ្ធិប្រើប្រាស់វាក្យសព្ទ";
+            redirectAttributes.addFlashAttribute("successMessage", state + " សម្រាប់ «" + acc.getFullName() + "» ដោយជោគជ័យ!");
+        }
         return "redirect:/admin/accounts";
     }
 

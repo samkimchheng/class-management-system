@@ -12,6 +12,10 @@ import com.nubb.classroom.repository.AccountRepository;
 import com.nubb.classroom.repository.AttendanceRepository;
 import com.nubb.classroom.repository.CertificateRecordRepository;
 import com.nubb.classroom.repository.ExamRepository;
+import com.nubb.classroom.model.Classroom;
+import com.nubb.classroom.model.DailyTeachingLog;
+import com.nubb.classroom.repository.ClassroomRepository;
+import com.nubb.classroom.repository.DailyTeachingLogRepository;
 import com.nubb.classroom.repository.LessonRepository;
 import com.nubb.classroom.repository.QuestionRepository;
 import com.nubb.classroom.repository.ScoreRepository;
@@ -29,6 +33,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 @Configuration
 public class DataInitializer {
@@ -37,6 +43,10 @@ public class DataInitializer {
         try { stmt.execute("ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS \"ACTIVE\" BOOLEAN DEFAULT TRUE"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS account ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE account SET active = TRUE WHERE active IS NULL"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS account ADD COLUMN IF NOT EXISTS vocabulary_permission BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"ACCOUNT\" ADD COLUMN IF NOT EXISTS \"VOCABULARY_PERMISSION\" BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
+        try { stmt.execute("UPDATE account SET vocabulary_permission = TRUE WHERE username IN ('samkimchheng', 'admin') OR id IN (1, 97)"); } catch (Exception ignored) {}
+        try { stmt.execute("UPDATE \"ACCOUNT\" SET \"VOCABULARY_PERMISSION\" = TRUE WHERE \"USERNAME\" IN ('samkimchheng', 'admin') OR \"ID\" IN (1, 97)"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS exam ALTER COLUMN class_name SET DATA TYPE VARCHAR(1000)"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS reading_passage TEXT"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"READING_PASSAGE\" TEXT"); } catch (Exception ignored) {}
@@ -323,6 +333,8 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initData(AccountRepository accountRepository,
                                      StudentRepository studentRepository,
+                                     ClassroomRepository classroomRepository,
+                                     DailyTeachingLogRepository dailyTeachingLogRepository,
                                      ScoreRepository scoreRepository,
                                      ScoreRuleRepository scoreRuleRepository,
                                      CertificateRecordRepository certificateRecordRepository,
@@ -560,24 +572,24 @@ public class DataInitializer {
                 }
             } catch (Exception ignored) {}
 
-            // 7c. Clean up orphan scores, leftover test score, test classroom and test score rules for account 33
+            // 7c. Clean up orphan scores, leftover test score, test classroom and test score rules for legacy test classes
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
                 String[] cleanupQueries = {
                     "DELETE FROM score WHERE student_id NOT IN (SELECT id FROM students)",
                     "DELETE FROM \"SCORE\" WHERE student_id NOT IN (SELECT id FROM \"STUDENTS\")",
-                    "DELETE FROM attendance WHERE student_id IN (SELECT id FROM students WHERE class_name = '7A' OR class_name LIKE '%7%' OR account_id = 33)",
-                    "DELETE FROM \"ATTENDANCE\" WHERE student_id IN (SELECT id FROM \"STUDENTS\" WHERE \"CLASS_NAME\" = '7A' OR \"CLASS_NAME\" LIKE '%7%' OR \"ACCOUNT_ID\" = 33)",
-                    "DELETE FROM score WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
-                    "DELETE FROM \"SCORE\" WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
-                    "DELETE FROM classroom WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
-                    "DELETE FROM \"CLASSROOM\" WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
-                    "DELETE FROM score_rule WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
-                    "DELETE FROM \"SCORE_RULE\" WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
-                    "DELETE FROM score_rules WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
-                    "DELETE FROM \"SCORE_RULES\" WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
-                    "DELETE FROM students WHERE account_id = 33 OR class_name = '7A' OR class_name LIKE '%7%'",
-                    "DELETE FROM \"STUDENTS\" WHERE \"ACCOUNT_ID\" = 33 OR \"CLASS_NAME\" = '7A' OR \"CLASS_NAME\" LIKE '%7%'"
+                    "DELETE FROM attendance WHERE student_id IN (SELECT id FROM students WHERE class_name = '7A' OR class_name LIKE '%7%')",
+                    "DELETE FROM \"ATTENDANCE\" WHERE student_id IN (SELECT id FROM \"STUDENTS\" WHERE \"CLASS_NAME\" = '7A' OR \"CLASS_NAME\" LIKE '%7%')",
+                    "DELETE FROM score WHERE class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM \"SCORE\" WHERE class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM classroom WHERE class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM \"CLASSROOM\" WHERE class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM score_rule WHERE class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM \"SCORE_RULE\" WHERE class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM score_rules WHERE class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM \"SCORE_RULES\" WHERE class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM students WHERE class_name = '7A' OR class_name LIKE '%7%'",
+                    "DELETE FROM \"STUDENTS\" WHERE \"CLASS_NAME\" = '7A' OR \"CLASS_NAME\" LIKE '%7%'"
                 };
                 for (String q : cleanupQueries) {
                     try { stmt.executeUpdate(q); } catch (Exception ignored) {}
@@ -665,11 +677,13 @@ public class DataInitializer {
                 accountRepository.findByUsername("admin").ifPresent(a -> {
                     a.setPassword("admin@manulife%27");
                     a.setEmail("admincl@mitpukae.com");
+                    a.setVocabularyPermission(true);
                     accountRepository.save(a);
                 });
                 accountRepository.findById(1L).ifPresent(a -> {
                     a.setPassword("admin@manulife%27");
                     a.setEmail("admincl@mitpukae.com");
+                    a.setVocabularyPermission(true);
                     accountRepository.save(a);
                 });
 
@@ -681,6 +695,7 @@ public class DataInitializer {
                     acc97.setFullName("សំ គឹមឆេង");
                     acc97.setTeachingClasses("១០E, ១០F, ១០G, ១១F, ១១G");
                     acc97.setSubject("ភាសាអង់គ្លេស");
+                    acc97.setVocabularyPermission(true);
                     acc97.setSchoolName("វិទ្យាល័យ ហ៊ុន សែន ១០មករា បឹងកន្ទួត");
                     acc97.setPrincipalName("លី ប៊ុនថេង");
                     acc97.setProvince("ខេត្តពោធិ៍សាត់");
@@ -695,6 +710,8 @@ public class DataInitializer {
                     acc33.setEmail("teachercl21@mitpukae.com");
                     acc33.setFullName("ស៊ឹង សុមុនី");
                     acc33.setSubject("គណិតវិទ្យា");
+                    acc33.setTeachingClasses("៨D, ៨E");
+                    acc33.setVocabularyPermission(false);
                     acc33.setSchoolName("វិទ្យាល័យ ហ៊ុន សែន ១០មករា បឹងកន្ទួត");
                     acc33.setPrincipalName("លី ប៊ុនថេង");
                     acc33.setProvince("ខេត្តពោធិ៍សាត់");
@@ -705,7 +722,7 @@ public class DataInitializer {
                 System.err.println(">>> [DataInitializer] Notice syncing official credentials: " + e.getMessage());
             }
 
-            // Ensure classrooms for Sam Kimchheng (97)
+            // Ensure classrooms for Sam Kimchheng (97) and Seung Somuny (33)
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
                 String[] kimchhengClasses = {"១០E", "១០F", "១០G", "១១F", "១១G"};
@@ -718,13 +735,15 @@ public class DataInitializer {
                     }
                 }
 
-                // Clean up any classrooms and seeded lessons for Seung Somuny (33) to respect her privacy and deletions
-                try {
-                    stmt.execute("DELETE FROM classroom WHERE account_id = 33");
-                    stmt.execute("DELETE FROM lesson_transcript WHERE lesson_id IN (SELECT id FROM lesson WHERE account_id != 97 AND (title LIKE 'Unit%' OR title LIKE 'Grade 11%'))");
-                    stmt.execute("DELETE FROM lesson_progress WHERE lesson_id IN (SELECT id FROM lesson WHERE account_id != 97 AND (title LIKE 'Unit%' OR title LIKE 'Grade 11%'))");
-                    stmt.execute("DELETE FROM lesson WHERE account_id != 97 AND (title LIKE 'Unit%' OR title LIKE 'Grade 11%')");
-                } catch (Exception ignored) {}
+                // Ensure official classrooms for Seung Somuny (33): 8D and 8E
+                String[] somunyClasses = {"៨D", "៨E"};
+                for (String yr : years) {
+                    for (String cls : somunyClasses) {
+                        stmt.execute("INSERT INTO classroom (account_id, class_name, academic_year) " +
+                                "SELECT 33, '" + cls + "', '" + yr + "' " +
+                                "WHERE NOT EXISTS (SELECT 1 FROM classroom WHERE account_id = 33 AND class_name = '" + cls + "' AND academic_year = '" + yr + "')");
+                    }
+                }
 
                 // Ensure score rules for Seung Somuny (33)
                 stmt.execute("INSERT INTO score_rule (account_id, class_name, subject_name, max_monthly_score, max_attendance_score, max_assignment_score) " +
@@ -794,8 +813,8 @@ public class DataInitializer {
                     pop.execute(dataSource);
                     System.out.println(">>> [DataInitializer] Official students successfully seeded!");
                     try {
-                        stmt.executeUpdate("DELETE FROM students WHERE class_name = '7A' OR class_name LIKE '%7%' OR account_id = 33");
-                        stmt.executeUpdate("DELETE FROM \"STUDENTS\" WHERE \"CLASS_NAME\" = '7A' OR \"CLASS_NAME\" LIKE '%7%' OR \"ACCOUNT_ID\" = 33");
+                        stmt.executeUpdate("DELETE FROM students WHERE class_name = '7A' OR class_name LIKE '%7%'");
+                        stmt.executeUpdate("DELETE FROM \"STUDENTS\" WHERE \"CLASS_NAME\" = '7A' OR \"CLASS_NAME\" LIKE '%7%'");
                     } catch (Exception ignored) {}
 
                     try (Connection connAlign = dataSource.getConnection()) {
@@ -846,6 +865,12 @@ public class DataInitializer {
 
             // 13. Ensure Official Grade 11 Semester 2 English Exam exists
             seedEnglishExamIfMissing(examRepository, questionRepository);
+
+            // 14. Ensure Seung Somuny's (33) official 48 students for Class 8D and classrooms exist
+            seedSeungSomunyDataIfMissing(studentRepository, classroomRepository);
+
+            // 15. Ensure Sam Kimchheng's (97) daily teaching logs are preserved and seeded
+            seedSamKimchhengDailyTeachingLogsIfMissing(dailyTeachingLogRepository);
 
             // Align all table sequences for H2 and PostgreSQL so new auto-increment rows never collide with pre-seeded data
             try {
@@ -1044,5 +1069,202 @@ public class DataInitializer {
                 }
             }
         } catch (Exception ignored) {}
+    }
+
+    private void seedSeungSomunyDataIfMissing(StudentRepository studentRepository, ClassroomRepository classroomRepository) {
+        try {
+            // Ensure classrooms 8D and 8E exist
+            String[] years = {"២០២៦-២០២៧", "២០២៧-២០២៨"};
+            String[] somunyClasses = {"៨D", "៨E"};
+            for (String yr : years) {
+                for (String cls : somunyClasses) {
+                    if (!classroomRepository.existsByClassNameAndAccountIdAndAcademicYear(cls, 33L, yr)) {
+                        Classroom c = new Classroom();
+                        c.setAccountId(33L);
+                        c.setClassName(cls);
+                        c.setAcademicYear(yr);
+                        classroomRepository.save(c);
+                    }
+                }
+            }
+
+            // Ensure 48 official students of 8D exist
+            long somunyStudentsCount = studentRepository.findByClassNameAndAccountId("៨D", 33L).size();
+            if (somunyStudentsCount < 40) {
+                System.out.println(">>> [DataInitializer] Seeding official 48 students for Seung Somuny (33) - Class 8D...");
+                String[][] somuny8DStudents = {
+                    {"តាត សុភេង", "ប្រុស", "៨D-01", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"តឿង សិល័ដ្ឋ", "ប្រុស", "៨D-02", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ហាង ស៊ីវិន", "ស្រី", "៨D-03", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ឃុន សុខា", "ប្រុស", "៨D-04", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ថយ ចន្ថា", "ស្រី", "៨D-05", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ចាន់ តុលា", "ប្រុស", "៨D-06", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ជិ សៅលៀប", "ប្រុស", "៨D-07", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ឈុយ ចាន់វី", "ស្រី", "៨D-08", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ឈឿន វីរៈ", "ប្រុស", "៨D-09", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ណារ៉ា ដានិត", "ស្រី", "៨D-10", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ទ្រង់ ឈិនណារ៉ា", "ស្រី", "៨D-11", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ធឿម ដាវ៉ាន", "ស្រី", "៨D-12", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ប៊ិន ចាន់ធឿន", "ប្រុស", "៨D-13", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ប៉ុង កក្កដា", "ស្រី", "៨D-14", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"បូរ កាន់និកា", "ស្រី", "៨D-15", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"មុន តុលា", "ប្រុស", "៨D-16", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"មោ រិទ្ធិ", "ប្រុស", "៨D-17", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ម៉ី ចន្ថា", "ស្រី", "៨D-18", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"មឿន ឡានីត", "ស្រី", "៨D-19", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"រស សំណាង", "ប្រុស", "៨D-20", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"រិន សុណារ៉ា", "ប្រុស", "៨D-21", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"រុន ផែនលី", "ប្រុស", "៨D-22", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"រុន សុខចិន្តា", "ប្រុស", "៨D-23", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"លឹម វី", "ប្រុស", "៨D-24", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"វឿន សុខឃីម", "ស្រី", "៨D-25", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សុវណ្ណ ណារ៉ាកា", "ស្រី", "៨D-26", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សួន សារ៉ាត់", "ស្រី", "៨D-27", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សៀម ធីតា", "ស្រី", "៨D-28", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សៀង គុកា", "ស្រី", "៨D-29", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សេង សំបូរ", "ប្រុស", "៨D-30", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សោម សុខឃឿន", "ប្រុស", "៨D-31", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សៃ ចិន្តា", "ប្រុស", "៨D-32", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សំ កឹម សាន", "ប្រុស", "៨D-33", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សំ ឡៀងហេង", "ស្រី", "៨D-34", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ហ៊ាន ស៊ុំណារិន", "ស្រី", "៨D-35", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ហៀង កឹមលៀង", "ប្រុស", "៨D-36", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ហាង សុវណ្ណារ៉ា", "ប្រុស", "៨D-37", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ហៃ សុខា", "ប្រុស", "៨D-38", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ឡូត ឡៀង", "ប្រុស", "៨D-39", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ឡេង ចាន់ណារ៉ា", "ស្រី", "៨D-40", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"អុយ ធីរ៉ិទ្ធ", "ប្រុស", "៨D-41", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"អាន សុភនីតា", "ស្រី", "៨D-42", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"អែម សុភ័ស្ស", "ស្រី", "៨D-43", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សុខ វីសា", "ស្រី", "៨D-44", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សាំឌី ថៃម៉េង", "ប្រុស", "៨D-45", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ឈឿន ដាវិត", "ប្រុស", "៨D-46", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"ស៊ុន រ៉ាវី", "ប្រុស", "៨D-47", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"},
+                    {"សេង កឹមឌី", "ប្រុស", "៨D-48", "៨D", "២០២៦-២០២៧", "កំពុងសិក្សា"}
+                };
+                for (String[] st : somuny8DStudents) {
+                    Student s = new Student();
+                    s.setAccountId(33L);
+                    s.setName(st[0]);
+                    s.setGender(st[1]);
+                    s.setStudentCode(st[2]);
+                    s.setClassName(st[3]);
+                    s.setAcademicYear(st[4]);
+                    s.setStatus(st[5]);
+                    studentRepository.save(s);
+                }
+                System.out.println(">>> [DataInitializer] 48 students for Seung Somuny (33) seeded successfully!");
+            }
+        } catch (Exception e) {
+            System.err.println(">>> [DataInitializer] Notice seeding Seung Somuny data: " + e.getMessage());
+        }
+    }
+
+    private void seedSamKimchhengDailyTeachingLogsIfMissing(DailyTeachingLogRepository dailyTeachingLogRepository) {
+        try {
+            long existingLogsCount = dailyTeachingLogRepository.count();
+            if (existingLogsCount >= 10) {
+                return;
+            }
+
+            System.out.println(">>> [DataInitializer] Seeding official daily teaching logs for Sam Kimchheng (97)...");
+
+            String[] timeRanges = {
+                "07:00 - 08:00 ព្រឹក", // 0
+                "08:00 - 09:00 ព្រឹក", // 1
+                "09:00 - 10:00 ព្រឹក", // 2
+                "10:00 - 11:00 ព្រឹក", // 3
+                "01:00 - 02:00 រសៀល", // 4
+                "02:00 - 03:00 រសៀល", // 5
+                "03:00 - 04:00 រសៀល", // 6
+                "04:00 - 05:00 រសៀល"  // 7
+            };
+
+            Object[][] mondaySlots = {
+                {0, "10F", "Unit 3: Technology in Education", "Vocabulary & Reading: Smartphones in the Classroom", "សិស្សចេះប្រើប្រាស់ពាក្យគន្លឹះ និងយល់ន័យអត្ថបទ", "រៀនពាក្យបន្ថែម និងឆ្លើយសំណួរទំព័រ ៤២", "បង្រៀនទាន់ពេលវេលា សិស្សចូលរួមយ៉ាងសកម្ម"},
+                {1, "10F", "Unit 3: Technology in Education", "Grammar: Present Perfect vs Past Simple", "សិស្សអាចបង្កើតប្រយោគជាមួយ since/for បានត្រឹមត្រូវ", "លំហាត់ Grammar ទំព័រ ៤៤", "សិស្សអនុវត្តជាដៃគូបានល្អ"},
+                {2, "10G", "Unit 3: Technology in Education", "Reading Comprehension & Key Vocabulary", "សិស្សអានអត្ថបទ និងបកប្រែពាក្យគន្លឹះ", "អានអត្ថបទឡើងវិញនៅផ្ទះ", "បង្រៀនតាមផែនការ"},
+                {3, "10G", "Unit 3: Technology in Education", "Speaking & Pair Discussions: Digital Tools", "សិស្សអាចសន្ទនាជាក្រុមតូចៗ", "សរសេរកថាខណ្ឌខ្លី ៥ បន្ទាត់", "សិស្សចូលរួមពេញលេញ"},
+                {5, "10E", "Unit 3: Technology in Education", "Vocabulary Review & Listening Practice", "សិស្សស្តាប់ការសន្ទនា និងឆ្លើយសំណួរ True/False", "រៀនពាក្យក្នុង Unit 3", "សិស្សចាប់អារម្មណ៍ខ្លាំង"},
+                {6, "10E", "Unit 3: Technology in Education", "Writing: Short Paragraph on Technology", "សិស្សសរសេរប្រយោគ និងកថាខណ្ឌខ្លី", "បំពេញសេចក្តីព្រាងកថាខណ្ឌ", "កែលម្អការសរសេររបស់សិស្ស"}
+            };
+
+            Object[][] tuesdaySlots = {
+                {0, "11F", "Unit 4: The Natural World", "Reading: Biodiversity and Ecosystems in Cambodia", "សិស្សយល់ដឹងពីការការពារបរិស្ថាន និងពាក្យបច្ចេកទេស", "កត់ត្រាគំនិតការពារព្រៃឈើ", "សិស្សឆ្លើយសំណួរបានល្អ"},
+                {1, "11F", "Unit 4: The Natural World", "Grammar: Passive Voice in Scientific Descriptions", "សិស្សចេះបំប្លែង Active ទៅ Passive Voice", "លំហាត់ទំព័រ ៥៦", "ពន្យល់ក្បួនវេយ្យាករណ៍យ៉ាងក្បោះក្បាយ"},
+                {2, "11G", "Unit 4: The Natural World", "Vocabulary & Reading: Wildlife Conservation", "សិស្សចេះវិភាគអត្ថបទ និងរកគំនិតសំខាន់", "រៀនពាក្យថ្មីៗ ៨ ពាក្យ", "ដំណើរការបង្រៀនរលូនល្អ"},
+                {3, "11G", "Unit 4: The Natural World", "Discussion & Presentation: Protecting Forests", "សិស្សជជែកពិភាក្សា និងបញ្ចេញមតិយោបល់", "រៀបចំប្រធានបទសប្តាហ៍ក្រោយ", "សិស្សមានភាពក្លាហានក្នុងការនិយាយ"}
+            };
+
+            Object[][] wednesdaySlots = {
+                {0, "10E", "Unit 4: Future Careers & Skills", "Vocabulary: Emerging 21st-Century Careers", "សិស្សស្គាល់មុខរបរ និងជំនាញអនាគត", "សរសេរពីមុខរបរដែលខ្លួនស្រឡាញ់", "បង្រៀនទាន់ពេល"},
+                {1, "10E", "Unit 4: Future Careers & Skills", "Grammar: Modals of Obligation & Advice (must, should)", "សិស្សប្រើប្រាស់ should, must, have to បានត្រឹមត្រូវ", "លំហាត់វេយ្យាករណ៍ទំព័រ ៥០", "សិស្សយល់ច្បាស់"},
+                {2, "10F", "Unit 4: Future Careers & Skills", "Listening & Role-play: Job Interviews", "សិស្សចេះឆ្លើយសំណួរសម្ភាសន៍ជាភាសាអង់គ្លេស", "អនុវត្តសន្ទនាជាមួយដៃគូ", "ថ្នាក់រៀនមានភាពរស់រវើក"},
+                {3, "10F", "Unit 4: Future Careers & Skills", "Writing: Professional Cover Email", "សិស្សចេះសរសេរ Email ស្នើសុំការងារ", "សរសេរ Email ផ្ញើជូនគ្រូ", "ផ្ទៀងផ្ទាត់ទម្រង់លិខិត"}
+            };
+
+            Object[][] thursdaySlots = {
+                {0, "11G", "Unit 5: Science and Innovation", "Reading: Great Innovations that Changed Society", "សិស្សស្គាល់ការច្នៃប្រឌិត និងការស្រាវជ្រាវ", "រកព័ត៌មានពីការបង្កើត Internet", "ខ្លឹមសារទាក់ទាញ"},
+                {1, "11G", "Unit 5: Science and Innovation", "Grammar: Relative Clauses (who, which, that)", "សិស្សចេះភ្ជាប់ប្រយោគជាមួយ Relative Pronouns", "លំហាត់ទំព័រ ៦៨", "សិស្សធ្វើលំហាត់បានច្រើន"},
+                {2, "11F", "Unit 5: Science and Innovation", "Reading: Artificial Intelligence in Healthcare", "សិស្សយល់ពីអត្ថប្រយោជន៍នៃ AI", "រៀនពាក្យគន្លឹះ AI", "សិស្សជជែកច្រើន"},
+                {3, "11F", "Unit 5: Science and Innovation", "Writing: Argumentative Essay Outline", "សិស្សចេះរៀបចំ Outline អត្ថបទ", "បំពេញ Outline", "សិស្សផ្តោតអារម្មណ៍ល្អ"}
+            };
+
+            Object[][] fridaySlots = {
+                {5, "10G", "Unit 4: Future Careers & Skills", "Review & Vocabulary Quiz", "វាស់ស្ទង់ចំណេះដឹងពាក្យសព្ទរបស់សិស្ស", "មើលមេរៀនឡើងវិញ", "លទ្ធផល Quiz ល្អ"},
+                {6, "10G", "Unit 4: Future Careers & Skills", "Speaking: My Dream Job Short Presentations", "សិស្សឡើងធ្វើបទបង្ហាញខ្លីមុខថ្នាក់", "កត់ត្រាចំណុចខ្វះខាត", "បរិយាកាសរីករាយ"}
+            };
+
+            LocalDate now = LocalDate.now();
+            LocalDate mondayThisWeek = now.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+            LocalDate[] targetMondays = { mondayThisWeek.minusWeeks(1), mondayThisWeek };
+
+            for (LocalDate baseMon : targetMondays) {
+                Map<java.time.DayOfWeek, Object[][]> map = new LinkedHashMap<>();
+                map.put(java.time.DayOfWeek.MONDAY, mondaySlots);
+                map.put(java.time.DayOfWeek.TUESDAY, tuesdaySlots);
+                map.put(java.time.DayOfWeek.WEDNESDAY, wednesdaySlots);
+                map.put(java.time.DayOfWeek.THURSDAY, thursdaySlots);
+                map.put(java.time.DayOfWeek.FRIDAY, fridaySlots);
+
+                for (Map.Entry<java.time.DayOfWeek, Object[][]> entry : map.entrySet()) {
+                    int dayOffset = entry.getKey().getValue() - java.time.DayOfWeek.MONDAY.getValue();
+                    LocalDate logDate = baseMon.plusDays(dayOffset);
+                    String dowKhmer = com.nubb.classroom.controller.DailyPlanController.getKhmerDayName(entry.getKey());
+
+                    for (Object[] row : entry.getValue()) {
+                        int slotIdx = (Integer) row[0];
+                        String cls = (String) row[1];
+                        String title = (String) row[2];
+                        String content = (String) row[3];
+                        String obj = (String) row[4];
+                        String hw = (String) row[5];
+                        String notes = (String) row[6];
+
+                        if (dailyTeachingLogRepository.findByAccountIdAndLogDateAndSlotIndex(97L, logDate, slotIdx).isEmpty()) {
+                            DailyTeachingLog l = new DailyTeachingLog();
+                            l.setAccountId(97L);
+                            l.setAcademicYear("២០២៦-២០២៧");
+                            l.setLogDate(logDate);
+                            l.setDayOfWeek(dowKhmer);
+                            l.setSlotIndex(slotIdx);
+                            l.setPeriodNumber(slotIdx + 1);
+                            l.setTimeRange(timeRanges[slotIdx]);
+                            l.setClassName(cls);
+                            l.setSubjectName("ភាសាអង់គ្លេស");
+                            l.setLessonTitle(title);
+                            l.setContentSummary(content);
+                            l.setObjectives(obj);
+                            l.setHomework(hw);
+                            l.setNotes(notes);
+                            dailyTeachingLogRepository.save(l);
+                        }
+                    }
+                }
+            }
+            System.out.println(">>> [DataInitializer] Official daily teaching logs for Sam Kimchheng (97) seeded successfully!");
+        } catch (Exception e) {
+            System.err.println(">>> [DataInitializer] Notice seeding daily teaching logs: " + e.getMessage());
+        }
     }
 }

@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -552,14 +553,16 @@ class ClassroomApplicationTests {
 
         // Clean up test students so DB remains clean
         studentRepository.deleteAll(students8E);
-        List<Student> students8D = studentRepository.findByClassNameAndAccountIdAndAcademicYear("ថ្នាក់ទី៨D", somuny.getId(), "២០២៦-២០២៧");
-        if (students8D != null) studentRepository.deleteAll(students8D);
     }
 
     @Test
     void testDailyPlanWorkflowAndScheduleIntegration() throws Exception {
         Account kimchheng = accountRepository.findByUsername("samkimchheng").orElse(null);
         assertNotNull(kimchheng);
+
+        // Clear test date 2026-11-11 so workflow tests clean saving
+        var oldLogs = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(kimchheng.getId(), LocalDate.parse("2026-11-11"));
+        dailyTeachingLogRepository.deleteAll(oldLogs);
 
         // 1. GET /daily-plan for Wednesday (2026-11-11)
         // Sam Kimchheng has 4 hours on Wednesday: 10G, 11G, 10F, 11F
@@ -709,5 +712,24 @@ class ClassroomApplicationTests {
 
         // Clean up progress created for testStudent
         studentVocabularyProgressRepository.delete(progOpt.get());
+
+        // 8. Verify Unauthorized teacher (Seung Somuny) cannot access /vocabulary or APIs
+        Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(somuny);
+        mockMvc.perform(get("/vocabulary")
+                .sessionAttr("ACCOUNT_ID", somuny.getId())
+                .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
+                .sessionAttr("ACCOUNT_NAME", somuny.getFullName()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/?accessDenied=vocab"));
+
+        mockMvc.perform(post("/api/vocabulary/toggle-status")
+                .param("id", testWordId.toString())
+                .sessionAttr("ACCOUNT_ID", somuny.getId()))
+                .andExpect(status().isForbidden());
+
+        // 9. Verify Seung Somuny's Class 8D and 48 students are intact
+        List<Student> somuny8D = studentRepository.findByClassNameAndAccountId("៨D", somuny.getId());
+        assertEquals(48, somuny8D.size());
     }
 }
