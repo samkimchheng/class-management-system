@@ -32,7 +32,7 @@ public class DiagnosticApiController {
         try (Connection conn = dataSource.getConnection()) {
             res.put("dbProduct", conn.getMetaData().getDatabaseProductName());
             res.put("dbVersion", conn.getMetaData().getDatabaseProductVersion());
-            res.put("dbUrl", conn.getMetaData().getURL());
+            res.put("dbStatus", "CONNECTED");
         } catch (Exception e) {
             res.put("dbError", e.toString());
         }
