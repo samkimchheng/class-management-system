@@ -313,8 +313,44 @@ public class DailyPlanController {
 
         try {
             LocalDate date = LocalDate.parse(dateStr.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
-            dailyTeachingLogRepository.deleteByAccountIdAndLogDate(accountId, date);
-            return ResponseEntity.ok(Map.of("success", true, "message", "បានលុបសេវាប្រចាំថ្ងៃកាលបរិច្ឆេទ " + dateStr + " រួចរាល់!"));
+            List<DailyTeachingLog> logs = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(accountId, date);
+            if (!logs.isEmpty()) {
+                dailyTeachingLogRepository.deleteAll(logs);
+            }
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "បានលុបកំណត់ត្រាសេវាប្រចាំថ្ងៃសម្រាប់ " + toKhmerDateString(date) + " ដោយជោគជ័យ!"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "កំហុស៖ " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/daily-plan/delete-slot")
+    @ResponseBody
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> deleteDailyPlanSlot(
+            @RequestParam(value = "id", required = false) Long id,
+            @RequestParam(value = "date", required = false) String dateStr,
+            @RequestParam(value = "slotIndex", required = false) Integer slotIndex) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
+        }
+
+        try {
+            if (id != null) {
+                dailyTeachingLogRepository.findById(id).ifPresent(l -> {
+                    if (accountId.equals(l.getAccountId())) {
+                        dailyTeachingLogRepository.delete(l);
+                    }
+                });
+            } else if (dateStr != null && slotIndex != null) {
+                LocalDate date = LocalDate.parse(dateStr.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+                dailyTeachingLogRepository.findByAccountIdAndLogDateAndSlotIndex(accountId, date, slotIndex)
+                        .ifPresent(dailyTeachingLogRepository::delete);
+            }
+            return ResponseEntity.ok(Map.of("success", true, "message", "បានសម្អាត និងលុបម៉ោងបង្រៀននេះដោយជោគជ័យ!"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "កំហុស៖ " + e.getMessage()));
         }

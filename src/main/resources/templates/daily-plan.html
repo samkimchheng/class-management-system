@@ -643,6 +643,9 @@
                     <button type="button" onclick="saveAllDailyPlan()" class="btn-plan btn-plan-success">
                         <span>💾 រក្សាទុកទាំងអស់</span>
                     </button>
+                    <button th:if="${completedSlots > 0}" type="button" onclick="deleteCurrentDayPlan()" class="btn-plan" style="color: #ffffff; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.35); cursor: pointer;" title="លុបកំណត់ត្រាសេវាប្រចាំថ្ងៃសម្រាប់ថ្ងៃនេះ">
+                        <span>🗑️ លុបថ្ងៃនេះ</span>
+                    </button>
                 </div>
             </div>
 
@@ -730,6 +733,10 @@
                             <span th:unless="${slot.hasSaved}" class="slot-status-pill status-draft">✏️ មិនទាន់កត់ត្រា</span>
                             <button type="button" class="quick-pick-btn" th:attr="onclick='openLessonPicker(' + ${slot.slotIndex} + ')'">
                                 <span>📖 ជ្រើសមេរៀនខ្ញុំ</span>
+                            </button>
+                            <button type="button" class="quick-pick-btn" style="background: #fee2e2; color: #dc2626; border-color: #fecaca;"
+                                    th:attr="onclick='clearSlotInputs(' + ${slot.slotIndex} + ')'" title="សម្អាតខ្លឹមសារម៉ោងនេះ">
+                                <span>🧹 សម្អាត</span>
                             </button>
                         </div>
                     </div>
@@ -851,10 +858,20 @@
                                 </td>
                                 <td style="color: #475569; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                                     th:text="${entry.value[0].lessonTitle != null and !entry.value[0].lessonTitle.isEmpty() ? entry.value[0].lessonTitle : entry.value[0].contentSummary}">ខ្លឹមសារ...</td>
-                                <td style="text-align: right;">
-                                    <a th:href="@{/daily-plan(date=${entry.key})}" class="btn-plan btn-plan-outline" style="padding: 4px 10px; font-size: 0.8rem;">
+                                <td style="text-align: right; white-space: nowrap;">
+                                    <a th:href="@{/daily-plan(date=${entry.key})}" class="btn-plan btn-plan-outline" style="padding: 4px 10px; font-size: 0.8rem; margin-right: 4px;">
                                         <span>👁️ មើល / កែប្រែ</span>
                                     </a>
+                                    <button type="button" class="btn-plan"
+                                            th:data-date="${entry.key}"
+                                            th:data-khmer="${entry.value[0].dayOfWeek}"
+                                            th:data-hours="${entry.value.size()}"
+                                            onclick="deleteHistoryDate(this.getAttribute('data-date'), this.getAttribute('data-khmer'), this.getAttribute('data-hours'))"
+                                            style="padding: 4px 10px; font-size: 0.8rem; color: #dc2626; border: 1px solid #fecaca; background: #fee2e2; cursor: pointer; border-radius: 8px; font-weight: 700; transition: background 0.2s;"
+                                            onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'"
+                                            title="លុបកំណត់ត្រាសេវាប្រចាំថ្ងៃសម្រាប់កាលបរិច្ឆេទនេះ">
+                                        <span>🗑️ លុប</span>
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
@@ -1200,6 +1217,118 @@
                     });
                 }
             } catch (e) {}
+        }
+
+        // Delete a specific date from history
+        function deleteHistoryDate(dateStr, dayKhmer, hours) {
+            Swal.fire({
+                title: 'លុបសេវាប្រចាំថ្ងៃ?',
+                html: `តើអ្នកពិតជាចង់លុបកំណត់ត្រាសេវាប្រចាំថ្ងៃ <b>ថ្ងៃ${dayKhmer} (${dateStr})</b> ចំនួន <b>${hours} ម៉ោង</b> នេះមែនទេ?<br><span style="color: #ef4444; font-size: 0.88rem;">(ទិន្នន័យផ្សេងទៀតរបស់លោកគ្រូ-អ្នកគ្រូ នឹងមិនរងផលប៉ះពាល់ឡើយ)</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'បាទ/ចាស លុបចេញ',
+                cancelButtonText: 'បោះបង់'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'កំពុងលុប...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    try {
+                        const res = await fetch(`/api/daily-plan/delete-day?date=${encodeURIComponent(dateStr)}`, {
+                            method: 'POST'
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            try {
+                                localStorage.removeItem(`DAILY_PLAN_DRAFT_${dateStr}`);
+                            } catch (e) {}
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'បានលុបរួចរាល់!',
+                                text: data.message || 'បានលុបសេវាប្រចាំថ្ងៃដោយជោគជ័យ!',
+                                timer: 1600,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'មិនអាចលុបបានទេ!',
+                                text: data.message || 'មានបញ្ហាបច្ចេកទេសក្នុងការលុបទិន្នន័យ'
+                            });
+                        }
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'កំហុសបច្ចេកទេស!',
+                            text: e.message
+                        });
+                    }
+                }
+            });
+        }
+
+        // Delete currently active day's plan
+        function deleteCurrentDayPlan() {
+            const targetDate = document.getElementById('targetDateInput')?.value;
+            if (!targetDate) return;
+            deleteHistoryDate(targetDate, '', '');
+        }
+
+        // Clear and delete a single slot/period
+        function clearSlotInputs(slotIdx) {
+            const card = document.querySelector(`.slot-card[data-slot="${slotIdx}"]`);
+            if (!card) return;
+            Swal.fire({
+                title: 'សម្អាតខ្លឹមសារម៉ោងនេះ?',
+                text: 'តើអ្នកចង់សម្អាតខ្លឹមសារ និងកំណត់ត្រាក្នុងម៉ោងនេះមែនទេ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'សម្អាត',
+                cancelButtonText: 'បោះបង់'
+            }).then(async (res) => {
+                if (res.isConfirmed) {
+                    const titleInput = card.querySelector('.input-lesson-title');
+                    const summaryInput = card.querySelector('.input-content-summary');
+                    const objInput = card.querySelector('.input-objectives');
+                    const hwInput = card.querySelector('.input-homework');
+                    const notesInput = card.querySelector('.input-notes');
+
+                    if (titleInput) titleInput.value = '';
+                    if (summaryInput) summaryInput.value = '';
+                    if (objInput) objInput.value = '';
+                    if (hwInput) hwInput.value = '';
+                    if (notesInput) notesInput.value = '';
+
+                    const targetDate = document.getElementById('targetDateInput')?.value;
+                    if (targetDate) {
+                        try {
+                            await fetch(`/api/daily-plan/delete-slot?date=${encodeURIComponent(targetDate)}&slotIndex=${slotIdx}`, {
+                                method: 'POST'
+                            });
+                        } catch (e) {}
+                    }
+
+                    autoSaveDraft();
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'បានសម្អាតខ្លឹមសារម៉ោងនេះរួចរាល់!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {

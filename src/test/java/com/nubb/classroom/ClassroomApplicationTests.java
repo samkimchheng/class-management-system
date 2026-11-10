@@ -606,7 +606,26 @@ class ClassroomApplicationTests {
         assertEquals("10G", logs.get(0).getClassName());
         assertEquals("Unit 4: Grammar Practice", logs.get(1).getLessonTitle());
 
-        // 4. Verify homepage dashboard has tomorrow daily plan model attributes
+        // 4. Test delete single slot
+        mockMvc.perform(post("/api/daily-plan/delete-slot")
+                .param("date", "2026-11-11")
+                .param("slotIndex", "1")
+                .sessionAttr("ACCOUNT_ID", kimchheng.getId()))
+                .andExpect(status().isOk());
+
+        var logsAfterSlotDelete = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(kimchheng.getId(), LocalDate.parse("2026-11-11"));
+        assertEquals(1, logsAfterSlotDelete.size());
+
+        // 5. Test delete entire day
+        mockMvc.perform(post("/api/daily-plan/delete-day")
+                .param("date", "2026-11-11")
+                .sessionAttr("ACCOUNT_ID", kimchheng.getId()))
+                .andExpect(status().isOk());
+
+        var logsAfterDayDelete = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(kimchheng.getId(), LocalDate.parse("2026-11-11"));
+        assertEquals(0, logsAfterDayDelete.size());
+
+        // 6. Verify homepage dashboard has tomorrow daily plan model attributes
         mockMvc.perform(get("/")
                 .sessionAttr("ACCOUNT_ID", kimchheng.getId())
                 .sessionAttr("ACCOUNT_ROLE", kimchheng.getRole())
@@ -615,9 +634,6 @@ class ClassroomApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("tomorrowDateStr"))
                 .andExpect(model().attributeExists("tomorrowClasses"));
-
-        // Clean up test logs
-        dailyTeachingLogRepository.deleteAll(logs);
     }
 
     @Test
