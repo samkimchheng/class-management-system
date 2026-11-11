@@ -118,6 +118,7 @@ public class ExamApiController {
         exam.setSection4Instruction(payload.getSection4Instruction());
         exam.setWritingPrompt(payload.getWritingPrompt());
         exam.setWritingMaxPoints(payload.getWritingMaxPoints());
+        exam.setExamImagesJson(payload.getExamImagesJson());
         if (payload.getOpenClasses() != null) {
             exam.setOpenClasses(payload.getOpenClasses());
         } else if (exam.getOpenClasses() == null) {
@@ -419,6 +420,10 @@ public class ExamApiController {
         private String section4Instruction;
         private String writingPrompt;
         private Integer writingMaxPoints;
+        private String examImagesJson;
+
+        public String getExamImagesJson() { return examImagesJson; }
+        public void setExamImagesJson(String examImagesJson) { this.examImagesJson = examImagesJson; }
 
         public String getSection4Title() { return section4Title; }
         public void setSection4Title(String section4Title) { this.section4Title = section4Title; }

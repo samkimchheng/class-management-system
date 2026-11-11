@@ -364,6 +364,12 @@
                         <button type="button" class="btn" id="btnPrintMathExam" onclick="printMathExamSheet()" style="display: none; background: #334155; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
                             <span>🖨️ បោះពុម្ពក្រដាសវិញ្ញាសា</span>
                         </button>
+                        <button type="button" class="btn" id="btnLoadPhysicsSample" onclick="loadPhysicsSampleChooser()" style="display: none; background: #0e7490; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
+                            <span>📥 ផ្ទុកគំរូវិញ្ញាសារូបវិទ្យាស្តង់ដា</span>
+                        </button>
+                        <button type="button" class="btn" id="btnPrintPhysicsExam" onclick="printPhysicsExamSheet()" style="display: none; background: #334155; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
+                            <span>🖨️ បោះពុម្ពក្រដាសវិញ្ញាសា</span>
+                        </button>
                         <button type="button" class="btn" id="btnLoadEnglishSample" onclick="loadMoeyseGrade11Sample()" style="background: #047857; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 6px;">
                             <span>📥 ផ្ទុកគំរូវិញ្ញាសាអង់គ្លេសថ្នាក់ទី១១</span>
                         </button>
@@ -676,6 +682,170 @@
                 </div>
             </div>
 
+            <!-- Physics Standard 4-Section Container (MoEYS Standard + Image Upload) -->
+            <div id="section-physics-container" style="display: none;">
+                <!-- Live Total Points Banner -->
+                <div style="background: linear-gradient(135deg, #ecfeff, #cffafe); border: 1.5px solid #67e8f9; border-radius: 12px; padding: 14px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+                    <div>
+                        <span style="font-weight: 700; color: #164e63; font-size: 1.05rem;">⚡ គម្រូវិញ្ញាសាស្តង់ដារូបវិទ្យា (ពិន្ទុសរុប):</span>
+                        <span id="physicsTotalPointsDisplay" style="color: #0e7490; font-size: 1.4rem; font-weight: 800; margin-left: 6px;">70</span>
+                        <span style="font-weight: 700; color: #155e75; font-size: 1rem;"> ពិន្ទុ</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; font-size: 0.85rem; font-weight: 600; flex-wrap: wrap;">
+                        <span id="physicsBadgeSec1Pill" style="background: #ffffff; color: #0e7490; padding: 5px 12px; border-radius: 20px; border: 1px solid #a5f3fc;">មេកានិច៖ 15 ពិន្ទុ</span>
+                        <span id="physicsBadgeSec2Pill" style="background: #f0fdfa; color: #0d9488; padding: 5px 12px; border-radius: 20px; border: 1px solid #99f6e4;">ទែម៉ូ/អុបទិក៖ 15 ពិន្ទុ</span>
+                        <span id="physicsBadgeSec3Pill" style="background: #f5f3ff; color: #7c3aed; padding: 5px 12px; border-radius: 20px; border: 1px solid #ddd6fe;">អគ្គិសនី៖ 15 ពិន្ទុ</span>
+                        <span id="physicsBadgeSec4Pill" style="background: #fff1f2; color: #e11d48; padding: 5px 12px; border-radius: 20px; border: 1px solid #fecdd3;">ដោះស្រាយលម្អិត៖ 25 ពិន្ទុ</span>
+                    </div>
+                </div>
+
+                <!-- Physics Quick Symbol Helper Toolbar -->
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-right: 4px;">⚛️ និមិត្តសញ្ញារូបវិទ្យា (ចុចដើម្បីបញ្ចូល):</span>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('Ω')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">Ω</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('μ')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">μ</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('λ')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">λ</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('Δ')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">Δ</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('θ')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">θ</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('ρ')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">ρ</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('η')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">η</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('²')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">x²</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('³')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">x³</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('√')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">√</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('π')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">π</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('°')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">°</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('±')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">±</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('×')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">×</button>
+                    <button type="button" class="phys-sym-btn" onclick="insertPhysicsSymbol('→')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">→</button>
+                </div>
+
+                <!-- Physics Exam Image & Diagram Uploader Card -->
+                <div class="exam-section" style="border-left-color: #0e7490; background: #f0f9ff;" id="physicsImageUploadSection">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 1.08rem; color: #0c4a6e; font-weight: 700;">📷 បញ្ចូលទិន្នន័យជារូបភាព (ដ្យាក្រាម សៀគ្វី ឬសន្លឹកវិញ្ញាសា)</h4>
+                            <div style="font-size: 0.85rem; color: #475569; margin-top: 2px;">អាច Upload រូបភាព ១ ឬច្រើនសន្លឹក (PNG, JPG, WEBP) ដើម្បីឱ្យសិស្សមើល និងបោះពុម្ពភ្ជាប់ជាមួយវិញ្ញាសា</div>
+                        </div>
+                        <div class="phys-img-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <input type="file" id="physicsImageUploadInput" accept="image/png,image/jpeg,image/webp,image/*" multiple style="display: none;" onchange="handlePhysicsImageFiles(this.files); this.value='';">
+                            <button type="button" onclick="document.getElementById('physicsImageUploadInput').click()" style="background: #0e7490; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer; font-size: 0.9rem;">📤 Upload រូបភាព</button>
+                        </div>
+                    </div>
+                    <div id="physicsImagesPreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 10px;"></div>
+                </div>
+
+                <!-- Optional Constants / Formula Sheet -->
+                <div class="exam-section" style="border-left-color: #64748b;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: #334155; font-weight: 700;">📌 រូបមន្ត និងតម្លៃថេររូបវិទ្យាជំនួយ (ស្រេចចិត្ត)</h4>
+                    <textarea id="physicsFormulaNote" class="form-control" rows="3" style="width: 100%; font-family: inherit; font-size: 0.96rem; line-height: 1.65;" placeholder="ឧ. g = 10 m/s², c = 3 × 10⁸ m/s, U = R·I, P = U·I ... (អាចទុកទទេប្រសិនបើមិនចាំបាច់)"></textarea>
+                </div>
+
+                <!-- Section I: Mechanics & Energy -->
+                <div class="exam-section" style="border-left-color: #0e7490;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #164e63; font-weight: 700;">ផ្នែក I៖ មេកានិច និងថាមពល</h4>
+                            <span id="physicsBadgeSec1Summary" style="background: #ecfeff; color: #0e7490; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #a5f3fc;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #ecfeff; border: 1.5px solid #67e8f9; padding: 6px 14px; border-radius: 8px;">
+                            <label for="physicsSec1MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #155e75; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="physicsSec1MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #164e63; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #06b6d4; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updatePhysicsSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #155e75; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="physicsSec1Title" class="form-control" style="width: 100%;" value="I. មេកានិច និងថាមពល៖">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="physicsSec1Instruction" class="form-control" style="width: 100%;" value="ចូរគណនា និងជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖">
+                    </div>
+                    <div id="physicsMechanicsContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addPhysicsMechanicsQuestion()" style="margin-top: 8px; background: #0e7490; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរមេកានិច</button>
+                </div>
+
+                <!-- Section II: Thermodynamics, Waves & Optics -->
+                <div class="exam-section" style="border-left-color: #0d9488;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #0f766e; font-weight: 700;">ផ្នែក II៖ ទែម៉ូឌីណាមិក រលក និងអុបទិក</h4>
+                            <span id="physicsBadgeSec2Summary" style="background: #f0fdfa; color: #0d9488; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #99f6e4;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #f0fdfa; border: 1.5px solid #99f6e4; padding: 6px 14px; border-radius: 8px;">
+                            <label for="physicsSec2MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #0f766e; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="physicsSec2MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #0f766e; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #14b8a6; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updatePhysicsSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #0f766e; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="physicsSec2Title" class="form-control" style="width: 100%;" value="II. ទែម៉ូឌីណាមិក រលក និងអុបទិក៖">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="physicsSec2Instruction" class="form-control" style="width: 100%;" value="ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖">
+                    </div>
+                    <div id="physicsOpticsContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addPhysicsOpticsQuestion()" style="margin-top: 8px; background: #0d9488; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរទែម៉ូ/អុបទិក</button>
+                </div>
+
+                <!-- Section III: Electricity & Magnetism -->
+                <div class="exam-section" style="border-left-color: #7c3aed;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #6d28d9; font-weight: 700;">ផ្នែក III៖ អគ្គិសនី និងអេឡិចត្រូម៉ាញេទិក</h4>
+                            <span id="physicsBadgeSec3Summary" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #ddd6fe;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #f5f3ff; border: 1.5px solid #ddd6fe; padding: 6px 14px; border-radius: 8px;">
+                            <label for="physicsSec3MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #6d28d9; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="physicsSec3MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #6d28d9; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #8b5cf6; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updatePhysicsSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #6d28d9; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="physicsSec3Title" class="form-control" style="width: 100%;" value="III. អគ្គិសនី និងអេឡិចត្រូម៉ាញេទិក៖">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="physicsSec3Instruction" class="form-control" style="width: 100%;" value="ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖">
+                    </div>
+                    <div id="physicsElectricityContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addPhysicsElectricityQuestion()" style="margin-top: 8px; background: #7c3aed; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរអគ្គិសនី</button>
+                </div>
+
+                <!-- Section IV: Detailed Problem Solving -->
+                <div class="exam-section" style="border-left-color: #e11d48;" id="section-physics-writing">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; color: #be123c; font-size: 1.15rem; margin: 0;">
+                            <input type="checkbox" id="physicsWritingEnabled" onchange="togglePhysicsWritingSection()" style="width: 20px; height: 20px; cursor: pointer;" checked>
+                            <span>ផ្នែក IV៖ លំហាត់អនុវត្ត និងដោះស្រាយលម្អិត (សំណួរសរសេរ)</span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #fff1f2; border: 1.5px solid #fecdd3; padding: 6px 14px; border-radius: 8px;">
+                            <label for="physicsWritingMaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #be123c; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="physicsWritingMaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #be123c; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #f43f5e; border-radius: 6px; padding: 4px 6px;" value="25" min="1" max="100" oninput="updatePhysicsSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #be123c; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+
+                    <div id="physicsWritingContent" style="display: block;">
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                            <input type="text" id="physicsSec4Title" class="form-control" style="width: 100%;" value="IV. លំហាត់អនុវត្ត និងដោះស្រាយលម្អិត៖">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                            <input type="text" id="physicsSec4Instruction" class="form-control" style="width: 100%;" value="ចូរសរសេររបៀបដោះស្រាយលម្អិត (រូបមន្ត ការជំនួសលេខ និងខ្នាតត្រឹមត្រូវ)៖">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ប្រធានលំហាត់រូបវិទ្យា (Problem Solving Prompt)</label>
+                            <textarea id="physicsWritingPrompt" class="form-control" rows="5" style="width: 100%; font-family: inherit; font-size: 0.98rem; line-height: 1.65;" placeholder="ឧ. ១. រេស៊ីស្តង់ R = 20 Ω តភ្ជាប់នឹងប្រភព U = 12 V ... (អាចភ្ជាប់រូបភាពខាងលើបាន)"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- English 3-Section Container -->
             <div id="section-english-container" style="display: none;">
 
@@ -904,30 +1074,108 @@
             const isEnglish = (subject === 'ភាសាអង់គ្លេស');
             const isKhmer = (subject === 'ភាសាខ្មែរ');
             const isMath = (subject === 'គណិតវិទ្យា');
+            const isPhysics = (subject === 'រូបវិទ្យា');
             const enContainer = document.getElementById('section-english-container');
             const khContainer = document.getElementById('section-khmer-container');
             const mathContainer = document.getElementById('section-math-container');
+            const physContainer = document.getElementById('section-physics-container');
             const genContainer = document.getElementById('section-general');
             const btnEnSample = document.getElementById('btnLoadEnglishSample');
             const btnKhSample = document.getElementById('btnLoadKhmerSample');
             const btnKhPrint = document.getElementById('btnPrintKhmerExam');
             const btnMathSample = document.getElementById('btnLoadMathSample');
             const btnMathPrint = document.getElementById('btnPrintMathExam');
+            const btnPhysSample = document.getElementById('btnLoadPhysicsSample');
+            const btnPhysPrint = document.getElementById('btnPrintPhysicsExam');
 
             if (enContainer) enContainer.style.display = isEnglish ? 'block' : 'none';
             if (khContainer) khContainer.style.display = isKhmer ? 'block' : 'none';
             if (mathContainer) mathContainer.style.display = isMath ? 'block' : 'none';
-            if (genContainer) genContainer.style.display = (!isEnglish && !isKhmer && !isMath) ? 'block' : 'none';
+            if (physContainer) physContainer.style.display = isPhysics ? 'block' : 'none';
+            if (genContainer) genContainer.style.display = (!isEnglish && !isKhmer && !isMath && !isPhysics) ? 'block' : 'none';
 
             if (btnEnSample) btnEnSample.style.display = isEnglish ? 'inline-flex' : 'none';
             if (btnKhSample) btnKhSample.style.display = isKhmer ? 'inline-flex' : 'none';
             if (btnKhPrint) btnKhPrint.style.display = isKhmer ? 'inline-flex' : 'none';
             if (btnMathSample) btnMathSample.style.display = isMath ? 'inline-flex' : 'none';
             if (btnMathPrint) btnMathPrint.style.display = isMath ? 'inline-flex' : 'none';
+            if (btnPhysSample) btnPhysSample.style.display = isPhysics ? 'inline-flex' : 'none';
+            if (btnPhysPrint) btnPhysPrint.style.display = isPhysics ? 'inline-flex' : 'none';
 
             if (isEnglish) updateEnSummaryBadges();
             else if (isKhmer) updateKhSummaryBadges();
             else if (isMath) updateMathSummaryBadges();
+            else if (isPhysics) updatePhysicsSummaryBadges();
+        }
+
+        function compressExamImageFile(file, maxWidth = 1280, quality = 0.84) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = reject;
+                reader.onload = (ev) => {
+                    const rawUrl = ev.target.result;
+                    const img = new Image();
+                    img.onerror = () => resolve(rawUrl);
+                    img.onload = () => {
+                        try {
+                            let w = img.naturalWidth || img.width;
+                            let h = img.naturalHeight || img.height;
+                            if (!w || !h) return resolve(rawUrl);
+                            if (w > maxWidth) {
+                                h = Math.round((h * maxWidth) / w);
+                                w = maxWidth;
+                            }
+                            const canvas = document.createElement('canvas');
+                            canvas.width = w;
+                            canvas.height = h;
+                            const ctx = canvas.getContext('2d');
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, w, h);
+                            ctx.drawImage(img, 0, 0, w, h);
+                            const out = canvas.toDataURL('image/jpeg', quality);
+                            resolve(out.length < rawUrl.length ? out : rawUrl);
+                        } catch (e) {
+                            resolve(rawUrl);
+                        }
+                    };
+                    img.src = rawUrl;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function previewUploadedImageModal(src, title) {
+            if (!src) return;
+            Swal.fire({
+                title: title || 'រូបភាពវិញ្ញាសា',
+                html: `<img src="${src}" style="max-width:100%; max-height:70vh; border-radius:8px; border:1px solid #cbd5e1;" alt="Preview">`,
+                width: '780px',
+                confirmButtonText: 'បិទ'
+            });
+        }
+
+        async function attachQuestionImage(inputEl, qCardId) {
+            const file = inputEl.files && inputEl.files[0];
+            if (!file) return;
+            const card = document.querySelector(`[data-qcard-id="${qCardId}"]`);
+            if (!card) return;
+            const dataUrl = await compressExamImageFile(file, 1024, 0.82);
+            card.dataset.imageData = dataUrl;
+            const wrap = card.querySelector('.q-img-preview-wrap');
+            const imgEl = card.querySelector('.q-img-thumb');
+            if (imgEl) imgEl.src = dataUrl;
+            if (wrap) wrap.style.display = 'flex';
+            inputEl.value = '';
+        }
+
+        function removeQuestionImage(qCardId) {
+            const card = document.querySelector(`[data-qcard-id="${qCardId}"]`);
+            if (!card) return;
+            card.dataset.imageData = '';
+            const wrap = card.querySelector('.q-img-preview-wrap');
+            const imgEl = card.querySelector('.q-img-thumb');
+            if (imgEl) imgEl.src = '';
+            if (wrap) wrap.style.display = 'none';
         }
 
         function createQuestionCard(skillType, qData = null, fixedNum = null) {
@@ -937,6 +1185,9 @@
             const div = document.createElement('div');
             div.className = 'question-card';
             div.dataset.skill = skillType;
+            div.dataset.qcardId = qId;
+            const imgData = qData && qData.imageData ? qData.imageData : '';
+            div.dataset.imageData = imgData;
             
             const qText = qData ? (qData.questionText || '') : '';
             const optA = qData ? (qData.optionA || '') : '';
@@ -945,11 +1196,21 @@
             const optD = qData ? (qData.optionD || '') : '';
             const correct = qData ? (qData.correctOption || 'A') : 'A';
             const numLabel = fixedNum !== null ? `សំណួរទី ${fixedNum}៖` : 'សំណួរ៖';
-            const deleteBtn = `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge(); updateKhSummaryBadges(); updateEnSummaryBadges(); updateMathSummaryBadges();">លុបសំណួរ</button>`;
+            const deleteBtn = `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge(); updateKhSummaryBadges(); updateEnSummaryBadges(); updateMathSummaryBadges(); updatePhysicsSummaryBadges();">លុបសំណួរ</button>`;
             
             div.innerHTML = `
                 ${deleteBtn}
-                <div style="font-weight: bold; margin-bottom: 6px; color: #334155;">${numLabel}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px; padding-right:85px;">
+                    <div style="font-weight: bold; color: #334155;">${numLabel}</div>
+                    <div class="q-img-actions">
+                        <input type="file" id="${qId}_imgInput" accept="image/*" style="display:none;" onchange="attachQuestionImage(this, '${qId}')">
+                        <button type="button" onclick="document.getElementById('${qId}_imgInput').click()" style="font-size:0.78rem; padding:3px 9px; border-radius:6px; border:1px solid #cbd5e1; background:#f8fafc; color:#0e7490; font-weight:700; cursor:pointer;">🖼️ ភ្ជាប់រូបភាព</button>
+                    </div>
+                </div>
+                <div class="q-img-preview-wrap" style="display:${imgData ? 'flex' : 'none'}; align-items:center; gap:10px; margin-bottom:8px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:8px;">
+                    <img class="q-img-thumb" src="${imgData}" onclick="previewUploadedImageModal(this.src, '${numLabel}')" style="max-height:95px; max-width:180px; border-radius:6px; cursor:zoom-in; border:1px solid #e2e8f0;" alt="Question figure">
+                    <button type="button" class="q-img-actions" onclick="removeQuestionImage('${qId}')" style="font-size:0.78rem; padding:4px 8px; border-radius:6px; border:1px solid #fecaca; background:#fef2f2; color:#dc2626; cursor:pointer; font-weight:600;">✕ លុបរូបភាព</button>
+                </div>
                 <input type="text" class="q-text" placeholder="បញ្ចូលខ្លឹមសារសំណួរ..." value="${escapeHtml(qText)}" required>
                 <div class="options-grid">
                     <div class="option-row">
@@ -1156,7 +1417,8 @@
             document.querySelectorAll('#section-english-container input, #section-english-container textarea').forEach(el => el.disabled = true);
             document.querySelectorAll('#section-khmer-container input, #section-khmer-container textarea').forEach(el => el.disabled = true);
             document.querySelectorAll('#section-math-container input, #section-math-container textarea').forEach(el => el.disabled = true);
-            document.querySelectorAll('.add-q-btn, .delete-btn, .math-sym-btn').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('#section-physics-container input, #section-physics-container textarea').forEach(el => el.disabled = true);
+            document.querySelectorAll('.add-q-btn, .delete-btn, .math-sym-btn, .phys-sym-btn, .q-img-actions, .phys-img-actions').forEach(el => el.style.display = 'none');
         }
 
         function enableEditMode() {
@@ -1171,7 +1433,8 @@
             document.querySelectorAll('#section-english-container input, #section-english-container textarea').forEach(el => el.disabled = false);
             document.querySelectorAll('#section-khmer-container input, #section-khmer-container textarea').forEach(el => el.disabled = false);
             document.querySelectorAll('#section-math-container input, #section-math-container textarea').forEach(el => el.disabled = false);
-            document.querySelectorAll('.add-q-btn, .delete-btn, .math-sym-btn').forEach(el => el.style.display = 'inline-block');
+            document.querySelectorAll('#section-physics-container input, #section-physics-container textarea').forEach(el => el.disabled = false);
+            document.querySelectorAll('.add-q-btn, .delete-btn, .math-sym-btn, .phys-sym-btn, .q-img-actions, .phys-img-actions').forEach(el => el.style.display = 'inline-block');
         }
 
         function resetNewExam() {
@@ -1181,9 +1444,12 @@
             initEnglishContainers();
             initKhmerContainers();
             initMathContainers();
+            initPhysicsContainers();
+            physicsUploadedImages = [];
+            renderPhysicsUploadedImages();
             
             const subj = document.getElementById('subjectSelect').value;
-            if (subj === 'ភាសាអង់គ្លេស' || subj === 'ភាសាខ្មែរ' || subj === 'គណិតវិទ្យា') {
+            if (subj === 'ភាសាអង់គ្លេស' || subj === 'ភាសាខ្មែរ' || subj === 'គណិតវិទ្យា' || subj === 'រូបវិទ្យា') {
                 onSubjectChanged();
             } else {
                 addQuestion('general');
@@ -1466,7 +1732,8 @@
                 const optB = card.querySelector('.q-optB').value.trim();
                 const optC = card.querySelector('.q-optC').value.trim();
                 const optD = card.querySelector('.q-optD').value.trim();
-                if (!qText && !optA && !optB && !optC && !optD) return;
+                const imgData = card.dataset.imageData || '';
+                if (!qText && !optA && !optB && !optC && !optD && !imgData) return;
                 const qRadio = card.querySelector('input[type="radio"]');
                 const qName = qRadio ? qRadio.name : '';
                 const checkedRadio = qName ? card.querySelector('input[name="' + qName + '"]:checked') : null;
@@ -1477,7 +1744,8 @@
                     optionB: optB,
                     optionC: optC,
                     optionD: optD,
-                    correctOption: checkedRadio ? checkedRadio.value : 'A'
+                    correctOption: checkedRadio ? checkedRadio.value : 'A',
+                    imageData: imgData || null
                 });
             });
             return list;
@@ -1858,6 +2126,392 @@
             window.print();
         }
 
+        // ============================================================
+        // PHYSICS STANDARD EXAM HELPERS, IMAGE UPLOAD, PRESETS & PRINT
+        // ============================================================
+        let physicsUploadedImages = [];
+        let lastFocusedPhysicsField = null;
+        document.addEventListener('focusin', (e) => {
+            if (e.target && e.target.closest('#section-physics-container') && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') && e.target.type !== 'number' && e.target.type !== 'checkbox' && e.target.type !== 'radio' && e.target.type !== 'file') {
+                lastFocusedPhysicsField = e.target;
+            }
+        });
+
+        function insertPhysicsSymbol(sym) {
+            const target = lastFocusedPhysicsField || document.getElementById('physicsWritingPrompt');
+            if (!target || target.disabled) return;
+            const start = target.selectionStart != null ? target.selectionStart : target.value.length;
+            const end = target.selectionEnd != null ? target.selectionEnd : target.value.length;
+            target.value = target.value.slice(0, start) + sym + target.value.slice(end);
+            target.focus();
+            const pos = start + sym.length;
+            if (target.setSelectionRange) target.setSelectionRange(pos, pos);
+        }
+
+        async function handlePhysicsImageFiles(fileList) {
+            const files = Array.from(fileList || []).filter(f => (f.type && f.type.startsWith('image/')) || /\.(png|jpe?g|webp|gif)$/i.test(f.name));
+            if (files.length === 0) return;
+            for (const f of files) {
+                const dataUrl = await compressExamImageFile(f, 1280, 0.84);
+                physicsUploadedImages.push({
+                    caption: 'រូបទី ' + (physicsUploadedImages.length + 1) + '៖ ' + f.name.replace(/\.[^.]+$/, ''),
+                    dataUrl
+                });
+            }
+            renderPhysicsUploadedImages();
+        }
+
+        function removePhysicsUploadedImage(idx) {
+            physicsUploadedImages.splice(idx, 1);
+            renderPhysicsUploadedImages();
+        }
+
+        function updatePhysicsImageCaption(idx, val) {
+            if (physicsUploadedImages[idx]) {
+                physicsUploadedImages[idx].caption = val;
+            }
+        }
+
+        function renderPhysicsUploadedImages() {
+            const grid = document.getElementById('physicsImagesPreviewGrid');
+            if (!grid) return;
+            if (physicsUploadedImages.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1; padding:12px; border:1.5px dashed #7dd3fc; border-radius:8px; text-align:center; color:#64748b; font-size:0.88rem; background:#ffffff;">មិនទាន់មានរូបភាពវិញ្ញាសាទេ (ចុច «📤 Upload រូបភាព» ខាងលើដើម្បីភ្ជាប់រូបសៀគ្វី ដ្យាក្រាម ឬសន្លឹកវិញ្ញាសា)</div>';
+                return;
+            }
+            grid.innerHTML = physicsUploadedImages.map((item, idx) => `
+                <div style="background:#ffffff; border:1.5px solid #bae6fd; border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px;">
+                    <img src="${item.dataUrl}" onclick="previewUploadedImageModal(this.src, escapeHtml('${escapeHtml(item.caption || '')}'))" style="width:100%; height:145px; object-fit:contain; background:#f8fafc; border-radius:6px; cursor:zoom-in; border:1px solid #e2e8f0;" alt="Physics exam image">
+                    <input type="text" class="form-control" style="font-size:0.84rem; padding:5px 8px;" placeholder="ចំណងជើង / សម្គាល់រូប..." value="${escapeHtml(item.caption || '')}" oninput="updatePhysicsImageCaption(${idx}, this.value)">
+                    <button type="button" class="phys-img-actions" onclick="removePhysicsUploadedImage(${idx})" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:6px; padding:4px 8px; font-size:0.8rem; font-weight:700; cursor:pointer;">🗑️ លុបរូបភាព</button>
+                </div>
+            `).join('');
+        }
+
+        function togglePhysicsWritingSection() {
+            const enabled = document.getElementById('physicsWritingEnabled').checked;
+            document.getElementById('physicsWritingContent').style.display = enabled ? 'block' : 'none';
+            updatePhysicsSummaryBadges();
+        }
+
+        function addPhysicsMechanicsQuestion(qData = null) {
+            const c = document.getElementById('physicsMechanicsContainer');
+            if (c) {
+                c.appendChild(createQuestionCard('phys_mechanics', qData, c.children.length + 1));
+                updatePhysicsSummaryBadges();
+            }
+        }
+
+        function addPhysicsOpticsQuestion(qData = null) {
+            const c = document.getElementById('physicsOpticsContainer');
+            if (c) {
+                c.appendChild(createQuestionCard('phys_optics', qData, c.children.length + 1));
+                updatePhysicsSummaryBadges();
+            }
+        }
+
+        function addPhysicsElectricityQuestion(qData = null) {
+            const c = document.getElementById('physicsElectricityContainer');
+            if (c) {
+                c.appendChild(createQuestionCard('phys_electricity', qData, c.children.length + 1));
+                updatePhysicsSummaryBadges();
+            }
+        }
+
+        function initPhysicsContainers() {
+            const c1 = document.getElementById('physicsMechanicsContainer');
+            if (c1 && c1.children.length === 0) {
+                for (let i = 1; i <= 5; i++) addPhysicsMechanicsQuestion();
+            }
+            const c2 = document.getElementById('physicsOpticsContainer');
+            if (c2 && c2.children.length === 0) {
+                for (let i = 1; i <= 5; i++) addPhysicsOpticsQuestion();
+            }
+            const c3 = document.getElementById('physicsElectricityContainer');
+            if (c3 && c3.children.length === 0) {
+                for (let i = 1; i <= 5; i++) addPhysicsElectricityQuestion();
+            }
+            renderPhysicsUploadedImages();
+            updatePhysicsSummaryBadges();
+        }
+
+        function updatePhysicsSummaryBadges() {
+            const p1 = parseFloat((document.getElementById('physicsSec1MaxPoints') || {}).value) || 0;
+            const p2 = parseFloat((document.getElementById('physicsSec2MaxPoints') || {}).value) || 0;
+            const p3 = parseFloat((document.getElementById('physicsSec3MaxPoints') || {}).value) || 0;
+            const isWOpen = (document.getElementById('physicsWritingEnabled') || {}).checked;
+            const p4 = isWOpen ? (parseFloat((document.getElementById('physicsWritingMaxPoints') || {}).value) || 0) : 0;
+
+            const total = p1 + p2 + p3 + p4;
+            const totalEl = document.getElementById('physicsTotalPointsDisplay');
+            if (totalEl) totalEl.textContent = Number.isInteger(total) ? total : total.toFixed(1);
+
+            const updateCountBadge = (containerId, badgeId, pts) => {
+                const cnt = document.querySelectorAll('#' + containerId + ' .question-card').length;
+                const perQ = cnt > 0 ? (pts / cnt) : 0;
+                const perStr = Number.isInteger(perQ) ? perQ : perQ.toFixed(1);
+                const el = document.getElementById(badgeId);
+                if (el) el.textContent = cnt + ' សំណួរ (' + perStr + ' ពិន្ទុ/សំណួរ)';
+            };
+            updateCountBadge('physicsMechanicsContainer', 'physicsBadgeSec1Summary', p1);
+            updateCountBadge('physicsOpticsContainer', 'physicsBadgeSec2Summary', p2);
+            updateCountBadge('physicsElectricityContainer', 'physicsBadgeSec3Summary', p3);
+
+            const b1 = document.getElementById('physicsBadgeSec1Pill');
+            if (b1) b1.textContent = 'មេកានិច៖ ' + p1 + ' ពិន្ទុ';
+            const b2 = document.getElementById('physicsBadgeSec2Pill');
+            if (b2) b2.textContent = 'ទែម៉ូ/អុបទិក៖ ' + p2 + ' ពិន្ទុ';
+            const b3 = document.getElementById('physicsBadgeSec3Pill');
+            if (b3) b3.textContent = 'អគ្គិសនី៖ ' + p3 + ' ពិន្ទុ';
+            const b4 = document.getElementById('physicsBadgeSec4Pill');
+            if (b4) b4.textContent = isWOpen ? ('ដោះស្រាយលម្អិត៖ ' + p4 + ' ពិន្ទុ') : 'ដោះស្រាយ៖ បិទ (0)';
+        }
+
+        function loadPhysicsSampleChooser() {
+            Swal.fire({
+                title: '📥 ជ្រើសរើសគម្រូវិញ្ញាសារូបវិទ្យាស្តង់ដា (MoEYS)',
+                html: `<div style="text-align: left; font-size: 0.95rem; line-height: 1.6;">
+                    <p style="margin-top: 0; color: #475569;">សូមជ្រើសរើសកម្រិតថ្នាក់សម្រាប់គម្រូវិញ្ញាសារូបវិទ្យា (លោកគ្រូ-អ្នកគ្រូអាច Upload រូបភាព និងកែសម្រួលលំហាត់តាមក្រោយបាន)៖</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button type="button" onclick="Swal.close(); applyPhysicsStandardSample('lower');" style="text-align: left; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #0e7490; background: #ecfeff; color: #164e63; cursor: pointer; font-family: inherit;">
+                            <div style="font-weight: 700; font-size: 1rem;">📘 គំរូទី ១៖ អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩)</div>
+                            <div style="font-size: 0.85rem; color: #334155;">ពិន្ទុសរុប ៧០ ពិន្ទុ (មេកានិច ១៥ + ទែម៉ូ/អុបទិក ១៥ + អគ្គិសនី ១៥ + ដោះស្រាយលម្អិត ២៥)</div>
+                        </button>
+                        <button type="button" onclick="Swal.close(); applyPhysicsStandardSample('upper');" style="text-align: left; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #047857; background: #ecfdf5; color: #065f46; cursor: pointer; font-family: inherit;">
+                            <div style="font-weight: 700; font-size: 1rem;">📗 គំរូទី ២៖ វិទ្យាល័យ / បាក់ឌុប (ថ្នាក់ទី ១០-១២)</div>
+                            <div style="font-size: 0.85rem; color: #334155;">ពិន្ទុសរុប ១០០ ពិន្ទុ (មេកានិច ២០ + ទែម៉ូឌីណាមិក ២០ + អេឡិចត្រូម៉ាញេទិក ២០ + ដោះស្រាយលម្អិត ៤០)</div>
+                        </button>
+                    </div>
+                </div>`,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'បោះបង់',
+                width: '580px'
+            });
+        }
+
+        function applyPhysicsStandardSample(level) {
+            document.getElementById('currentExamId').value = '';
+            document.getElementById('subjectSelect').value = 'រូបវិទ្យា';
+            onSubjectChanged();
+            if (getSelectedClasses().length === 0) {
+                toggleAllExamClasses(true);
+            }
+
+            const isUpper = (level === 'upper');
+            const p1 = isUpper ? 20 : 15;
+            const p2 = isUpper ? 20 : 15;
+            const p3 = isUpper ? 20 : 15;
+            const p4 = isUpper ? 40 : 25;
+
+            const sample = isUpper ? {
+                formulas: "រូបមន្ត និងតម្លៃថេររូបវិទ្យាជំនួយ៖\n• g = 9.8 m/s², c = 3 × 10⁸ m/s, R = 8.314 J/(mol·K), k = 1.38 × 10⁻²³ J/K\n• ទែម៉ូឌីណាមិក៖ PV = nRT  |  ΔU = Q - W  |  η = 1 - T₂/T₁\n• អគ្គិសនីឆ្លាស់៖ Z = √(R² + (X_L - X_C)²)  |  U = Z·I  |  P = U·I·cosφ",
+                writingPrompt: "១. (២០ ពិន្ទុ) ម៉ាស៊ីនកាណូមួយដំណើរការរវាងធុងក្តៅដែលមានសីតុណ្ហភាព T₁ = 600 K និងធុងត្រជាក់ T₂ = 300 K ។\n   ក) គណនាទិន្នផលអតិបរមា η របស់ម៉ាស៊ីន។\n   ខ) ប្រសិនបើវាស្រូបកម្តៅ Q₁ = 2400 J តើវាបំពេញកម្មន្តបានប៉ុន្មានស៊ូល (J)?\n\n២. (២០ ពិន្ទុ) សៀគ្វី RLC តជាស៊េរីមាន R = 30 Ω, X_L = 80 Ω និង X_C = 40 Ω ភ្ជាប់នឹងប្រភពចរន្តឆ្លាស់ U = 100 V ។\n   ក) គណនាអាំងប៉េដង់ Z នៃសៀគ្វី។\n   ខ) គណនាអាំងតង់ស៊ីតេប្រសិទ្ធ I និងអានុភាពមធ្យម P នៃសៀគ្វី។",
+                mQs: [
+                    { questionText: "១. តាមច្បាប់ទី២ ញូតុន ទំនាក់ទំនងរវាងកម្លាំង ម៉ាស់ និងសំទុះ គឺ៖", optionA: "F = m / a", optionB: "F = m · a", optionC: "F = m · v²", optionD: "F = ½ m · a²", correctOption: "B" },
+                    { questionText: "២. អង្គធាតុមួយធ្លាក់ដោយសេរីពីកម្ពស់ 20 m (g = 10 m/s²)។ តើល្បឿនប៉ះដីស្មើប៉ុន្មាន?", optionA: "10 m/s", optionB: "20 m/s", optionC: "40 m/s", optionD: "200 m/s", correctOption: "B" },
+                    { questionText: "៣. លំយោលយោលសាមញ្ញមួយមានរយៈពេលខួប T = 2 s ។ តើប្រេកង់ f ស្មើប៉ុន្មាន?", optionA: "0.25 Hz", optionB: "0.5 Hz", optionC: "2 Hz", optionD: "4 Hz", correctOption: "B" },
+                    { questionText: "៤. បរិមាណចលនា p នៃអង្គធាតុម៉ាស់ 4 kg ផ្លាស់ទីដោយល្បឿន 5 m/s គឺ៖", optionA: "9 kg·m/s", optionB: "20 kg·m/s", optionC: "50 kg·m/s", optionD: "1.25 kg·m/s", correctOption: "B" },
+                    { questionText: "៥. កម្លាំងកេន្ទ្រីភូហ្គាល់ (កម្លាំងចូលផ្ចិត) កំណត់ដោយរូបមន្ត៖", optionA: "Fc = mv/R", optionB: "Fc = mv²/R", optionC: "Fc = mR/v", optionD: "Fc = ½mv²", correctOption: "B" }
+                ],
+                oQs: [
+                    { questionText: "១. សមីការភាពឧស្ម័នបរិសុទ្ធ (Ideal Gas Law) សរសេរជា៖", optionA: "PV = nRT", optionB: "P/V = nRT", optionC: "PT = nRV", optionD: "PV = mgh", correctOption: "A" },
+                    { questionText: "២. ក្នុងលំនាំអ៊ីសូទែម (Isothermal) តើទំហំណាមួយរក្សាតម្លៃថេរ?", optionA: "សម្ពាធ P", optionB: "មាឌ V", optionC: "សីតុណ្ហភាព T", optionD: "ថាមពលកម្តៅ Q", correctOption: "C" },
+                    { questionText: "៣. រលកអេឡិចត្រូម៉ាញេទិកមួយមានប្រវែងរលក λ = 0.5 m និងល្បឿន v = 300 m/s ។ រកប្រេកង់ f ៖", optionA: "150 Hz", optionB: "300 Hz", optionC: "600 Hz", optionD: "0.0016 Hz", correctOption: "C" },
+                    { questionText: "៤. ឡង់ទីបង្រួមមានចម្ងាយកំណុំ f = 20 cm ។ តើវែរហ្សង់ C របស់ឡង់ទីស្មើប៉ុន្មានដ្យូបទ្រី (δ)?", optionA: "0.05 δ", optionB: "2 δ", optionC: "5 δ", optionD: "20 δ", correctOption: "C" },
+                    { questionText: "៥. បាតុភូតជ្រៀតជ្រែកពន្លឺបញ្ជាក់ថាពន្លឺមានលក្ខណៈជាអ្វី?", optionA: "ភាគល្អិតតែម្យ៉ាង", optionB: "រលក", optionC: "អគ្គិសនីស្តាទិច", optionD: "ដែនទំនាញ", correctOption: "B" }
+                ],
+                eQs: [
+                    { questionText: "១. សៀគ្វីអគ្គិសនីឆ្លាស់ RLC ស៊េរីកើតអនុភាពអតិបរមា (រេសូណង់) នៅពេលណា?", optionA: "X_L > X_C", optionB: "X_L < X_C", optionC: "X_L = X_C", optionD: "R = 0", correctOption: "C" },
+                    { questionText: "២. ត្រង់ស្វូម៉ាទ័រឧត្តមមួយមាន N₁ = 200 ស្ពៀ និង N₂ = 600 ស្ពៀ។ បើ U₁ = 110 V តើ U₂ ស្មើប៉ុន្មាន?", optionA: "36.7 V", optionB: "220 V", optionC: "330 V", optionD: "660 V", correctOption: "C" },
+                    { questionText: "៣. ខ្នាតរបស់ «ភ្លុចម៉ាញេទិច Φ» ក្នុងប្រព័ន្ធ SI គឺ៖", optionA: "តេស្លា (T)", optionB: "វែប៊ែរ (Wb)", optionC: "អង់រី (H)", optionD: "ហ្វារ៉ាត់ (F)", correctOption: "B" },
+                    { questionText: "៤. ថាមពលនៃហ្វូតុងកំណត់ដោយរូបមន្តរបស់ប្លង់ E = ...", optionA: "h·f", optionB: "h / f", optionC: "m·c", optionD: "½k·x²", correctOption: "A" },
+                    { questionText: "៥. ប្រសិនបើតង់ស្យុងអតិបរមា Uₘ = 220√2 V តើតង់ស្យុងប្រសិទ្ធ U ស្មើប៉ុន្មាន?", optionA: "110 V", optionB: "220 V", optionC: "311 V", optionD: "440 V", correctOption: "B" }
+                ]
+            } : {
+                formulas: "រូបមន្ត និងតម្លៃថេររូបវិទ្យាជំនួយ៖\n• សំទុះទំនាញផែនដី៖ g = 10 m/s²  |  ល្បឿនពន្លឺ៖ c = 3 × 10⁸ m/s\n• មេកានិច៖ P = m·g  |  p = F / S  |  v = d / t  |  Ec = ½mv²  |  Ep = mgh\n• អគ្គិសនី៖ ច្បាប់អូម U = R·I  |  អានុភាព P = U·I  |  ថាមពល E = P·t",
+                writingPrompt: "១. (១២ ពិន្ទុ) ម៉ូតូមួយគ្រឿងបើកបរក្នុងល្បឿនថេរ 72 km/h លើផ្លូវត្រង់អស់រយៈពេល 15 នាទី។\n   ក) ចូរបំប្លែងល្បឿនពី km/h ទៅជា m/s។\n   ខ) គណនាចម្ងាយចរសរុបរបស់ម៉ូតូគិតជាម៉ែត្រ (m) និងគីឡូម៉ែត្រ (km)។\n\n២. (១៣ ពិន្ទុ) រេស៊ីស្តង់មួយមានតម្លៃ R = 20 Ω ត្រូវបានតភ្ជាប់ជាមួយប្រភពតង់ស្យុង U = 12 V ។\n   ក) គណនាអាំងតង់ស៊ីតេចរន្តអគ្គិសនី I ដែលឆ្លងកាត់រេស៊ីស្តង់។\n   ខ) គណនាអានុភាពអគ្គិសនី P និងថាមពលអគ្គិសនី E ដែលប្រើប្រាស់ក្នុងរយៈពេល 10 នាទី។",
+                mQs: [
+                    { questionText: "១. ក្នុងប្រព័ន្ធខ្នាតអន្តរជាតិ (SI) តើខ្នាតរបស់ «កម្លាំង» គឺអ្វី?", optionA: "ស៊ូល (J)", optionB: "ញូតុន (N)", optionC: "វ៉ាត់ (W)", optionD: "ប៉ាស្កាល់ (Pa)", correctOption: "B" },
+                    { questionText: "២. អង្គធាតុមួយមានម៉ាស់ m = 5 kg នៅទីកន្លែងដែល g = 10 N/kg។ តើទម្ងន់របស់វាស្មើប៉ុន្មាន?", optionA: "0.5 N", optionB: "5 N", optionC: "15 N", optionD: "50 N", correctOption: "D" },
+                    { questionText: "៣. រថយន្តមួយបើកបរបានចម្ងាយ 120 km ក្នុងរយៈពេល 2 ម៉ោង។ តើល្បឿនមធ្យមរបស់វាស្មើប៉ុន្មាន?", optionA: "40 km/h", optionB: "60 km/h", optionC: "120 km/h", optionD: "240 km/h", correctOption: "B" },
+                    { questionText: "៤. កម្លាំង F = 40 N អំពើលើអង្គធាតុមួយឱ្យផ្លាស់ទីតាមទិសកម្លាំងបានចម្ងាយ d = 5 m។ តើកម្មន្ត W ស្មើប៉ុន្មាន?", optionA: "8 J", optionB: "45 J", optionC: "200 J", optionD: "400 J", correctOption: "C" },
+                    { questionText: "៥. អង្គធាតុមួយមានម៉ាស់ 2 kg កំពុងផ្លាស់ទីដោយល្បឿន 4 m/s។ តើថាមពលស៊ីនេទិច Ec ស្មើប៉ុន្មាន?", optionA: "8 J", optionB: "16 J", optionC: "32 J", optionD: "4 J", correctOption: "B" }
+                ],
+                oQs: [
+                    { questionText: "១. សីតុណ្ហភាព 27°C ត្រូវនឹងប៉ុន្មានកែលវិន (K)?", optionA: "246 K", optionB: "273 K", optionC: "300 K", optionD: "327 K", correctOption: "C" },
+                    { questionText: "២. ទឹកសុទ្ធពុះនៅសីតុណ្ហភាពប៉ុន្មានក្រោមសម្ពាធបរិយាកាសធម្មតា?", optionA: "0°C", optionB: "50°C", optionC: "100°C", optionD: "212°C", correctOption: "C" },
+                    { questionText: "៣. តាមច្បាប់ចំណាំងផ្លាតពន្លឺ ប្រសិនបើមុំប៉ះ i = 35° តើមុំចំណាំងផ្លាត r ស្មើប៉ុន្មាន?", optionA: "35°", optionB: "55°", optionC: "70°", optionD: "90°", correctOption: "A" },
+                    { questionText: "៤. រលកសំឡេងមិនអាចដាលឆ្លងកាត់មជ្ឈដ្ឋានមួយណាបានទេ?", optionA: "ដែក", optionB: "ទឹក", optionC: "ខ្យល់", optionD: "សុញ្ញាកាស (ទីទំនេរ)", correctOption: "D" },
+                    { questionText: "៥. រលកមួយមានប្រេកង់ f = 50 Hz។ តើខួប T របស់រលកស្មើប៉ុន្មាន?", optionA: "0.02 s", optionB: "0.2 s", optionC: "2 s", optionD: "50 s", correctOption: "A" }
+                ],
+                eQs: [
+                    { questionText: "១. ខ្នាតរបស់ «រេស៊ីស្តង់អគ្គិសនី» គឺអ្វី?", optionA: "អំពែ (A)", optionB: "វ៉ុល (V)", optionC: "អូម (Ω)", optionD: "គូឡុំ (C)", correctOption: "C" },
+                    { questionText: "២. បើតង់ស្យុង U = 12 V និងរេស៊ីស្តង់ R = 4 Ω តើអាំងតង់ស៊ីតេចរន្ត I ស្មើប៉ុន្មាន?", optionA: "3 A", optionB: "8 A", optionC: "16 A", optionD: "48 A", correctOption: "A" },
+                    { questionText: "៣. អំពូលភ្លើងមួយមានអានុភាព P = 60 W ប្រើតង់ស្យុង 220 V។ តើថាមពលប្រើក្នុង 10 s ស្មើប៉ុន្មាន?", optionA: "6 J", optionB: "60 J", optionC: "600 J", optionD: "2200 J", correctOption: "C" },
+                    { questionText: "៤. មេដែកមួយមានប៉ូលប៉ុន្មាន?", optionA: "១ ប៉ូល", optionB: "២ ប៉ូល (ជើង និងត្បូង)", optionC: "៣ ប៉ូល", optionD: "៤ ប៉ូល", correctOption: "B" },
+                    { questionText: "៥. បង្គុំរេស៊ីស្តង់ R₁ = 6 Ω និង R₂ = 4 Ω តជាស៊េរី មានរេស៊ីស្តង់សមមូល Req ស្មើប៉ុន្មាន?", optionA: "2.4 Ω", optionB: "10 Ω", optionC: "24 Ω", optionD: "1.5 Ω", correctOption: "B" }
+                ]
+            };
+
+            document.getElementById('physicsFormulaNote').value = sample.formulas;
+            document.getElementById('physicsSec1Title').value = 'I. មេកានិច និងថាមពល៖';
+            document.getElementById('physicsSec1Instruction').value = 'ចូរគណនា និងជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (' + p1 + ' ពិន្ទុ)';
+            document.getElementById('physicsSec1MaxPoints').value = p1;
+
+            document.getElementById('physicsSec2Title').value = 'II. ទែម៉ូឌីណាមិក រលក និងអុបទិក៖';
+            document.getElementById('physicsSec2Instruction').value = 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (' + p2 + ' ពិន្ទុ)';
+            document.getElementById('physicsSec2MaxPoints').value = p2;
+
+            document.getElementById('physicsSec3Title').value = 'III. អគ្គិសនី និងអេឡិចត្រូម៉ាញេទិក៖';
+            document.getElementById('physicsSec3Instruction').value = 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (' + p3 + ' ពិន្ទុ)';
+            document.getElementById('physicsSec3MaxPoints').value = p3;
+
+            document.getElementById('physicsWritingEnabled').checked = true;
+            document.getElementById('physicsWritingContent').style.display = 'block';
+            document.getElementById('physicsSec4Title').value = 'IV. លំហាត់អនុវត្ត និងដោះស្រាយលម្អិត៖';
+            document.getElementById('physicsSec4Instruction').value = 'ចូរសរសេររបៀបដោះស្រាយលម្អិត (រូបមន្ត ការជំនួសលេខ និងខ្នាតត្រឹមត្រូវ)៖ (' + p4 + ' ពិន្ទុ)';
+            document.getElementById('physicsWritingPrompt').value = sample.writingPrompt;
+            document.getElementById('physicsWritingMaxPoints').value = p4;
+
+            const c1 = document.getElementById('physicsMechanicsContainer'); c1.innerHTML = '';
+            sample.mQs.forEach(q => addPhysicsMechanicsQuestion(q));
+            const c2 = document.getElementById('physicsOpticsContainer'); c2.innerHTML = '';
+            sample.oQs.forEach(q => addPhysicsOpticsQuestion(q));
+            const c3 = document.getElementById('physicsElectricityContainer'); c3.innerHTML = '';
+            sample.eQs.forEach(q => addPhysicsElectricityQuestion(q));
+
+            updatePhysicsSummaryBadges();
+            enableEditMode();
+            document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
+
+            Swal.fire({
+                icon: 'success',
+                title: isUpper ? 'បានផ្ទុកគំរូវិញ្ញាសារូបវិទ្យា (ថ្នាក់ទី ១០-១២)!' : 'បានផ្ទុកគំរូវិញ្ញាសារូបវិទ្យា (ថ្នាក់ទី ៧-៩)!',
+                text: 'លោកគ្រូ-អ្នកគ្រូអាច Upload រូបភាពដ្យាក្រាម កែសម្រួលលំហាត់ ឬចុច «💾 រក្សាទុកវិញ្ញាសា» បានភ្លាមៗ។',
+                timer: 2400,
+                showConfirmButton: false
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function populatePhysicsExamData(exam, questions) {
+            document.getElementById('physicsFormulaNote').value = exam.readingPassage || '';
+            try {
+                physicsUploadedImages = exam.examImagesJson ? JSON.parse(exam.examImagesJson) : [];
+                if (!Array.isArray(physicsUploadedImages)) physicsUploadedImages = [];
+            } catch (_) {
+                physicsUploadedImages = [];
+            }
+            renderPhysicsUploadedImages();
+
+            document.getElementById('physicsSec1Title').value = exam.section1Title || 'I. មេកានិច និងថាមពល៖';
+            document.getElementById('physicsSec1Instruction').value = exam.section1Instruction || 'ចូរគណនា និងជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖';
+            document.getElementById('physicsSec1MaxPoints').value = exam.section1MaxPoints != null ? exam.section1MaxPoints : 15;
+
+            document.getElementById('physicsSec2Title').value = exam.section2Title || 'II. ទែម៉ូឌីណាមិក រលក និងអុបទិក៖';
+            document.getElementById('physicsSec2Instruction').value = exam.section2Instruction || 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖';
+            document.getElementById('physicsSec2MaxPoints').value = exam.section2MaxPoints != null ? exam.section2MaxPoints : 15;
+
+            document.getElementById('physicsSec3Title').value = exam.section3Title || 'III. អគ្គិសនី និងអេឡិចត្រូម៉ាញេទិក៖';
+            document.getElementById('physicsSec3Instruction').value = exam.section3Instruction || 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖';
+            document.getElementById('physicsSec3MaxPoints').value = exam.section3MaxPoints != null ? exam.section3MaxPoints : 15;
+
+            const hasWriting = !!(exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            document.getElementById('physicsWritingEnabled').checked = hasWriting;
+            document.getElementById('physicsWritingContent').style.display = hasWriting ? 'block' : 'none';
+            document.getElementById('physicsSec4Title').value = exam.section4Title || 'IV. លំហាត់អនុវត្ត និងដោះស្រាយលម្អិត៖';
+            document.getElementById('physicsSec4Instruction').value = exam.section4Instruction || 'ចូរសរសេររបៀបដោះស្រាយលម្អិត (រូបមន្ត ការជំនួសលេខ និងខ្នាតត្រឹមត្រូវ)៖';
+            document.getElementById('physicsWritingPrompt').value = exam.writingPrompt || '';
+            document.getElementById('physicsWritingMaxPoints').value = exam.writingMaxPoints != null ? exam.writingMaxPoints : 25;
+
+            const mQs = questions.filter(q => q.skillType === 'phys_mechanics');
+            const oQs = questions.filter(q => q.skillType === 'phys_optics');
+            const eQs = questions.filter(q => q.skillType === 'phys_electricity');
+            const legacyGeneral = questions.filter(q => q.skillType === 'general' || !q.skillType);
+
+            const c1 = document.getElementById('physicsMechanicsContainer'); c1.innerHTML = '';
+            const sec1Source = mQs.length > 0 ? mQs : (legacyGeneral.length > 0 && oQs.length === 0 ? legacyGeneral : []);
+            if (sec1Source.length > 0) sec1Source.forEach(q => addPhysicsMechanicsQuestion(q));
+            else for (let i = 1; i <= 5; i++) addPhysicsMechanicsQuestion();
+
+            const c2 = document.getElementById('physicsOpticsContainer'); c2.innerHTML = '';
+            if (oQs.length > 0) oQs.forEach(q => addPhysicsOpticsQuestion(q));
+            else for (let i = 1; i <= 5; i++) addPhysicsOpticsQuestion();
+
+            const c3 = document.getElementById('physicsElectricityContainer'); c3.innerHTML = '';
+            if (eQs.length > 0) eQs.forEach(q => addPhysicsElectricityQuestion(q));
+            else for (let i = 1; i <= 5; i++) addPhysicsElectricityQuestion();
+
+            updatePhysicsSummaryBadges();
+        }
+
+        function printPhysicsExamSheet() {
+            const container = document.getElementById('khPrintOfficialContainer');
+            if (!container) return;
+            const month = document.getElementById('monthSelect').value;
+            const classes = getSelectedClasses().join(', ') || '...................';
+            const totalPts = document.getElementById('physicsTotalPointsDisplay').textContent || '70';
+            const formulas = document.getElementById('physicsFormulaNote').value || '';
+            const mQs = collectSectionQuestions('physicsMechanicsContainer', 'phys_mechanics');
+            const oQs = collectSectionQuestions('physicsOpticsContainer', 'phys_optics');
+            const eQs = collectSectionQuestions('physicsElectricityContainer', 'phys_electricity');
+            const wOpen = document.getElementById('physicsWritingEnabled').checked;
+
+            const renderPrintQs = (arr) => arr.map((q, idx) =>
+                '<div class="kh-print-q">' +
+                    '<div><b>' + escapeHtml(q.questionText || ((idx + 1) + '.')) + '</b></div>' +
+                    (q.imageData ? '<div style="margin:4px 0;"><img src="' + q.imageData + '" style="max-height:150px; max-width:95%; border:1px solid #cbd5e1;" alt="Figure"></div>' : '') +
+                    '<div class="kh-print-opts">' +
+                        '<div>ក. ' + escapeHtml(q.optionA) + '</div>' +
+                        '<div>ខ. ' + escapeHtml(q.optionB) + '</div>' +
+                        '<div>គ. ' + escapeHtml(q.optionC) + '</div>' +
+                        '<div>ឃ. ' + escapeHtml(q.optionD) + '</div>' +
+                    '</div>' +
+                '</div>'
+            ).join('');
+
+            const printGallery = physicsUploadedImages.length > 0
+                ? '<div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin:8px 0 12px;">' +
+                    physicsUploadedImages.map(img =>
+                        '<div style="border:1px solid #94a3b8; padding:6px; text-align:center; page-break-inside:avoid;">' +
+                            '<img src="' + img.dataUrl + '" style="max-width:100%; max-height:220px; object-fit:contain;" alt="Exam Diagram">' +
+                            (img.caption ? '<div style="font-size:9.5pt; margin-top:4px; font-weight:bold;">' + escapeHtml(img.caption) + '</div>' : '') +
+                        '</div>'
+                    ).join('') +
+                  '</div>'
+                : '';
+
+            const meta = window.__EXAM_META__ || {};
+            container.innerHTML =
+                '<div class="kh-print-header">' +
+                    '<div>' +
+                        '<div style="font-weight:bold;">ក្រសួងអប់រំ យុវជន និងកីឡា</div>' +
+                        '<div style="font-weight:bold;">' + escapeHtml(meta.schoolName || 'សាលារៀន') + '</div>' +
+                        '<div>វិញ្ញាសា៖ <b>រូបវិទ្យា</b> | ថ្នាក់៖ <b>' + escapeHtml(classes) + '</b></div>' +
+                        '<div>សម័យប្រឡង៖ <b>' + escapeHtml(month) + '</b> (' + escapeHtml(meta.academicYear || '២០២៦-២០២៧') + ')</div>' +
+                    '</div>' +
+                    '<div style="text-align:center;">' +
+                        '<div style="font-weight:bold; font-size:11.5pt;">ព្រះរាជាណាចក្រកម្ពុជា</div>' +
+                        '<div style="font-weight:bold;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>' +
+                        '<div style="margin-top:6px;">ពិន្ទុសរុប៖ <b>' + escapeHtml(totalPts) + ' ពិន្ទុ</b></div>' +
+                        '<div>រយៈពេល៖ ៩០ នាទី</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="text-align:center; font-weight:bold; font-size:12pt; border-top:1.5px solid #000; border-bottom:1.5px solid #000; padding:4px 0; margin-bottom:8px;">វិញ្ញាសាប្រឡងមុខវិជ្ជារូបវិទ្យា (ទម្រង់ស្តង់ដា)</div>' +
+                (formulas.trim() ? '<div class="kh-print-passage">' + escapeHtml(formulas) + '</div>' : '') +
+                printGallery +
+                (mQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('physicsSec1Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('physicsSec1Instruction').value) + '</i></div>' + renderPrintQs(mQs) : '') +
+                (oQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('physicsSec2Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('physicsSec2Instruction').value) + '</i></div>' + renderPrintQs(oQs) : '') +
+                (eQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('physicsSec3Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('physicsSec3Instruction').value) + '</i></div>' + renderPrintQs(eQs) : '') +
+                (wOpen && document.getElementById('physicsWritingPrompt').value.trim() ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('physicsSec4Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('physicsSec4Instruction').value) + '</i></div><div style="margin-top:4px; white-space:pre-wrap; font-weight:bold;">' + escapeHtml(document.getElementById('physicsWritingPrompt').value) + '</div>' : '') +
+                '<div style="display:flex; justify-content:space-between; margin-top:22px; page-break-inside:avoid;">' +
+                    '<div style="text-align:center;"><div>បានឃើញ និងឯកភាព</div><div><b>នាយកសាលា</b></div></div>' +
+                    '<div style="text-align:center;"><div>គ្រូមុខវិជ្ជារូបវិទ្យា</div><div><b>' + escapeHtml(meta.teacherName || '') + '</b></div></div>' +
+                '</div>';
+            window.print();
+        }
+
         function loadMoeyseGrade11Sample() {
             initEnglishContainers();
             document.getElementById('currentExamId').value = '';
@@ -1953,6 +2607,7 @@
             initEnglishContainers();
             initKhmerContainers();
             initMathContainers();
+            initPhysicsContainers();
             try {
                 const res = await fetch(`/api/exams/get?id=${examId}`);
                 if (res.ok) {
@@ -1970,6 +2625,8 @@
                             populateKhmerExamData(data.exam, data.questions || []);
                         } else if (data.exam.subjectName === 'គណិតវិទ្យា') {
                             populateMathExamData(data.exam, data.questions || []);
+                        } else if (data.exam.subjectName === 'រូបវិទ្យា') {
+                            populatePhysicsExamData(data.exam, data.questions || []);
                         } else if (data.exam.readingPassage) {
                             populateEnglishExamData(data.exam, data.questions || []);
                         } else {
@@ -1993,6 +2650,9 @@
             initEnglishContainers();
             initKhmerContainers();
             initMathContainers();
+            initPhysicsContainers();
+            physicsUploadedImages = [];
+            renderPhysicsUploadedImages();
             document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
             const month = document.getElementById('monthSelect').value;
             const subjectName = document.getElementById('subjectSelect').value;
@@ -2023,6 +2683,9 @@
                         } else if (data.exam.subjectName === 'គណិតវិទ្យា') {
                             populateMathExamData(data.exam, data.questions || []);
                             foundExisting = true;
+                        } else if (data.exam.subjectName === 'រូបវិទ្យា') {
+                            populatePhysicsExamData(data.exam, data.questions || []);
+                            foundExisting = true;
                         } else if (data.exam.readingPassage) {
                             populateEnglishExamData(data.exam, data.questions || []);
                             foundExisting = true;
@@ -2041,7 +2704,7 @@
                 disableEditMode();
             } else {
                 document.getElementById('currentExamId').value = '';
-                if (subjectName !== 'ភាសាអង់គ្លេស' && subjectName !== 'ភាសាខ្មែរ' && subjectName !== 'គណិតវិទ្យា') {
+                if (subjectName !== 'ភាសាអង់គ្លេស' && subjectName !== 'ភាសាខ្មែរ' && subjectName !== 'គណិតវិទ្យា' && subjectName !== 'រូបវិទ្យា') {
                     clearAllQuestions();
                     addQuestion('general');
                 }
@@ -2301,6 +2964,48 @@
                     questions: questions
                 };
 
+            } else if (subjectName === 'រូបវិទ្យា') {
+                const questions = [
+                    ...collectSectionQuestions('physicsMechanicsContainer', 'phys_mechanics'),
+                    ...collectSectionQuestions('physicsOpticsContainer', 'phys_optics'),
+                    ...collectSectionQuestions('physicsElectricityContainer', 'phys_electricity')
+                ];
+                const writingEnabled = document.getElementById('physicsWritingEnabled').checked;
+                const writingPromptVal = writingEnabled ? document.getElementById('physicsWritingPrompt').value.trim() : '';
+                if (questions.length === 0 && physicsUploadedImages.length === 0 && !writingPromptVal) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'សូមបញ្ចូលសំណួរ ឬរូបភាពវិញ្ញាសា!',
+                        text: 'សូមបំពេញសំណួរក្នុងផ្នែកណាមួយ Upload រូបភាពវិញ្ញាសា ឬចុចប៊ូតុង «📥 ផ្ទុកគំរូវិញ្ញាសារូបវិទ្យាស្តង់ដា»។',
+                        confirmButtonText: 'យល់ព្រម',
+                        confirmButtonColor: '#4361ee'
+                    });
+                    return;
+                }
+                payload = {
+                    id: examId ? parseInt(examId) : null,
+                    month: month,
+                    classes: selectedClasses,
+                    subjectName: subjectName,
+                    readingPassage: document.getElementById('physicsFormulaNote').value,
+                    wordBank: null,
+                    examImagesJson: physicsUploadedImages.length > 0 ? JSON.stringify(physicsUploadedImages) : null,
+                    section1Title: document.getElementById('physicsSec1Title').value,
+                    section1Instruction: document.getElementById('physicsSec1Instruction').value,
+                    section1MaxPoints: parseInt(document.getElementById('physicsSec1MaxPoints').value) || 15,
+                    section2Title: document.getElementById('physicsSec2Title').value,
+                    section2Instruction: document.getElementById('physicsSec2Instruction').value,
+                    section2MaxPoints: parseInt(document.getElementById('physicsSec2MaxPoints').value) || 15,
+                    section3Title: document.getElementById('physicsSec3Title').value,
+                    section3Instruction: document.getElementById('physicsSec3Instruction').value,
+                    section3MaxPoints: parseInt(document.getElementById('physicsSec3MaxPoints').value) || 15,
+                    section4Title: writingEnabled ? document.getElementById('physicsSec4Title').value : null,
+                    section4Instruction: writingEnabled ? document.getElementById('physicsSec4Instruction').value : null,
+                    writingPrompt: writingEnabled ? document.getElementById('physicsWritingPrompt').value : null,
+                    writingMaxPoints: writingEnabled ? (parseInt(document.getElementById('physicsWritingMaxPoints').value) || 25) : null,
+                    questions: questions
+                };
+
             } else {
                 const questions = [];
                 let isValid = true;
@@ -2327,7 +3032,8 @@
                         optionB: optB,
                         optionC: optC,
                         optionD: optD,
-                        correctOption: correct
+                        correctOption: correct,
+                        imageData: card.dataset.imageData || null
                     });
                 });
 
@@ -2745,6 +3451,7 @@
         initEnglishContainers();
         initKhmerContainers();
         initMathContainers();
+        initPhysicsContainers();
         onSubjectChanged();
         loadExam();
         loadExamsList();

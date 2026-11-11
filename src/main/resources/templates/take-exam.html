@@ -661,7 +661,7 @@
             const studentName = document.getElementById('studentNameText') ? document.getElementById('studentNameText').innerText.trim() : 'សិស្ស';
             const studentClass = document.getElementById('studentClass') ? document.getElementById('studentClass').innerText.trim() : '';
 
-            // Detect Khmer multi-section vs Math multi-section vs English multi-section vs general MCQ
+            // Detect Khmer multi-section vs Math vs Physics vs English multi-section vs general MCQ
             const isKhmerMulti = exam && exam.subjectName === 'ភាសាខ្មែរ' && (
                 questions.some(q => q.skillType && q.skillType.startsWith('kh_')) ||
                 (exam.readingPassage && exam.readingPassage.trim().length > 0) ||
@@ -672,17 +672,39 @@
                 (exam.readingPassage && exam.readingPassage.trim().length > 0) ||
                 (exam.writingPrompt && exam.writingPrompt.trim().length > 0)
             );
-            const hasGaps = questions.some(q => q.skillType === 'gaps_filling') || (exam && exam.readingPassage && exam.subjectName !== 'ភាសាខ្មែរ' && exam.subjectName !== 'គណិតវិទ្យា');
-            const isEnglish = !isKhmerMulti && !isMathMulti && ((exam && exam.subjectName === 'ភាសាអង់គ្លេស') || hasGaps);
+            const isPhysicsMulti = exam && exam.subjectName === 'រូបវិទ្យា' && (
+                questions.some(q => q.skillType && q.skillType.startsWith('phys_')) ||
+                (exam.examImagesJson && exam.examImagesJson.trim().length > 2) ||
+                (exam.readingPassage && exam.readingPassage.trim().length > 0) ||
+                (exam.writingPrompt && exam.writingPrompt.trim().length > 0)
+            );
+            const hasGaps = questions.some(q => q.skillType === 'gaps_filling') || (exam && exam.readingPassage && exam.subjectName !== 'ភាសាខ្មែរ' && exam.subjectName !== 'គណិតវិទ្យា' && exam.subjectName !== 'រូបវិទ្យា');
+            const isEnglish = !isKhmerMulti && !isMathMulti && !isPhysicsMulti && ((exam && exam.subjectName === 'ភាសាអង់គ្លេស') || hasGaps);
 
             if (isKhmerMulti) {
                 renderKhmerMultiSectionExam(exam, questions, studentName, studentClass);
             } else if (isMathMulti) {
                 renderMathMultiSectionExam(exam, questions, studentName, studentClass);
+            } else if (isPhysicsMulti) {
+                renderPhysicsMultiSectionExam(exam, questions, studentName, studentClass);
             } else if (isEnglish) {
                 renderEnglishMultiSectionExam(exam, questions, studentName, studentClass);
             } else {
                 renderStandardExam(questions);
+            }
+        }
+
+        function zoomExamImage(src, caption) {
+            if (!src) return;
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: caption || 'រូបភាពវិញ្ញាសា',
+                    html: `<img src="${src}" style="max-width:100%; max-height:75vh; border-radius:8px;" alt="Zoomed image">`,
+                    width: '860px',
+                    confirmButtonText: 'បិទ'
+                });
+            } else {
+                window.open(src, '_blank');
             }
         }
 
@@ -695,6 +717,7 @@
                 html += `
                 <div class="question-card" data-qid="${qId}">
                     <div class="question-text">${idx + 1}. ${escapeHtml(q.questionText || '')}</div>
+                    ${q.imageData ? `<div style="margin:8px 0 12px;"><img src="${q.imageData}" onclick="zoomExamImage(this.src)" style="max-width:100%; max-height:260px; border-radius:8px; border:1px solid #cbd5e1; cursor:zoom-in;" alt="Question diagram"></div>` : ''}
                     <div class="options-grid">
                         <label class="option-label" onclick="selectRadioOption(this)">
                             <input type="radio" name="q_${qId}" value="A"> <span class="option-text">A. ${escapeHtml(q.optionA || '')}</span>
@@ -1158,11 +1181,163 @@
             container.innerHTML = html;
         }
 
+        function renderPhysicsMultiSectionExam(exam, questions, studentName, studentClass) {
+            const container = document.getElementById('examContent');
+            const mechQs = questions.filter(q => q.skillType === 'phys_mechanics');
+            const optQs = questions.filter(q => q.skillType === 'phys_optics');
+            const elecQs = questions.filter(q => q.skillType === 'phys_electricity');
+            const fallbackQs = questions.filter(q => !q.skillType || q.skillType === 'general');
+
+            let uploadedImgs = [];
+            try {
+                uploadedImgs = exam && exam.examImagesJson ? JSON.parse(exam.examImagesJson) : [];
+                if (!Array.isArray(uploadedImgs)) uploadedImgs = [];
+            } catch (_) {
+                uploadedImgs = [];
+            }
+
+            const sec1Items = mechQs.length > 0 ? mechQs : fallbackQs;
+            const s1Pts = (exam && exam.section1MaxPoints != null) ? exam.section1MaxPoints : 15;
+            const s2Pts = (exam && exam.section2MaxPoints != null) ? exam.section2MaxPoints : 15;
+            const s3Pts = (exam && exam.section3MaxPoints != null) ? exam.section3MaxPoints : 15;
+            const hasWriting = !!(exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            const s4Pts = hasWriting ? (exam.writingMaxPoints != null ? exam.writingMaxPoints : 25) : 0;
+            const totalPossiblePoints = (sec1Items.length > 0 ? s1Pts : 0)
+                + (optQs.length > 0 ? s2Pts : 0)
+                + (elecQs.length > 0 ? s3Pts : 0)
+                + s4Pts;
+
+            let html = `
+            <div class="moeys-exam-header">
+                <div class="moeys-header-grid">
+                    <div>
+                        <div class="moeys-title-kh">ក្រសួងអប់រំ យុវជន និងកីឡា</div>
+                        <div class="moeys-subtitle">វិញ្ញាសាប្រឡងស្តង់ដា មុខវិជ្ជារូបវិទ្យា</div>
+                        <div class="moeys-meta">
+                            សម័យប្រឡង៖ <strong>${escapeHtml(exam ? exam.month : '')}</strong><br>
+                            ថ្នាក់រៀន៖ <strong>${escapeHtml(studentClass || '')}</strong>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="moeys-title-kh" style="color: #0e7490;">វិញ្ញាសា៖ រូបវិទ្យា</div>
+                        <div class="moeys-subtitle" style="font-size: 0.95rem;">បេក្ខជន៖ <strong>${escapeHtml(studentName)}</strong></div>
+                        <div class="moeys-meta">
+                            រយៈពេល៖ <strong>៩០ នាទី</strong><br>
+                            ពិន្ទុសរុប៖ <strong>${totalPossiblePoints} ពិន្ទុ (ស្មើនឹង ១០០%)</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="moeys-score-summary">
+                    ${sec1Items.length > 0 ? `<span>📌 ផ្នែក I (មេកានិច): ${s1Pts} ពិន្ទុ</span>` : ''}
+                    ${optQs.length > 0 ? `<span>📌 ផ្នែក II (ទែម៉ូ/អុបទិក): ${s2Pts} ពិន្ទុ</span>` : ''}
+                    ${elecQs.length > 0 ? `<span>📌 ផ្នែក III (អគ្គិសនី): ${s3Pts} ពិន្ទុ</span>` : ''}
+                    ${hasWriting ? `<span style="color: #be123c;">📌 ផ្នែក IV (ដោះស្រាយលម្អិត): ${s4Pts} ពិន្ទុ</span>` : ''}
+                </div>
+            </div>`;
+
+            if (uploadedImgs.length > 0) {
+                html += `
+                <div class="exam-section-card" style="border-left: 4px solid #0e7490;">
+                    <div class="section-header" style="background: linear-gradient(135deg, #0e7490, #0284c7);">
+                        <span class="section-title">📷 រូបភាពដ្យាក្រាម និងទិន្នន័យវិញ្ញាសា (ចុចលើរូបដើម្បីពង្រីកមើលច្បាស់)</span>
+                    </div>
+                    <div class="section-body" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+                        ${uploadedImgs.map((img, i) => `
+                            <div style="border: 1.5px solid #bae6fd; border-radius: 10px; padding: 10px; background: #f8fafc; text-align: center;">
+                                <img src="${img.dataUrl}" onclick="zoomExamImage(this.src, '${escapeHtml(img.caption || ('រូបភាពទី ' + (i+1)))}')" style="max-width: 100%; max-height: 280px; object-fit: contain; border-radius: 6px; cursor: zoom-in;" alt="Physics Figure ${i+1}">
+                                ${img.caption ? `<div style="margin-top: 8px; font-weight: 700; color: #0c4a6e; font-size: 0.92rem;">${escapeHtml(img.caption)}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            if (exam && exam.readingPassage && exam.readingPassage.trim()) {
+                html += `
+                <div class="reading-passage-card" style="background: #f0f9ff; border-left: 4px solid #0e7490; padding: 14px 18px; border-radius: 8px; line-height: 1.75; font-size: 0.98rem; white-space: pre-wrap; margin-bottom: 18px;"><strong>⚛️ រូបមន្ត និងតម្លៃថេររូបវិទ្យាជំនួយ៖</strong>\n${escapeHtml(exam.readingPassage)}</div>`;
+            }
+
+            if (sec1Items.length > 0) {
+                html += `
+                <div class="exam-section-card" id="phys-section-1-card">
+                    <div class="section-header" style="background: linear-gradient(135deg, #0e7490, #06b6d4);">
+                        <span class="section-title">${escapeHtml((exam && exam.section1Title) || 'I. មេកានិច និងថាមពល៖')}</span>
+                        <span class="section-points-badge">${s1Pts} ពិន្ទុ</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-instruction">${escapeHtml((exam && exam.section1Instruction) || 'ចូរគណនា និងជ្រើសរើសចម្លើយ A, B, C ឬ D៖')}</div>
+                        ${sec1Items.map((q, idx) => renderMCQCard(q, idx, 'phys-mech-q')).join('')}
+                    </div>
+                </div>`;
+            }
+
+            if (optQs.length > 0) {
+                html += `
+                <div class="exam-section-card" id="phys-section-2-card">
+                    <div class="section-header grammar">
+                        <span class="section-title">${escapeHtml((exam && exam.section2Title) || 'II. ទែម៉ូឌីណាមិក រលក និងអុបទិក៖')}</span>
+                        <span class="section-points-badge">${s2Pts} ពិន្ទុ</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-instruction">${escapeHtml((exam && exam.section2Instruction) || 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D៖')}</div>
+                        ${optQs.map((q, idx) => renderMCQCard(q, idx, 'phys-opt-q')).join('')}
+                    </div>
+                </div>`;
+            }
+
+            if (elecQs.length > 0) {
+                html += `
+                <div class="exam-section-card" id="phys-section-3-card">
+                    <div class="section-header vocabulary">
+                        <span class="section-title">${escapeHtml((exam && exam.section3Title) || 'III. អគ្គិសនី និងអេឡិចត្រូម៉ាញេទិក៖')}</span>
+                        <span class="section-points-badge">${s3Pts} ពិន្ទុ</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-instruction">${escapeHtml((exam && exam.section3Instruction) || 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D៖')}</div>
+                        ${elecQs.map((q, idx) => renderMCQCard(q, idx, 'phys-elec-q')).join('')}
+                    </div>
+                </div>`;
+            }
+
+            if (hasWriting || uploadedImgs.length > 0) {
+                html += `
+                <div class="exam-section-card" id="phys-section-4-card">
+                    <div class="section-header" style="background: linear-gradient(135deg, #be123c, #e11d48);">
+                        <span class="section-title">${escapeHtml((exam && exam.section4Title) || 'IV. លំហាត់អនុវត្ត និងដោះស្រាយលម្អិត៖')}</span>
+                        ${hasWriting ? `<span class="section-points-badge">${s4Pts} ពិន្ទុ</span>` : ''}
+                    </div>
+                    <div class="section-body">
+                        <div class="section-instruction">${escapeHtml((exam && exam.section4Instruction) || 'ចូរសរសេររបៀបដោះស្រាយលម្អិត (រូបមន្ត ការជំនួសលេខ និងខ្នាតត្រឹមត្រូវ)៖')}</div>
+                        ${hasWriting ? `
+                        <div style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                            <div style="font-weight: bold; color: #9f1239; margin-bottom: 6px;">⚡ ប្រធានលំហាត់រូបវិទ្យា៖</div>
+                            <div style="font-size: 1.03rem; line-height: 1.75; color: #881337; white-space: pre-wrap;">${escapeHtml(exam.writingPrompt)}</div>
+                        </div>` : ''}
+                        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; align-items:center;">
+                            <span style="font-size:0.85rem; color:#475569; font-weight:600;">⚛️ និមិត្តសញ្ញារូបវិទ្យា៖</span>
+                            ${['Ω','μ','λ','Δ','θ','ρ','²','³','√','π','°','×','→'].map(sym =>
+                                `<button type="button" onclick="insertStudentMathSymbol('${sym}')" style="padding:3px 9px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; cursor:pointer; font-weight:bold;">${sym}</button>`
+                            ).join('')}
+                        </div>
+                        <div>
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 6px;">✍️ របៀបដោះស្រាយ និងចម្លើយរបស់ប្អូន៖</label>
+                            <textarea id="studentWritingTextarea" class="form-control" rows="10" style="width: 100%; font-family: inherit; font-size: 1rem; line-height: 1.7; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 12px;" placeholder="សូមសរសេរប្រធានបទ សមីការ រូបមន្ត និងលទ្ធផលគណនាជាជំហានៗនៅទីនេះ..."></textarea>
+                            <div style="margin-top: 8px; font-size: 0.9rem; color: #be123c; font-weight: 600;">* ដំណោះស្រាយរបស់ប្អូននឹងត្រូវបានផ្ញើជូនគ្រូរូបវិទ្យាដើម្បីពិនិត្យ និងដាក់ពិន្ទុ</div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            html += `<button type="button" class="btn-submit" onclick="submitExam()"><span>🚀</span> <span>បញ្ជូនចម្លើយ (Submit Physics Exam)</span></button>`;
+            container.innerHTML = html;
+        }
+
         function renderMCQCard(q, idx, extraClass) {
             const qId = q.id || idx;
             return `
             <div class="question-card ${extraClass}" data-qid="${qId}">
                 <div class="question-text">${escapeHtml(q.questionText || '')}</div>
+                ${q.imageData ? `<div style="margin:8px 0 12px;"><img src="${q.imageData}" onclick="zoomExamImage(this.src)" style="max-width:100%; max-height:240px; border-radius:8px; border:1px solid #cbd5e1; cursor:zoom-in;" alt="Question figure"></div>` : ''}
                 <div class="options-grid two-cols">
                     <label class="option-label" onclick="selectRadioOption(this)">
                         <input type="radio" name="q_${qId}" value="A"> <span class="option-text">A. ${escapeHtml(q.optionA || '')}</span>
@@ -1321,13 +1496,21 @@
                 (currentExam.readingPassage && currentExam.readingPassage.trim().length > 0) ||
                 (currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0)
             );
-            const isEnglish = !isKhmerMulti && !isMathMulti && ((currentExam && currentExam.subjectName === 'ភាសាអង់គ្លេស') ||
+            const isPhysicsMulti = currentExam && currentExam.subjectName === 'រូបវិទ្យា' && (
+                currentQuestions.some(q => q.skillType && q.skillType.startsWith('phys_')) ||
+                (currentExam.examImagesJson && currentExam.examImagesJson.trim().length > 2) ||
+                (currentExam.readingPassage && currentExam.readingPassage.trim().length > 0) ||
+                (currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0)
+            );
+            const isEnglish = !isKhmerMulti && !isMathMulti && !isPhysicsMulti && ((currentExam && currentExam.subjectName === 'ភាសាអង់គ្លេស') ||
                               currentQuestions.some(q => q.skillType === 'gaps_filling'));
 
             if (isKhmerMulti) {
                 evaluateAndSubmitKhmerExam();
             } else if (isMathMulti) {
                 evaluateAndSubmitMathExam();
+            } else if (isPhysicsMulti) {
+                evaluateAndSubmitPhysicsExam();
             } else if (isEnglish) {
                 evaluateAndSubmitEnglishExam();
             } else {
@@ -1738,6 +1921,96 @@
                 ${renderReviewBlock('ផ្នែកទី I៖ ពីជគណិត និងការគណនា', '#1e40af', aRes.review)}
                 ${renderReviewBlock('ផ្នែកទី II៖ ធរណីមាត្រ និងរង្វាស់រង្វាល់', '#0f766e', gRes.review)}
                 ${renderReviewBlock('ផ្នែកទី III៖ អនុគមន៍ ស្ថិតិ និងប្រូបាប៊ីលីតេ', '#6d28d9', pRes.review)}
+                ${studentSolutionText ? `<h4 style="color:#be123c;margin-top:22px;">ផ្នែកទី IV៖ ដំណោះស្រាយលំហាត់របស់អ្នក</h4><div class="review-item" style="border-left-color:#e11d48;background:#fff1f2;"><div style="white-space:pre-wrap;line-height:1.7;">${escapeHtml(studentSolutionText)}</div></div>` : ''}
+                <div style="text-align: center; margin-top: 30px;"><a href="/test/logout" style="display:inline-block;padding:12px 30px;background:var(--primary);color:white;text-decoration:none;border-radius:8px;font-weight:bold;">ចាកចេញ (Logout)</a></div>
+            </div>`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function evaluateAndSubmitPhysicsExam() {
+            const mechQs = currentQuestions.filter(q => q.skillType === 'phys_mechanics');
+            const optQs = currentQuestions.filter(q => q.skillType === 'phys_optics');
+            const elecQs = currentQuestions.filter(q => q.skillType === 'phys_electricity');
+            const fallbackQs = currentQuestions.filter(q => !q.skillType || q.skillType === 'general');
+            const sec1Items = mechQs.length > 0 ? mechQs : fallbackQs;
+
+            const s1Pts = (currentExam && currentExam.section1MaxPoints != null) ? currentExam.section1MaxPoints : 15;
+            const s2Pts = (currentExam && currentExam.section2MaxPoints != null) ? currentExam.section2MaxPoints : 15;
+            const s3Pts = (currentExam && currentExam.section3MaxPoints != null) ? currentExam.section3MaxPoints : 15;
+            const hasWriting = !!(currentExam && currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0);
+            const s4Pts = hasWriting ? (currentExam.writingMaxPoints != null ? currentExam.writingMaxPoints : 25) : 0;
+
+            const totalMcqMax = (sec1Items.length > 0 ? s1Pts : 0) + (optQs.length > 0 ? s2Pts : 0) + (elecQs.length > 0 ? s3Pts : 0);
+            const totalPossiblePoints = totalMcqMax + s4Pts;
+
+            const gradeMcqSection = (items, maxPts) => {
+                const ptsPerQ = items.length > 0 ? (maxPts / items.length) : 0;
+                let pts = 0, correctCount = 0;
+                const review = [];
+                items.forEach((q, idx) => {
+                    const qId = q.id || idx;
+                    const selected = document.querySelector(`input[name="q_${qId}"]:checked`);
+                    const userVal = selected ? selected.value : '';
+                    const isCorrect = !!(userVal && userVal.toUpperCase() === (q.correctOption || '').toUpperCase());
+                    if (isCorrect) { pts += ptsPerQ; correctCount++; }
+                    review.push({ num: idx + 1, text: q.questionText, userChoice: userVal || '(មិនទាន់ឆ្លើយ)', correctOption: q.correctOption, isCorrect });
+                });
+                return { pts: Math.round(pts * 10) / 10, correctCount, total: items.length, review };
+            };
+
+            const mRes = gradeMcqSection(sec1Items, s1Pts);
+            const oRes = gradeMcqSection(optQs, s2Pts);
+            const eRes = gradeMcqSection(elecQs, s3Pts);
+
+            const totalPointsEarned = Math.round((mRes.pts + oRes.pts + eRes.pts) * 10) / 10;
+            const percentageScore = totalPossiblePoints > 0 ? Math.round((totalPointsEarned / totalPossiblePoints) * 100) : 0;
+
+            const month = document.getElementById('monthSelect').value;
+            const subjectName = document.getElementById('subjectSelect').value;
+            const studentSolutionText = document.getElementById('studentWritingTextarea') ? document.getElementById('studentWritingTextarea').value.trim() : '';
+
+            try {
+                const subRes = await fetch('/api/student-portal/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ month, subjectName, totalScore: percentageScore, studentWriting: studentSolutionText })
+                });
+                const subData = await subRes.json().catch(() => ({}));
+                if (!subRes.ok || subData.blocked) {
+                    alert(subData.message || '⚠️ មិនអាចបញ្ជូនចម្លើយបានឡើយ!');
+                    return;
+                }
+            } catch (e) { console.error(e); }
+
+            const renderReviewBlock = (title, color, arr) => arr.length === 0 ? '' : `
+                <h4 style="color: ${color}; margin-top: 22px;">${title}</h4>
+                <div>${arr.map(item => `
+                    <div class="review-item ${item.isCorrect ? 'correct' : 'wrong'}">
+                        <div><strong>${escapeHtml(item.text)}</strong></div>
+                        <div>${item.isCorrect
+                            ? `<span style="color:#15803d; font-weight:bold;">✓ ចម្លើយរបស់អ្នក៖ ${escapeHtml(item.userChoice)} (ត្រឹមត្រូវ)</span>`
+                            : `<span style="color:#b91c1c;">✗ ចម្លើយរបស់អ្នក៖ ${escapeHtml(item.userChoice)}</span> — <span style="color:#15803d; font-weight:bold;">ចម្លើយត្រូវ៖ ${escapeHtml(item.correctOption)}</span>`
+                        }</div>
+                    </div>`).join('')}</div>`;
+
+            document.getElementById('examContent').innerHTML = `
+            <div class="results-container">
+                <div style="text-align: center;">
+                    <div style="font-size: 3.5rem; margin: 0;">🎉</div>
+                    <h2 style="color: #0f172a; margin: 10px 0 5px;">ប្អូនបានបញ្ចប់ការប្រឡងមុខវិជ្ជារូបវិទ្យា!</h2>
+                    <p style="color: #64748b;">ពិន្ទុផ្នែកសំណួរត្រូវបានកត់ត្រាចូលក្នុងប្រព័ន្ធដោយស្វ័យប្រវត្តិ។</p>
+                    <div class="results-score-badge">${percentageScore}% <span style="font-size: 1.2rem; font-weight: normal; color: #166534;">(${totalPointsEarned} / ${totalPossiblePoints} ពិន្ទុ)</span></div>
+                </div>
+                <div class="section-score-row">
+                    ${mRes.total > 0 ? `<div class="sec-score-card"><div style="font-weight:bold;color:#0e7490;">I. មេកានិច</div><div style="font-size:1.5rem;font-weight:800;color:#0e7490;">${mRes.pts} / ${s1Pts}</div><div style="font-size:0.85rem;color:#64748b;">(ត្រូវ ${mRes.correctCount}/${mRes.total})</div></div>` : ''}
+                    ${oRes.total > 0 ? `<div class="sec-score-card"><div style="font-weight:bold;color:#0f766e;">II. ទែម៉ូ/អុបទិក</div><div style="font-size:1.5rem;font-weight:800;color:#0d9488;">${oRes.pts} / ${s2Pts}</div><div style="font-size:0.85rem;color:#64748b;">(ត្រូវ ${oRes.correctCount}/${oRes.total})</div></div>` : ''}
+                    ${eRes.total > 0 ? `<div class="sec-score-card"><div style="font-weight:bold;color:#6d28d9;">III. អគ្គិសនី</div><div style="font-size:1.5rem;font-weight:800;color:#7c3aed;">${eRes.pts} / ${s3Pts}</div><div style="font-size:0.85rem;color:#64748b;">(ត្រូវ ${eRes.correctCount}/${eRes.total})</div></div>` : ''}
+                    ${hasWriting ? `<div class="sec-score-card" style="border-color:#fecdd3;background:#fff1f2;"><div style="font-weight:bold;color:#be123c;">IV. ដោះស្រាយលម្អិត</div><div style="font-size:1.2rem;font-weight:800;color:#9f1239;">${studentSolutionText ? 'បានបញ្ជូន' : 'មិនទាន់សរសេរ'}</div><div style="font-size:0.85rem;color:#881337;">(រង់ចាំគ្រូដាក់ពិន្ទុ / ${s4Pts})</div></div>` : ''}
+                </div>
+                <h3 style="margin-top: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">🔍 ផ្ទៀងផ្ទាត់ចម្លើយលម្អិត</h3>
+                ${renderReviewBlock('ផ្នែកទី I៖ មេកានិច និងថាមពល', '#0e7490', mRes.review)}
+                ${renderReviewBlock('ផ្នែកទី II៖ ទែម៉ូឌីណាមិក រលក និងអុបទិក', '#0f766e', oRes.review)}
+                ${renderReviewBlock('ផ្នែកទី III៖ អគ្គិសនី និងអេឡិចត្រូម៉ាញេទិក', '#6d28d9', eRes.review)}
                 ${studentSolutionText ? `<h4 style="color:#be123c;margin-top:22px;">ផ្នែកទី IV៖ ដំណោះស្រាយលំហាត់របស់អ្នក</h4><div class="review-item" style="border-left-color:#e11d48;background:#fff1f2;"><div style="white-space:pre-wrap;line-height:1.7;">${escapeHtml(studentSolutionText)}</div></div>` : ''}
                 <div style="text-align: center; margin-top: 30px;"><a href="/test/logout" style="display:inline-block;padding:12px 30px;background:var(--primary);color:white;text-decoration:none;border-radius:8px;font-weight:bold;">ចាកចេញ (Logout)</a></div>
             </div>`;

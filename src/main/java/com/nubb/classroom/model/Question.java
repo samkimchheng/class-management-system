@@ -17,6 +17,9 @@ private Long examId;
     @Column(columnDefinition = "TEXT")
     private String questionText;
 
+    @Column(columnDefinition = "TEXT")
+    private String imageData;
+
     private String optionA;
     private String optionB;
     private String optionC;
@@ -24,6 +27,9 @@ private Long examId;
     
     // A, B, C, or D
     private String correctOption;
+
+    public String getImageData() { return imageData; }
+    public void setImageData(String imageData) { this.imageData = imageData; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

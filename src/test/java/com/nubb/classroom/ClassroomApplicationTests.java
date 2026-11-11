@@ -956,4 +956,86 @@ class ClassroomApplicationTests {
         questionRepository.deleteAll(createdQs);
         examRepository.delete(createdOpt.get());
     }
+
+    @Test
+    void testPhysicsStandardExamAndImageUpload_ZeroDataLoss() throws Exception {
+        Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(somuny);
+
+        // 1. Verify /exams renders cleanly and Demo account (98) received starter Standard MoEYS Physics Exam
+        mockMvc.perform(get("/exams")
+                .sessionAttr("ACCOUNT_ID", somuny.getId())
+                .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
+                .sessionAttr("ACCOUNT_NAME", somuny.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk());
+
+        Account demoAcc = accountRepository.findById(98L).orElse(null);
+        assertNotNull(demoAcc);
+        List<com.nubb.classroom.model.Exam> demoPhysExams = examRepository.findByAccountId(demoAcc.getId()).stream()
+                .filter(e -> "រូបវិទ្យា".equals(e.getSubjectName()))
+                .toList();
+        assertFalse(demoPhysExams.isEmpty(), "Expected starter Standard Physics Exam for Demo account");
+        List<com.nubb.classroom.model.Question> demoQs = questionRepository.findByExamIdAndAccountId(demoPhysExams.get(0).getId(), demoAcc.getId());
+        assertTrue(demoQs.stream().anyMatch(q -> "phys_mechanics".equals(q.getSkillType())));
+        assertTrue(demoQs.stream().anyMatch(q -> "phys_optics".equals(q.getSkillType())));
+        assertTrue(demoQs.stream().anyMatch(q -> "phys_electricity".equals(q.getSkillType())));
+
+        // 2. Verify saving a Standard Physics Exam WITH uploaded exam images & question diagram persists cleanly without affecting other teachers' data
+        long kimchhengExamCountBefore = examRepository.findByAccountId(97L).size();
+        String tinyPngDataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+        String physPayload = """
+            {
+              "month": "__TEST_PHYSICS__",
+              "classes": ["៨D"],
+              "subjectName": "រូបវិទ្យា",
+              "readingPassage": "រូបមន្ត៖ U = R·I, g = 10 m/s²",
+              "examImagesJson": "[{\\"caption\\":\\"សៀគ្វីអគ្គិសនី\\",\\"dataUrl\\":\\"%s\\"}]",
+              "section1Title": "I. មេកានិច៖",
+              "section1Instruction": "គណនា",
+              "section1MaxPoints": 15,
+              "section2Title": "II. អុបទិក៖",
+              "section2Instruction": "ជ្រើសរើស",
+              "section2MaxPoints": 15,
+              "section3Title": "III. អគ្គិសនី៖",
+              "section3Instruction": "ជ្រើសរើស",
+              "section3MaxPoints": 15,
+              "section4Title": "IV. លំហាត់ដោះស្រាយលម្អិត៖",
+              "section4Instruction": "សរសេរជាជំហានៗ",
+              "writingPrompt": "គណនាអាំងតង់ស៊ីតេចរន្ត I ពីសៀគ្វីក្នុងរូបភាព។",
+              "writingMaxPoints": 25,
+              "questions": [
+                {"skillType":"phys_mechanics","questionText":"ខ្នាតកម្លាំង","optionA":"J","optionB":"N","optionC":"W","optionD":"Pa","correctOption":"B","imageData":"%s"},
+                {"skillType":"phys_optics","questionText":"27°C ស្មើ","optionA":"246K","optionB":"273K","optionC":"300K","optionD":"327K","correctOption":"C"},
+                {"skillType":"phys_electricity","questionText":"ខ្នាតរេស៊ីស្តង់","optionA":"A","optionB":"V","optionC":"Ω","optionD":"C","correctOption":"C"}
+              ]
+            }
+            """.formatted(tinyPngDataUrl, tinyPngDataUrl);
+
+        mockMvc.perform(post("/api/exams/save")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(physPayload)
+                .sessionAttr("ACCOUNT_ID", somuny.getId()))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.success").value(true));
+
+        assertEquals(kimchhengExamCountBefore, examRepository.findByAccountId(97L).size());
+        assertEquals(48, studentRepository.findByClassNameAndAccountId("៨D", somuny.getId()).size());
+
+        // 3. Verify GET /api/exams/get returns uploaded exam images + per-question image intact
+        mockMvc.perform(get("/api/exams/get")
+                .param("month", "__TEST_PHYSICS__")
+                .param("subjectName", "រូបវិទ្យា")
+                .sessionAttr("ACCOUNT_ID", somuny.getId()))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.exam.examImagesJson").value(org.hamcrest.Matchers.containsString("សៀគ្វីអគ្គិសនី")))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.questions[0].imageData").value(tinyPngDataUrl));
+
+        // Clean up temporary test row only
+        var createdOpt = examRepository.findByMonthAndSubjectNameAndAccountId("__TEST_PHYSICS__", "រូបវិទ្យា", somuny.getId()).stream().findFirst();
+        assertTrue(createdOpt.isPresent());
+        var createdQs = questionRepository.findByExamIdAndAccountId(createdOpt.get().getId(), somuny.getId());
+        questionRepository.deleteAll(createdQs);
+        examRepository.delete(createdOpt.get());
+    }
 }

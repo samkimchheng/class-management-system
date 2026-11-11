@@ -879,6 +879,9 @@ public class DataInitializer {
             // 17. Safely seed a starter Standard MoEYS Mathematics Exam ONLY for Math teachers who have zero Math exams yet
             seedMathExamIfMissing(accountRepository, classroomRepository, examRepository, questionRepository);
 
+            // 18. Safely seed a starter Standard MoEYS Physics Exam ONLY for Physics teachers who have zero Physics exams yet
+            seedPhysicsExamIfMissing(accountRepository, classroomRepository, examRepository, questionRepository);
+
             // Align all table sequences for H2 and PostgreSQL so new auto-increment rows never collide with pre-seeded data
             try {
                 alignAllSequences(dataSource);
@@ -1222,6 +1225,115 @@ public class DataInitializer {
             }
         } catch (Exception e) {
             System.err.println(">>> [DataInitializer] Notice seeding Math exam: " + e.getMessage());
+        }
+    }
+
+    private void seedPhysicsExamIfMissing(
+            AccountRepository accountRepository,
+            ClassroomRepository classroomRepository,
+            ExamRepository examRepository,
+            QuestionRepository questionRepository) {
+        try {
+            List<Account> allAccounts = accountRepository.findAll();
+            for (Account acc : allAccounts) {
+                String subj = acc.getSubject();
+                boolean isDemo = Long.valueOf(98L).equals(acc.getId());
+                if (!isDemo && (subj == null || (!subj.contains("រូប") && !subj.toLowerCase().contains("phys")))) {
+                    continue;
+                }
+
+                // STRICT ZERO DATA LOSS: Never touch or overwrite if this teacher already has any Physics exam
+                boolean hasAnyPhysicsExam = examRepository.findByAccountId(acc.getId()).stream()
+                        .anyMatch(e -> "រូបវិទ្យា".equals(e.getSubjectName()));
+                if (hasAnyPhysicsExam) {
+                    continue;
+                }
+
+                List<Classroom> teacherClasses = classroomRepository.findByAccountId(acc.getId());
+                String classNames = teacherClasses.stream()
+                        .map(Classroom::getClassName)
+                        .filter(java.util.Objects::nonNull)
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .distinct()
+                        .collect(java.util.stream.Collectors.joining(", "));
+                if (classNames.isEmpty()) {
+                    classNames = (acc.getTeachingClasses() != null && !acc.getTeachingClasses().trim().isEmpty())
+                            ? acc.getTeachingClasses().trim()
+                            : "៨D";
+                }
+
+                Exam exam = new Exam();
+                exam.setAccountId(acc.getId());
+                exam.setMonth("ខែវិច្ឆិកា ២០២៦");
+                exam.setSubjectName("រូបវិទ្យា");
+                exam.setClassName(classNames);
+                exam.setOpenClasses(""); // Closed by default until teacher opens for class
+                exam.setReadingPassage(
+                        "រូបមន្ត និងតម្លៃថេររូបវិទ្យាជំនួយ៖\n" +
+                        "• សំទុះទំនាញផែនដី៖ g = 10 m/s²  |  ល្បឿនពន្លឺក្នុងសុញ្ញាកាស៖ c = 3 × 10⁸ m/s\n" +
+                        "• មេកានិច៖ P = m·g  |  p = F / S  |  v = d / t  |  Ec = ½mv²  |  Ep = mgh\n" +
+                        "• អគ្គិសនី៖ ច្បាប់អូម U = R·I  |  អានុភាព P = U·I  |  ថាមពល E = P·t"
+                );
+                exam.setSection1Title("I. មេកានិច និងថាមពល៖");
+                exam.setSection1Instruction("ចូរគណនា និងជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (១៥ ពិន្ទុ)");
+                exam.setSection1MaxPoints(15);
+                exam.setSection2Title("II. ទែម៉ូឌីណាមិក រលក និងអុបទិក៖");
+                exam.setSection2Instruction("ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (១៥ ពិន្ទុ)");
+                exam.setSection2MaxPoints(15);
+                exam.setSection3Title("III. អគ្គិសនី និងអេឡិចត្រូម៉ាញេទិក៖");
+                exam.setSection3Instruction("ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (១៥ ពិន្ទុ)");
+                exam.setSection3MaxPoints(15);
+                exam.setSection4Title("IV. លំហាត់អនុវត្ត និងដោះស្រាយលម្អិត៖");
+                exam.setSection4Instruction("ចូរសរសេររបៀបដោះស្រាយលម្អិត (រូបមន្ត ការជំនួសលេខ និងខ្នាតត្រឹមត្រូវ)៖ (២៥ ពិន្ទុ)");
+                exam.setWritingPrompt(
+                        "១. (១២ ពិន្ទុ) ម៉ូតូមួយគ្រឿងបើកបរក្នុងល្បឿនថេរ 72 km/h លើផ្លូវត្រង់អស់រយៈពេល 15 នាទី។\n" +
+                        "   ក) ចូរបំប្លែងល្បឿនពី km/h ទៅជា m/s។\n" +
+                        "   ខ) គណនាចម្ងាយចរសរុបរបស់ម៉ូតូគិតជាម៉ែត្រ (m) និងគីឡូម៉ែត្រ (km)។\n\n" +
+                        "២. (១៣ ពិន្ទុ) រេស៊ីស្តង់មួយមានតម្លៃ R = 20 Ω ត្រូវបានតភ្ជាប់ជាមួយប្រភពតង់ស្យុង U = 12 V ។\n" +
+                        "   ក) គណនាអាំងតង់ស៊ីតេចរន្តអគ្គិសនី I ដែលឆ្លងកាត់រេស៊ីស្តង់។\n" +
+                        "   ខ) គណនាអានុភាពអគ្គិសនី P និងថាមពលអគ្គិសនី E ដែលប្រើប្រាស់ក្នុងរយៈពេល 10 នាទី។"
+                );
+                exam.setWritingMaxPoints(25);
+                exam = examRepository.save(exam);
+
+                String[][] sampleQuestions = {
+                    // Section I: Mechanics (phys_mechanics)
+                    {"phys_mechanics", "១. ក្នុងប្រព័ន្ធខ្នាតអន្តរជាតិ (SI) តើខ្នាតរបស់ «កម្លាំង» គឺអ្វី?", "ស៊ូល (J)", "ញូតុន (N)", "វ៉ាត់ (W)", "ប៉ាស្កាល់ (Pa)", "B"},
+                    {"phys_mechanics", "២. អង្គធាតុមួយមានម៉ាស់ m = 5 kg នៅទីកន្លែងដែល g = 10 N/kg។ តើទម្ងន់របស់វាស្មើប៉ុន្មាន?", "0.5 N", "5 N", "15 N", "50 N", "D"},
+                    {"phys_mechanics", "៣. រថយន្តមួយបើកបរបានចម្ងាយ 120 km ក្នុងរយៈពេល 2 ម៉ោង។ តើល្បឿនមធ្យមរបស់វាស្មើប៉ុន្មាន?", "40 km/h", "60 km/h", "120 km/h", "240 km/h", "B"},
+                    {"phys_mechanics", "៤. កម្លាំង F = 40 N អំពើលើអង្គធាតុមួយឱ្យផ្លាស់ទីតាមទិសកម្លាំងបានចម្ងាយ d = 5 m។ តើកម្មន្ត W ស្មើប៉ុន្មាន?", "8 J", "45 J", "200 J", "400 J", "C"},
+                    {"phys_mechanics", "៥. អង្គធាតុមួយមានម៉ាស់ 2 kg កំពុងផ្លាស់ទីដោយល្បឿន 4 m/s។ តើថាមពលស៊ីនេទិច Ec ស្មើប៉ុន្មាន?", "8 J", "16 J", "32 J", "4 J", "B"},
+                    // Section II: Thermodynamics, Waves & Optics (phys_optics)
+                    {"phys_optics", "១. សីតុណ្ហភាព 27°C ត្រូវនឹងប៉ុន្មានកែលវិន (K)?", "246 K", "273 K", "300 K", "327 K", "C"},
+                    {"phys_optics", "២. ទឹកសុទ្ធពុះនៅសីតុណ្ហភាពប៉ុន្មានក្រោមសម្ពាធបរិយាកាសធម្មតា?", "0°C", "50°C", "100°C", "212°C", "C"},
+                    {"phys_optics", "៣. តាមច្បាប់ចំណាំងផ្លាតពន្លឺ ប្រសិនបើមុំប៉ះ i = 35° តើមុំចំណាំងផ្លាត r ស្មើប៉ុន្មាន?", "35°", "55°", "70°", "90°", "A"},
+                    {"phys_optics", "៤. រលកសំឡេងមិនអាចដាលឆ្លងកាត់មជ្ឈដ្ឋានមួយណាបានទេ?", "ដែក", "ទឹក", "ខ្យល់", "សុញ្ញាកាស (ទីទំនេរ)", "D"},
+                    {"phys_optics", "៥. រលកមួយមានប្រេកង់ f = 50 Hz។ តើខួប T របស់រលកស្មើប៉ុន្មាន?", "0.02 s", "0.2 s", "2 s", "50 s", "A"},
+                    // Section III: Electricity & Magnetism (phys_electricity)
+                    {"phys_electricity", "១. ខ្នាតរបស់ «រេស៊ីស្តង់អគ្គិសនី» គឺអ្វី?", "អំពែ (A)", "វ៉ុល (V)", "អូម (Ω)", "គូឡុំ (C)", "C"},
+                    {"phys_electricity", "២. បើតង់ស្យុង U = 12 V និងរេស៊ីស្តង់ R = 4 Ω តើអាំងតង់ស៊ីតេចរន្ត I ស្មើប៉ុន្មាន?", "3 A", "8 A", "16 A", "48 A", "A"},
+                    {"phys_electricity", "៣. អំពូលភ្លើងមួយមានអានុភាព P = 60 W ប្រើតង់ស្យុង 220 V។ តើថាមពលប្រើក្នុង 10 s ស្មើប៉ុន្មាន?", "6 J", "60 J", "600 J", "2200 J", "C"},
+                    {"phys_electricity", "៤. មេដែកមួយមានប៉ូលប៉ុន្មាន?", "១ ប៉ូល", "២ ប៉ូល (ជើង និងត្បូង)", "៣ ប៉ូល", "៤ ប៉ូល", "B"},
+                    {"phys_electricity", "៥. បង្គុំរេស៊ីស្តង់ R₁ = 6 Ω និង R₂ = 4 Ω តជាស៊េរី មានរេស៊ីស្តង់សមមូល Req ស្មើប៉ុន្មាន?", "2.4 Ω", "10 Ω", "24 Ω", "1.5 Ω", "B"}
+                };
+                for (String[] row : sampleQuestions) {
+                    Question q = new Question();
+                    q.setExamId(exam.getId());
+                    q.setAccountId(acc.getId());
+                    q.setSkillType(row[0]);
+                    q.setQuestionText(row[1]);
+                    q.setOptionA(row[2]);
+                    q.setOptionB(row[3]);
+                    q.setOptionC(row[4]);
+                    q.setOptionD(row[5]);
+                    q.setCorrectOption(row[6]);
+                    questionRepository.save(q);
+                }
+                System.out.println(">>> [DataInitializer] Seeded starter Standard MoEYS Physics Exam for Physics teacher: " + acc.getFullName() + " (ID " + acc.getId() + ")");
+            }
+        } catch (Exception e) {
+            System.err.println(">>> [DataInitializer] Notice seeding Physics exam: " + e.getMessage());
         }
     }
 

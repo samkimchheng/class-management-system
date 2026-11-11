@@ -110,6 +110,12 @@ public class Exam {
     private String writingPrompt;
     private Integer writingMaxPoints;
 
+    @Column(columnDefinition = "TEXT")
+    private String examImagesJson;
+
+    public String getExamImagesJson() { return examImagesJson; }
+    public void setExamImagesJson(String examImagesJson) { this.examImagesJson = examImagesJson; }
+
     public String getSection4Title() { return section4Title; }
     public void setSection4Title(String section4Title) { this.section4Title = section4Title; }
 
