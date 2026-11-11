@@ -795,4 +795,78 @@ class ClassroomApplicationTests {
         List<Student> somuny8D = studentRepository.findByClassNameAndAccountId("៨D", somuny.getId());
         assertEquals(48, somuny8D.size());
     }
+
+    @Test
+    void testKhmerStandardExamWorkflow_ZeroDataLoss() throws Exception {
+        Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(somuny);
+
+        // 1. Verify Seung Somuny (/exams) page loads cleanly with 200 OK
+        mockMvc.perform(get("/exams")
+                .sessionAttr("ACCOUNT_ID", somuny.getId())
+                .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
+                .sessionAttr("ACCOUNT_NAME", somuny.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk());
+
+        // 2. Verify starter Standard MoEYS Khmer Exam was seeded safely without losing existing data
+        List<com.nubb.classroom.model.Exam> somunyExams = examRepository.findByAccountId(somuny.getId()).stream()
+                .filter(e -> "ភាសាខ្មែរ".equals(e.getSubjectName()))
+                .toList();
+        assertFalse(somunyExams.isEmpty(), "Expected starter Standard Khmer Exam for Khmer teacher Seung Somuny");
+
+        com.nubb.classroom.model.Exam sampleExam = somunyExams.get(0);
+        assertNotNull(sampleExam.getReadingPassage());
+        assertNotNull(sampleExam.getWritingPrompt());
+        List<com.nubb.classroom.model.Question> qs = questionRepository.findByExamIdAndAccountId(sampleExam.getId(), somuny.getId());
+        assertTrue(qs.stream().anyMatch(q -> "kh_reading".equals(q.getSkillType())));
+        assertTrue(qs.stream().anyMatch(q -> "kh_grammar".equals(q.getSkillType())));
+        assertTrue(qs.stream().anyMatch(q -> "kh_literature".equals(q.getSkillType())));
+
+        // 3. Verify saving a new Khmer Standard Exam via /api/exams/save works and does not disturb Sam Kimchheng's exams
+        long kimchhengExamCountBefore = examRepository.findByAccountId(97L).size();
+        String khmerPayload = """
+            {
+              "month": "ប្រចាំឆ្នាំ",
+              "classes": ["៨D"],
+              "subjectName": "ភាសាខ្មែរ",
+              "readingPassage": "អត្ថបទស្តង់ដាសម្រាប់តេស្ត...",
+              "section1Title": "I. អំណាន៖",
+              "section1Instruction": "ជ្រើសរើសចម្លើយ",
+              "section1MaxPoints": 15,
+              "section2Title": "II. វេយ្យាករណ៍៖",
+              "section2Instruction": "ជ្រើសរើសចម្លើយ",
+              "section2MaxPoints": 15,
+              "section3Title": "III. អក្សរសិល្ប៍៖",
+              "section3Instruction": "ជ្រើសរើសចម្លើយ",
+              "section3MaxPoints": 15,
+              "section4Title": "IV. តែងសេចក្តី៖",
+              "section4Instruction": "សរសេរតែងសេចក្តី",
+              "writingPrompt": "ពន្យល់សុភាសិត ចេះពីរៀន មានពីរក។",
+              "writingMaxPoints": 25,
+              "questions": [
+                {"skillType":"kh_reading","questionText":"សំណួរទី១","optionA":"ក","optionB":"ខ","optionC":"គ","optionD":"ឃ","correctOption":"B"},
+                {"skillType":"kh_grammar","questionText":"សំណួរទី២","optionA":"ក","optionB":"ខ","optionC":"គ","optionD":"ឃ","correctOption":"A"},
+                {"skillType":"kh_literature","questionText":"សំណួរទី៣","optionA":"ក","optionB":"ខ","optionC":"គ","optionD":"ឃ","correctOption":"C"}
+              ]
+            }
+            """;
+
+        mockMvc.perform(post("/api/exams/save")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(khmerPayload)
+                .sessionAttr("ACCOUNT_ID", somuny.getId()))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.success").value(true));
+
+        assertEquals(kimchhengExamCountBefore, examRepository.findByAccountId(97L).size());
+
+        // Clean up the test-created "ប្រចាំឆ្នាំ" exam while keeping starter seeded data intact
+        var createdOpt = examRepository.findByMonthAndSubjectNameAndAccountId("ប្រចាំឆ្នាំ", "ភាសាខ្មែរ", somuny.getId()).stream().findFirst();
+        if (createdOpt.isPresent()) {
+            var createdQs = questionRepository.findByExamIdAndAccountId(createdOpt.get().getId(), somuny.getId());
+            questionRepository.deleteAll(createdQs);
+            examRepository.delete(createdOpt.get());
+        }
+    }
 }

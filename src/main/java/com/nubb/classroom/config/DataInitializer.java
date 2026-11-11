@@ -873,6 +873,9 @@ public class DataInitializer {
             // 15. Ensure Sam Kimchheng's (97) daily teaching logs are preserved and seeded
             seedSamKimchhengDailyTeachingLogsIfMissing(dailyTeachingLogRepository);
 
+            // 16. Safely seed a starter Standard MoEYS Khmer Exam ONLY for Khmer teachers who have zero Khmer exams yet
+            seedKhmerExamIfMissing(accountRepository, classroomRepository, examRepository, questionRepository);
+
             // Align all table sequences for H2 and PostgreSQL so new auto-increment rows never collide with pre-seeded data
             try {
                 alignAllSequences(dataSource);
@@ -1004,6 +1007,108 @@ public class DataInitializer {
             }
         } catch (Exception e) {
             System.err.println(">>> [DataInitializer] Notice seeding English exam: " + e.getMessage());
+        }
+    }
+
+    private void seedKhmerExamIfMissing(
+            AccountRepository accountRepository,
+            ClassroomRepository classroomRepository,
+            ExamRepository examRepository,
+            QuestionRepository questionRepository) {
+        try {
+            List<Account> allAccounts = accountRepository.findAll();
+            for (Account acc : allAccounts) {
+                String subj = acc.getSubject();
+                if (subj == null || !subj.contains("ខ្មែរ")) {
+                    continue;
+                }
+
+                // STRICT ZERO DATA LOSS: Never touch or overwrite if this teacher already has any Khmer exam
+                boolean hasAnyKhmerExam = examRepository.findByAccountId(acc.getId()).stream()
+                        .anyMatch(e -> "ភាសាខ្មែរ".equals(e.getSubjectName()));
+                if (hasAnyKhmerExam) {
+                    continue;
+                }
+
+                List<Classroom> teacherClasses = classroomRepository.findByAccountId(acc.getId());
+                String classNames = teacherClasses.stream()
+                        .map(Classroom::getClassName)
+                        .filter(java.util.Objects::nonNull)
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .distinct()
+                        .collect(java.util.stream.Collectors.joining(", "));
+                if (classNames.isEmpty()) {
+                    classNames = (acc.getTeachingClasses() != null && !acc.getTeachingClasses().trim().isEmpty())
+                            ? acc.getTeachingClasses().trim()
+                            : "៨D";
+                }
+
+                Exam exam = new Exam();
+                exam.setAccountId(acc.getId());
+                exam.setMonth("ខែវិច្ឆិកា ២០២៦");
+                exam.setSubjectName("ភាសាខ្មែរ");
+                exam.setClassName(classNames);
+                exam.setOpenClasses(""); // Closed by default until teacher opens for class
+                exam.setReadingPassage(
+                        "ការអានសៀវភៅគឺជាប្រភពនៃចំណេះដឹងដ៏ធំធេង ដែលមិនអាចកាត់ថ្លៃបានសម្រាប់មនុស្សគ្រប់រូប ជាពិសេសយុវជនជំនាន់ក្រោយ។ " +
+                        "នៅក្នុងយុគសម័យបច្ចេកវិទ្យាដ៏ទំនើបនាពេលបច្ចុប្បន្ន ទោះបីជាមានឧបករណ៍អេឡិចត្រូនិកជាច្រើនផ្តល់ព័ត៌មានរហ័សក៏ដោយ " +
+                        "ការអានសៀវភៅនៅតែមានតម្លៃខ្ពង់ខ្ពស់ ព្រោះវាជួយបង្កើនការផ្តោតអារម្មណ៍ ពង្រីកវាក្យស័ព្ទ និងហ្វឹកហាត់គំនិតត្រិះរិះពិចារណាឱ្យបានស៊ីជម្រៅ។\n\n" +
+                        "លើសពីនេះទៅទៀត ទម្លាប់អានជារៀងរាល់ថ្ងៃជួយឱ្យសិស្សានុសិស្សចេះសរសេរអក្សរខ្មែរបានត្រឹមត្រូវតាមក្បួនអក្ខរាវិរុទ្ធ " +
+                        "យល់ដឹងពីវប្បធម៌ អរិយធម៌ដ៏រុងរឿងរបស់ដូនតា និងមានសមត្ថភាពដោះស្រាយបញ្ហាក្នុងជីវភាពប្រចាំថ្ងៃប្រកបដោយភាពឈ្លាសវៃ។"
+                );
+                exam.setSection1Title("I. អំណាន និងការយល់ដឹងអត្ថបទ៖");
+                exam.setSection1Instruction("ចូរអានអត្ថបទខាងលើដោយយកចិត្តទុកដាក់ រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (១៥ ពិន្ទុ)");
+                exam.setSection1MaxPoints(15);
+                exam.setSection2Title("II. វេយ្យាករណ៍ និងអក្ខរាវិរុទ្ធ៖");
+                exam.setSection2Instruction("ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (១៥ ពិន្ទុ)");
+                exam.setSection2MaxPoints(15);
+                exam.setSection3Title("III. អក្សរសិល្ប៍ និងវាក្យស័ព្ទ៖");
+                exam.setSection3Instruction("ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (១៥ ពិន្ទុ)");
+                exam.setSection3MaxPoints(15);
+                exam.setSection4Title("IV. សំណេរ / តែងសេចក្តី៖");
+                exam.setSection4Instruction("ចូរសរសេរតែងសេចក្តីតាមក្បួនខ្នាត (សេចក្តីផ្តើម តួសេចក្តី សេចក្តីបញ្ចប់) លើប្រធានបទខាងក្រោម៖ (២៥ ពិន្ទុ)");
+                exam.setWritingPrompt("ប្រធាន៖ «ចំណេះវិជ្ជាជាទ្រព្យដ៏ប្រសើរដែលចោរលួចមិនបាន»។ ចូរពន្យល់ពាក្យស្លោកនេះ ដោយលើកឧទាហរណ៍ពីសង្គម និងជីវភាពសិក្សាជាក់ស្តែងមកបញ្ជាក់។");
+                exam.setWritingMaxPoints(25);
+                exam = examRepository.save(exam);
+
+                String[][] sampleQuestions = {
+                    // Section I: Reading comprehension (kh_reading)
+                    {"kh_reading", "១. តាមរយៈអត្ថបទខាងលើ តើការអានសៀវភៅជាអ្វី?", "ជាការចំណាយពេលឥតប្រយោជន៍", "ជាប្រភពនៃចំណេះដឹងដ៏ធំធេង", "សម្រាប់តែមនុស្សចាស់ប៉ុណ្ណោះ", "មិនសំខាន់ក្នុងសម័យទំនើបទេ", "B"},
+                    {"kh_reading", "២. ហេតុអ្វីបានជាការអានសៀវភៅនៅតែមានតម្លៃក្នុងសម័យបច្ចេកវិទ្យាទំនើប?", "ព្រោះវាជួយបង្កើនការផ្តោតអារម្មណ៍ និងគំនិតត្រិះរិះពិចារណា", "ព្រោះសៀវភៅមានរូបភាពស្អាត", "ព្រោះមិនមានទូរស័ព្ទប្រើប្រាស់", "ព្រោះគ្រូបង្ខំឱ្យអាន", "A"},
+                    {"kh_reading", "៣. តើទម្លាប់អានជារៀងរាល់ថ្ងៃជួយសិស្សយ៉ាងដូចម្តេចលើការសរសេរ?", "សរសេរបានលឿនតែខុសច្រើន", "មិនចាំបាច់រៀនវេយ្យាករណ៍", "ចេះសរសេរត្រឹមត្រូវតាមក្បួនអក្ខរាវិរុទ្ធ", "ភ្លេចវាក្យស័ព្ទបុរាណ", "C"},
+                    {"kh_reading", "៤. ក្រៅពីភាសា តើការអានសៀវភៅជួយឱ្យសិស្សយល់ដឹងពីអ្វីទៀត?", "របៀបលេងហ្គេម", "វប្បធម៌ និងអរិយធម៌ដ៏រុងរឿងរបស់ដូនតា", "ការទិញទំនិញតាមអនឡាញ", "ព័ត៌មានកីឡាតែម្យ៉ាង", "B"},
+                    {"kh_reading", "៥. តើគំនិតសំខាន់បំផុតនៃអត្ថបទនេះចង់អប់រំដូចម្តេច?", "ឱ្យបោះបង់បច្ចេកវិទ្យាទាំងស្រុង", "ឱ្យបណ្តុះទម្លាប់អានសៀវភៅដើម្បីកសាងសមត្ថភាព", "ឱ្យទិញសៀវភៅទុកតាំងលម្អ", "មិនបាច់ទៅសាលារៀន", "B"},
+                    // Section II: Grammar & Spelling (kh_grammar)
+                    {"kh_grammar", "១. ពាក្យណាមួយខាងក្រោមជា «កិរិយាសព្ទ»?", "សៀវភៅ", "ស្រស់ស្អាត", "សិក្សា", "ដោយសារ", "C"},
+                    {"kh_grammar", "២. ពាក្យណាមួយដែលសរសេរត្រឹមត្រូវតាមអក្ខរាវិរុទ្ធខ្មែរ?", "វិទ្យាល័យ", "វិទ្យាលយ័", "វិទ្យាលយ", "វិទ្យាល័យ្", "A"},
+                    {"kh_grammar", "៣. តើពាក្យ «កតញ្ញូ» មានន័យផ្ទុយនឹងពាក្យអ្វី?", "សប្បុរស", "អកតញ្ញូ", "សុចរិត", "មេត្តា", "B"},
+                    {"kh_grammar", "៤. ក្នុងល្បះ «សិស្សល្អតែងគោរពវិន័យសាលា» តើពាក្យ «ល្អ» ជាថ្នាក់ពាក្យអ្វី?", "នាម", "កិរិយាសព្ទ", "គុណនាម", "ឈ្នាប់", "C"},
+                    {"kh_grammar", "៥. ពាក្យណាមួយជា «ពាក្យសមាស» (ពាក្យផ្សំបង្កើតន័យថ្មី)?", "ទឹក", "ក្តារខៀន", "ដី", "មេឃ", "B"},
+                    // Section III: Literature & Vocabulary (kh_literature)
+                    {"kh_literature", "១. សុភាសិតខ្មែរថា «ចេះពីរៀន មានពី...» តើពាក្យពេញគឺអ្វី?", "ដើរ", "រក", "ដេក", "លេង", "B"},
+                    {"kh_literature", "២. រឿងអក្សរសិល្ប៍បុរាណខ្មែរណាមួយដែលបង្ហាញពីការតស៊ូ និងសច្ចធម៌របស់ស្ត្រីខ្មែរ?", "រឿងទុំទាវ", "រឿងផ្កាស្រពោន", "រឿងកុលាបប៉ៃលិន", "រឿងព្រះវេស្សន្តរ", "A"},
+                    {"kh_literature", "៣. ពាក្យ «វឌ្ឍនភាព» មានន័យដូចម្តេច?", "ការធ្លាក់ចុះ", "ភាពរីកចម្រើន", "ភាពស្ងប់ស្ងាត់", "ការបែកបាក់", "B"},
+                    {"kh_literature", "៤. តាមក្បួនតែងសេចក្តីខ្មែរ តើផ្នែកធំៗនៃតែងសេចក្តីមានប៉ុន្មានផ្នែក?", "២ ផ្នែក", "៣ ផ្នែក (សេចក្តីផ្តើម តួសេចក្តី សេចក្តីបញ្ចប់)", "៤ ផ្នែក", "៥ ផ្នែក", "B"},
+                    {"kh_literature", "៥. សុភាសិត «ទុំមុនស្រគាល» មានន័យអប់រំដូចម្តេច?", "លើកទឹកចិត្តឱ្យរហ័សរហួន", "ហាមមិនឱ្យធ្វើអ្វីហួសវ័យ ឬមុនពេលកំណត់សមស្រប", "ឱ្យចេះដាំផ្លែឈើ", "ឱ្យស្រឡាញ់មិត្តភក្តិ", "B"}
+                };
+                for (String[] row : sampleQuestions) {
+                    Question q = new Question();
+                    q.setExamId(exam.getId());
+                    q.setAccountId(acc.getId());
+                    q.setSkillType(row[0]);
+                    q.setQuestionText(row[1]);
+                    q.setOptionA(row[2]);
+                    q.setOptionB(row[3]);
+                    q.setOptionC(row[4]);
+                    q.setOptionD(row[5]);
+                    q.setCorrectOption(row[6]);
+                    questionRepository.save(q);
+                }
+                System.out.println(">>> [DataInitializer] Seeded starter Standard MoEYS Khmer Exam for Khmer teacher: " + acc.getFullName() + " (ID " + acc.getId() + ")");
+            }
+        } catch (Exception e) {
+            System.err.println(">>> [DataInitializer] Notice seeding Khmer exam: " + e.getMessage());
         }
     }
 

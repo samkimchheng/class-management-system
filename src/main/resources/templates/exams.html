@@ -229,7 +229,26 @@
                 padding: 4px 8px !important;
             }
         }
-    
+
+        /* Official MoEYS Khmer Print Exam Layout */
+        #khPrintOfficialContainer { display: none; }
+        @media print {
+            body { background: #ffffff !important; color: #000000 !important; font-family: 'Battambang', 'Kantumruy Pro', sans-serif !important; }
+            .sidebar, .topbar, .content, #examSubmissionsModal, .swal2-container { display: none !important; }
+            .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+            #khPrintOfficialContainer {
+                display: block !important;
+                padding: 4mm 8mm;
+                font-size: 10.5pt;
+                line-height: 1.55;
+            }
+            .kh-print-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+            .kh-print-section-title { font-weight: bold; font-size: 11pt; margin-top: 12px; margin-bottom: 4px; }
+            .kh-print-passage { border: 1px solid #000; padding: 8px 10px; margin: 6px 0 10px; background: #fafafa; text-align: justify; white-space: pre-wrap; }
+            .kh-print-q { margin-bottom: 6px; page-break-inside: avoid; }
+            .kh-print-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; padding-left: 16px; margin-top: 2px; }
+            @page { size: A4 portrait; margin: 12mm; }
+        }
     </style>
 </head>
 <body>
@@ -333,6 +352,12 @@
                     </div>
 
                     <div id="actionButtons" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                        <button type="button" class="btn" id="btnLoadKhmerSample" onclick="loadKhmerSampleChooser()" style="display: none; background: #047857; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
+                            <span>📥 ផ្ទុកគំរូវិញ្ញាសាភាសាខ្មែរស្តង់ដា</span>
+                        </button>
+                        <button type="button" class="btn" id="btnPrintKhmerExam" onclick="printKhmerExamSheet()" style="display: none; background: #334155; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
+                            <span>🖨️ បោះពុម្ពក្រដាសវិញ្ញាសា</span>
+                        </button>
                         <button type="button" class="btn" id="btnLoadEnglishSample" onclick="loadMoeyseGrade11Sample()" style="background: #047857; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 6px;">
                             <span>📥 ផ្ទុកគំរូវិញ្ញាសាអង់គ្លេសថ្នាក់ទី១១</span>
                         </button>
@@ -364,6 +389,133 @@
                         <span th:if="${#lists.isEmpty(myClassrooms)}" style="color: #ef4444; font-size: 0.95rem; font-weight: 500;">
                             ⚠️ មិនទាន់មានថ្នាក់រៀននៅក្នុងបញ្ជីថ្នាក់រៀនទេ! សូមបង្កើតថ្នាក់រៀនជាមុនសិន។
                         </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Khmer Standard 4-Section Container (MoEYS Standard) -->
+            <div id="section-khmer-container" style="display: none;">
+                <!-- Live Total Points Banner for Khmer Exam -->
+                <div style="background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1.5px solid #fcd34d; border-radius: 12px; padding: 14px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+                    <div>
+                        <span style="font-weight: 700; color: #78350f; font-size: 1.05rem;">🏛️ គម្រូវិញ្ញាសាស្តង់ដាភាសាខ្មែរ (ពិន្ទុសរុប):</span>
+                        <span id="khTotalPointsDisplay" style="color: #b45309; font-size: 1.4rem; font-weight: 800; margin-left: 6px;">70</span>
+                        <span style="font-weight: 700; color: #92400e; font-size: 1rem;"> ពិន្ទុ</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; font-size: 0.85rem; font-weight: 600; flex-wrap: wrap;">
+                        <span id="khBadgeSec1Pill" style="background: #eff6ff; color: #1d4ed8; padding: 5px 12px; border-radius: 20px; border: 1px solid #bfdbfe;">អំណាន៖ 15 ពិន្ទុ</span>
+                        <span id="khBadgeSec2Pill" style="background: #f0fdfa; color: #0d9488; padding: 5px 12px; border-radius: 20px; border: 1px solid #99f6e4;">វេយ្យាករណ៍៖ 15 ពិន្ទុ</span>
+                        <span id="khBadgeSec3Pill" style="background: #f5f3ff; color: #7c3aed; padding: 5px 12px; border-radius: 20px; border: 1px solid #ddd6fe;">អក្សរសិល្ប៍៖ 15 ពិន្ទុ</span>
+                        <span id="khBadgeSec4Pill" style="background: #fff1f2; color: #e11d48; padding: 5px 12px; border-radius: 20px; border: 1px solid #fecdd3;">តែងសេចក្តី៖ 25 ពិន្ទុ</span>
+                    </div>
+                </div>
+
+                <!-- Section I: Reading Comprehension -->
+                <div class="exam-section" style="border-left-color: #2563eb;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #1e3a8a; font-weight: 700;">ផ្នែក I៖ អំណាន និងការយល់ដឹងអត្ថបទ</h4>
+                            <span id="khBadgeSec1Summary" style="background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #bfdbfe;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #eff6ff; border: 1.5px solid #93c5fd; padding: 6px 14px; border-radius: 8px;">
+                            <label for="khSec1MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #1e40af; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="khSec1MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #1e3a8a; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #3b82f6; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updateKhSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #1e40af; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="khSec1Title" class="form-control" style="width: 100%;" value="I. អំណាន និងការយល់ដឹងអត្ថបទ៖">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="khSec1Instruction" class="form-control" style="width: 100%;" value="ចូរអានអត្ថបទខាងក្រោមដោយយកចិត្តទុកដាក់ រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">អត្ថបទអាន (ដកស្រង់អក្សរសិល្ប៍ ឬអត្ថបទអប់រំ)</label>
+                        <textarea id="khReadingPassage" class="form-control" rows="6" style="width: 100%; font-family: inherit; font-size: 0.98rem; line-height: 1.7;" placeholder="បញ្ចូលអត្ថបទអានសម្រាប់សិស្សអាន និងឆ្លើយសំណួរខាងក្រោម..."></textarea>
+                    </div>
+                    <div id="khReadingContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addKhReadingQuestion()" style="margin-top: 8px; background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរអំណាន</button>
+                </div>
+
+                <!-- Section II: Grammar & Orthography -->
+                <div class="exam-section" style="border-left-color: #0d9488;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #0f766e; font-weight: 700;">ផ្នែក II៖ វេយ្យាករណ៍ និងអក្ខរាវិរុទ្ធ</h4>
+                            <span id="khBadgeSec2Summary" style="background: #f0fdfa; color: #0d9488; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #99f6e4;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #f0fdfa; border: 1.5px solid #99f6e4; padding: 6px 14px; border-radius: 8px;">
+                            <label for="khSec2MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #0f766e; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="khSec2MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #0f766e; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #14b8a6; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updateKhSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #0f766e; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="khSec2Title" class="form-control" style="width: 100%;" value="II. វេយ្យាករណ៍ និងអក្ខរាវិរុទ្ធ៖">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="khSec2Instruction" class="form-control" style="width: 100%;" value="ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖">
+                    </div>
+                    <div id="khGrammarContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addKhGrammarQuestion()" style="margin-top: 8px; background: #0d9488; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរវេយ្យាករណ៍</button>
+                </div>
+
+                <!-- Section III: Literature & Vocabulary -->
+                <div class="exam-section" style="border-left-color: #7c3aed;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #6d28d9; font-weight: 700;">ផ្នែក III៖ អក្សរសិល្ប៍ និងវាក្យស័ព្ទ</h4>
+                            <span id="khBadgeSec3Summary" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #ddd6fe;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #f5f3ff; border: 1.5px solid #ddd6fe; padding: 6px 14px; border-radius: 8px;">
+                            <label for="khSec3MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #6d28d9; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="khSec3MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #6d28d9; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #8b5cf6; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updateKhSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #6d28d9; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="khSec3Title" class="form-control" style="width: 100%;" value="III. អក្សរសិល្ប៍ និងវាក្យស័ព្ទ៖">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="khSec3Instruction" class="form-control" style="width: 100%;" value="ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖">
+                    </div>
+                    <div id="khLiteratureContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addKhLiteratureQuestion()" style="margin-top: 8px; background: #7c3aed; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរអក្សរសិល្ប៍</button>
+                </div>
+
+                <!-- Section IV: Essay / Composition Writing -->
+                <div class="exam-section" style="border-left-color: #e11d48;" id="section-khmer-writing">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; color: #be123c; font-size: 1.15rem; margin: 0;">
+                            <input type="checkbox" id="khWritingEnabled" onchange="toggleKhWritingSection()" style="width: 20px; height: 20px; cursor: pointer;" checked>
+                            <span>ផ្នែក IV៖ សំណេរ និងតែងសេចក្តី (សំណួរសរសេរ)</span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #fff1f2; border: 1.5px solid #fecdd3; padding: 6px 14px; border-radius: 8px;">
+                            <label for="khWritingMaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #be123c; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="khWritingMaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #be123c; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #f43f5e; border-radius: 6px; padding: 4px 6px;" value="25" min="1" max="100" oninput="updateKhSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #be123c; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+
+                    <div id="khWritingContent" style="display: block;">
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                            <input type="text" id="khSec4Title" class="form-control" style="width: 100%;" value="IV. សំណេរ / តែងសេចក្តី៖">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                            <input type="text" id="khSec4Instruction" class="form-control" style="width: 100%;" value="ចូរសរសេរតែងសេចក្តីតាមក្បួនខ្នាត (សេចក្តីផ្តើម តួសេចក្តី និងសេចក្តីបញ្ចប់) លើប្រធានបទខាងក្រោម៖">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ប្រធានបទតែងសេចក្តី (Writing Topic)</label>
+                            <textarea id="khWritingPrompt" class="form-control" rows="4" style="width: 100%; font-family: inherit; font-size: 0.98rem; line-height: 1.6;" placeholder="ឧ. ប្រធាន៖ «ចំណេះវិជ្ជាជាទ្រព្យដ៏ប្រសើរដែលចោរលួចមិនបាន»។ ចូរពន្យល់ដោយលើកឧទាហរណ៍បញ្ជាក់..."></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -553,6 +705,14 @@
         </div>
     </div>
 
+    <script th:inline="javascript">
+        window.__EXAM_META__ = {
+            teacherName: /*[[${teacherAccount != null ? teacherAccount.fullName : ''}]]*/ '',
+            teacherSubject: /*[[${teacherAccount != null && teacherAccount.subject != null ? teacherAccount.subject : ''}]]*/ '',
+            schoolName: /*[[${teacherAccount != null && teacherAccount.schoolName != null ? teacherAccount.schoolName : 'សាលារៀន'}]]*/ 'សាលារៀន',
+            academicYear: /*[[${currentAcademicYear}]]*/ '២០២៦-២០២៧'
+        };
+    </script>
     <script>
         let qIdCounter = 0;
         let isEditing = true;
@@ -586,18 +746,37 @@
         function onSubjectChanged() {
             const subject = document.getElementById('subjectSelect').value;
             const isEnglish = (subject === 'ភាសាអង់គ្លេស');
+            const isKhmer = (subject === 'ភាសាខ្មែរ');
             const enContainer = document.getElementById('section-english-container');
+            const khContainer = document.getElementById('section-khmer-container');
             const genContainer = document.getElementById('section-general');
-            const btnSample = document.getElementById('btnLoadEnglishSample');
+            const btnEnSample = document.getElementById('btnLoadEnglishSample');
+            const btnKhSample = document.getElementById('btnLoadKhmerSample');
+            const btnKhPrint = document.getElementById('btnPrintKhmerExam');
 
             if (isEnglish) {
                 if (enContainer) enContainer.style.display = 'block';
+                if (khContainer) khContainer.style.display = 'none';
                 if (genContainer) genContainer.style.display = 'none';
-                if (btnSample) btnSample.style.display = 'inline-flex';
+                if (btnEnSample) btnEnSample.style.display = 'inline-flex';
+                if (btnKhSample) btnKhSample.style.display = 'none';
+                if (btnKhPrint) btnKhPrint.style.display = 'none';
+                updateEnSummaryBadges();
+            } else if (isKhmer) {
+                if (enContainer) enContainer.style.display = 'none';
+                if (khContainer) khContainer.style.display = 'block';
+                if (genContainer) genContainer.style.display = 'none';
+                if (btnEnSample) btnEnSample.style.display = 'none';
+                if (btnKhSample) btnKhSample.style.display = 'inline-flex';
+                if (btnKhPrint) btnKhPrint.style.display = 'inline-flex';
+                updateKhSummaryBadges();
             } else {
                 if (enContainer) enContainer.style.display = 'none';
+                if (khContainer) khContainer.style.display = 'none';
                 if (genContainer) genContainer.style.display = 'block';
-                if (btnSample) btnSample.style.display = 'none';
+                if (btnEnSample) btnEnSample.style.display = 'none';
+                if (btnKhSample) btnKhSample.style.display = 'none';
+                if (btnKhPrint) btnKhPrint.style.display = 'none';
             }
         }
 
@@ -616,7 +795,7 @@
             const optD = qData ? (qData.optionD || '') : '';
             const correct = qData ? (qData.correctOption || 'A') : 'A';
             const numLabel = fixedNum !== null ? `សំណួរទី ${fixedNum}៖` : 'សំណួរ៖';
-            const deleteBtn = `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge();">លុបសំណួរ</button>`;
+            const deleteBtn = `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge(); updateKhSummaryBadges(); updateEnSummaryBadges();">លុបសំណួរ</button>`;
             
             div.innerHTML = `
                 ${deleteBtn}
@@ -825,6 +1004,7 @@
             document.querySelectorAll('.question-card input').forEach(el => el.disabled = true);
             document.querySelectorAll('.exam-class-checkbox').forEach(el => el.disabled = true);
             document.querySelectorAll('#section-english-container input, #section-english-container textarea').forEach(el => el.disabled = true);
+            document.querySelectorAll('#section-khmer-container input, #section-khmer-container textarea').forEach(el => el.disabled = true);
             document.querySelectorAll('.add-q-btn, .delete-btn').forEach(el => el.style.display = 'none');
         }
 
@@ -838,6 +1018,7 @@
             document.querySelectorAll('.question-card input').forEach(el => el.disabled = false);
             document.querySelectorAll('.exam-class-checkbox').forEach(el => el.disabled = false);
             document.querySelectorAll('#section-english-container input, #section-english-container textarea').forEach(el => el.disabled = false);
+            document.querySelectorAll('#section-khmer-container input, #section-khmer-container textarea').forEach(el => el.disabled = false);
             document.querySelectorAll('.add-q-btn, .delete-btn').forEach(el => el.style.display = 'inline-block');
         }
 
@@ -846,8 +1027,10 @@
             clearAllQuestions();
             setSelectedClasses([]);
             initEnglishContainers();
+            initKhmerContainers();
             
-            if (document.getElementById('subjectSelect').value === 'ភាសាអង់គ្លេស') {
+            const subj = document.getElementById('subjectSelect').value;
+            if (subj === 'ភាសាអង់គ្លេស' || subj === 'ភាសាខ្មែរ') {
                 onSubjectChanged();
             } else {
                 addQuestion('general');
@@ -857,6 +1040,346 @@
             enableEditMode();
             document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // KHMER STANDARD EXAM HELPERS, PRESETS & PRINT
+        // ============================================================
+        function toggleKhWritingSection() {
+            const enabled = document.getElementById('khWritingEnabled').checked;
+            document.getElementById('khWritingContent').style.display = enabled ? 'block' : 'none';
+            updateKhSummaryBadges();
+        }
+
+        function addKhReadingQuestion(qData = null) {
+            const container = document.getElementById('khReadingContainer');
+            if (container) {
+                container.appendChild(createQuestionCard('kh_reading', qData, container.children.length + 1));
+                updateKhSummaryBadges();
+            }
+        }
+
+        function addKhGrammarQuestion(qData = null) {
+            const container = document.getElementById('khGrammarContainer');
+            if (container) {
+                container.appendChild(createQuestionCard('kh_grammar', qData, container.children.length + 1));
+                updateKhSummaryBadges();
+            }
+        }
+
+        function addKhLiteratureQuestion(qData = null) {
+            const container = document.getElementById('khLiteratureContainer');
+            if (container) {
+                container.appendChild(createQuestionCard('kh_literature', qData, container.children.length + 1));
+                updateKhSummaryBadges();
+            }
+        }
+
+        function initKhmerContainers() {
+            const rCont = document.getElementById('khReadingContainer');
+            if (rCont && rCont.children.length === 0) {
+                for (let i = 1; i <= 5; i++) addKhReadingQuestion();
+            }
+            const gCont = document.getElementById('khGrammarContainer');
+            if (gCont && gCont.children.length === 0) {
+                for (let i = 1; i <= 5; i++) addKhGrammarQuestion();
+            }
+            const lCont = document.getElementById('khLiteratureContainer');
+            if (lCont && lCont.children.length === 0) {
+                for (let i = 1; i <= 5; i++) addKhLiteratureQuestion();
+            }
+            updateKhSummaryBadges();
+        }
+
+        function updateKhSummaryBadges() {
+            const p1 = parseFloat((document.getElementById('khSec1MaxPoints') || {}).value) || 0;
+            const p2 = parseFloat((document.getElementById('khSec2MaxPoints') || {}).value) || 0;
+            const p3 = parseFloat((document.getElementById('khSec3MaxPoints') || {}).value) || 0;
+            const isWOpen = (document.getElementById('khWritingEnabled') || {}).checked;
+            const p4 = isWOpen ? (parseFloat((document.getElementById('khWritingMaxPoints') || {}).value) || 0) : 0;
+
+            const total = p1 + p2 + p3 + p4;
+            const totalEl = document.getElementById('khTotalPointsDisplay');
+            if (totalEl) totalEl.textContent = Number.isInteger(total) ? total : total.toFixed(1);
+
+            const updateCountBadge = (containerId, badgeId, pts) => {
+                const cnt = document.querySelectorAll('#' + containerId + ' .question-card').length;
+                const perQ = cnt > 0 ? (pts / cnt) : 0;
+                const perStr = Number.isInteger(perQ) ? perQ : perQ.toFixed(1);
+                const el = document.getElementById(badgeId);
+                if (el) el.textContent = cnt + ' សំណួរ (' + perStr + ' ពិន្ទុ/សំណួរ)';
+            };
+            updateCountBadge('khReadingContainer', 'khBadgeSec1Summary', p1);
+            updateCountBadge('khGrammarContainer', 'khBadgeSec2Summary', p2);
+            updateCountBadge('khLiteratureContainer', 'khBadgeSec3Summary', p3);
+
+            const b1 = document.getElementById('khBadgeSec1Pill');
+            if (b1) b1.textContent = 'អំណាន៖ ' + p1 + ' ពិន្ទុ';
+            const b2 = document.getElementById('khBadgeSec2Pill');
+            if (b2) b2.textContent = 'វេយ្យាករណ៍៖ ' + p2 + ' ពិន្ទុ';
+            const b3 = document.getElementById('khBadgeSec3Pill');
+            if (b3) b3.textContent = 'អក្សរសិល្ប៍៖ ' + p3 + ' ពិន្ទុ';
+            const b4 = document.getElementById('khBadgeSec4Pill');
+            if (b4) b4.textContent = isWOpen ? ('តែងសេចក្តី៖ ' + p4 + ' ពិន្ទុ') : 'តែងសេចក្តី៖ បិទ (0)';
+        }
+
+        function loadKhmerSampleChooser() {
+            Swal.fire({
+                title: '📥 ជ្រើសរើសគម្រូវិញ្ញាសាភាសាខ្មែរស្តង់ដា (MoEYS)',
+                html: `<div style="text-align: left; font-size: 0.95rem; line-height: 1.6;">
+                    <p style="margin-top: 0; color: #475569;">សូមជ្រើសរើសកម្រិតថ្នាក់សម្រាប់គម្រូវិញ្ញាសាស្តង់ដា (លោកគ្រូ-អ្នកគ្រូអាចកែប្រែខ្លឹមសារតាមក្រោយបាន)៖</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button type="button" onclick="Swal.close(); applyKhmerStandardSample('lower');" style="text-align: left; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #2563eb; background: #eff6ff; color: #1e3a8a; cursor: pointer; font-family: inherit;">
+                            <div style="font-weight: 700; font-size: 1rem;">📘 គំរូទី ១៖ អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩ — ឧ. ថ្នាក់ទី ៨)</div>
+                            <div style="font-size: 0.85rem; color: #334155;">ពិន្ទុសរុប ៧០ ពិន្ទុ (អំណាន ១៥ + វេយ្យាករណ៍ ១៥ + អក្សរសិល្ប៍ ១៥ + តែងសេចក្តី ២៥)</div>
+                        </button>
+                        <button type="button" onclick="Swal.close(); applyKhmerStandardSample('upper');" style="text-align: left; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #047857; background: #ecfdf5; color: #065f46; cursor: pointer; font-family: inherit;">
+                            <div style="font-weight: 700; font-size: 1rem;">📗 គំរូទី ២៖ វិទ្យាល័យ (ថ្នាក់ទី ១០-១២)</div>
+                            <div style="font-size: 0.85rem; color: #334155;">ពិន្ទុសរុប ១០០ ពិន្ទុ (អំណាន ២០ + វេយ្យាករណ៍ ២០ + អក្សរសិល្ប៍ ២០ + តែងសេចក្តីពិភាក្សា ៤០)</div>
+                        </button>
+                    </div>
+                </div>`,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'បោះបង់',
+                width: '580px'
+            });
+        }
+
+        function applyKhmerStandardSample(level) {
+            document.getElementById('currentExamId').value = '';
+            document.getElementById('subjectSelect').value = 'ភាសាខ្មែរ';
+            onSubjectChanged();
+            if (getSelectedClasses().length === 0) {
+                toggleAllExamClasses(true);
+            }
+
+            const isUpper = (level === 'upper');
+            const p1 = isUpper ? 20 : 15;
+            const p2 = isUpper ? 20 : 15;
+            const p3 = isUpper ? 20 : 15;
+            const p4 = isUpper ? 40 : 25;
+
+            const sample = isUpper ? {
+                passage: "វប្បធម៌ជាព្រលឹង និងជាអត្តសញ្ញាណរបស់ជាតិសាសន៍នីមួយៗ។ ប្រទេសកម្ពុជាមានអរិយធម៌ដ៏ចំណាស់ និងរុងរឿង តាមរយៈប្រាង្គប្រាសាទបុរាណ អក្សរសាស្ត្រ ទំនៀមទម្លាប់ ប្រពៃណី និងសិល្បៈចម្រុះ។ នៅក្នុងសកលភាវូបនីយកម្ម និងយុគសម័យឌីជីថល លំហូរចូលនៃវប្បធម៌បរទេសបានជះឥទ្ធិពលទាំងវិជ្ជមាន និងអវិជ្ជមានមកលើសង្គម។\n\nដូចនេះ យុវជនខ្មែរជំនាន់ថ្មីត្រូវមានមនសិការទទួលខុសត្រូវខ្ពស់ ក្នុងការស្វែងយល់ អភិរក្ស និងផ្សព្វផ្សាយវប្បធម៌ប្រពៃណីជាតិឱ្យគង់វង្ស ទន្ទឹមនឹងការចេះចាប់យកចំណេះដឹងវិទ្យាសាស្ត្រ និងបច្ចេកវិទ្យាទំនើបដើម្បីអភិវឌ្ឍប្រទេសជាតិឱ្យរីកចម្រើន។",
+                writingPrompt: "ប្រធាន៖ «វប្បធម៌រលត់ ជាតិរលាយ វប្បធម៌ពណ្ណរាយ ជាតិថ្កើងថ្កាន»។ ចូរពិភាក្សាទស្សនៈខាងលើ ដោយលើកអំណះអំណាងពីប្រវត្តិសាស្ត្រ អក្សរសិល្ប៍ និងបច្ចុប្បន្នភាពសង្គមមកបកស្រាយឱ្យបានក្បោះក្បាយ។",
+                rQs: [
+                    { questionText: "១. តាមរយៈអត្ថបទ តើវប្បធម៌មានតួនាទីយ៉ាងណាចំពោះជាតិសាសន៍នីមួយៗ?", optionA: "ជាគ្រឿងលម្អបណ្តោះអាសន្ន", optionB: "ជាព្រលឹង និងជាអត្តសញ្ញាណរបស់ជាតិ", optionC: "សម្រាប់តែទេសចរបរទេស", optionD: "មិនទាក់ទងនឹងសេដ្ឋកិច្ចទេ", correctOption: "B" },
+                    { questionText: "២. តើអ្វីខ្លះជាសក្ខីភាពនៃអរិយធម៌ដ៏រុងរឿងរបស់កម្ពុជា?", optionA: "ផ្សារទំនើបតែម្យ៉ាង", optionB: "ប្រាង្គប្រាសាទបុរាណ អក្សរសាស្ត្រ ទំនៀមទម្លាប់ និងសិល្បៈ", optionC: "យានយន្តទំនើបៗ", optionD: "គ្រឿងអេឡិចត្រូនិក", correctOption: "B" },
+                    { questionText: "៣. ក្នុងសម័យសកលភាវូបនីយកម្ម តើវប្បធម៌បរទេសផ្តល់ឥទ្ធិពលដូចម្តេច?", optionA: "មានតែផលវិជ្ជមាន", optionB: "មានតែផលអវិជ្ជមាន", optionC: "មានទាំងផលវិជ្ជមាន និងផលអវិជ្ជមាន", optionD: "គ្មានឥទ្ធិពលអ្វីទាំងអស់", correctOption: "C" },
+                    { questionText: "៤. តើយុវជនជំនាន់ថ្មីគួរមានតួនាទីអ្វីខ្លះលើវប្បធម៌ជាតិ?", optionA: "បំភ្លេចប្រពៃណីចាស់", optionB: "អភិរក្ស និងផ្សព្វផ្សាយវប្បធម៌ជាតិទន្ទឹមនឹងចំណេះវិទ្យាសាស្ត្រ", optionC: "ត្រាប់តាមបរទេសទាំងស្រុង", optionD: "មិនចាំបាច់រៀនបច្ចេកវិទ្យា", correctOption: "B" },
+                    { questionText: "៥. ពាក្យ «គង់វង្ស» ក្នុងអត្ថបទមានន័យដូចម្តេច?", optionA: "រលត់បាត់បង់", optionB: "ស្ថិតស្ថេរយូរអង្វែង", optionC: "ផ្លាស់ប្តូរទាំងស្រុង", optionD: "លំបាកក្រៃលែង", correctOption: "B" }
+                ],
+                gQs: [
+                    { questionText: "១. ក្នុងពាក្យ «អភិវឌ្ឍន៍» និង «អភិវឌ្ឍ» តើលក្ខណៈសរសេរណាមួយប្រើជានាមត្រឹមត្រូវ?", optionA: "អភិវឌ្ឍ (នាម)", optionB: "អភិវឌ្ឍន៍ (នាម)", optionC: "អភិវឌ្ឍន៍ (កិរិយាសព្ទ)", optionD: "ទាំងពីរខុស", correctOption: "B" },
+                    { questionText: "២. តើល្បះ «បើសិស្សខិតខំរៀន នោះប្រាកដជាទទួលជោគជ័យ» ជាល្បះប្រភេទអ្វី?", optionA: "ល្បះទោល", optionB: "ល្បះផ្សំដោយឃ្លាភ្ជាប់ដោយឈ្នាប់ចង (ល្បះសមាស)", optionC: "ល្បះឧទាន", optionD: "ល្បះបដិសេធ", correctOption: "B" },
+                    { questionText: "៣. ពាក្យណាមួយដែលជា «កម្លាយ» កើតចេញពីឫសពាក្យ «គិត»?", optionA: "គំនិត", optionB: "គិតគូរ", optionC: "សតិ", optionD: "មនោសញ្ចេតនា", correctOption: "A" },
+                    { questionText: "៤. តើពាក្យណាត្រឹមត្រូវតាមវចនានុក្រមសម្តេចព្រះសង្ឃរាជ ជួន ណាត?", optionA: "បរិស្ថាន្ដ", optionB: "បរិស្ថាន", optionC: "បរិស្ឋាន", optionD: "បរិស្តាន", correctOption: "B" },
+                    { questionText: "៥. ក្នុងល្បះ «ព្រះរាជាប្រទានរង្វាន់ដល់សេនា» តើ «ប្រទាន» ជារាជសព្ទត្រូវនឹងពាក្យសាមញ្ញអ្វី?", optionA: "ឱ្យ", optionB: "យក", optionC: "ដេក", optionD: "ដើរ", correctOption: "A" }
+                ],
+                lQs: [
+                    { questionText: "១. រឿង «ផ្កាស្រពោន» និពន្ធឡើងដោយអ្នកនិពន្ធខ្មែររូបណា?", optionA: "លោក នូ ហាច", optionB: "លោក រីម គីន", optionC: "លោក ញ៉ុក ថែម", optionD: "ភិក្ខុ សោម", correctOption: "A" },
+                    { questionText: "២. តើប្រធានតែងសេចក្តីប្រភេទ «ពិភាក្សា» តម្រូវឱ្យមានមតិប៉ុន្មានក្នុងតួសេចក្តី?", optionA: "មតិស្របតែម្យ៉ាង", optionB: "មតិផ្ទុយតែម្យ៉ាង", optionC: "មតិស្រប មតិផ្ទុយ និងមតិសំយោគ", optionD: "គ្មានមតិ", correctOption: "C" },
+                    { questionText: "៣. កំណាព្យបទ «កាកគតិ» ក្នុងមួយល្បះមានប៉ុន្មានឃ្លា?", optionA: "៤ ឃ្លា", optionB: "៧ ឃ្លា", optionC: "២ ឃ្លា", optionD: "៥ ឃ្លា", correctOption: "B" },
+                    { questionText: "៤. តើតួអង្គ «ចៅចិត្រ» ស្ថិតក្នុងរឿងប្រលោមលោកល្បីល្បាញមួយណា?", optionA: "រឿងសូផាត", optionB: "រឿងកុលាបប៉ៃលិន", optionC: "រឿងភូមិតិរច្ឆាន", optionD: "រឿងទុំទាវ", correctOption: "B" },
+                    { questionText: "៥. ពាក្យ «អត្ថានុរូប» ក្នុងការបកស្រាយអក្សរសិល្ប៍មានន័យដូចម្តេច?", optionA: "ន័យធៀប ឬន័យបង្កប់", optionB: "ន័យត្រង់ ឬន័យដើមតាមពាក្យ", optionC: "ន័យបដិសេធ", optionD: "ការសន្និដ្ឋាន", correctOption: "B" }
+                ]
+            } : {
+                passage: "ការអានសៀវភៅគឺជាប្រភពនៃចំណេះដឹងដ៏ធំធេង ដែលមិនអាចកាត់ថ្លៃបានសម្រាប់មនុស្សគ្រប់រូប ជាពិសេសយុវជនជំនាន់ក្រោយ។ នៅក្នុងយុគសម័យបច្ចេកវិទ្យាដ៏ទំនើបនាពេលបច្ចុប្បន្ន ទោះបីជាមានឧបករណ៍អេឡិចត្រូនិកជាច្រើនផ្តល់ព័ត៌មានរហ័សក៏ដោយ ការអានសៀវភៅនៅតែមានតម្លៃខ្ពង់ខ្ពស់ ព្រោះវាជួយបង្កើនការផ្តោតអារម្មណ៍ ពង្រីកវាក្យស័ព្ទ និងហ្វឹកហាត់គំនិតត្រិះរិះពិចារណាឱ្យបានស៊ីជម្រៅ។\n\nលើសពីនេះទៅទៀត ទម្លាប់អានជារៀងរាល់ថ្ងៃជួយឱ្យសិស្សានុសិស្សចេះសរសេរអក្សរខ្មែរបានត្រឹមត្រូវតាមក្បួនអក្ខរាវិរុទ្ធ យល់ដឹងពីវប្បធម៌ អរិយធម៌ដ៏រុងរឿងរបស់ដូនតា និងមានសមត្ថភាពដោះស្រាយបញ្ហាក្នុងជីវភាពប្រចាំថ្ងៃប្រកបដោយភាពឈ្លាសវៃ។",
+                writingPrompt: "ប្រធាន៖ «ចំណេះវិជ្ជាជាទ្រព្យដ៏ប្រសើរដែលចោរលួចមិនបាន»។ ចូរពន្យល់ពាក្យស្លោកនេះ ដោយលើកឧទាហរណ៍ពីសង្គម និងជីវភាពសិក្សាជាក់ស្តែងមកបញ្ជាក់។",
+                rQs: [
+                    { questionText: "១. តាមរយៈអត្ថបទខាងលើ តើការអានសៀវភៅជាអ្វី?", optionA: "ជាការចំណាយពេលឥតប្រយោជន៍", optionB: "ជាប្រភពនៃចំណេះដឹងដ៏ធំធេង", optionC: "សម្រាប់តែមនុស្សចាស់ប៉ុណ្ណោះ", optionD: "មិនសំខាន់ក្នុងសម័យទំនើបទេ", correctOption: "B" },
+                    { questionText: "២. ហេតុអ្វីបានជាការអានសៀវភៅនៅតែមានតម្លៃក្នុងសម័យបច្ចេកវិទ្យាទំនើប?", optionA: "ព្រោះវាជួយបង្កើនការផ្តោតអារម្មណ៍ និងគំនិតត្រិះរិះពិចារណា", optionB: "ព្រោះសៀវភៅមានរូបភាពស្អាត", optionC: "ព្រោះមិនមានទូរស័ព្ទប្រើប្រាស់", optionD: "ព្រោះគ្រូបង្ខំឱ្យអាន", correctOption: "A" },
+                    { questionText: "៣. តើទម្លាប់អានជារៀងរាល់ថ្ងៃជួយសិស្សយ៉ាងដូចម្តេចលើការសរសេរ?", optionA: "សរសេរបានលឿនតែខុសច្រើន", optionB: "មិនចាំបាច់រៀនវេយ្យាករណ៍", optionC: "ចេះសរសេរត្រឹមត្រូវតាមក្បួនអក្ខរាវិរុទ្ធ", optionD: "ភ្លេចវាក្យស័ព្ទបុរាណ", correctOption: "C" },
+                    { questionText: "៤. ក្រៅពីភាសា តើការអានសៀវភៅជួយឱ្យសិស្សយល់ដឹងពីអ្វីទៀត?", optionA: "របៀបលេងហ្គេម", optionB: "វប្បធម៌ និងអរិយធម៌ដ៏រុងរឿងរបស់ដូនតា", optionC: "ការទិញទំនិញតាមអនឡាញ", optionD: "ព័ត៌មានកីឡាតែម្យ៉ាង", correctOption: "B" },
+                    { questionText: "៥. តើគំនិតសំខាន់បំផុតនៃអត្ថបទនេះចង់អប់រំដូចម្តេច?", optionA: "ឱ្យបោះបង់បច្ចេកវិទ្យាទាំងស្រុង", optionB: "ឱ្យបណ្តុះទម្លាប់អានសៀវភៅដើម្បីកសាងសមត្ថភាព", optionC: "ឱ្យទិញសៀវភៅទុកតាំងលម្អ", optionD: "មិនបាច់ទៅសាលារៀន", correctOption: "B" }
+                ],
+                gQs: [
+                    { questionText: "១. ពាក្យណាមួយខាងក្រោមជា «កិរិយាសព្ទ»?", optionA: "សៀវភៅ", optionB: "ស្រស់ស្អាត", optionC: "សិក្សា", optionD: "ដោយសារ", correctOption: "C" },
+                    { questionText: "២. ពាក្យណាមួយដែលសរសេរត្រឹមត្រូវតាមអក្ខរាវិរុទ្ធខ្មែរ?", optionA: "វិទ្យាល័យ", optionB: "វិទ្យាលយ័", optionC: "វិទ្យាលយ", optionD: "វិទ្យាល័យ្", correctOption: "A" },
+                    { questionText: "៣. តើពាក្យ «កតញ្ញូ» មានន័យផ្ទុយនឹងពាក្យអ្វី?", optionA: "សប្បុរស", optionB: "អកតញ្ញូ", optionC: "សុចរិត", optionD: "មេត្តា", correctOption: "B" },
+                    { questionText: "៤. ក្នុងល្បះ «សិស្សល្អតែងគោរពវិន័យសាលា» តើពាក្យ «ល្អ» ជាថ្នាក់ពាក្យអ្វី?", optionA: "នាម", optionB: "កិរិយាសព្ទ", optionC: "គុណនាម", optionD: "ឈ្នាប់", correctOption: "C" },
+                    { questionText: "៥. ពាក្យណាមួយជា «ពាក្យសមាស» (ពាក្យផ្សំបង្កើតន័យថ្មី)?", optionA: "ទឹក", optionB: "ក្តារខៀន", optionC: "ដី", optionD: "មេឃ", correctOption: "B" }
+                ],
+                lQs: [
+                    { questionText: "១. សុភាសិតខ្មែរថា «ចេះពីរៀន មានពី...» តើពាក្យពេញគឺអ្វី?", optionA: "ដើរ", optionB: "រក", optionC: "ដេក", optionD: "លេង", correctOption: "B" },
+                    { questionText: "២. រឿងអក្សរសិល្ប៍បុរាណខ្មែរណាមួយដែលបង្ហាញពីការតស៊ូ និងសច្ចធម៌របស់ស្ត្រីខ្មែរ?", optionA: "រឿងទុំទាវ", optionB: "រឿងផ្កាស្រពោន", optionC: "រឿងកុលាបប៉ៃលិន", optionD: "រឿងព្រះវេស្សន្តរ", correctOption: "A" },
+                    { questionText: "៣. ពាក្យ «វឌ្ឍនភាព» មានន័យដូចម្តេច?", optionA: "ការធ្លាក់ចុះ", optionB: "ភាពរីកចម្រើន", optionC: "ភាពស្ងប់ស្ងាត់", optionD: "ការបែកបាក់", correctOption: "B" },
+                    { questionText: "៤. តាមក្បួនតែងសេចក្តីខ្មែរ តើផ្នែកធំៗនៃតែងសេចក្តីមានប៉ុន្មានផ្នែក?", optionA: "២ ផ្នែក", optionB: "៣ ផ្នែក (សេចក្តីផ្តើម តួសេចក្តី សេចក្តីបញ្ចប់)", optionC: "៤ ផ្នែក", optionD: "៥ ផ្នែក", correctOption: "B" },
+                    { questionText: "៥. សុភាសិត «ទុំមុនស្រគាល» មានន័យអប់រំដូចម្តេច?", optionA: "លើកទឹកចិត្តឱ្យរហ័សរហួន", optionB: "ហាមមិនឱ្យធ្វើអ្វីហួសវ័យ ឬមុនពេលកំណត់សមស្រប", optionC: "ឱ្យចេះដាំផ្លែឈើ", optionD: "ឱ្យស្រឡាញ់មិត្តភក្តិ", correctOption: "B" }
+                ]
+            };
+
+            document.getElementById('khSec1Title').value = 'I. អំណាន និងការយល់ដឹងអត្ថបទ៖';
+            document.getElementById('khSec1Instruction').value = 'ចូរអានអត្ថបទខាងក្រោមដោយយកចិត្តទុកដាក់ រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (' + p1 + ' ពិន្ទុ)';
+            document.getElementById('khSec1MaxPoints').value = p1;
+            document.getElementById('khReadingPassage').value = sample.passage;
+
+            document.getElementById('khSec2Title').value = 'II. វេយ្យាករណ៍ និងអក្ខរាវិរុទ្ធ៖';
+            document.getElementById('khSec2Instruction').value = 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (' + p2 + ' ពិន្ទុ)';
+            document.getElementById('khSec2MaxPoints').value = p2;
+
+            document.getElementById('khSec3Title').value = 'III. អក្សរសិល្ប៍ និងវាក្យស័ព្ទ៖';
+            document.getElementById('khSec3Instruction').value = 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (' + p3 + ' ពិន្ទុ)';
+            document.getElementById('khSec3MaxPoints').value = p3;
+
+            document.getElementById('khWritingEnabled').checked = true;
+            document.getElementById('khWritingContent').style.display = 'block';
+            document.getElementById('khSec4Title').value = 'IV. សំណេរ / តែងសេចក្តី៖';
+            document.getElementById('khSec4Instruction').value = 'ចូរសរសេរតែងសេចក្តីតាមក្បួនខ្នាត (សេចក្តីផ្តើម តួសេចក្តី និងសេចក្តីបញ្ចប់) លើប្រធានបទខាងក្រោម៖ (' + p4 + ' ពិន្ទុ)';
+            document.getElementById('khWritingPrompt').value = sample.writingPrompt;
+            document.getElementById('khWritingMaxPoints').value = p4;
+
+            document.getElementById('khReadingContainer').innerHTML = '';
+            sample.rQs.forEach(q => addKhReadingQuestion(q));
+            document.getElementById('khGrammarContainer').innerHTML = '';
+            sample.gQs.forEach(q => addKhGrammarQuestion(q));
+            document.getElementById('khLiteratureContainer').innerHTML = '';
+            sample.lQs.forEach(q => addKhLiteratureQuestion(q));
+
+            updateKhSummaryBadges();
+            enableEditMode();
+            document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
+
+            Swal.fire({
+                icon: 'success',
+                title: isUpper ? 'បានផ្ទុកគំរូវិញ្ញាសាភាសាខ្មែរ (ថ្នាក់ទី ១០-១២)!' : 'បានផ្ទុកគំរូវិញ្ញាសាភាសាខ្មែរ (ថ្នាក់ទី ៧-៩)!',
+                text: 'លោកគ្រូ-អ្នកគ្រូអាចកែសម្រួលសំណួរ ឬចុច «💾 រក្សាទុកវិញ្ញាសា» ដើម្បីប្រើប្រាស់ភ្លាមៗ។',
+                timer: 2400,
+                showConfirmButton: false
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function populateKhmerExamData(exam, questions) {
+            document.getElementById('khSec1Title').value = exam.section1Title || 'I. អំណាន និងការយល់ដឹងអត្ថបទ៖';
+            document.getElementById('khSec1Instruction').value = exam.section1Instruction || 'ចូរអានអត្ថបទខាងក្រោមដោយយកចិត្តទុកដាក់ រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖';
+            document.getElementById('khSec1MaxPoints').value = exam.section1MaxPoints != null ? exam.section1MaxPoints : 15;
+            document.getElementById('khReadingPassage').value = exam.readingPassage || '';
+
+            document.getElementById('khSec2Title').value = exam.section2Title || 'II. វេយ្យាករណ៍ និងអក្ខរាវិរុទ្ធ៖';
+            document.getElementById('khSec2Instruction').value = exam.section2Instruction || 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖';
+            document.getElementById('khSec2MaxPoints').value = exam.section2MaxPoints != null ? exam.section2MaxPoints : 15;
+
+            document.getElementById('khSec3Title').value = exam.section3Title || 'III. អក្សរសិល្ប៍ និងវាក្យស័ព្ទ៖';
+            document.getElementById('khSec3Instruction').value = exam.section3Instruction || 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖';
+            document.getElementById('khSec3MaxPoints').value = exam.section3MaxPoints != null ? exam.section3MaxPoints : 15;
+
+            const hasWriting = !!(exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            document.getElementById('khWritingEnabled').checked = hasWriting;
+            document.getElementById('khWritingContent').style.display = hasWriting ? 'block' : 'none';
+            document.getElementById('khSec4Title').value = exam.section4Title || 'IV. សំណេរ / តែងសេចក្តី៖';
+            document.getElementById('khSec4Instruction').value = exam.section4Instruction || 'ចូរសរសេរតែងសេចក្តីតាមក្បួនខ្នាត (សេចក្តីផ្តើម តួសេចក្តី និងសេចក្តីបញ្ចប់) លើប្រធានបទខាងក្រោម៖';
+            document.getElementById('khWritingPrompt').value = exam.writingPrompt || '';
+            document.getElementById('khWritingMaxPoints').value = exam.writingMaxPoints != null ? exam.writingMaxPoints : 25;
+
+            const rQs = questions.filter(q => q.skillType === 'kh_reading');
+            const gQs = questions.filter(q => q.skillType === 'kh_grammar');
+            const lQs = questions.filter(q => q.skillType === 'kh_literature');
+            const legacyGeneral = questions.filter(q => q.skillType === 'general' || !q.skillType);
+
+            const rCont = document.getElementById('khReadingContainer');
+            rCont.innerHTML = '';
+            const readingSource = rQs.length > 0 ? rQs : (legacyGeneral.length > 0 && gQs.length === 0 ? legacyGeneral : []);
+            if (readingSource.length > 0) {
+                readingSource.forEach(q => addKhReadingQuestion(q));
+            } else {
+                for (let i = 1; i <= 5; i++) addKhReadingQuestion();
+            }
+
+            const gCont = document.getElementById('khGrammarContainer');
+            gCont.innerHTML = '';
+            if (gQs.length > 0) {
+                gQs.forEach(q => addKhGrammarQuestion(q));
+            } else {
+                for (let i = 1; i <= 5; i++) addKhGrammarQuestion();
+            }
+
+            const lCont = document.getElementById('khLiteratureContainer');
+            lCont.innerHTML = '';
+            if (lQs.length > 0) {
+                lQs.forEach(q => addKhLiteratureQuestion(q));
+            } else {
+                for (let i = 1; i <= 5; i++) addKhLiteratureQuestion();
+            }
+            updateKhSummaryBadges();
+        }
+
+        function collectSectionQuestions(containerId, skillType) {
+            const list = [];
+            document.querySelectorAll('#' + containerId + ' .question-card').forEach(card => {
+                const qText = card.querySelector('.q-text').value.trim();
+                const optA = card.querySelector('.q-optA').value.trim();
+                const optB = card.querySelector('.q-optB').value.trim();
+                const optC = card.querySelector('.q-optC').value.trim();
+                const optD = card.querySelector('.q-optD').value.trim();
+                if (!qText && !optA && !optB && !optC && !optD) return;
+                const qRadio = card.querySelector('input[type="radio"]');
+                const qName = qRadio ? qRadio.name : '';
+                const checkedRadio = qName ? card.querySelector('input[name="' + qName + '"]:checked') : null;
+                list.push({
+                    skillType,
+                    questionText: qText,
+                    optionA: optA,
+                    optionB: optB,
+                    optionC: optC,
+                    optionD: optD,
+                    correctOption: checkedRadio ? checkedRadio.value : 'A'
+                });
+            });
+            return list;
+        }
+
+        function printKhmerExamSheet() {
+            const container = document.getElementById('khPrintOfficialContainer');
+            if (!container) return;
+            const month = document.getElementById('monthSelect').value;
+            const classes = getSelectedClasses().join(', ') || '...................';
+            const totalPts = document.getElementById('khTotalPointsDisplay').textContent || '70';
+            const passage = document.getElementById('khReadingPassage').value || '';
+            const rQs = collectSectionQuestions('khReadingContainer', 'kh_reading');
+            const gQs = collectSectionQuestions('khGrammarContainer', 'kh_grammar');
+            const lQs = collectSectionQuestions('khLiteratureContainer', 'kh_literature');
+            const wOpen = document.getElementById('khWritingEnabled').checked;
+
+            const renderPrintQs = (arr) => arr.map((q, idx) =>
+                '<div class="kh-print-q">' +
+                    '<div><b>' + escapeHtml(q.questionText || ((idx + 1) + '.')) + '</b></div>' +
+                    '<div class="kh-print-opts">' +
+                        '<div>ក. ' + escapeHtml(q.optionA) + '</div>' +
+                        '<div>ខ. ' + escapeHtml(q.optionB) + '</div>' +
+                        '<div>គ. ' + escapeHtml(q.optionC) + '</div>' +
+                        '<div>ឃ. ' + escapeHtml(q.optionD) + '</div>' +
+                    '</div>' +
+                '</div>'
+            ).join('');
+
+            const meta = window.__EXAM_META__ || {};
+            container.innerHTML =
+                '<div class="kh-print-header">' +
+                    '<div>' +
+                        '<div style="font-weight:bold;">ក្រសួងអប់រំ យុវជន និងកីឡា</div>' +
+                        '<div style="font-weight:bold;">' + escapeHtml(meta.schoolName || 'សាលារៀន') + '</div>' +
+                        '<div>វិញ្ញាសា៖ <b>ភាសាខ្មែរ</b> | ថ្នាក់៖ <b>' + escapeHtml(classes) + '</b></div>' +
+                        '<div>សម័យប្រឡង៖ <b>' + escapeHtml(month) + '</b> (' + escapeHtml(meta.academicYear || '២០២៦-២០២៧') + ')</div>' +
+                    '</div>' +
+                    '<div style="text-align:center;">' +
+                        '<div style="font-weight:bold; font-size:11.5pt;">ព្រះរាជាណាចក្រកម្ពុជា</div>' +
+                        '<div style="font-weight:bold;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>' +
+                        '<div style="margin-top:6px;">ពិន្ទុសរុប៖ <b>' + escapeHtml(totalPts) + ' ពិន្ទុ</b></div>' +
+                        '<div>រយៈពេល៖ ៩០ នាទី</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="text-align:center; font-weight:bold; font-size:12pt; border-top:1.5px solid #000; border-bottom:1.5px solid #000; padding:4px 0; margin-bottom:8px;">វិញ្ញាសាប្រឡងមុខវិជ្ជាភាសាខ្មែរ (ទម្រង់ស្តង់ដា)</div>' +
+                (rQs.length > 0 || passage.trim() ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('khSec1Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('khSec1Instruction').value) + '</i></div>' + (passage.trim() ? '<div class="kh-print-passage">' + escapeHtml(passage) + '</div>' : '') + renderPrintQs(rQs) : '') +
+                (gQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('khSec2Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('khSec2Instruction').value) + '</i></div>' + renderPrintQs(gQs) : '') +
+                (lQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('khSec3Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('khSec3Instruction').value) + '</i></div>' + renderPrintQs(lQs) : '') +
+                (wOpen && document.getElementById('khWritingPrompt').value.trim() ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('khSec4Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('khSec4Instruction').value) + '</i></div><div style="margin-top:4px; font-weight:bold;">' + escapeHtml(document.getElementById('khWritingPrompt').value) + '</div>' : '') +
+                '<div style="display:flex; justify-content:space-between; margin-top:22px; page-break-inside:avoid;">' +
+                    '<div style="text-align:center;"><div>បានឃើញ និងឯកភាព</div><div><b>នាយកសាលា</b></div></div>' +
+                    '<div style="text-align:center;"><div>គ្រូមុខវិជ្ជាភាសាខ្មែរ</div><div><b>' + escapeHtml(meta.teacherName || '') + '</b></div></div>' +
+                '</div>';
+            window.print();
         }
 
         function loadMoeyseGrade11Sample() {
@@ -952,6 +1475,7 @@
 
         async function loadExamById(examId) {
             initEnglishContainers();
+            initKhmerContainers();
             try {
                 const res = await fetch(`/api/exams/get?id=${examId}`);
                 if (res.ok) {
@@ -963,7 +1487,11 @@
                         setSelectedClasses(data.exam.className);
                         onSubjectChanged();
 
-                        if (data.exam.subjectName === 'ភាសាអង់គ្លេស' || data.exam.readingPassage) {
+                        if (data.exam.subjectName === 'ភាសាអង់គ្លេស') {
+                            populateEnglishExamData(data.exam, data.questions || []);
+                        } else if (data.exam.subjectName === 'ភាសាខ្មែរ') {
+                            populateKhmerExamData(data.exam, data.questions || []);
+                        } else if (data.exam.readingPassage) {
                             populateEnglishExamData(data.exam, data.questions || []);
                         } else {
                             clearAllQuestions();
@@ -984,6 +1512,7 @@
 
         async function loadExam() {
             initEnglishContainers();
+            initKhmerContainers();
             document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
             const month = document.getElementById('monthSelect').value;
             const subjectName = document.getElementById('subjectSelect').value;
@@ -1005,7 +1534,13 @@
                         document.getElementById('currentExamId').value = data.exam.id || '';
                         setSelectedClasses(data.exam.className);
 
-                        if (data.exam.subjectName === 'ភាសាអង់គ្លេស' || data.exam.readingPassage) {
+                        if (data.exam.subjectName === 'ភាសាអង់គ្លេស') {
+                            populateEnglishExamData(data.exam, data.questions || []);
+                            foundExisting = true;
+                        } else if (data.exam.subjectName === 'ភាសាខ្មែរ') {
+                            populateKhmerExamData(data.exam, data.questions || []);
+                            foundExisting = true;
+                        } else if (data.exam.readingPassage) {
                             populateEnglishExamData(data.exam, data.questions || []);
                             foundExisting = true;
                         } else if (data.questions && data.questions.length > 0) {
@@ -1023,7 +1558,7 @@
                 disableEditMode();
             } else {
                 document.getElementById('currentExamId').value = '';
-                if (subjectName !== 'ភាសាអង់គ្លេស') {
+                if (subjectName !== 'ភាសាអង់គ្លេស' && subjectName !== 'ភាសាខ្មែរ') {
                     clearAllQuestions();
                     addQuestion('general');
                 }
@@ -1200,6 +1735,46 @@
                     section4Instruction: writingEnabled ? document.getElementById('enSec4Instruction').value : null,
                     writingPrompt: writingEnabled ? document.getElementById('enWritingPrompt').value : null,
                     writingMaxPoints: writingEnabled ? parseInt(document.getElementById('enWritingMaxPoints').value || 15) : null,
+                    questions: questions
+                };
+
+            } else if (subjectName === 'ភាសាខ្មែរ') {
+                const questions = [
+                    ...collectSectionQuestions('khReadingContainer', 'kh_reading'),
+                    ...collectSectionQuestions('khGrammarContainer', 'kh_grammar'),
+                    ...collectSectionQuestions('khLiteratureContainer', 'kh_literature')
+                ];
+                if (questions.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'សូមបញ្ចូលសំណួរយ៉ាងតិច ១!',
+                        text: 'សូមបំពេញសំណួរក្នុងផ្នែកអំណាន វេយ្យាករណ៍ ឬអក្សរសិល្ប៍ ឬចុចប៊ូតុង «📥 ផ្ទុកគំរូវិញ្ញាសាភាសាខ្មែរស្តង់ដា»។',
+                        confirmButtonText: 'យល់ព្រម',
+                        confirmButtonColor: '#4361ee'
+                    });
+                    return;
+                }
+                const writingEnabled = document.getElementById('khWritingEnabled').checked;
+                payload = {
+                    id: examId ? parseInt(examId) : null,
+                    month: month,
+                    classes: selectedClasses,
+                    subjectName: subjectName,
+                    readingPassage: document.getElementById('khReadingPassage').value,
+                    wordBank: null,
+                    section1Title: document.getElementById('khSec1Title').value,
+                    section1Instruction: document.getElementById('khSec1Instruction').value,
+                    section1MaxPoints: parseInt(document.getElementById('khSec1MaxPoints').value) || 15,
+                    section2Title: document.getElementById('khSec2Title').value,
+                    section2Instruction: document.getElementById('khSec2Instruction').value,
+                    section2MaxPoints: parseInt(document.getElementById('khSec2MaxPoints').value) || 15,
+                    section3Title: document.getElementById('khSec3Title').value,
+                    section3Instruction: document.getElementById('khSec3Instruction').value,
+                    section3MaxPoints: parseInt(document.getElementById('khSec3MaxPoints').value) || 15,
+                    section4Title: writingEnabled ? document.getElementById('khSec4Title').value : null,
+                    section4Instruction: writingEnabled ? document.getElementById('khSec4Instruction').value : null,
+                    writingPrompt: writingEnabled ? document.getElementById('khWritingPrompt').value : null,
+                    writingMaxPoints: writingEnabled ? (parseInt(document.getElementById('khWritingMaxPoints').value) || 25) : null,
                     questions: questions
                 };
 
@@ -1532,15 +2107,22 @@
                 let scoreText = (s.monthlyScore !== null && s.monthlyScore !== undefined) ? `<strong style="color: #2563eb;">${s.monthlyScore}</strong>` : `<span style="color: #94a3b8;">--</span>`;
 
                 let actionBtn = '';
+                if (s.studentWriting && s.studentWriting.trim().length > 0) {
+                    actionBtn += `
+                        <button type="button" onclick="viewStudentWriting('${escapeHtml(s.studentName || '')}', ${s.studentId})" style="background: #7c3aed; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 700; margin-right: 4px; margin-bottom: 3px;" title="អានតែងសេចក្តីដែលសិស្សបានសរសេរ">
+                            📝 អានសំណេរ
+                        </button>
+                    `;
+                }
                 if (s.submitted) {
-                    actionBtn = `
+                    actionBtn += `
                         <button type="button" onclick="grantRetake(${s.scoreId || 'null'}, ${s.studentId}, '${escapeHtml(currentExamInfo.month || '')}', '${escapeHtml(currentExamInfo.subjectName || '')}')" style="background: #f59e0b; color: white; border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.82rem; cursor: pointer; font-weight: 700; transition: all 0.2s;" title="អនុញ្ញាតឱ្យសិស្សនេះចូលប្រឡងម្តងទៀត">
                             🔄 អនុញ្ញាតឱ្យប្រឡងឡើងវិញ
                         </button>
                     `;
                 } else if (s.retakeAllowed) {
-                    actionBtn = `<span style="color: #059669; font-weight: 700; font-size: 0.82rem;">✅ អាចប្រឡងឡើងវិញបាន</span>`;
-                } else {
+                    actionBtn += `<span style="color: #059669; font-weight: 700; font-size: 0.82rem;">✅ អាចប្រឡងឡើងវិញបាន</span>`;
+                } else if (!actionBtn) {
                     actionBtn = `<span style="color: #94a3b8; font-size: 0.82rem;">--</span>`;
                 }
 
@@ -1611,14 +2193,34 @@
             }
         }
 
+        function viewStudentWriting(studentName, studentId) {
+            const stu = currentSubmissionsData.find(x => x.studentId === studentId);
+            if (!stu || !stu.studentWriting) return;
+            Swal.fire({
+                title: `📝 សំណេរតែងសេចក្តីរបស់ ${studentName}`,
+                html: `<div style="text-align: left; max-height: 55vh; overflow-y: auto; white-space: pre-wrap; line-height: 1.7; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 14px; font-size: 0.98rem; color: #1e293b;">${escapeHtml(stu.studentWriting)}</div>`,
+                width: '650px',
+                confirmButtonText: 'បិទ'
+            });
+        }
+
         document.getElementById('monthSelect').addEventListener('change', loadExam);
         document.getElementById('subjectSelect').addEventListener('change', () => {
             onSubjectChanged();
             loadExam();
         });
         
+        // Auto-select teacher's primary subject if it matches #subjectSelect
+        const primarySubj = (window.__EXAM_META__ && window.__EXAM_META__.teacherSubject) ? window.__EXAM_META__.teacherSubject : '';
+        if (primarySubj) {
+            const subjSel = document.getElementById('subjectSelect');
+            const matchOpt = Array.from(subjSel.options).find(o => primarySubj.includes(o.value));
+            if (matchOpt) subjSel.value = matchOpt.value;
+        }
+
         // Initial load
         initEnglishContainers();
+        initKhmerContainers();
         onSubjectChanged();
         loadExam();
         loadExamsList();
@@ -1700,6 +2302,7 @@ function switchAcademicYear(year) {
         </div>
     </div>
 
+    <div id="khPrintOfficialContainer"></div>
     <script src="/js/logout-confirm.js"></script>
     <script src="/js/mobile-nav.js?v=20261029h"></script>
 </body>

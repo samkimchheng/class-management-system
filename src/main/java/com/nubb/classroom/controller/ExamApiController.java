@@ -336,6 +336,7 @@ public class ExamApiController {
                 Score sc = scoreOpt.get();
                 item.put("scoreId", sc.getId());
                 item.put("monthlyScore", sc.getMonthlyScore());
+                item.put("studentWriting", sc.getStudentWriting() != null ? sc.getStudentWriting() : "");
                 boolean hasSubmitted = Boolean.TRUE.equals(sc.getExamSubmitted()) || (sc.getMonthlyScore() > 0 && !Boolean.TRUE.equals(sc.getRetakeAllowed()));
                 item.put("submitted", hasSubmitted);
                 item.put("retakeAllowed", Boolean.TRUE.equals(sc.getRetakeAllowed()));
