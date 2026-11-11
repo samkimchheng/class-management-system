@@ -874,4 +874,86 @@ class ClassroomApplicationTests {
         questionRepository.deleteAll(createdQs);
         examRepository.delete(createdOpt.get());
     }
+
+    @Test
+    void testMathStandardExamWorkflow_ZeroDataLoss() throws Exception {
+        Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(somuny);
+
+        // 1. Verify /exams renders cleanly with Math template & 48 Grade 8D students intact
+        mockMvc.perform(get("/exams")
+                .sessionAttr("ACCOUNT_ID", somuny.getId())
+                .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
+                .sessionAttr("ACCOUNT_NAME", somuny.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk());
+        assertEquals(48, studentRepository.findByClassNameAndAccountId("៨D", somuny.getId()).size());
+
+        // 2. Verify Math teacher (33) and Demo (98) both have a Math exam safely (seeded only if previously missing)
+        List<com.nubb.classroom.model.Exam> somunyMathExams = examRepository.findByAccountId(somuny.getId()).stream()
+                .filter(e -> "គណិតវិទ្យា".equals(e.getSubjectName()))
+                .toList();
+        assertFalse(somunyMathExams.isEmpty(), "Expected Math teacher account 33 to have a Math exam");
+
+        Account demoAcc = accountRepository.findById(98L).orElse(null);
+        assertNotNull(demoAcc);
+        List<com.nubb.classroom.model.Exam> demoMathExams = examRepository.findByAccountId(demoAcc.getId()).stream()
+                .filter(e -> "គណិតវិទ្យា".equals(e.getSubjectName()))
+                .toList();
+        assertFalse(demoMathExams.isEmpty(), "Expected Demo account 98 to have starter Standard Math Exam");
+
+        com.nubb.classroom.model.Exam demoSample = demoMathExams.get(0);
+        List<com.nubb.classroom.model.Question> demoQs = questionRepository.findByExamIdAndAccountId(demoSample.getId(), demoAcc.getId());
+        assertTrue(demoQs.stream().anyMatch(q -> "math_algebra".equals(q.getSkillType())));
+        assertTrue(demoQs.stream().anyMatch(q -> "math_geometry".equals(q.getSkillType())));
+        assertTrue(demoQs.stream().anyMatch(q -> "math_applied".equals(q.getSkillType())));
+
+        // 3. Verify saving a Standard 4-section Math Exam works without touching Sam Kimchheng's exams
+        long kimchhengExamCountBefore = examRepository.findByAccountId(97L).size();
+        String mathPayload = """
+            {
+              "month": "__TEST_MATH__",
+              "classes": ["៨D"],
+              "subjectName": "គណិតវិទ្យា",
+              "readingPassage": "រូបមន្តជំនួយ៖ (a+b)² = a² + 2ab + b²",
+              "section1Title": "I. ពីជគណិត៖",
+              "section1Instruction": "គណនា",
+              "section1MaxPoints": 15,
+              "section2Title": "II. ធរណីមាត្រ៖",
+              "section2Instruction": "ដោះស្រាយ",
+              "section2MaxPoints": 15,
+              "section3Title": "III. អនុគមន៍/ស្ថិតិ៖",
+              "section3Instruction": "ជ្រើសរើសចម្លើយ",
+              "section3MaxPoints": 15,
+              "section4Title": "IV. ចំណោទដោះស្រាយលម្អិត៖",
+              "section4Instruction": "សរសេរជាជំហានៗ",
+              "writingPrompt": "ដោះស្រាយសមីការ 2x + 6 = 14",
+              "writingMaxPoints": 25,
+              "questions": [
+                {"skillType":"math_algebra","questionText":"2x+6=14","optionA":"2","optionB":"4","optionC":"6","optionD":"8","correctOption":"B"},
+                {"skillType":"math_geometry","questionText":"ផលបូកមុំក្នុងត្រីកោណ","optionA":"90°","optionB":"180°","optionC":"270°","optionD":"360°","correctOption":"B"},
+                {"skillType":"math_applied","questionText":"f(x)=3x-2, f(4)=","optionA":"10","optionB":"12","optionC":"14","optionD":"5","correctOption":"A"}
+              ]
+            }
+            """;
+
+        mockMvc.perform(post("/api/exams/save")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(mathPayload)
+                .sessionAttr("ACCOUNT_ID", somuny.getId()))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.success").value(true));
+
+        assertEquals(kimchhengExamCountBefore, examRepository.findByAccountId(97L).size());
+
+        // 4. Verify saved Math exam reloads cleanly with all 4 sections + questions, then clean up test row
+        var createdOpt = examRepository.findByMonthAndSubjectNameAndAccountId("__TEST_MATH__", "គណិតវិទ្យា", somuny.getId()).stream().findFirst();
+        assertTrue(createdOpt.isPresent());
+        assertEquals("ដោះស្រាយសមីការ 2x + 6 = 14", createdOpt.get().getWritingPrompt());
+        assertEquals(3, questionRepository.findByExamIdAndAccountId(createdOpt.get().getId(), somuny.getId()).size());
+
+        var createdQs = questionRepository.findByExamIdAndAccountId(createdOpt.get().getId(), somuny.getId());
+        questionRepository.deleteAll(createdQs);
+        examRepository.delete(createdOpt.get());
+    }
 }

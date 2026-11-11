@@ -876,6 +876,9 @@ public class DataInitializer {
             // 16. Safely seed a starter Standard MoEYS Khmer Exam ONLY for Khmer teachers who have zero Khmer exams yet
             seedKhmerExamIfMissing(accountRepository, classroomRepository, examRepository, questionRepository);
 
+            // 17. Safely seed a starter Standard MoEYS Mathematics Exam ONLY for Math teachers who have zero Math exams yet
+            seedMathExamIfMissing(accountRepository, classroomRepository, examRepository, questionRepository);
+
             // Align all table sequences for H2 and PostgreSQL so new auto-increment rows never collide with pre-seeded data
             try {
                 alignAllSequences(dataSource);
@@ -1110,6 +1113,115 @@ public class DataInitializer {
             }
         } catch (Exception e) {
             System.err.println(">>> [DataInitializer] Notice seeding Khmer exam: " + e.getMessage());
+        }
+    }
+
+    private void seedMathExamIfMissing(
+            AccountRepository accountRepository,
+            ClassroomRepository classroomRepository,
+            ExamRepository examRepository,
+            QuestionRepository questionRepository) {
+        try {
+            List<Account> allAccounts = accountRepository.findAll();
+            for (Account acc : allAccounts) {
+                String subj = acc.getSubject();
+                boolean isDemo = Long.valueOf(98L).equals(acc.getId());
+                if (!isDemo && (subj == null || (!subj.contains("គណិត") && !subj.toLowerCase().contains("math")))) {
+                    continue;
+                }
+
+                // STRICT ZERO DATA LOSS: Never touch or overwrite if this teacher already has any Math exam
+                boolean hasAnyMathExam = examRepository.findByAccountId(acc.getId()).stream()
+                        .anyMatch(e -> "គណិតវិទ្យា".equals(e.getSubjectName()));
+                if (hasAnyMathExam) {
+                    continue;
+                }
+
+                List<Classroom> teacherClasses = classroomRepository.findByAccountId(acc.getId());
+                String classNames = teacherClasses.stream()
+                        .map(Classroom::getClassName)
+                        .filter(java.util.Objects::nonNull)
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .distinct()
+                        .collect(java.util.stream.Collectors.joining(", "));
+                if (classNames.isEmpty()) {
+                    classNames = (acc.getTeachingClasses() != null && !acc.getTeachingClasses().trim().isEmpty())
+                            ? acc.getTeachingClasses().trim()
+                            : "៨D";
+                }
+
+                Exam exam = new Exam();
+                exam.setAccountId(acc.getId());
+                exam.setMonth("ខែវិច្ឆិកា ២០២៦");
+                exam.setSubjectName("គណិតវិទ្យា");
+                exam.setClassName(classNames);
+                exam.setOpenClasses(""); // Closed by default until teacher opens for class
+                exam.setReadingPassage(
+                        "រូបមន្តជំនួយសំខាន់ៗ៖\n" +
+                        "• (a + b)² = a² + 2ab + b²  |  (a - b)² = a² - 2ab + b²  |  a² - b² = (a - b)(a + b)\n" +
+                        "• ទ្រឹស្តីបទពីតាគ័រក្នុងត្រីកោណកែង៖ c² = a² + b²\n" +
+                        "• ផ្ទៃក្រឡាត្រីកោណ៖ S = (បាត × កម្ពស់) / 2  |  បរិមាត្ររង្វង់៖ P = 2πR"
+                );
+                exam.setSection1Title("I. ពីជគណិត និងការគណនា៖");
+                exam.setSection1Instruction("ចូរគណនា រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (១៥ ពិន្ទុ)");
+                exam.setSection1MaxPoints(15);
+                exam.setSection2Title("II. ធរណីមាត្រ និងរង្វាស់រង្វាល់៖");
+                exam.setSection2Instruction("ចូរដោះស្រាយ រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (១៥ ពិន្ទុ)");
+                exam.setSection2MaxPoints(15);
+                exam.setSection3Title("III. សមាមាត្រ ស្ថិតិ និងប្រូបាប៊ីលីតេ៖");
+                exam.setSection3Instruction("ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (១៥ ពិន្ទុ)");
+                exam.setSection3MaxPoints(15);
+                exam.setSection4Title("IV. លំហាត់ដោះស្រាយលម្អិត និងចំណោទ៖");
+                exam.setSection4Instruction("ចូរសរសេររបៀបដោះស្រាយលម្អិតជាជំហានៗសម្រាប់ចំណោទខាងក្រោម៖ (២៥ ពិន្ទុ)");
+                exam.setWritingPrompt(
+                        "១. (១២ ពិន្ទុ) ដោះស្រាយសមីការ និងវិសមីការខាងក្រោម៖\n" +
+                        "   ក) 3(2x - 4) + 5 = 2x + 9\n" +
+                        "   ខ) 4x - 7 ≤ 2x + 5\n\n" +
+                        "២. (១៣ ពិន្ទុ) ដីស្រែរាងចតុកោណកែងមួយមានបណ្តោយវែងជាងទទឹង 8m និងមានបរិមាត្រសរុប 64m។\n" +
+                        "   ក) ចូររករង្វាស់ទទឹង និងបណ្តោយនៃដីស្រែនេះ។\n" +
+                        "   ខ) គណនាផ្ទៃក្រឡារបស់ដីស្រែជាម៉ែត្រការ៉េ (m²)។"
+                );
+                exam.setWritingMaxPoints(25);
+                exam = examRepository.save(exam);
+
+                String[][] sampleQuestions = {
+                    // Section I: Algebra (math_algebra)
+                    {"math_algebra", "១. ចូរដោះស្រាយសមីការ 2x + 6 = 14 ។ តើ x មានតម្លៃស្មើប៉ុន្មាន?", "x = 2", "x = 4", "x = 6", "x = 10", "B"},
+                    {"math_algebra", "២. តើកន្សោម (x + 3)² ពន្លាតបានដូចម្តេច?", "x² + 9", "x² + 3x + 9", "x² + 6x + 9", "x² + 6x + 6", "C"},
+                    {"math_algebra", "៣. ចូរគណនាតម្លៃ √81 + √16 ៖", "11", "13", "15", "97", "B"},
+                    {"math_algebra", "៤. ដាក់កន្សោម x² - 25 ជាផលគុណកត្តា៖", "(x - 5)(x + 5)", "(x - 5)²", "(x + 5)²", "(x - 25)(x + 1)", "A"},
+                    {"math_algebra", "៥. បើ a = 3 និង b = -2 តើតម្លៃនៃកន្សោម 2a² - 3b ស្មើប៉ុន្មាន?", "12", "24", "18", "6", "B"},
+                    // Section II: Geometry (math_geometry)
+                    {"math_geometry", "១. ត្រីកោណកែងមួយមានជ្រុងជាប់មុំកែង 6cm និង 8cm។ តើអ៊ីប៉ូតេនុសមានប្រវែងប៉ុន្មាន?", "10 cm", "12 cm", "14 cm", "48 cm", "A"},
+                    {"math_geometry", "២. ផលបូកមុំក្នុងទាំងបីនៃត្រីកោណមួយស្មើនឹងប៉ុន្មានដឺក្រេ?", "90°", "180°", "270°", "360°", "B"},
+                    {"math_geometry", "៣. ចតុកោណកែងមួយមានបណ្តោយ 12cm និងទទឹង 5cm។ តើផ្ទៃក្រឡារបស់វាស្មើប៉ុន្មាន?", "17 cm²", "34 cm²", "60 cm²", "30 cm²", "C"},
+                    {"math_geometry", "៤. រង្វង់មួយមានកាំ R = 7cm (យក π ≈ 22/7)។ តើបរិមាត្ររង្វង់ស្មើប៉ុន្មាន?", "22 cm", "44 cm", "154 cm", "14 cm", "B"},
+                    {"math_geometry", "៥. ប្រសិនបើមុំពីរបំពេញគ្នា (មុំបន្ថែម) ហើយមុំមួយស្មើ 65° តើមុំមួយទៀតស្មើប៉ុន្មាន?", "25°", "35°", "115°", "125°", "A"},
+                    // Section III: Functions, Statistics & Applied Math (math_applied)
+                    {"math_applied", "១. មធ្យមភាគនព្វន្តនៃទិន្នន័យពិន្ទុ 6, 8, 10, 12, 14 គឺ៖", "8", "10", "12", "50", "B"},
+                    {"math_applied", "២. សៀវភៅ ៤ ក្បាលថ្លៃ 12,000 រៀល។ តើសៀវភៅ ៧ ក្បាលថ្លៃប៉ុន្មានរៀល?", "18,000 រៀល", "21,000 រៀល", "24,000 រៀល", "28,000 រៀល", "B"},
+                    {"math_applied", "៣. បោះគ្រាប់ឡុកឡាក់សមមួយ ១ ដង។ តើប្រូបាប៊ីលីតេដែលចេញលេខគូស្មើប៉ុន្មាន?", "1/6", "1/3", "1/2", "2/3", "C"},
+                    {"math_applied", "៤. អនុគមន៍លីនេអ៊ែរ f(x) = 3x - 2 ។ តើ f(4) មានតម្លៃស្មើប៉ុន្មាន?", "10", "12", "14", "5", "A"},
+                    {"math_applied", "៥. ទំនិញមួយតម្លៃ 50,000 រៀល ត្រូវបានបញ្ចុះតម្លៃ 20%។ តើត្រូវបង់ប្រាក់ប៉ុន្មាន?", "10,000 រៀល", "30,000 រៀល", "40,000 រៀល", "45,000 រៀល", "C"}
+                };
+                for (String[] row : sampleQuestions) {
+                    Question q = new Question();
+                    q.setExamId(exam.getId());
+                    q.setAccountId(acc.getId());
+                    q.setSkillType(row[0]);
+                    q.setQuestionText(row[1]);
+                    q.setOptionA(row[2]);
+                    q.setOptionB(row[3]);
+                    q.setOptionC(row[4]);
+                    q.setOptionD(row[5]);
+                    q.setCorrectOption(row[6]);
+                    questionRepository.save(q);
+                }
+                System.out.println(">>> [DataInitializer] Seeded starter Standard MoEYS Math Exam for Math teacher: " + acc.getFullName() + " (ID " + acc.getId() + ")");
+            }
+        } catch (Exception e) {
+            System.err.println(">>> [DataInitializer] Notice seeding Math exam: " + e.getMessage());
         }
     }
 

@@ -358,6 +358,12 @@
                         <button type="button" class="btn" id="btnPrintKhmerExam" onclick="printKhmerExamSheet()" style="display: none; background: #334155; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
                             <span>🖨️ បោះពុម្ពក្រដាសវិញ្ញាសា</span>
                         </button>
+                        <button type="button" class="btn" id="btnLoadMathSample" onclick="loadMathSampleChooser()" style="display: none; background: #1d4ed8; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
+                            <span>📥 ផ្ទុកគំរូវិញ្ញាសាគណិតវិទ្យាស្តង់ដា</span>
+                        </button>
+                        <button type="button" class="btn" id="btnPrintMathExam" onclick="printMathExamSheet()" style="display: none; background: #334155; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
+                            <span>🖨️ បោះពុម្ពក្រដាសវិញ្ញាសា</span>
+                        </button>
                         <button type="button" class="btn" id="btnLoadEnglishSample" onclick="loadMoeyseGrade11Sample()" style="background: #047857; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 6px;">
                             <span>📥 ផ្ទុកគំរូវិញ្ញាសាអង់គ្លេសថ្នាក់ទី១១</span>
                         </button>
@@ -515,6 +521,156 @@
                         <div style="margin-bottom: 12px;">
                             <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ប្រធានបទតែងសេចក្តី (Writing Topic)</label>
                             <textarea id="khWritingPrompt" class="form-control" rows="4" style="width: 100%; font-family: inherit; font-size: 0.98rem; line-height: 1.6;" placeholder="ឧ. ប្រធាន៖ «ចំណេះវិជ្ជាជាទ្រព្យដ៏ប្រសើរដែលចោរលួចមិនបាន»។ ចូរពន្យល់ដោយលើកឧទាហរណ៍បញ្ជាក់..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mathematics Standard 4-Section Container (MoEYS Standard) -->
+            <div id="section-math-container" style="display: none;">
+                <!-- Live Total Points Banner & Math Symbol Bar -->
+                <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1.5px solid #93c5fd; border-radius: 12px; padding: 14px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+                    <div>
+                        <span style="font-weight: 700; color: #1e3a8a; font-size: 1.05rem;">📐 គម្រូវិញ្ញាសាស្តង់ដាគណិតវិទ្យា (ពិន្ទុសរុប):</span>
+                        <span id="mathTotalPointsDisplay" style="color: #1d4ed8; font-size: 1.4rem; font-weight: 800; margin-left: 6px;">70</span>
+                        <span style="font-weight: 700; color: #1e40af; font-size: 1rem;"> ពិន្ទុ</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; font-size: 0.85rem; font-weight: 600; flex-wrap: wrap;">
+                        <span id="mathBadgeSec1Pill" style="background: #ffffff; color: #1d4ed8; padding: 5px 12px; border-radius: 20px; border: 1px solid #bfdbfe;">ពីជគណិត៖ 15 ពិន្ទុ</span>
+                        <span id="mathBadgeSec2Pill" style="background: #f0fdfa; color: #0d9488; padding: 5px 12px; border-radius: 20px; border: 1px solid #99f6e4;">ធរណីមាត្រ៖ 15 ពិន្ទុ</span>
+                        <span id="mathBadgeSec3Pill" style="background: #f5f3ff; color: #7c3aed; padding: 5px 12px; border-radius: 20px; border: 1px solid #ddd6fe;">អនុគមន៍/ស្ថិតិ៖ 15 ពិន្ទុ</span>
+                        <span id="mathBadgeSec4Pill" style="background: #fff1f2; color: #e11d48; padding: 5px 12px; border-radius: 20px; border: 1px solid #fecdd3;">ចំណោទ/ដោះស្រាយ៖ 25 ពិន្ទុ</span>
+                    </div>
+                </div>
+
+                <!-- Math Quick Symbol Helper Toolbar -->
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-right: 4px;">🔣 និមិត្តសញ្ញាគណិត (ចុចដើម្បីបញ្ចូល):</span>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('²')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">x²</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('³')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">x³</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('√')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">√</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('π')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">π</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('±')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">±</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≤')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">≤</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≥')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">≥</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≠')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">≠</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≈')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">≈</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('°')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">°</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('∠')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">∠</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('△')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">△</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('×')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">×</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('÷')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">÷</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('∞')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">∞</button>
+                    <button type="button" class="math-sym-btn" onclick="insertMathSymbol('∫')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">∫</button>
+                </div>
+
+                <!-- Optional Formula Sheet / Given Data -->
+                <div class="exam-section" style="border-left-color: #64748b;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: #334155; font-weight: 700;">📌 ទិន្នន័យជំនួយ ឬរូបមន្តសំខាន់ៗ (ស្រេចចិត្ត)</h4>
+                    <textarea id="mathFormulaNote" class="form-control" rows="3" style="width: 100%; font-family: inherit; font-size: 0.96rem; line-height: 1.65;" placeholder="ឧ. រូបមន្តជំនួយ៖ (a+b)² = a² + 2ab + b², c² = a² + b², π ≈ 3.14 ... (អាចទុកទទេប្រសិនបើមិនចាំបាច់)"></textarea>
+                </div>
+
+                <!-- Section I: Algebra & Computation -->
+                <div class="exam-section" style="border-left-color: #2563eb;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #1e3a8a; font-weight: 700;">ផ្នែក I៖ ពីជគណិត និងការគណនា</h4>
+                            <span id="mathBadgeSec1Summary" style="background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #bfdbfe;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #eff6ff; border: 1.5px solid #93c5fd; padding: 6px 14px; border-radius: 8px;">
+                            <label for="mathSec1MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #1e40af; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="mathSec1MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #1e3a8a; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #3b82f6; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updateMathSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #1e40af; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="mathSec1Title" class="form-control" style="width: 100%;" value="I. ពីជគណិត និងការគណនា៖">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="mathSec1Instruction" class="form-control" style="width: 100%;" value="ចូរគណនា រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖">
+                    </div>
+                    <div id="mathAlgebraContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addMathAlgebraQuestion()" style="margin-top: 8px; background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរពីជគណិត</button>
+                </div>
+
+                <!-- Section II: Geometry & Measurement -->
+                <div class="exam-section" style="border-left-color: #0d9488;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #0f766e; font-weight: 700;">ផ្នែក II៖ ធរណីមាត្រ និងរង្វាស់រង្វាល់</h4>
+                            <span id="mathBadgeSec2Summary" style="background: #f0fdfa; color: #0d9488; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #99f6e4;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #f0fdfa; border: 1.5px solid #99f6e4; padding: 6px 14px; border-radius: 8px;">
+                            <label for="mathSec2MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #0f766e; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="mathSec2MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #0f766e; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #14b8a6; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updateMathSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #0f766e; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="mathSec2Title" class="form-control" style="width: 100%;" value="II. ធរណីមាត្រ និងរង្វាស់រង្វាល់៖">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="mathSec2Instruction" class="form-control" style="width: 100%;" value="ចូរដោះស្រាយ រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖">
+                    </div>
+                    <div id="mathGeometryContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addMathGeometryQuestion()" style="margin-top: 8px; background: #0d9488; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរធរណីមាត្រ</button>
+                </div>
+
+                <!-- Section III: Functions, Statistics & Probability -->
+                <div class="exam-section" style="border-left-color: #7c3aed;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 style="margin: 0; font-size: 1.15rem; color: #6d28d9; font-weight: 700;">ផ្នែក III៖ អនុគមន៍ ស្ថិតិ និងប្រូបាប៊ីលីតេ</h4>
+                            <span id="mathBadgeSec3Summary" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #ddd6fe;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #f5f3ff; border: 1.5px solid #ddd6fe; padding: 6px 14px; border-radius: 8px;">
+                            <label for="mathSec3MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #6d28d9; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="mathSec3MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #6d28d9; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #8b5cf6; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updateMathSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #6d28d9; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="mathSec3Title" class="form-control" style="width: 100%;" value="III. អនុគមន៍ ស្ថិតិ និងប្រូបាប៊ីលីតេ៖">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="mathSec3Instruction" class="form-control" style="width: 100%;" value="ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖">
+                    </div>
+                    <div id="mathAppliedContainer"></div>
+                    <button type="button" class="add-q-btn" onclick="addMathAppliedQuestion()" style="margin-top: 8px; background: #7c3aed; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរអនុគមន៍/ស្ថិតិ</button>
+                </div>
+
+                <!-- Section IV: Detailed Problem Solving -->
+                <div class="exam-section" style="border-left-color: #e11d48;" id="section-math-writing">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; color: #be123c; font-size: 1.15rem; margin: 0;">
+                            <input type="checkbox" id="mathWritingEnabled" onchange="toggleMathWritingSection()" style="width: 20px; height: 20px; cursor: pointer;" checked>
+                            <span>ផ្នែក IV៖ លំហាត់ដោះស្រាយលម្អិត និងចំណោទ (សំណួរសរសេរ)</span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #fff1f2; border: 1.5px solid #fecdd3; padding: 6px 14px; border-radius: 8px;">
+                            <label for="mathWritingMaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #be123c; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="mathWritingMaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #be123c; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #f43f5e; border-radius: 6px; padding: 4px 6px;" value="25" min="1" max="100" oninput="updateMathSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #be123c; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+
+                    <div id="mathWritingContent" style="display: block;">
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                            <input type="text" id="mathSec4Title" class="form-control" style="width: 100%;" value="IV. លំហាត់ដោះស្រាយលម្អិត និងចំណោទ៖">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                            <input type="text" id="mathSec4Instruction" class="form-control" style="width: 100%;" value="ចូរសរសេររបៀបដោះស្រាយលម្អិតជាជំហានៗសម្រាប់ចំណោទខាងក្រោម៖">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ប្រធានលំហាត់ / ចំណោទ (Problem Solving Prompt)</label>
+                            <textarea id="mathWritingPrompt" class="form-control" rows="5" style="width: 100%; font-family: inherit; font-size: 0.98rem; line-height: 1.65;" placeholder="ឧ. ១. ដោះស្រាយសមីការ 3(2x - 4) + 5 = 2x + 9 ..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -747,37 +903,31 @@
             const subject = document.getElementById('subjectSelect').value;
             const isEnglish = (subject === 'ភាសាអង់គ្លេស');
             const isKhmer = (subject === 'ភាសាខ្មែរ');
+            const isMath = (subject === 'គណិតវិទ្យា');
             const enContainer = document.getElementById('section-english-container');
             const khContainer = document.getElementById('section-khmer-container');
+            const mathContainer = document.getElementById('section-math-container');
             const genContainer = document.getElementById('section-general');
             const btnEnSample = document.getElementById('btnLoadEnglishSample');
             const btnKhSample = document.getElementById('btnLoadKhmerSample');
             const btnKhPrint = document.getElementById('btnPrintKhmerExam');
+            const btnMathSample = document.getElementById('btnLoadMathSample');
+            const btnMathPrint = document.getElementById('btnPrintMathExam');
 
-            if (isEnglish) {
-                if (enContainer) enContainer.style.display = 'block';
-                if (khContainer) khContainer.style.display = 'none';
-                if (genContainer) genContainer.style.display = 'none';
-                if (btnEnSample) btnEnSample.style.display = 'inline-flex';
-                if (btnKhSample) btnKhSample.style.display = 'none';
-                if (btnKhPrint) btnKhPrint.style.display = 'none';
-                updateEnSummaryBadges();
-            } else if (isKhmer) {
-                if (enContainer) enContainer.style.display = 'none';
-                if (khContainer) khContainer.style.display = 'block';
-                if (genContainer) genContainer.style.display = 'none';
-                if (btnEnSample) btnEnSample.style.display = 'none';
-                if (btnKhSample) btnKhSample.style.display = 'inline-flex';
-                if (btnKhPrint) btnKhPrint.style.display = 'inline-flex';
-                updateKhSummaryBadges();
-            } else {
-                if (enContainer) enContainer.style.display = 'none';
-                if (khContainer) khContainer.style.display = 'none';
-                if (genContainer) genContainer.style.display = 'block';
-                if (btnEnSample) btnEnSample.style.display = 'none';
-                if (btnKhSample) btnKhSample.style.display = 'none';
-                if (btnKhPrint) btnKhPrint.style.display = 'none';
-            }
+            if (enContainer) enContainer.style.display = isEnglish ? 'block' : 'none';
+            if (khContainer) khContainer.style.display = isKhmer ? 'block' : 'none';
+            if (mathContainer) mathContainer.style.display = isMath ? 'block' : 'none';
+            if (genContainer) genContainer.style.display = (!isEnglish && !isKhmer && !isMath) ? 'block' : 'none';
+
+            if (btnEnSample) btnEnSample.style.display = isEnglish ? 'inline-flex' : 'none';
+            if (btnKhSample) btnKhSample.style.display = isKhmer ? 'inline-flex' : 'none';
+            if (btnKhPrint) btnKhPrint.style.display = isKhmer ? 'inline-flex' : 'none';
+            if (btnMathSample) btnMathSample.style.display = isMath ? 'inline-flex' : 'none';
+            if (btnMathPrint) btnMathPrint.style.display = isMath ? 'inline-flex' : 'none';
+
+            if (isEnglish) updateEnSummaryBadges();
+            else if (isKhmer) updateKhSummaryBadges();
+            else if (isMath) updateMathSummaryBadges();
         }
 
         function createQuestionCard(skillType, qData = null, fixedNum = null) {
@@ -795,7 +945,7 @@
             const optD = qData ? (qData.optionD || '') : '';
             const correct = qData ? (qData.correctOption || 'A') : 'A';
             const numLabel = fixedNum !== null ? `សំណួរទី ${fixedNum}៖` : 'សំណួរ៖';
-            const deleteBtn = `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge(); updateKhSummaryBadges(); updateEnSummaryBadges();">លុបសំណួរ</button>`;
+            const deleteBtn = `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge(); updateKhSummaryBadges(); updateEnSummaryBadges(); updateMathSummaryBadges();">លុបសំណួរ</button>`;
             
             div.innerHTML = `
                 ${deleteBtn}
@@ -1005,7 +1155,8 @@
             document.querySelectorAll('.exam-class-checkbox').forEach(el => el.disabled = true);
             document.querySelectorAll('#section-english-container input, #section-english-container textarea').forEach(el => el.disabled = true);
             document.querySelectorAll('#section-khmer-container input, #section-khmer-container textarea').forEach(el => el.disabled = true);
-            document.querySelectorAll('.add-q-btn, .delete-btn').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('#section-math-container input, #section-math-container textarea').forEach(el => el.disabled = true);
+            document.querySelectorAll('.add-q-btn, .delete-btn, .math-sym-btn').forEach(el => el.style.display = 'none');
         }
 
         function enableEditMode() {
@@ -1019,7 +1170,8 @@
             document.querySelectorAll('.exam-class-checkbox').forEach(el => el.disabled = false);
             document.querySelectorAll('#section-english-container input, #section-english-container textarea').forEach(el => el.disabled = false);
             document.querySelectorAll('#section-khmer-container input, #section-khmer-container textarea').forEach(el => el.disabled = false);
-            document.querySelectorAll('.add-q-btn, .delete-btn').forEach(el => el.style.display = 'inline-block');
+            document.querySelectorAll('#section-math-container input, #section-math-container textarea').forEach(el => el.disabled = false);
+            document.querySelectorAll('.add-q-btn, .delete-btn, .math-sym-btn').forEach(el => el.style.display = 'inline-block');
         }
 
         function resetNewExam() {
@@ -1028,9 +1180,10 @@
             setSelectedClasses([]);
             initEnglishContainers();
             initKhmerContainers();
+            initMathContainers();
             
             const subj = document.getElementById('subjectSelect').value;
-            if (subj === 'ភាសាអង់គ្លេស' || subj === 'ភាសាខ្មែរ') {
+            if (subj === 'ភាសាអង់គ្លេស' || subj === 'ភាសាខ្មែរ' || subj === 'គណិតវិទ្យា') {
                 onSubjectChanged();
             } else {
                 addQuestion('general');
@@ -1382,6 +1535,329 @@
             window.print();
         }
 
+        // ============================================================
+        // MATHEMATICS STANDARD EXAM HELPERS, PRESETS & PRINT
+        // ============================================================
+        let lastFocusedMathField = null;
+        document.addEventListener('focusin', (e) => {
+            if (e.target && e.target.closest('#section-math-container') && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') && e.target.type !== 'number' && e.target.type !== 'checkbox' && e.target.type !== 'radio') {
+                lastFocusedMathField = e.target;
+            }
+        });
+
+        function insertMathSymbol(sym) {
+            const target = lastFocusedMathField || document.getElementById('mathWritingPrompt');
+            if (!target || target.disabled) return;
+            const start = target.selectionStart != null ? target.selectionStart : target.value.length;
+            const end = target.selectionEnd != null ? target.selectionEnd : target.value.length;
+            target.value = target.value.slice(0, start) + sym + target.value.slice(end);
+            target.focus();
+            const pos = start + sym.length;
+            if (target.setSelectionRange) target.setSelectionRange(pos, pos);
+        }
+
+        function toggleMathWritingSection() {
+            const enabled = document.getElementById('mathWritingEnabled').checked;
+            document.getElementById('mathWritingContent').style.display = enabled ? 'block' : 'none';
+            updateMathSummaryBadges();
+        }
+
+        function addMathAlgebraQuestion(qData = null) {
+            const c = document.getElementById('mathAlgebraContainer');
+            if (c) {
+                c.appendChild(createQuestionCard('math_algebra', qData, c.children.length + 1));
+                updateMathSummaryBadges();
+            }
+        }
+
+        function addMathGeometryQuestion(qData = null) {
+            const c = document.getElementById('mathGeometryContainer');
+            if (c) {
+                c.appendChild(createQuestionCard('math_geometry', qData, c.children.length + 1));
+                updateMathSummaryBadges();
+            }
+        }
+
+        function addMathAppliedQuestion(qData = null) {
+            const c = document.getElementById('mathAppliedContainer');
+            if (c) {
+                c.appendChild(createQuestionCard('math_applied', qData, c.children.length + 1));
+                updateMathSummaryBadges();
+            }
+        }
+
+        function initMathContainers() {
+            const c1 = document.getElementById('mathAlgebraContainer');
+            if (c1 && c1.children.length === 0) {
+                for (let i = 1; i <= 5; i++) addMathAlgebraQuestion();
+            }
+            const c2 = document.getElementById('mathGeometryContainer');
+            if (c2 && c2.children.length === 0) {
+                for (let i = 1; i <= 5; i++) addMathGeometryQuestion();
+            }
+            const c3 = document.getElementById('mathAppliedContainer');
+            if (c3 && c3.children.length === 0) {
+                for (let i = 1; i <= 5; i++) addMathAppliedQuestion();
+            }
+            updateMathSummaryBadges();
+        }
+
+        function updateMathSummaryBadges() {
+            const p1 = parseFloat((document.getElementById('mathSec1MaxPoints') || {}).value) || 0;
+            const p2 = parseFloat((document.getElementById('mathSec2MaxPoints') || {}).value) || 0;
+            const p3 = parseFloat((document.getElementById('mathSec3MaxPoints') || {}).value) || 0;
+            const isWOpen = (document.getElementById('mathWritingEnabled') || {}).checked;
+            const p4 = isWOpen ? (parseFloat((document.getElementById('mathWritingMaxPoints') || {}).value) || 0) : 0;
+
+            const total = p1 + p2 + p3 + p4;
+            const totalEl = document.getElementById('mathTotalPointsDisplay');
+            if (totalEl) totalEl.textContent = Number.isInteger(total) ? total : total.toFixed(1);
+
+            const updateCountBadge = (containerId, badgeId, pts) => {
+                const cnt = document.querySelectorAll('#' + containerId + ' .question-card').length;
+                const perQ = cnt > 0 ? (pts / cnt) : 0;
+                const perStr = Number.isInteger(perQ) ? perQ : perQ.toFixed(1);
+                const el = document.getElementById(badgeId);
+                if (el) el.textContent = cnt + ' សំណួរ (' + perStr + ' ពិន្ទុ/សំណួរ)';
+            };
+            updateCountBadge('mathAlgebraContainer', 'mathBadgeSec1Summary', p1);
+            updateCountBadge('mathGeometryContainer', 'mathBadgeSec2Summary', p2);
+            updateCountBadge('mathAppliedContainer', 'mathBadgeSec3Summary', p3);
+
+            const b1 = document.getElementById('mathBadgeSec1Pill');
+            if (b1) b1.textContent = 'ពីជគណិត៖ ' + p1 + ' ពិន្ទុ';
+            const b2 = document.getElementById('mathBadgeSec2Pill');
+            if (b2) b2.textContent = 'ធរណីមាត្រ៖ ' + p2 + ' ពិន្ទុ';
+            const b3 = document.getElementById('mathBadgeSec3Pill');
+            if (b3) b3.textContent = 'អនុគមន៍/ស្ថិតិ៖ ' + p3 + ' ពិន្ទុ';
+            const b4 = document.getElementById('mathBadgeSec4Pill');
+            if (b4) b4.textContent = isWOpen ? ('ចំណោទ/ដោះស្រាយ៖ ' + p4 + ' ពិន្ទុ') : 'ចំណោទ៖ បិទ (0)';
+        }
+
+        function loadMathSampleChooser() {
+            Swal.fire({
+                title: '📥 ជ្រើសរើសគម្រូវិញ្ញាសាគណិតវិទ្យាស្តង់ដា (MoEYS)',
+                html: `<div style="text-align: left; font-size: 0.95rem; line-height: 1.6;">
+                    <p style="margin-top: 0; color: #475569;">សូមជ្រើសរើសកម្រិតថ្នាក់សម្រាប់គម្រូវិញ្ញាសាគណិតវិទ្យា (លោកគ្រូ-អ្នកគ្រូអាចកែសម្រួលលំហាត់ និងរូបមន្តតាមក្រោយបាន)៖</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button type="button" onclick="Swal.close(); applyMathStandardSample('lower');" style="text-align: left; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #2563eb; background: #eff6ff; color: #1e3a8a; cursor: pointer; font-family: inherit;">
+                            <div style="font-weight: 700; font-size: 1rem;">📘 គំរូទី ១៖ អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩ — ឧ. ថ្នាក់ទី ៨)</div>
+                            <div style="font-size: 0.85rem; color: #334155;">ពិន្ទុសរុប ៧០ ពិន្ទុ (ពីជគណិត ១៥ + ធរណីមាត្រ ១៥ + ស្ថិតិ ១៥ + ចំណោទដោះស្រាយ ២៥)</div>
+                        </button>
+                        <button type="button" onclick="Swal.close(); applyMathStandardSample('upper');" style="text-align: left; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #047857; background: #ecfdf5; color: #065f46; cursor: pointer; font-family: inherit;">
+                            <div style="font-weight: 700; font-size: 1rem;">📗 គំរូទី ២៖ វិទ្យាល័យ (ថ្នាក់ទី ១០-១២)</div>
+                            <div style="font-size: 0.85rem; color: #334155;">ពិន្ទុសរុប ១០០ ពិន្ទុ (ពីជគណិត/លីមីត ២០ + ធរណីមាត្រ/វ៉ិចទ័រ ២០ + ដេរីវេ/ប្រូបាប ២០ + សិក្សាអនុគមន៍ ៤០)</div>
+                        </button>
+                    </div>
+                </div>`,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'បោះបង់',
+                width: '580px'
+            });
+        }
+
+        function applyMathStandardSample(level) {
+            document.getElementById('currentExamId').value = '';
+            document.getElementById('subjectSelect').value = 'គណិតវិទ្យា';
+            onSubjectChanged();
+            if (getSelectedClasses().length === 0) {
+                toggleAllExamClasses(true);
+            }
+
+            const isUpper = (level === 'upper');
+            const p1 = isUpper ? 20 : 15;
+            const p2 = isUpper ? 20 : 15;
+            const p3 = isUpper ? 20 : 15;
+            const p4 = isUpper ? 40 : 25;
+
+            const sample = isUpper ? {
+                formulas: "រូបមន្តជំនួយសំខាន់ៗ៖\n• (ln x)' = 1/x  |  (eˣ)' = eˣ  |  ∫ xⁿ dx = xⁿ⁺¹/(n+1) + C\n• កុំផ្លិច៖ z = a + bi, |z| = √(a² + b²), i² = -1\n• ប្លង់ក្នុងលំហ៖ ចម្ងាយ d(M, (P)) = |ax₀ + by₀ + cz₀ + d| / √(a² + b² + c²)",
+                writingPrompt: "១. (១៥ ពិន្ទុ) គណនាលីមីត និងអាំងតេក្រាលខាងក្រោម៖\n   ក) lim(x→2) (x² - 4)/(x - 2)\n   ខ) ∫₀¹ (3x² + 2x + 1) dx\n\n២. (២៥ ពិន្ទុ) គេឱ្យអនុគមន៍ f(x) = x³ - 3x² + 2 មានក្រាប (C)៖\n   ក) រកដេរីវេទី១ f'(x) និងសិក្សាសញ្ញារបស់ f'(x)។\n   ខ) កំណត់អតិបរមា និងអប្បបរមាធៀបរបស់ f។\n   គ) សរសេរសមីការបន្ទាត់ប៉ះនឹង (C) ត្រង់ x₀ = 1។",
+                aQs: [
+                    { questionText: "១. រកឫសនៃសមីការដឺក្រេទី២ x² - 5x + 6 = 0 ៖", optionA: "x = 1, x = 6", optionB: "x = 2, x = 3", optionC: "x = -2, x = -3", optionD: "x = -1, x = 5", correctOption: "B" },
+                    { questionText: "២. គណនាផលបូកចំនួនកុំផ្លិច z₁ = 3 + 2i និង z₂ = 1 - 5i ៖", optionA: "4 - 3i", optionB: "4 + 7i", optionC: "2 - 3i", optionD: "4 - 7i", correctOption: "A" },
+                    { questionText: "៣. គណនា log₂(32) មានតម្លៃស្មើប៉ុន្មាន?", optionA: "4", optionB: "5", optionC: "6", optionD: "16", correctOption: "B" },
+                    { questionText: "៤. ដេរីវេនៃអនុគមន៍ y = 2x³ - 5x + 7 គឺ៖", optionA: "6x² - 5", optionB: "6x² + 5", optionC: "2x² - 5", optionD: "6x - 5", correctOption: "A" },
+                    { questionText: "៥. តម្លៃនៃអាំងតេក្រាល ∫₀² 2x dx ស្មើប៉ុន្មាន?", optionA: "2", optionB: "4", optionC: "6", optionD: "8", correctOption: "B" }
+                ],
+                gQs: [
+                    { questionText: "១. ក្នុងតម្រុយអរតូណរម៉ាល់ ចម្ងាយរវាង A(1, 2) និង B(4, 6) ស្មើប៉ុន្មាន?", optionA: "3", optionB: "4", optionC: "5", optionD: "7", correctOption: "C" },
+                    { questionText: "២. រកផលគុណស្កាលែនៃវ៉ិចទ័រ u(2, -1, 3) និង v(1, 4, 2) ៖", optionA: "4", optionB: "12", optionC: "0", optionD: "-4", correctOption: "A" },
+                    { questionText: "៣. សមីការបន្ទាត់កាត់តាម (0, 2) និងមានមេគុណប្រាប់ទិស m = 3 គឺ៖", optionA: "y = 2x + 3", optionB: "y = 3x + 2", optionC: "y = 3x - 2", optionD: "y = x + 5", correctOption: "B" },
+                    { questionText: "៤. រង្វង់ (x - 1)² + (y + 2)² = 16 មានផ្ចិត I និងកាំ R ស្មើប៉ុន្មាន?", optionA: "I(1, -2), R = 4", optionB: "I(-1, 2), R = 4", optionC: "I(1, -2), R = 16", optionD: "I(1, 2), R = 8", correctOption: "A" },
+                    { questionText: "៥. បើ sin(α) = 1/2 (α ∈ [0, π/2]) តើមុំ α ស្មើប៉ុន្មាន?", optionA: "π/6 (30°)", optionB: "π/4 (45°)", optionC: "π/3 (60°)", optionD: "π/2 (90°)", correctOption: "A" }
+                ],
+                pQs: [
+                    { questionText: "១. អនុគមន៍ f(x) = e²ˣ មានដេរីវេ f'(x) ស្មើ៖", optionA: "e²ˣ", optionB: "2e²ˣ", optionC: "eˣ", optionD: "2xe²ˣ", correctOption: "B" },
+                    { questionText: "២. ស្វ៊ីតនព្វន្ត uₙ = 3n + 1 ។ តើផលសងរួម d ស្មើប៉ុន្មាន?", optionA: "1", optionB: "3", optionC: "4", optionD: "7", correctOption: "B" },
+                    { questionText: "៣. ប្រអប់មួយមានបាល់ក្រហម 3 និងបាល់ខៀវ 5។ ចាប់យក ១ ដោយចៃដន្យ។ ប្រូបាប៊ីលីតេបានបាល់ក្រហមគឺ៖", optionA: "3/5", optionB: "5/8", optionC: "3/8", optionD: "1/3", correctOption: "C" },
+                    { questionText: "៤. លីមីត lim(x→∞) (4x² + 1)/(2x² - 3) មានតម្លៃស្មើ៖", optionA: "0", optionB: "1", optionC: "2", optionD: "∞", correctOption: "C" },
+                    { questionText: "៥. តម្លៃអតិបរមានៃអនុគមន៍ f(x) = -x² + 4x + 1 គឺ៖", optionA: "2", optionB: "4", optionC: "5", optionD: "6", correctOption: "C" }
+                ]
+            } : {
+                formulas: "រូបមន្តជំនួយសំខាន់ៗ៖\n• (a + b)² = a² + 2ab + b²  |  (a - b)² = a² - 2ab + b²  |  a² - b² = (a - b)(a + b)\n• ទ្រឹស្តីបទពីតាគ័រក្នុងត្រីកោណកែង៖ c² = a² + b²\n• ផ្ទៃក្រឡាត្រីកោណ៖ S = (បាត × កម្ពស់) / 2  |  បរិមាត្ររង្វង់៖ P = 2πR",
+                writingPrompt: "១. (១២ ពិន្ទុ) ដោះស្រាយសមីការ និងវិសមីការខាងក្រោម៖\n   ក) 3(2x - 4) + 5 = 2x + 9\n   ខ) 4x - 7 ≤ 2x + 5\n\n២. (១៣ ពិន្ទុ) ដីស្រែរាងចតុកោណកែងមួយមានបណ្តោយវែងជាងទទឹង 8m និងមានបរិមាត្រសរុប 64m។\n   ក) ចូររករង្វាស់ទទឹង និងបណ្តោយនៃដីស្រែនេះ។\n   ខ) គណនាផ្ទៃក្រឡារបស់ដីស្រែជាម៉ែត្រការ៉េ (m²)។",
+                aQs: [
+                    { questionText: "១. ចូរដោះស្រាយសមីការ 2x + 6 = 14 ។ តើ x មានតម្លៃស្មើប៉ុន្មាន?", optionA: "x = 2", optionB: "x = 4", optionC: "x = 6", optionD: "x = 10", correctOption: "B" },
+                    { questionText: "២. តើកន្សោម (x + 3)² ពន្លាតបានដូចម្តេច?", optionA: "x² + 9", optionB: "x² + 3x + 9", optionC: "x² + 6x + 9", optionD: "x² + 6x + 6", correctOption: "C" },
+                    { questionText: "៣. ចូរគណនាតម្លៃ √81 + √16 ៖", optionA: "11", optionB: "13", optionC: "15", optionD: "97", correctOption: "B" },
+                    { questionText: "៤. ដាក់កន្សោម x² - 25 ជាផលគុណកត្តា៖", optionA: "(x - 5)(x + 5)", optionB: "(x - 5)²", optionC: "(x + 5)²", optionD: "(x - 25)(x + 1)", correctOption: "A" },
+                    { questionText: "៥. បើ a = 3 និង b = -2 តើតម្លៃនៃកន្សោម 2a² - 3b ស្មើប៉ុន្មាន?", optionA: "12", optionB: "24", optionC: "18", optionD: "6", correctOption: "B" }
+                ],
+                gQs: [
+                    { questionText: "១. ត្រីកោណកែងមួយមានជ្រុងជាប់មុំកែង 6cm និង 8cm។ តើអ៊ីប៉ូតេនុសមានប្រវែងប៉ុន្មាន?", optionA: "10 cm", optionB: "12 cm", optionC: "14 cm", optionD: "48 cm", correctOption: "A" },
+                    { questionText: "២. ផលបូកមុំក្នុងទាំងបីនៃត្រីកោណមួយស្មើនឹងប៉ុន្មានដឺក្រេ?", optionA: "90°", optionB: "180°", optionC: "270°", optionD: "360°", correctOption: "B" },
+                    { questionText: "៣. ចតុកោណកែងមួយមានបណ្តោយ 12cm និងទទឹង 5cm។ តើផ្ទៃក្រឡារបស់វាស្មើប៉ុន្មាន?", optionA: "17 cm²", optionB: "34 cm²", optionC: "60 cm²", optionD: "30 cm²", correctOption: "C" },
+                    { questionText: "៤. រង្វង់មួយមានកាំ R = 7cm (យក π ≈ 22/7)។ តើបរិមាត្ររង្វង់ស្មើប៉ុន្មាន?", optionA: "22 cm", optionB: "44 cm", optionC: "154 cm", optionD: "14 cm", correctOption: "B" },
+                    { questionText: "៥. ប្រសិនបើមុំពីរបំពេញគ្នា (មុំបន្ថែម) ហើយមុំមួយស្មើ 65° តើមុំមួយទៀតស្មើប៉ុន្មាន?", optionA: "25°", optionB: "35°", optionC: "115°", optionD: "125°", correctOption: "A" }
+                ],
+                pQs: [
+                    { questionText: "១. មធ្យមភាគនព្វន្តនៃទិន្នន័យពិន្ទុ 6, 8, 10, 12, 14 គឺ៖", optionA: "8", optionB: "10", optionC: "12", optionD: "50", correctOption: "B" },
+                    { questionText: "២. សៀវភៅ ៤ ក្បាលថ្លៃ 12,000 រៀល។ តើសៀវភៅ ៧ ក្បាលថ្លៃប៉ុន្មានរៀល?", optionA: "18,000 រៀល", optionB: "21,000 រៀល", optionC: "24,000 រៀល", optionD: "28,000 រៀល", correctOption: "B" },
+                    { questionText: "៣. បោះគ្រាប់ឡុកឡាក់សមមួយ ១ ដង។ តើប្រូបាប៊ីលីតេដែលចេញលេខគូស្មើប៉ុន្មាន?", optionA: "1/6", optionB: "1/3", optionC: "1/2", optionD: "2/3", correctOption: "C" },
+                    { questionText: "៤. អនុគមន៍លីនេអ៊ែរ f(x) = 3x - 2 ។ តើ f(4) មានតម្លៃស្មើប៉ុន្មាន?", optionA: "10", optionB: "12", optionC: "14", optionD: "5", correctOption: "A" },
+                    { questionText: "៥. ទំនិញមួយតម្លៃ 50,000 រៀល ត្រូវបានបញ្ចុះតម្លៃ 20%។ តើត្រូវបង់ប្រាក់ប៉ុន្មាន?", optionA: "10,000 រៀល", optionB: "30,000 រៀល", optionC: "40,000 រៀល", optionD: "45,000 រៀល", correctOption: "C" }
+                ]
+            };
+
+            document.getElementById('mathFormulaNote').value = sample.formulas;
+            document.getElementById('mathSec1Title').value = 'I. ពីជគណិត និងការគណនា៖';
+            document.getElementById('mathSec1Instruction').value = 'ចូរគណនា រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (' + p1 + ' ពិន្ទុ)';
+            document.getElementById('mathSec1MaxPoints').value = p1;
+
+            document.getElementById('mathSec2Title').value = 'II. ធរណីមាត្រ និងរង្វាស់រង្វាល់៖';
+            document.getElementById('mathSec2Instruction').value = 'ចូរដោះស្រាយ រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (' + p2 + ' ពិន្ទុ)';
+            document.getElementById('mathSec2MaxPoints').value = p2;
+
+            document.getElementById('mathSec3Title').value = isUpper ? 'III. អនុគមន៍ លីមីត និងប្រូបាប៊ីលីតេ៖' : 'III. សមាមាត្រ ស្ថិតិ និងប្រូបាប៊ីលីតេ៖';
+            document.getElementById('mathSec3Instruction').value = 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖ (' + p3 + ' ពិន្ទុ)';
+            document.getElementById('mathSec3MaxPoints').value = p3;
+
+            document.getElementById('mathWritingEnabled').checked = true;
+            document.getElementById('mathWritingContent').style.display = 'block';
+            document.getElementById('mathSec4Title').value = 'IV. លំហាត់ដោះស្រាយលម្អិត និងចំណោទ៖';
+            document.getElementById('mathSec4Instruction').value = 'ចូរសរសេររបៀបដោះស្រាយលម្អិតជាជំហានៗសម្រាប់ចំណោទខាងក្រោម៖ (' + p4 + ' ពិន្ទុ)';
+            document.getElementById('mathWritingPrompt').value = sample.writingPrompt;
+            document.getElementById('mathWritingMaxPoints').value = p4;
+
+            const c1 = document.getElementById('mathAlgebraContainer'); c1.innerHTML = '';
+            sample.aQs.forEach(q => addMathAlgebraQuestion(q));
+            const c2 = document.getElementById('mathGeometryContainer'); c2.innerHTML = '';
+            sample.gQs.forEach(q => addMathGeometryQuestion(q));
+            const c3 = document.getElementById('mathAppliedContainer'); c3.innerHTML = '';
+            sample.pQs.forEach(q => addMathAppliedQuestion(q));
+
+            updateMathSummaryBadges();
+            enableEditMode();
+            document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
+
+            Swal.fire({
+                icon: 'success',
+                title: isUpper ? 'បានផ្ទុកគំរូវិញ្ញាសាគណិតវិទ្យា (ថ្នាក់ទី ១០-១២)!' : 'បានផ្ទុកគំរូវិញ្ញាសាគណិតវិទ្យា (ថ្នាក់ទី ៧-៩)!',
+                text: 'លោកគ្រូ-អ្នកគ្រូអាចកែសម្រួលលំហាត់ ឬចុច «💾 រក្សាទុកវិញ្ញាសា» ដើម្បីប្រើប្រាស់ភ្លាមៗ។',
+                timer: 2400,
+                showConfirmButton: false
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function populateMathExamData(exam, questions) {
+            document.getElementById('mathFormulaNote').value = exam.readingPassage || '';
+            document.getElementById('mathSec1Title').value = exam.section1Title || 'I. ពីជគណិត និងការគណនា៖';
+            document.getElementById('mathSec1Instruction').value = exam.section1Instruction || 'ចូរគណនា រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖';
+            document.getElementById('mathSec1MaxPoints').value = exam.section1MaxPoints != null ? exam.section1MaxPoints : 15;
+
+            document.getElementById('mathSec2Title').value = exam.section2Title || 'II. ធរណីមាត្រ និងរង្វាស់រង្វាល់៖';
+            document.getElementById('mathSec2Instruction').value = exam.section2Instruction || 'ចូរដោះស្រាយ រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖';
+            document.getElementById('mathSec2MaxPoints').value = exam.section2MaxPoints != null ? exam.section2MaxPoints : 15;
+
+            document.getElementById('mathSec3Title').value = exam.section3Title || 'III. អនុគមន៍ ស្ថិតិ និងប្រូបាប៊ីលីតេ៖';
+            document.getElementById('mathSec3Instruction').value = exam.section3Instruction || 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖';
+            document.getElementById('mathSec3MaxPoints').value = exam.section3MaxPoints != null ? exam.section3MaxPoints : 15;
+
+            const hasWriting = !!(exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            document.getElementById('mathWritingEnabled').checked = hasWriting;
+            document.getElementById('mathWritingContent').style.display = hasWriting ? 'block' : 'none';
+            document.getElementById('mathSec4Title').value = exam.section4Title || 'IV. លំហាត់ដោះស្រាយលម្អិត និងចំណោទ៖';
+            document.getElementById('mathSec4Instruction').value = exam.section4Instruction || 'ចូរសរសេររបៀបដោះស្រាយលម្អិតជាជំហានៗសម្រាប់ចំណោទខាងក្រោម៖';
+            document.getElementById('mathWritingPrompt').value = exam.writingPrompt || '';
+            document.getElementById('mathWritingMaxPoints').value = exam.writingMaxPoints != null ? exam.writingMaxPoints : 25;
+
+            const aQs = questions.filter(q => q.skillType === 'math_algebra');
+            const gQs = questions.filter(q => q.skillType === 'math_geometry');
+            const pQs = questions.filter(q => q.skillType === 'math_applied');
+            const legacyGeneral = questions.filter(q => q.skillType === 'general' || !q.skillType);
+
+            const c1 = document.getElementById('mathAlgebraContainer'); c1.innerHTML = '';
+            const sec1Source = aQs.length > 0 ? aQs : (legacyGeneral.length > 0 && gQs.length === 0 ? legacyGeneral : []);
+            if (sec1Source.length > 0) sec1Source.forEach(q => addMathAlgebraQuestion(q));
+            else for (let i = 1; i <= 5; i++) addMathAlgebraQuestion();
+
+            const c2 = document.getElementById('mathGeometryContainer'); c2.innerHTML = '';
+            if (gQs.length > 0) gQs.forEach(q => addMathGeometryQuestion(q));
+            else for (let i = 1; i <= 5; i++) addMathGeometryQuestion();
+
+            const c3 = document.getElementById('mathAppliedContainer'); c3.innerHTML = '';
+            if (pQs.length > 0) pQs.forEach(q => addMathAppliedQuestion(q));
+            else for (let i = 1; i <= 5; i++) addMathAppliedQuestion();
+
+            updateMathSummaryBadges();
+        }
+
+        function printMathExamSheet() {
+            const container = document.getElementById('khPrintOfficialContainer');
+            if (!container) return;
+            const month = document.getElementById('monthSelect').value;
+            const classes = getSelectedClasses().join(', ') || '...................';
+            const totalPts = document.getElementById('mathTotalPointsDisplay').textContent || '70';
+            const formulas = document.getElementById('mathFormulaNote').value || '';
+            const aQs = collectSectionQuestions('mathAlgebraContainer', 'math_algebra');
+            const gQs = collectSectionQuestions('mathGeometryContainer', 'math_geometry');
+            const pQs = collectSectionQuestions('mathAppliedContainer', 'math_applied');
+            const wOpen = document.getElementById('mathWritingEnabled').checked;
+
+            const renderPrintQs = (arr) => arr.map((q, idx) =>
+                '<div class="kh-print-q">' +
+                    '<div><b>' + escapeHtml(q.questionText || ((idx + 1) + '.')) + '</b></div>' +
+                    '<div class="kh-print-opts">' +
+                        '<div>ក. ' + escapeHtml(q.optionA) + '</div>' +
+                        '<div>ខ. ' + escapeHtml(q.optionB) + '</div>' +
+                        '<div>គ. ' + escapeHtml(q.optionC) + '</div>' +
+                        '<div>ឃ. ' + escapeHtml(q.optionD) + '</div>' +
+                    '</div>' +
+                '</div>'
+            ).join('');
+
+            const meta = window.__EXAM_META__ || {};
+            container.innerHTML =
+                '<div class="kh-print-header">' +
+                    '<div>' +
+                        '<div style="font-weight:bold;">ក្រសួងអប់រំ យុវជន និងកីឡា</div>' +
+                        '<div style="font-weight:bold;">' + escapeHtml(meta.schoolName || 'សាលារៀន') + '</div>' +
+                        '<div>វិញ្ញាសា៖ <b>គណិតវិទ្យា</b> | ថ្នាក់៖ <b>' + escapeHtml(classes) + '</b></div>' +
+                        '<div>សម័យប្រឡង៖ <b>' + escapeHtml(month) + '</b> (' + escapeHtml(meta.academicYear || '២០២៦-២០២៧') + ')</div>' +
+                    '</div>' +
+                    '<div style="text-align:center;">' +
+                        '<div style="font-weight:bold; font-size:11.5pt;">ព្រះរាជាណាចក្រកម្ពុជា</div>' +
+                        '<div style="font-weight:bold;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>' +
+                        '<div style="margin-top:6px;">ពិន្ទុសរុប៖ <b>' + escapeHtml(totalPts) + ' ពិន្ទុ</b></div>' +
+                        '<div>រយៈពេល៖ ៩០ នាទី</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="text-align:center; font-weight:bold; font-size:12pt; border-top:1.5px solid #000; border-bottom:1.5px solid #000; padding:4px 0; margin-bottom:8px;">វិញ្ញាសាប្រឡងមុខវិជ្ជាគណិតវិទ្យា (ទម្រង់ស្តង់ដា)</div>' +
+                (formulas.trim() ? '<div class="kh-print-passage">' + escapeHtml(formulas) + '</div>' : '') +
+                (aQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('mathSec1Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('mathSec1Instruction').value) + '</i></div>' + renderPrintQs(aQs) : '') +
+                (gQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('mathSec2Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('mathSec2Instruction').value) + '</i></div>' + renderPrintQs(gQs) : '') +
+                (pQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('mathSec3Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('mathSec3Instruction').value) + '</i></div>' + renderPrintQs(pQs) : '') +
+                (wOpen && document.getElementById('mathWritingPrompt').value.trim() ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('mathSec4Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('mathSec4Instruction').value) + '</i></div><div style="margin-top:4px; white-space:pre-wrap; font-weight:bold;">' + escapeHtml(document.getElementById('mathWritingPrompt').value) + '</div>' : '') +
+                '<div style="display:flex; justify-content:space-between; margin-top:22px; page-break-inside:avoid;">' +
+                    '<div style="text-align:center;"><div>បានឃើញ និងឯកភាព</div><div><b>នាយកសាលា</b></div></div>' +
+                    '<div style="text-align:center;"><div>គ្រូមុខវិជ្ជាគណិតវិទ្យា</div><div><b>' + escapeHtml(meta.teacherName || '') + '</b></div></div>' +
+                '</div>';
+            window.print();
+        }
+
         function loadMoeyseGrade11Sample() {
             initEnglishContainers();
             document.getElementById('currentExamId').value = '';
@@ -1476,6 +1952,7 @@
         async function loadExamById(examId) {
             initEnglishContainers();
             initKhmerContainers();
+            initMathContainers();
             try {
                 const res = await fetch(`/api/exams/get?id=${examId}`);
                 if (res.ok) {
@@ -1491,6 +1968,8 @@
                             populateEnglishExamData(data.exam, data.questions || []);
                         } else if (data.exam.subjectName === 'ភាសាខ្មែរ') {
                             populateKhmerExamData(data.exam, data.questions || []);
+                        } else if (data.exam.subjectName === 'គណិតវិទ្យា') {
+                            populateMathExamData(data.exam, data.questions || []);
                         } else if (data.exam.readingPassage) {
                             populateEnglishExamData(data.exam, data.questions || []);
                         } else {
@@ -1513,6 +1992,7 @@
         async function loadExam() {
             initEnglishContainers();
             initKhmerContainers();
+            initMathContainers();
             document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
             const month = document.getElementById('monthSelect').value;
             const subjectName = document.getElementById('subjectSelect').value;
@@ -1540,6 +2020,9 @@
                         } else if (data.exam.subjectName === 'ភាសាខ្មែរ') {
                             populateKhmerExamData(data.exam, data.questions || []);
                             foundExisting = true;
+                        } else if (data.exam.subjectName === 'គណិតវិទ្យា') {
+                            populateMathExamData(data.exam, data.questions || []);
+                            foundExisting = true;
                         } else if (data.exam.readingPassage) {
                             populateEnglishExamData(data.exam, data.questions || []);
                             foundExisting = true;
@@ -1558,7 +2041,7 @@
                 disableEditMode();
             } else {
                 document.getElementById('currentExamId').value = '';
-                if (subjectName !== 'ភាសាអង់គ្លេស' && subjectName !== 'ភាសាខ្មែរ') {
+                if (subjectName !== 'ភាសាអង់គ្លេស' && subjectName !== 'ភាសាខ្មែរ' && subjectName !== 'គណិតវិទ្យា') {
                     clearAllQuestions();
                     addQuestion('general');
                 }
@@ -1775,6 +2258,46 @@
                     section4Instruction: writingEnabled ? document.getElementById('khSec4Instruction').value : null,
                     writingPrompt: writingEnabled ? document.getElementById('khWritingPrompt').value : null,
                     writingMaxPoints: writingEnabled ? (parseInt(document.getElementById('khWritingMaxPoints').value) || 25) : null,
+                    questions: questions
+                };
+
+            } else if (subjectName === 'គណិតវិទ្យា') {
+                const questions = [
+                    ...collectSectionQuestions('mathAlgebraContainer', 'math_algebra'),
+                    ...collectSectionQuestions('mathGeometryContainer', 'math_geometry'),
+                    ...collectSectionQuestions('mathAppliedContainer', 'math_applied')
+                ];
+                if (questions.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'សូមបញ្ចូលសំណួរយ៉ាងតិច ១!',
+                        text: 'សូមបំពេញសំណួរក្នុងផ្នែកពីជគណិត ធរណីមាត្រ ឬអនុគមន៍/ស្ថិតិ ឬចុចប៊ូតុង «📥 ផ្ទុកគំរូវិញ្ញាសាគណិតវិទ្យាស្តង់ដា»។',
+                        confirmButtonText: 'យល់ព្រម',
+                        confirmButtonColor: '#4361ee'
+                    });
+                    return;
+                }
+                const writingEnabled = document.getElementById('mathWritingEnabled').checked;
+                payload = {
+                    id: examId ? parseInt(examId) : null,
+                    month: month,
+                    classes: selectedClasses,
+                    subjectName: subjectName,
+                    readingPassage: document.getElementById('mathFormulaNote').value,
+                    wordBank: null,
+                    section1Title: document.getElementById('mathSec1Title').value,
+                    section1Instruction: document.getElementById('mathSec1Instruction').value,
+                    section1MaxPoints: parseInt(document.getElementById('mathSec1MaxPoints').value) || 15,
+                    section2Title: document.getElementById('mathSec2Title').value,
+                    section2Instruction: document.getElementById('mathSec2Instruction').value,
+                    section2MaxPoints: parseInt(document.getElementById('mathSec2MaxPoints').value) || 15,
+                    section3Title: document.getElementById('mathSec3Title').value,
+                    section3Instruction: document.getElementById('mathSec3Instruction').value,
+                    section3MaxPoints: parseInt(document.getElementById('mathSec3MaxPoints').value) || 15,
+                    section4Title: writingEnabled ? document.getElementById('mathSec4Title').value : null,
+                    section4Instruction: writingEnabled ? document.getElementById('mathSec4Instruction').value : null,
+                    writingPrompt: writingEnabled ? document.getElementById('mathWritingPrompt').value : null,
+                    writingMaxPoints: writingEnabled ? (parseInt(document.getElementById('mathWritingMaxPoints').value) || 25) : null,
                     questions: questions
                 };
 
@@ -2197,7 +2720,7 @@
             const stu = currentSubmissionsData.find(x => x.studentId === studentId);
             if (!stu || !stu.studentWriting) return;
             Swal.fire({
-                title: `📝 សំណេរតែងសេចក្តីរបស់ ${studentName}`,
+                title: `📝 ចម្លើយសំណេរ / ដំណោះស្រាយរបស់ ${studentName}`,
                 html: `<div style="text-align: left; max-height: 55vh; overflow-y: auto; white-space: pre-wrap; line-height: 1.7; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 14px; font-size: 0.98rem; color: #1e293b;">${escapeHtml(stu.studentWriting)}</div>`,
                 width: '650px',
                 confirmButtonText: 'បិទ'
@@ -2221,6 +2744,7 @@
         // Initial load
         initEnglishContainers();
         initKhmerContainers();
+        initMathContainers();
         onSubjectChanged();
         loadExam();
         loadExamsList();

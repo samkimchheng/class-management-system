@@ -661,17 +661,24 @@
             const studentName = document.getElementById('studentNameText') ? document.getElementById('studentNameText').innerText.trim() : 'សិស្ស';
             const studentClass = document.getElementById('studentClass') ? document.getElementById('studentClass').innerText.trim() : '';
 
-            // Detect English multi-section vs Khmer standard multi-section vs general MCQ
+            // Detect Khmer multi-section vs Math multi-section vs English multi-section vs general MCQ
             const isKhmerMulti = exam && exam.subjectName === 'ភាសាខ្មែរ' && (
                 questions.some(q => q.skillType && q.skillType.startsWith('kh_')) ||
                 (exam.readingPassage && exam.readingPassage.trim().length > 0) ||
                 (exam.writingPrompt && exam.writingPrompt.trim().length > 0)
             );
-            const hasGaps = questions.some(q => q.skillType === 'gaps_filling') || (exam && exam.readingPassage && exam.subjectName !== 'ភាសាខ្មែរ');
-            const isEnglish = !isKhmerMulti && ((exam && exam.subjectName === 'ភាសាអង់គ្លេស') || hasGaps);
+            const isMathMulti = exam && exam.subjectName === 'គណិតវិទ្យា' && (
+                questions.some(q => q.skillType && q.skillType.startsWith('math_')) ||
+                (exam.readingPassage && exam.readingPassage.trim().length > 0) ||
+                (exam.writingPrompt && exam.writingPrompt.trim().length > 0)
+            );
+            const hasGaps = questions.some(q => q.skillType === 'gaps_filling') || (exam && exam.readingPassage && exam.subjectName !== 'ភាសាខ្មែរ' && exam.subjectName !== 'គណិតវិទ្យា');
+            const isEnglish = !isKhmerMulti && !isMathMulti && ((exam && exam.subjectName === 'ភាសាអង់គ្លេស') || hasGaps);
 
             if (isKhmerMulti) {
                 renderKhmerMultiSectionExam(exam, questions, studentName, studentClass);
+            } else if (isMathMulti) {
+                renderMathMultiSectionExam(exam, questions, studentName, studentClass);
             } else if (isEnglish) {
                 renderEnglishMultiSectionExam(exam, questions, studentName, studentClass);
             } else {
@@ -1015,6 +1022,142 @@
             container.innerHTML = html;
         }
 
+        function insertStudentMathSymbol(sym) {
+            const ta = document.getElementById('studentWritingTextarea');
+            if (!ta) return;
+            const start = ta.selectionStart != null ? ta.selectionStart : ta.value.length;
+            const end = ta.selectionEnd != null ? ta.selectionEnd : ta.value.length;
+            ta.value = ta.value.slice(0, start) + sym + ta.value.slice(end);
+            ta.focus();
+            const pos = start + sym.length;
+            if (ta.setSelectionRange) ta.setSelectionRange(pos, pos);
+        }
+
+        function renderMathMultiSectionExam(exam, questions, studentName, studentClass) {
+            const container = document.getElementById('examContent');
+            const algQs = questions.filter(q => q.skillType === 'math_algebra');
+            const geoQs = questions.filter(q => q.skillType === 'math_geometry');
+            const appQs = questions.filter(q => q.skillType === 'math_applied');
+            const fallbackQs = questions.filter(q => !q.skillType || q.skillType === 'general');
+
+            const sec1Items = algQs.length > 0 ? algQs : fallbackQs;
+            const s1Pts = (exam && exam.section1MaxPoints != null) ? exam.section1MaxPoints : 15;
+            const s2Pts = (exam && exam.section2MaxPoints != null) ? exam.section2MaxPoints : 15;
+            const s3Pts = (exam && exam.section3MaxPoints != null) ? exam.section3MaxPoints : 15;
+            const hasWriting = !!(exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            const s4Pts = hasWriting ? (exam.writingMaxPoints != null ? exam.writingMaxPoints : 25) : 0;
+            const totalPossiblePoints = (sec1Items.length > 0 ? s1Pts : 0)
+                + (geoQs.length > 0 ? s2Pts : 0)
+                + (appQs.length > 0 ? s3Pts : 0)
+                + s4Pts;
+
+            let html = `
+            <div class="moeys-exam-header">
+                <div class="moeys-header-grid">
+                    <div>
+                        <div class="moeys-title-kh">ក្រសួងអប់រំ យុវជន និងកីឡា</div>
+                        <div class="moeys-subtitle">វិញ្ញាសាប្រឡងស្តង់ដា មុខវិជ្ជាគណិតវិទ្យា</div>
+                        <div class="moeys-meta">
+                            សម័យប្រឡង៖ <strong>${escapeHtml(exam ? exam.month : '')}</strong><br>
+                            ថ្នាក់រៀន៖ <strong>${escapeHtml(studentClass || '')}</strong>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="moeys-title-kh" style="color: #1d4ed8;">វិញ្ញាសា៖ គណិតវិទ្យា</div>
+                        <div class="moeys-subtitle" style="font-size: 0.95rem;">បេក្ខជន៖ <strong>${escapeHtml(studentName)}</strong></div>
+                        <div class="moeys-meta">
+                            រយៈពេល៖ <strong>៩០ នាទី</strong><br>
+                            ពិន្ទុសរុប៖ <strong>${totalPossiblePoints} ពិន្ទុ (ស្មើនឹង ១០០%)</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="moeys-score-summary">
+                    ${sec1Items.length > 0 ? `<span>📌 ផ្នែក I (ពីជគណិត): ${s1Pts} ពិន្ទុ</span>` : ''}
+                    ${geoQs.length > 0 ? `<span>📌 ផ្នែក II (ធរណីមាត្រ): ${s2Pts} ពិន្ទុ</span>` : ''}
+                    ${appQs.length > 0 ? `<span>📌 ផ្នែក III (អនុគមន៍/ស្ថិតិ): ${s3Pts} ពិន្ទុ</span>` : ''}
+                    ${hasWriting ? `<span style="color: #be123c;">📌 ផ្នែក IV (ចំណោទ/ដោះស្រាយ): ${s4Pts} ពិន្ទុ</span>` : ''}
+                </div>
+            </div>`;
+
+            if (exam && exam.readingPassage && exam.readingPassage.trim()) {
+                html += `
+                <div class="reading-passage-card" style="background: #f8fafc; border-left: 4px solid #3b82f6; padding: 14px 18px; border-radius: 8px; line-height: 1.75; font-size: 0.98rem; white-space: pre-wrap; margin-bottom: 18px;"><strong>📐 រូបមន្ត និងទិន្នន័យជំនួយ៖</strong>\n${escapeHtml(exam.readingPassage)}</div>`;
+            }
+
+            if (sec1Items.length > 0) {
+                html += `
+                <div class="exam-section-card" id="math-section-1-card">
+                    <div class="section-header">
+                        <span class="section-title">${escapeHtml((exam && exam.section1Title) || 'I. ពីជគណិត និងការគណនា៖')}</span>
+                        <span class="section-points-badge">${s1Pts} ពិន្ទុ</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-instruction">${escapeHtml((exam && exam.section1Instruction) || 'ចូរគណនា រួចជ្រើសរើសចម្លើយ A, B, C ឬ D៖')}</div>
+                        ${sec1Items.map((q, idx) => renderMCQCard(q, idx, 'math-alg-q')).join('')}
+                    </div>
+                </div>`;
+            }
+
+            if (geoQs.length > 0) {
+                html += `
+                <div class="exam-section-card" id="math-section-2-card">
+                    <div class="section-header grammar">
+                        <span class="section-title">${escapeHtml((exam && exam.section2Title) || 'II. ធរណីមាត្រ និងរង្វាស់រង្វាល់៖')}</span>
+                        <span class="section-points-badge">${s2Pts} ពិន្ទុ</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-instruction">${escapeHtml((exam && exam.section2Instruction) || 'ចូរដោះស្រាយ រួចជ្រើសរើសចម្លើយ A, B, C ឬ D៖')}</div>
+                        ${geoQs.map((q, idx) => renderMCQCard(q, idx, 'math-geo-q')).join('')}
+                    </div>
+                </div>`;
+            }
+
+            if (appQs.length > 0) {
+                html += `
+                <div class="exam-section-card" id="math-section-3-card">
+                    <div class="section-header vocabulary">
+                        <span class="section-title">${escapeHtml((exam && exam.section3Title) || 'III. អនុគមន៍ ស្ថិតិ និងប្រូបាប៊ីលីតេ៖')}</span>
+                        <span class="section-points-badge">${s3Pts} ពិន្ទុ</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-instruction">${escapeHtml((exam && exam.section3Instruction) || 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D៖')}</div>
+                        ${appQs.map((q, idx) => renderMCQCard(q, idx, 'math-app-q')).join('')}
+                    </div>
+                </div>`;
+            }
+
+            if (hasWriting) {
+                html += `
+                <div class="exam-section-card" id="math-section-4-card">
+                    <div class="section-header" style="background: linear-gradient(135deg, #be123c, #e11d48);">
+                        <span class="section-title">${escapeHtml(exam.section4Title || 'IV. លំហាត់ដោះស្រាយលម្អិត និងចំណោទ៖')}</span>
+                        <span class="section-points-badge">${s4Pts} ពិន្ទុ</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-instruction">${escapeHtml(exam.section4Instruction || 'ចូរសរសេររបៀបដោះស្រាយលម្អិតជាជំហានៗ៖')}</div>
+                        <div style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                            <div style="font-weight: bold; color: #9f1239; margin-bottom: 6px;">📐 ប្រធានលំហាត់ / ចំណោទ៖</div>
+                            <div style="font-size: 1.03rem; line-height: 1.75; color: #881337; white-space: pre-wrap;">${escapeHtml(exam.writingPrompt)}</div>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; align-items:center;">
+                            <span style="font-size:0.85rem; color:#475569; font-weight:600;">🔣 និមិត្តសញ្ញាគណិត៖</span>
+                            ${['²','³','√','π','±','≤','≥','≠','≈','°','×','÷'].map(sym =>
+                                `<button type="button" onclick="insertStudentMathSymbol('${sym}')" style="padding:3px 9px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; cursor:pointer; font-weight:bold;">${sym}</button>`
+                            ).join('')}
+                        </div>
+                        <div>
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 6px;">✍️ របៀបដោះស្រាយ និងចម្លើយរបស់ប្អូន៖</label>
+                            <textarea id="studentWritingTextarea" class="form-control" rows="10" style="width: 100%; font-family: inherit; font-size: 1rem; line-height: 1.7; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 12px;" placeholder="សូមសរសេរដំណោះស្រាយជាជំហានៗ នៅទីនេះ..."></textarea>
+                            <div style="margin-top: 8px; font-size: 0.9rem; color: #be123c; font-weight: 600;">* ដំណោះស្រាយរបស់ប្អូននឹងត្រូវបានផ្ញើជូនគ្រូគណិតវិទ្យាដើម្បីពិនិត្យ និងដាក់ពិន្ទុបន្ថែម</div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            html += `<button type="button" class="btn-submit" onclick="submitExam()"><span>🚀</span> <span>បញ្ជូនចម្លើយ (Submit Math Exam)</span></button>`;
+            container.innerHTML = html;
+        }
+
         function renderMCQCard(q, idx, extraClass) {
             const qId = q.id || idx;
             return `
@@ -1173,11 +1316,18 @@
                 (currentExam.readingPassage && currentExam.readingPassage.trim().length > 0) ||
                 (currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0)
             );
-            const isEnglish = !isKhmerMulti && ((currentExam && currentExam.subjectName === 'ភាសាអង់គ្លេស') ||
+            const isMathMulti = currentExam && currentExam.subjectName === 'គណិតវិទ្យា' && (
+                currentQuestions.some(q => q.skillType && q.skillType.startsWith('math_')) ||
+                (currentExam.readingPassage && currentExam.readingPassage.trim().length > 0) ||
+                (currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0)
+            );
+            const isEnglish = !isKhmerMulti && !isMathMulti && ((currentExam && currentExam.subjectName === 'ភាសាអង់គ្លេស') ||
                               currentQuestions.some(q => q.skillType === 'gaps_filling'));
 
             if (isKhmerMulti) {
                 evaluateAndSubmitKhmerExam();
+            } else if (isMathMulti) {
+                evaluateAndSubmitMathExam();
             } else if (isEnglish) {
                 evaluateAndSubmitEnglishExam();
             } else {
@@ -1499,6 +1649,96 @@
                 ${renderReviewBlock('ផ្នែកទី II៖ វេយ្យាករណ៍ និងអក្ខរាវិរុទ្ធ', '#0f766e', gRes.review)}
                 ${renderReviewBlock('ផ្នែកទី III៖ អក្សរសិល្ប៍ និងវាក្យស័ព្ទ', '#6d28d9', lRes.review)}
                 ${studentWritingText ? `<h4 style="color:#be123c;margin-top:22px;">ផ្នែកទី IV៖ សំណេរតែងសេចក្តីរបស់អ្នក</h4><div class="review-item" style="border-left-color:#e11d48;background:#fff1f2;"><div style="white-space:pre-wrap;line-height:1.7;">${escapeHtml(studentWritingText)}</div></div>` : ''}
+                <div style="text-align: center; margin-top: 30px;"><a href="/test/logout" style="display:inline-block;padding:12px 30px;background:var(--primary);color:white;text-decoration:none;border-radius:8px;font-weight:bold;">ចាកចេញ (Logout)</a></div>
+            </div>`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function evaluateAndSubmitMathExam() {
+            const algQs = currentQuestions.filter(q => q.skillType === 'math_algebra');
+            const geoQs = currentQuestions.filter(q => q.skillType === 'math_geometry');
+            const appQs = currentQuestions.filter(q => q.skillType === 'math_applied');
+            const fallbackQs = currentQuestions.filter(q => !q.skillType || q.skillType === 'general');
+            const sec1Items = algQs.length > 0 ? algQs : fallbackQs;
+
+            const s1Pts = (currentExam && currentExam.section1MaxPoints != null) ? currentExam.section1MaxPoints : 15;
+            const s2Pts = (currentExam && currentExam.section2MaxPoints != null) ? currentExam.section2MaxPoints : 15;
+            const s3Pts = (currentExam && currentExam.section3MaxPoints != null) ? currentExam.section3MaxPoints : 15;
+            const hasWriting = !!(currentExam && currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0);
+            const s4Pts = hasWriting ? (currentExam.writingMaxPoints != null ? currentExam.writingMaxPoints : 25) : 0;
+
+            const totalMcqMax = (sec1Items.length > 0 ? s1Pts : 0) + (geoQs.length > 0 ? s2Pts : 0) + (appQs.length > 0 ? s3Pts : 0);
+            const totalPossiblePoints = totalMcqMax + s4Pts;
+
+            const gradeMcqSection = (items, maxPts) => {
+                const ptsPerQ = items.length > 0 ? (maxPts / items.length) : 0;
+                let pts = 0, correctCount = 0;
+                const review = [];
+                items.forEach((q, idx) => {
+                    const qId = q.id || idx;
+                    const selected = document.querySelector(`input[name="q_${qId}"]:checked`);
+                    const userVal = selected ? selected.value : '';
+                    const isCorrect = !!(userVal && userVal.toUpperCase() === (q.correctOption || '').toUpperCase());
+                    if (isCorrect) { pts += ptsPerQ; correctCount++; }
+                    review.push({ num: idx + 1, text: q.questionText, userChoice: userVal || '(មិនទាន់ឆ្លើយ)', correctOption: q.correctOption, isCorrect });
+                });
+                return { pts: Math.round(pts * 10) / 10, correctCount, total: items.length, review };
+            };
+
+            const aRes = gradeMcqSection(sec1Items, s1Pts);
+            const gRes = gradeMcqSection(geoQs, s2Pts);
+            const pRes = gradeMcqSection(appQs, s3Pts);
+
+            const totalPointsEarned = Math.round((aRes.pts + gRes.pts + pRes.pts) * 10) / 10;
+            const percentageScore = totalPossiblePoints > 0 ? Math.round((totalPointsEarned / totalPossiblePoints) * 100) : 0;
+
+            const month = document.getElementById('monthSelect').value;
+            const subjectName = document.getElementById('subjectSelect').value;
+            const studentSolutionText = document.getElementById('studentWritingTextarea') ? document.getElementById('studentWritingTextarea').value.trim() : '';
+
+            try {
+                const subRes = await fetch('/api/student-portal/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ month, subjectName, totalScore: percentageScore, studentWriting: studentSolutionText })
+                });
+                const subData = await subRes.json().catch(() => ({}));
+                if (!subRes.ok || subData.blocked) {
+                    alert(subData.message || '⚠️ មិនអាចបញ្ជូនចម្លើយបានឡើយ!');
+                    return;
+                }
+            } catch (e) { console.error(e); }
+
+            const renderReviewBlock = (title, color, arr) => arr.length === 0 ? '' : `
+                <h4 style="color: ${color}; margin-top: 22px;">${title}</h4>
+                <div>${arr.map(item => `
+                    <div class="review-item ${item.isCorrect ? 'correct' : 'wrong'}">
+                        <div><strong>${escapeHtml(item.text)}</strong></div>
+                        <div>${item.isCorrect
+                            ? `<span style="color:#15803d; font-weight:bold;">✓ ចម្លើយរបស់អ្នក៖ ${escapeHtml(item.userChoice)} (ត្រឹមត្រូវ)</span>`
+                            : `<span style="color:#b91c1c;">✗ ចម្លើយរបស់អ្នក៖ ${escapeHtml(item.userChoice)}</span> — <span style="color:#15803d; font-weight:bold;">ចម្លើយត្រូវ៖ ${escapeHtml(item.correctOption)}</span>`
+                        }</div>
+                    </div>`).join('')}</div>`;
+
+            document.getElementById('examContent').innerHTML = `
+            <div class="results-container">
+                <div style="text-align: center;">
+                    <div style="font-size: 3.5rem; margin: 0;">🎉</div>
+                    <h2 style="color: #0f172a; margin: 10px 0 5px;">ប្អូនបានបញ្ចប់ការប្រឡងមុខវិជ្ជាគណិតវិទ្យា!</h2>
+                    <p style="color: #64748b;">ពិន្ទុផ្នែកសំណួរត្រូវបានកត់ត្រាចូលក្នុងប្រព័ន្ធដោយស្វ័យប្រវត្តិ។</p>
+                    <div class="results-score-badge">${percentageScore}% <span style="font-size: 1.2rem; font-weight: normal; color: #166534;">(${totalPointsEarned} / ${totalPossiblePoints} ពិន្ទុ)</span></div>
+                </div>
+                <div class="section-score-row">
+                    ${aRes.total > 0 ? `<div class="sec-score-card"><div style="font-weight:bold;color:#1e40af;">I. ពីជគណិត</div><div style="font-size:1.5rem;font-weight:800;color:#1d4ed8;">${aRes.pts} / ${s1Pts}</div><div style="font-size:0.85rem;color:#64748b;">(ត្រូវ ${aRes.correctCount}/${aRes.total})</div></div>` : ''}
+                    ${gRes.total > 0 ? `<div class="sec-score-card"><div style="font-weight:bold;color:#0f766e;">II. ធរណីមាត្រ</div><div style="font-size:1.5rem;font-weight:800;color:#0d9488;">${gRes.pts} / ${s2Pts}</div><div style="font-size:0.85rem;color:#64748b;">(ត្រូវ ${gRes.correctCount}/${gRes.total})</div></div>` : ''}
+                    ${pRes.total > 0 ? `<div class="sec-score-card"><div style="font-weight:bold;color:#6d28d9;">III. អនុគមន៍/ស្ថិតិ</div><div style="font-size:1.5rem;font-weight:800;color:#7c3aed;">${pRes.pts} / ${s3Pts}</div><div style="font-size:0.85rem;color:#64748b;">(ត្រូវ ${pRes.correctCount}/${pRes.total})</div></div>` : ''}
+                    ${hasWriting ? `<div class="sec-score-card" style="border-color:#fecdd3;background:#fff1f2;"><div style="font-weight:bold;color:#be123c;">IV. ចំណោទ/ដោះស្រាយ</div><div style="font-size:1.2rem;font-weight:800;color:#9f1239;">${studentSolutionText ? 'បានបញ្ជូន' : 'មិនទាន់សរសេរ'}</div><div style="font-size:0.85rem;color:#881337;">(រង់ចាំគ្រូដាក់ពិន្ទុ / ${s4Pts})</div></div>` : ''}
+                </div>
+                <h3 style="margin-top: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">🔍 ផ្ទៀងផ្ទាត់ចម្លើយលម្អិត</h3>
+                ${renderReviewBlock('ផ្នែកទី I៖ ពីជគណិត និងការគណនា', '#1e40af', aRes.review)}
+                ${renderReviewBlock('ផ្នែកទី II៖ ធរណីមាត្រ និងរង្វាស់រង្វាល់', '#0f766e', gRes.review)}
+                ${renderReviewBlock('ផ្នែកទី III៖ អនុគមន៍ ស្ថិតិ និងប្រូបាប៊ីលីតេ', '#6d28d9', pRes.review)}
+                ${studentSolutionText ? `<h4 style="color:#be123c;margin-top:22px;">ផ្នែកទី IV៖ ដំណោះស្រាយលំហាត់របស់អ្នក</h4><div class="review-item" style="border-left-color:#e11d48;background:#fff1f2;"><div style="white-space:pre-wrap;line-height:1.7;">${escapeHtml(studentSolutionText)}</div></div>` : ''}
                 <div style="text-align: center; margin-top: 30px;"><a href="/test/logout" style="display:inline-block;padding:12px 30px;background:var(--primary);color:white;text-decoration:none;border-radius:8px;font-weight:bold;">ចាកចេញ (Logout)</a></div>
             </div>`;
             window.scrollTo({ top: 0, behavior: 'smooth' });
