@@ -1038,4 +1038,104 @@ class ClassroomApplicationTests {
         questionRepository.deleteAll(createdQs);
         examRepository.delete(createdOpt.get());
     }
+
+    @Test
+    void testAllRemainingStandardSubjectsAndMathImageUpload_ZeroDataLoss() throws Exception {
+        Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(somuny);
+        Account demoAcc = accountRepository.findById(98L).orElse(null);
+        assertNotNull(demoAcc);
+
+        long kimchhengExamCountBefore = examRepository.findByAccountId(97L).size();
+        String tinyPngDataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+
+        // 1. Verify Demo account (98) received starter Standard MoEYS Exams for all 7 newly added subjects
+        String[][] subjectPrefixes = {
+            {"គីមីវិទ្យា", "chem_sec1"},
+            {"ជីវវិទ្យា", "bio_sec1"},
+            {"ប្រវត្តិវិទ្យា", "hist_sec1"},
+            {"ភូមិវិទ្យា", "geo_sec1"},
+            {"សីលធម៌", "civic_sec1"},
+            {"ផែនដីវិទ្យា", "earth_sec1"},
+            {"កុំព្យូទ័រ", "it_sec1"}
+        };
+        List<com.nubb.classroom.model.Exam> demoAll = examRepository.findByAccountId(demoAcc.getId());
+        for (String[] pair : subjectPrefixes) {
+            String subj = pair[0];
+            String expectedSkill = pair[1];
+            var found = demoAll.stream().filter(e -> subj.equals(e.getSubjectName())).findFirst();
+            assertTrue(found.isPresent(), "Expected starter Standard Exam for Demo account on subject: " + subj);
+            List<com.nubb.classroom.model.Question> qs = questionRepository.findByExamIdAndAccountId(found.get().getId(), demoAcc.getId());
+            assertTrue(qs.stream().anyMatch(q -> expectedSkill.equals(q.getSkillType())), "Expected skillType " + expectedSkill);
+        }
+
+        // 2. Verify Math + Image Upload save/reload works cleanly
+        String mathImgPayload = """
+            {
+              "month": "__TEST_MATH_IMG__",
+              "classes": ["៨D"],
+              "subjectName": "គណិតវិទ្យា",
+              "readingPassage": "c² = a² + b²",
+              "examImagesJson": "[{\\"caption\\":\\"ក្រាបត្រីកោណកែង\\",\\"dataUrl\\":\\"%s\\"}]",
+              "section1Title": "I. ពីជគណិត៖", "section1MaxPoints": 15,
+              "section2Title": "II. ធរណីមាត្រ៖", "section2MaxPoints": 15,
+              "section3Title": "III. ស្ថិតិ៖", "section3MaxPoints": 15,
+              "section4Title": "IV. ចំណោទ៖", "writingPrompt": "ដោះស្រាយតាមក្រាប", "writingMaxPoints": 25,
+              "questions": [
+                {"skillType":"math_algebra","questionText":"2x=8","optionA":"2","optionB":"4","optionC":"6","optionD":"8","correctOption":"B","imageData":"%s"}
+              ]
+            }
+            """.formatted(tinyPngDataUrl, tinyPngDataUrl);
+        mockMvc.perform(post("/api/exams/save")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(mathImgPayload)
+                .sessionAttr("ACCOUNT_ID", somuny.getId()))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.success").value(true));
+        mockMvc.perform(get("/api/exams/get")
+                .param("month", "__TEST_MATH_IMG__")
+                .param("subjectName", "គណិតវិទ្យា")
+                .sessionAttr("ACCOUNT_ID", somuny.getId()))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.exam.examImagesJson").value(org.hamcrest.Matchers.containsString("ក្រាបត្រីកោណកែង")))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.questions[0].imageData").value(tinyPngDataUrl));
+        var mathTmp = examRepository.findByMonthAndSubjectNameAndAccountId("__TEST_MATH_IMG__", "គណិតវិទ្យា", somuny.getId()).get(0);
+        questionRepository.deleteAll(questionRepository.findByExamIdAndAccountId(mathTmp.getId(), somuny.getId()));
+        examRepository.delete(mathTmp);
+
+        // 3. Verify saving and reloading any of the 7 standard subjects WITH uploaded exam image + zero data loss
+        for (String[] pair : subjectPrefixes) {
+            String subj = pair[0];
+            String skill1 = pair[1];
+            String payload = """
+                {
+                  "month": "__TEST_STD__",
+                  "classes": ["៨D"],
+                  "subjectName": "%s",
+                  "examImagesJson": "[{\\"caption\\":\\"រូបភាព%s\\",\\"dataUrl\\":\\"%s\\"}]",
+                  "section1Title": "I. ផ្នែកទី១", "section1MaxPoints": 15,
+                  "writingPrompt": "សំណួរសរសេរលម្អិត", "writingMaxPoints": 25,
+                  "questions": [
+                    {"skillType":"%s","questionText":"សំណួរ%s","optionA":"A","optionB":"B","optionC":"C","optionD":"D","correctOption":"A","imageData":"%s"}
+                  ]
+                }
+                """.formatted(subj, subj, tinyPngDataUrl, skill1, subj, tinyPngDataUrl);
+            mockMvc.perform(post("/api/exams/save")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .content(payload)
+                    .sessionAttr("ACCOUNT_ID", somuny.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.success").value(true));
+
+            var tmpExam = examRepository.findByMonthAndSubjectNameAndAccountId("__TEST_STD__", subj, somuny.getId()).stream().findFirst();
+            assertTrue(tmpExam.isPresent(), "Expected saved exam for " + subj);
+            assertTrue(tmpExam.get().getExamImagesJson().contains("រូបភាព" + subj));
+            questionRepository.deleteAll(questionRepository.findByExamIdAndAccountId(tmpExam.get().getId(), somuny.getId()));
+            examRepository.delete(tmpExam.get());
+        }
+
+        // 4. Confirm zero impact on Sam Kimchheng's exams and Seung Somuny's 48 Grade 8D students
+        assertEquals(kimchhengExamCountBefore, examRepository.findByAccountId(97L).size());
+        assertEquals(48, studentRepository.findByClassNameAndAccountId("៨D", somuny.getId()).size());
+    }
 }

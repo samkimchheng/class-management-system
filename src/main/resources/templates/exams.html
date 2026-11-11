@@ -370,6 +370,12 @@
                         <button type="button" class="btn" id="btnPrintPhysicsExam" onclick="printPhysicsExamSheet()" style="display: none; background: #334155; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
                             <span>🖨️ បោះពុម្ពក្រដាសវិញ្ញាសា</span>
                         </button>
+                        <button type="button" class="btn" id="btnLoadStdSample" onclick="loadStdSampleChooser()" style="display: none; background: #4338ca; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
+                            <span id="btnLoadStdSampleText">📥 ផ្ទុកគំរូវិញ្ញាសាស្តង់ដា</span>
+                        </button>
+                        <button type="button" class="btn" id="btnPrintStdExam" onclick="printStdExamSheet()" style="display: none; background: #334155; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; align-items: center; gap: 6px;">
+                            <span>🖨️ បោះពុម្ពក្រដាសវិញ្ញាសា</span>
+                        </button>
                         <button type="button" class="btn" id="btnLoadEnglishSample" onclick="loadMoeyseGrade11Sample()" style="background: #047857; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-family: inherit; font-size: 0.92rem; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 6px;">
                             <span>📥 ផ្ទុកគំរូវិញ្ញាសាអង់គ្លេសថ្នាក់ទី១១</span>
                         </button>
@@ -568,6 +574,21 @@
                     <button type="button" class="math-sym-btn" onclick="insertMathSymbol('÷')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">÷</button>
                     <button type="button" class="math-sym-btn" onclick="insertMathSymbol('∞')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">∞</button>
                     <button type="button" class="math-sym-btn" onclick="insertMathSymbol('∫')" style="padding: 3px 9px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: bold; cursor: pointer;">∫</button>
+                </div>
+
+                <!-- Math Exam Image & Diagram Uploader Card -->
+                <div class="exam-section" style="border-left-color: #2563eb; background: #eff6ff;" id="mathImageUploadSection">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 1.08rem; color: #1e3a8a; font-weight: 700;">📷 បញ្ចូលទិន្នន័យជារូបភាព (ក្រាប រូបធរណីមាត្រ ឬសន្លឹកវិញ្ញាសា)</h4>
+                            <div style="font-size: 0.85rem; color: #475569; margin-top: 2px;">អាច Upload រូបភាព ១ ឬច្រើនសន្លឹក (PNG, JPG, WEBP) ដើម្បីឱ្យសិស្សមើល និងបោះពុម្ពភ្ជាប់ជាមួយវិញ្ញាសាគណិតវិទ្យា</div>
+                        </div>
+                        <div class="math-img-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <input type="file" id="mathImageUploadInput" accept="image/png,image/jpeg,image/webp,image/*" multiple style="display: none;" onchange="handleExamGalleryFiles('math', this.files); this.value='';">
+                            <button type="button" onclick="document.getElementById('mathImageUploadInput').click()" style="background: #1d4ed8; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer; font-size: 0.9rem;">📤 Upload រូបភាព</button>
+                        </div>
+                    </div>
+                    <div id="mathImagesPreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 10px;"></div>
                 </div>
 
                 <!-- Optional Formula Sheet / Given Data -->
@@ -846,6 +867,151 @@
                 </div>
             </div>
 
+            <!-- Unified MoEYS Standard 4-Section Container for Science, Social Studies & ICT -->
+            <div id="section-generic-std-container" style="display: none;">
+                <div style="background: linear-gradient(135deg, #f8fafc, #e0e7ff); border: 1.5px solid #a5b4fc; border-radius: 12px; padding: 14px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+                    <div>
+                        <span id="stdBannerTitle" style="font-weight: 700; color: #1e1b4b; font-size: 1.05rem;">📘 គម្រូវិញ្ញាសាស្តង់ដា (ពិន្ទុសរុប):</span>
+                        <span id="stdTotalPointsDisplay" style="color: #4338ca; font-size: 1.4rem; font-weight: 800; margin-left: 6px;">70</span>
+                        <span style="font-weight: 700; color: #312e81; font-size: 1rem;"> ពិន្ទុ</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; font-size: 0.85rem; font-weight: 600; flex-wrap: wrap;">
+                        <span id="stdBadgeSec1Pill" style="background: #ffffff; color: #4338ca; padding: 5px 12px; border-radius: 20px; border: 1px solid #c7d2fe;">ផ្នែក I៖ 15 ពិន្ទុ</span>
+                        <span id="stdBadgeSec2Pill" style="background: #f0fdfa; color: #0d9488; padding: 5px 12px; border-radius: 20px; border: 1px solid #99f6e4;">ផ្នែក II៖ 15 ពិន្ទុ</span>
+                        <span id="stdBadgeSec3Pill" style="background: #f5f3ff; color: #7c3aed; padding: 5px 12px; border-radius: 20px; border: 1px solid #ddd6fe;">ផ្នែក III៖ 15 ពិន្ទុ</span>
+                        <span id="stdBadgeSec4Pill" style="background: #fff1f2; color: #e11d48; padding: 5px 12px; border-radius: 20px; border: 1px solid #fecdd3;">ផ្នែក IV៖ 25 ពិន្ទុ</span>
+                    </div>
+                </div>
+
+                <!-- Dynamic Quick Symbol Toolbar -->
+                <div id="stdSymbolToolbar" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px;"></div>
+
+                <!-- Image & Diagram Uploader Card -->
+                <div class="exam-section" style="border-left-color: #4338ca; background: #eef2ff;" id="stdImageUploadSection">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 1.08rem; color: #1e1b4b; font-weight: 700;">📷 បញ្ចូលទិន្នន័យជារូបភាព (ដ្យាក្រាម ផែនទី តារាង ឬសន្លឹកវិញ្ញាសា)</h4>
+                            <div style="font-size: 0.85rem; color: #475569; margin-top: 2px;">អាច Upload រូបភាព ១ ឬច្រើនសន្លឹក (PNG, JPG, WEBP) ដើម្បីឱ្យសិស្សមើល និងបោះពុម្ពភ្ជាប់ជាមួយវិញ្ញាសា</div>
+                        </div>
+                        <div class="std-img-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <input type="file" id="stdImageUploadInput" accept="image/png,image/jpeg,image/webp,image/*" multiple style="display: none;" onchange="handleExamGalleryFiles('std', this.files); this.value='';">
+                            <button type="button" onclick="document.getElementById('stdImageUploadInput').click()" style="background: #4338ca; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer; font-size: 0.9rem;">📤 Upload រូបភាព</button>
+                        </div>
+                    </div>
+                    <div id="stdImagesPreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 10px;"></div>
+                </div>
+
+                <!-- Optional Reference / Formulas / Source Document Box -->
+                <div class="exam-section" style="border-left-color: #64748b;">
+                    <h4 id="stdNoteLabel" style="margin: 0 0 10px 0; font-size: 1.05rem; color: #334155; font-weight: 700;">📌 ទិន្នន័យជំនួយ / រូបមន្តសំខាន់ៗ (ស្រេចចិត្ត)</h4>
+                    <textarea id="stdFormulaNote" class="form-control" rows="3" style="width: 100%; font-family: inherit; font-size: 0.96rem; line-height: 1.65;" placeholder="បញ្ចូលទិន្នន័យជំនួយ រូបមន្ត ឬអត្ថបទដកស្រង់... (អាចទុកទទេប្រសិនបើមិនចាំបាច់)"></textarea>
+                </div>
+
+                <!-- Section I -->
+                <div class="exam-section" style="border-left-color: #4338ca;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 id="stdSec1Heading" style="margin: 0; font-size: 1.15rem; color: #1e1b4b; font-weight: 700;">ផ្នែក I</h4>
+                            <span id="stdBadgeSec1Summary" style="background: #eef2ff; color: #4338ca; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #c7d2fe;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #eef2ff; border: 1.5px solid #a5b4fc; padding: 6px 14px; border-radius: 8px;">
+                            <label for="stdSec1MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #312e81; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="stdSec1MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #1e1b4b; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #6366f1; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updateStdSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #312e81; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="stdSec1Title" class="form-control" style="width: 100%;" value="">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="stdSec1Instruction" class="form-control" style="width: 100%;" value="">
+                    </div>
+                    <div id="stdSec1Container"></div>
+                    <button type="button" class="add-q-btn" onclick="addStdQuestion(1)" style="margin-top: 8px; background: #4338ca; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរផ្នែក I</button>
+                </div>
+
+                <!-- Section II -->
+                <div class="exam-section" style="border-left-color: #0d9488;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 id="stdSec2Heading" style="margin: 0; font-size: 1.15rem; color: #0f766e; font-weight: 700;">ផ្នែក II</h4>
+                            <span id="stdBadgeSec2Summary" style="background: #f0fdfa; color: #0d9488; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #99f6e4;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #f0fdfa; border: 1.5px solid #99f6e4; padding: 6px 14px; border-radius: 8px;">
+                            <label for="stdSec2MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #0f766e; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="stdSec2MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #0f766e; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #14b8a6; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updateStdSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #0f766e; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="stdSec2Title" class="form-control" style="width: 100%;" value="">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="stdSec2Instruction" class="form-control" style="width: 100%;" value="">
+                    </div>
+                    <div id="stdSec2Container"></div>
+                    <button type="button" class="add-q-btn" onclick="addStdQuestion(2)" style="margin-top: 8px; background: #0d9488; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរផ្នែក II</button>
+                </div>
+
+                <!-- Section III -->
+                <div class="exam-section" style="border-left-color: #7c3aed;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h4 id="stdSec3Heading" style="margin: 0; font-size: 1.15rem; color: #6d28d9; font-weight: 700;">ផ្នែក III</h4>
+                            <span id="stdBadgeSec3Summary" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #ddd6fe;">៥ សំណួរ (៣ ពិន្ទុ/សំណួរ)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #f5f3ff; border: 1.5px solid #ddd6fe; padding: 6px 14px; border-radius: 8px;">
+                            <label for="stdSec3MaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #6d28d9; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="stdSec3MaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #6d28d9; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #8b5cf6; border-radius: 6px; padding: 4px 6px;" value="15" min="1" max="100" oninput="updateStdSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #6d28d9; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                        <input type="text" id="stdSec3Title" class="form-control" style="width: 100%;" value="">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                        <input type="text" id="stdSec3Instruction" class="form-control" style="width: 100%;" value="">
+                    </div>
+                    <div id="stdSec3Container"></div>
+                    <button type="button" class="add-q-btn" onclick="addStdQuestion(3)" style="margin-top: 8px; background: #7c3aed; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer;">➕ បន្ថែមសំណួរផ្នែក III</button>
+                </div>
+
+                <!-- Section IV -->
+                <div class="exam-section" style="border-left-color: #e11d48;" id="section-std-writing">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; color: #be123c; font-size: 1.15rem; margin: 0;">
+                            <input type="checkbox" id="stdWritingEnabled" onchange="toggleStdWritingSection()" style="width: 20px; height: 20px; cursor: pointer;" checked>
+                            <span id="stdSec4Heading">ផ្នែក IV៖ លំហាត់ និងសំណួរសរសេរលម្អិត</span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 8px; background: #fff1f2; border: 1.5px solid #fecdd3; padding: 6px 14px; border-radius: 8px;">
+                            <label for="stdWritingMaxPoints" style="font-weight: 700; font-size: 0.9rem; color: #be123c; margin: 0; white-space: nowrap; cursor: pointer;">🎯 ពិន្ទុអតិបរមា៖</label>
+                            <input type="number" id="stdWritingMaxPoints" class="form-control" style="width: 75px; text-align: center; font-weight: 800; color: #be123c; font-size: 1.05rem; background: #ffffff; border: 1.5px solid #f43f5e; border-radius: 6px; padding: 4px 6px;" value="25" min="1" max="100" oninput="updateStdSummaryBadges()">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #be123c; white-space: nowrap;">ពិន្ទុ</span>
+                        </div>
+                    </div>
+                    <div id="stdWritingContent" style="display: block;">
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ចំណងជើងផ្នែក</label>
+                            <input type="text" id="stdSec4Title" class="form-control" style="width: 100%;" value="">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">សេចក្តីណែនាំ</label>
+                            <input type="text" id="stdSec4Instruction" class="form-control" style="width: 100%;" value="">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; font-weight: bold; color: #334155; margin-bottom: 4px;">ប្រធានលំហាត់ / សំណួរសរសេរ</label>
+                            <textarea id="stdWritingPrompt" class="form-control" rows="5" style="width: 100%; font-family: inherit; font-size: 0.98rem; line-height: 1.65;" placeholder="បញ្ចូលប្រធានលំហាត់ ឬសំណួរសរសេរលម្អិត..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- English 3-Section Container -->
             <div id="section-english-container" style="display: none;">
 
@@ -1075,10 +1241,12 @@
             const isKhmer = (subject === 'ភាសាខ្មែរ');
             const isMath = (subject === 'គណិតវិទ្យា');
             const isPhysics = (subject === 'រូបវិទ្យា');
+            const isStd = !!(typeof STANDARD_SUBJECT_CONFIGS !== 'undefined' && STANDARD_SUBJECT_CONFIGS[subject]);
             const enContainer = document.getElementById('section-english-container');
             const khContainer = document.getElementById('section-khmer-container');
             const mathContainer = document.getElementById('section-math-container');
             const physContainer = document.getElementById('section-physics-container');
+            const stdContainer = document.getElementById('section-generic-std-container');
             const genContainer = document.getElementById('section-general');
             const btnEnSample = document.getElementById('btnLoadEnglishSample');
             const btnKhSample = document.getElementById('btnLoadKhmerSample');
@@ -1087,12 +1255,15 @@
             const btnMathPrint = document.getElementById('btnPrintMathExam');
             const btnPhysSample = document.getElementById('btnLoadPhysicsSample');
             const btnPhysPrint = document.getElementById('btnPrintPhysicsExam');
+            const btnStdSample = document.getElementById('btnLoadStdSample');
+            const btnStdPrint = document.getElementById('btnPrintStdExam');
 
             if (enContainer) enContainer.style.display = isEnglish ? 'block' : 'none';
             if (khContainer) khContainer.style.display = isKhmer ? 'block' : 'none';
             if (mathContainer) mathContainer.style.display = isMath ? 'block' : 'none';
             if (physContainer) physContainer.style.display = isPhysics ? 'block' : 'none';
-            if (genContainer) genContainer.style.display = (!isEnglish && !isKhmer && !isMath && !isPhysics) ? 'block' : 'none';
+            if (stdContainer) stdContainer.style.display = isStd ? 'block' : 'none';
+            if (genContainer) genContainer.style.display = (!isEnglish && !isKhmer && !isMath && !isPhysics && !isStd) ? 'block' : 'none';
 
             if (btnEnSample) btnEnSample.style.display = isEnglish ? 'inline-flex' : 'none';
             if (btnKhSample) btnKhSample.style.display = isKhmer ? 'inline-flex' : 'none';
@@ -1101,11 +1272,14 @@
             if (btnMathPrint) btnMathPrint.style.display = isMath ? 'inline-flex' : 'none';
             if (btnPhysSample) btnPhysSample.style.display = isPhysics ? 'inline-flex' : 'none';
             if (btnPhysPrint) btnPhysPrint.style.display = isPhysics ? 'inline-flex' : 'none';
+            if (btnStdSample) btnStdSample.style.display = isStd ? 'inline-flex' : 'none';
+            if (btnStdPrint) btnStdPrint.style.display = isStd ? 'inline-flex' : 'none';
 
             if (isEnglish) updateEnSummaryBadges();
             else if (isKhmer) updateKhSummaryBadges();
             else if (isMath) updateMathSummaryBadges();
             else if (isPhysics) updatePhysicsSummaryBadges();
+            else if (isStd && typeof applyStdConfigUI === 'function') applyStdConfigUI(subject);
         }
 
         function compressExamImageFile(file, maxWidth = 1280, quality = 0.84) {
@@ -1196,7 +1370,7 @@
             const optD = qData ? (qData.optionD || '') : '';
             const correct = qData ? (qData.correctOption || 'A') : 'A';
             const numLabel = fixedNum !== null ? `សំណួរទី ${fixedNum}៖` : 'សំណួរ៖';
-            const deleteBtn = `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge(); updateKhSummaryBadges(); updateEnSummaryBadges(); updateMathSummaryBadges(); updatePhysicsSummaryBadges();">លុបសំណួរ</button>`;
+            const deleteBtn = `<button type="button" class="delete-btn" onclick="this.parentElement.remove(); updateQuestionBadge(); updateKhSummaryBadges(); updateEnSummaryBadges(); updateMathSummaryBadges(); updatePhysicsSummaryBadges(); updateStdSummaryBadges();">លុបសំណួរ</button>`;
             
             div.innerHTML = `
                 ${deleteBtn}
@@ -1418,7 +1592,8 @@
             document.querySelectorAll('#section-khmer-container input, #section-khmer-container textarea').forEach(el => el.disabled = true);
             document.querySelectorAll('#section-math-container input, #section-math-container textarea').forEach(el => el.disabled = true);
             document.querySelectorAll('#section-physics-container input, #section-physics-container textarea').forEach(el => el.disabled = true);
-            document.querySelectorAll('.add-q-btn, .delete-btn, .math-sym-btn, .phys-sym-btn, .q-img-actions, .phys-img-actions').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('#section-generic-std-container input, #section-generic-std-container textarea').forEach(el => el.disabled = true);
+            document.querySelectorAll('.add-q-btn, .delete-btn, .math-sym-btn, .phys-sym-btn, .std-sym-btn, .q-img-actions, .phys-img-actions, .math-img-actions, .std-img-actions').forEach(el => el.style.display = 'none');
         }
 
         function enableEditMode() {
@@ -1434,7 +1609,8 @@
             document.querySelectorAll('#section-khmer-container input, #section-khmer-container textarea').forEach(el => el.disabled = false);
             document.querySelectorAll('#section-math-container input, #section-math-container textarea').forEach(el => el.disabled = false);
             document.querySelectorAll('#section-physics-container input, #section-physics-container textarea').forEach(el => el.disabled = false);
-            document.querySelectorAll('.add-q-btn, .delete-btn, .math-sym-btn, .phys-sym-btn, .q-img-actions, .phys-img-actions').forEach(el => el.style.display = 'inline-block');
+            document.querySelectorAll('#section-generic-std-container input, #section-generic-std-container textarea').forEach(el => el.disabled = false);
+            document.querySelectorAll('.add-q-btn, .delete-btn, .math-sym-btn, .phys-sym-btn, .std-sym-btn, .q-img-actions, .phys-img-actions, .math-img-actions, .std-img-actions').forEach(el => el.style.display = 'inline-block');
         }
 
         function resetNewExam() {
@@ -1445,11 +1621,17 @@
             initKhmerContainers();
             initMathContainers();
             initPhysicsContainers();
+            initStdContainers();
             physicsUploadedImages = [];
             renderPhysicsUploadedImages();
+            examGalleryStore.math = [];
+            renderExamGallery('math');
+            examGalleryStore.std = [];
+            renderExamGallery('std');
             
             const subj = document.getElementById('subjectSelect').value;
-            if (subj === 'ភាសាអង់គ្លេស' || subj === 'ភាសាខ្មែរ' || subj === 'គណិតវិទ្យា' || subj === 'រូបវិទ្យា') {
+            const isStd = !!(typeof STANDARD_SUBJECT_CONFIGS !== 'undefined' && STANDARD_SUBJECT_CONFIGS[subj]);
+            if (subj === 'ភាសាអង់គ្លេស' || subj === 'ភាសាខ្មែរ' || subj === 'គណិតវិទ្យា' || subj === 'រូបវិទ្យា' || isStd) {
                 onSubjectChanged();
             } else {
                 addQuestion('general');
@@ -1867,6 +2049,7 @@
             if (c3 && c3.children.length === 0) {
                 for (let i = 1; i <= 5; i++) addMathAppliedQuestion();
             }
+            renderExamGallery('math');
             updateMathSummaryBadges();
         }
 
@@ -2032,6 +2215,7 @@
 
         function populateMathExamData(exam, questions) {
             document.getElementById('mathFormulaNote').value = exam.readingPassage || '';
+            loadExamGalleryFromJson('math', exam.examImagesJson);
             document.getElementById('mathSec1Title').value = exam.section1Title || 'I. ពីជគណិត និងការគណនា៖';
             document.getElementById('mathSec1Instruction').value = exam.section1Instruction || 'ចូរគណនា រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖';
             document.getElementById('mathSec1MaxPoints').value = exam.section1MaxPoints != null ? exam.section1MaxPoints : 15;
@@ -2088,6 +2272,7 @@
             const renderPrintQs = (arr) => arr.map((q, idx) =>
                 '<div class="kh-print-q">' +
                     '<div><b>' + escapeHtml(q.questionText || ((idx + 1) + '.')) + '</b></div>' +
+                    (q.imageData ? '<div style="margin:4px 0;"><img src="' + q.imageData + '" style="max-height:150px; max-width:95%; border:1px solid #cbd5e1;" alt="Figure"></div>' : '') +
                     '<div class="kh-print-opts">' +
                         '<div>ក. ' + escapeHtml(q.optionA) + '</div>' +
                         '<div>ខ. ' + escapeHtml(q.optionB) + '</div>' +
@@ -2097,6 +2282,7 @@
                 '</div>'
             ).join('');
 
+            const mathGalleryPrint = renderPrintGalleryHtml(examGalleryStore.math);
             const meta = window.__EXAM_META__ || {};
             container.innerHTML =
                 '<div class="kh-print-header">' +
@@ -2115,6 +2301,7 @@
                 '</div>' +
                 '<div style="text-align:center; font-weight:bold; font-size:12pt; border-top:1.5px solid #000; border-bottom:1.5px solid #000; padding:4px 0; margin-bottom:8px;">វិញ្ញាសាប្រឡងមុខវិជ្ជាគណិតវិទ្យា (ទម្រង់ស្តង់ដា)</div>' +
                 (formulas.trim() ? '<div class="kh-print-passage">' + escapeHtml(formulas) + '</div>' : '') +
+                mathGalleryPrint +
                 (aQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('mathSec1Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('mathSec1Instruction').value) + '</i></div>' + renderPrintQs(aQs) : '') +
                 (gQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('mathSec2Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('mathSec2Instruction').value) + '</i></div>' + renderPrintQs(gQs) : '') +
                 (pQs.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('mathSec3Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('mathSec3Instruction').value) + '</i></div>' + renderPrintQs(pQs) : '') +
@@ -2512,6 +2699,773 @@
             window.print();
         }
 
+        // ============================================================
+        // SHARED EXAM IMAGE GALLERY HELPERS & UNIFIED STANDARD SUBJECTS
+        // ============================================================
+        const examGalleryStore = { math: [], std: [] };
+        const GALLERY_UI = {
+            math: { gridId: 'mathImagesPreviewGrid', actionClass: 'math-img-actions', emptyMsg: 'មិនទាន់មានរូបភាពវិញ្ញាសាទេ (ចុច «📤 Upload រូបភាព» ដើម្បីភ្ជាប់រូបក្រាប ធរណីមាត្រ ឬសន្លឹកវិញ្ញាសា)' },
+            std:  { gridId: 'stdImagesPreviewGrid',  actionClass: 'std-img-actions',  emptyMsg: 'មិនទាន់មានរូបភាពវិញ្ញាសាទេ (ចុច «📤 Upload រូបភាព» ដើម្បីភ្ជាប់ដ្យាក្រាម ផែនទី តារាង ឬសន្លឹកវិញ្ញាសា)' }
+        };
+
+        async function handleExamGalleryFiles(key, fileList) {
+            const files = Array.from(fileList || []).filter(f => (f.type && f.type.startsWith('image/')) || /\.(png|jpe?g|webp|gif)$/i.test(f.name));
+            if (files.length === 0) return;
+            for (const f of files) {
+                const dataUrl = await compressExamImageFile(f, 1280, 0.84);
+                examGalleryStore[key].push({
+                    caption: 'រូបទី ' + (examGalleryStore[key].length + 1) + '៖ ' + f.name.replace(/\.[^.]+$/, ''),
+                    dataUrl
+                });
+            }
+            renderExamGallery(key);
+        }
+
+        function removeGalleryImage(key, idx) {
+            examGalleryStore[key].splice(idx, 1);
+            renderExamGallery(key);
+        }
+
+        function updateGalleryImageCaption(key, idx, val) {
+            if (examGalleryStore[key][idx]) examGalleryStore[key][idx].caption = val;
+        }
+
+        function loadExamGalleryFromJson(key, rawJson) {
+            try {
+                const parsed = rawJson ? JSON.parse(rawJson) : [];
+                examGalleryStore[key] = Array.isArray(parsed) ? parsed : [];
+            } catch (_) {
+                examGalleryStore[key] = [];
+            }
+            renderExamGallery(key);
+        }
+
+        function renderExamGallery(key) {
+            const meta = GALLERY_UI[key];
+            if (!meta) return;
+            const grid = document.getElementById(meta.gridId);
+            if (!grid) return;
+            const arr = examGalleryStore[key] || [];
+            if (arr.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1; padding:12px; border:1.5px dashed #93c5fd; border-radius:8px; text-align:center; color:#64748b; font-size:0.88rem; background:#ffffff;">${meta.emptyMsg}</div>`;
+                return;
+            }
+            grid.innerHTML = arr.map((item, idx) => `
+                <div style="background:#ffffff; border:1.5px solid #bfdbfe; border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px;">
+                    <img src="${item.dataUrl}" onclick="previewUploadedImageModal(this.src, '${escapeHtml(item.caption || '')}')" style="width:100%; height:145px; object-fit:contain; background:#f8fafc; border-radius:6px; cursor:zoom-in; border:1px solid #e2e8f0;" alt="Exam figure">
+                    <input type="text" class="form-control" style="font-size:0.84rem; padding:5px 8px;" placeholder="ចំណងជើង / សម្គាល់រូប..." value="${escapeHtml(item.caption || '')}" oninput="updateGalleryImageCaption('${key}', ${idx}, this.value)">
+                    <button type="button" class="${meta.actionClass}" onclick="removeGalleryImage('${key}', ${idx})" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:6px; padding:4px 8px; font-size:0.8rem; font-weight:700; cursor:pointer;">🗑️ លុបរូបភាព</button>
+                </div>
+            `).join('');
+        }
+
+        function renderPrintGalleryHtml(arr) {
+            if (!arr || arr.length === 0) return '';
+            return '<div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin:8px 0 12px;">' +
+                arr.map(img =>
+                    '<div style="border:1px solid #94a3b8; padding:6px; text-align:center; page-break-inside:avoid;">' +
+                        '<img src="' + img.dataUrl + '" style="max-width:100%; max-height:220px; object-fit:contain;" alt="Exam Diagram">' +
+                        (img.caption ? '<div style="font-size:9.5pt; margin-top:4px; font-weight:bold;">' + escapeHtml(img.caption) + '</div>' : '') +
+                    '</div>'
+                ).join('') +
+            '</div>';
+        }
+
+        const STANDARD_SUBJECT_CONFIGS = {
+            'គីមីវិទ្យា': {
+                icon: '🧪', prefix: 'chem',
+                symbols: ['→', '⇌', '↑', '↓', 'Δ', 'H₂O', 'CO₂', 'H⁺', 'OH⁻', '²', '³', '°C'],
+                noteTitle: '📌 ទិន្នន័យម៉ាសអាតូម និងសមីការជំនួយ (ស្រេចចិត្ត)',
+                s1: { heading: 'ផ្នែក I៖ គីមីទូទៅ និងរូបមន្តម៉ូលេគុល', pill: 'គីមីទូទៅ', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s2: { heading: 'ផ្នែក II៖ សមីការប្រតិកម្ម និងគណនាម៉ូល', pill: 'សមីការ/ម៉ូល', instr: 'ចូរគណនា រួចជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s3: { heading: 'ផ្នែក III៖ អាស៊ីត-បាស អំបិល និងគីមីសរីរាង្គ', pill: 'អាស៊ីត/សរីរាង្គ', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s4: { heading: 'ផ្នែក IV៖ លំហាត់គណនា និងសរសេរសមីការប្រតិកម្ម', pill: 'លំហាត់គីមី', instr: 'ចូរសរសេរសមីការតុល្យការ និងដោះស្រាយលម្អិតជាជំហានៗ៖' },
+                lower: {
+                    formulas: 'ទិន្នន័យម៉ាសអាតូមជំនួយ៖ H = 1, C = 12, N = 14, O = 16, Na = 23, Mg = 24, S = 32, Cl = 35.5, Ca = 40, Fe = 56',
+                    writingPrompt: '១. ចូរថ្លឹងសមីការប្រតិកម្មគីមីខាងក្រោម៖\n   ក) Fe + HCl → FeCl₂ + H₂↑\n   ខ) CaCO₃ + HCl → CaCl₂ + CO₂↑ + H₂O\n\n២. គេដាក់ Mg ចំនួន 4.8 g មានប្រតិកម្មជាមួយ HCl លើស។ គណនាម៉ូល Mg និងមាឌ H₂ ភាយឡើងនៅលក្ខខណ្ឌធម្មតា (Vm = 22.4 L/mol)។',
+                    q1: [
+                        { questionText: '១. តើនិមិត្តសញ្ញាគីមីរបស់ធាតុ «សូដ្យូម» គឺអ្វី?', optionA: 'S', optionB: 'So', optionC: 'Na', optionD: 'K', correctOption: 'C' },
+                        { questionText: '២. តើរូបមន្តម៉ូលេគុលនៃទឹកសុទ្ធគឺអ្វី?', optionA: 'H₂O₂', optionB: 'H₂O', optionC: 'HO', optionD: 'H₃O', correctOption: 'B' },
+                        { questionText: '៣. គណនាម៉ាសម៉ូលេគុលនៃ CO₂ ៖ (C=12, O=16)', optionA: '28 g/mol', optionB: '32 g/mol', optionC: '44 g/mol', optionD: '56 g/mol', correctOption: 'C' },
+                        { questionText: '៤. ក្នុងអាតូម តើភាគល្អិតណាមានបន្ទុកអគ្គិសនីវិជ្ជមាន (+)?', optionA: 'អេឡិចត្រុង', optionB: 'ណឺត្រុង', optionC: 'ប្រូតុង', optionD: 'អ៊ីយ៉ុង', correctOption: 'C' },
+                        { questionText: '៥. តើឧស្ម័នណាមួយមានចំណែកច្រើនជាងគេក្នុងខ្យល់ (~78%)?', optionA: 'O₂', optionB: 'N₂', optionC: 'CO₂', optionD: 'H₂', correctOption: 'B' }
+                    ],
+                    q2: [
+                        { questionText: '១. ចំនួនម៉ូល n នៃកាបូន (C=12) ចំនួន 24 g ស្មើប៉ុន្មាន?', optionA: '1 mol', optionB: '2 mol', optionC: '3 mol', optionD: '4 mol', correctOption: 'B' },
+                        { questionText: '២. ក្នុងសមីការ 2H₂ + O₂ → 2H₂O ត្រូវការ O₂ ប៉ុន្មានម៉ូលដើម្បីបង្កើតទឹក 4 mol?', optionA: '1 mol', optionB: '2 mol', optionC: '3 mol', optionD: '4 mol', correctOption: 'B' },
+                        { questionText: '៣. មាឌម៉ូលនៃឧស្ម័ននៅលក្ខខណ្ឌធម្មតា (0°C, 1 atm) ស្មើប៉ុន្មាន?', optionA: '11.2 L/mol', optionB: '22.4 L/mol', optionC: '24 L/mol', optionD: '44.8 L/mol', correctOption: 'B' },
+                        { questionText: '៤. កំហាប់ជាម៉ូលនៃសូលុយស្យុង 0.5 mol ក្នុងមាឌ 2 L គឺ៖', optionA: '0.25 mol/L', optionB: '0.5 mol/L', optionC: '1.0 mol/L', optionD: '2.5 mol/L', correctOption: 'A' },
+                        { questionText: '៥. ម៉ាសម៉ូលនៃ CaCO₃ ស្មើប៉ុន្មាន? (Ca=40, C=12, O=16)', optionA: '68 g/mol', optionB: '84 g/mol', optionC: '100 g/mol', optionD: '116 g/mol', correctOption: 'C' }
+                    ],
+                    q3: [
+                        { questionText: '១. សូលុយស្យុងដែលមានតម្លៃ pH < 7 មានលក្ខណៈជាអ្វី?', optionA: 'បាស', optionB: 'ណឺត', optionC: 'អាស៊ីត', optionD: 'អំបិល', correctOption: 'C' },
+                        { questionText: '២. ប្រតិកម្មរវាងអាស៊ីត និងបាសបង្កើតបានជាអ្វី?', optionA: 'អំបិល និងទឹក', optionB: 'អុកស៊ីត', optionC: 'លោហៈ', optionD: 'ឧស្ម័ន', correctOption: 'A' },
+                        { questionText: '៣. រូបមន្តទូទៅរបស់អាល់កាន (Alkane) គឺ៖', optionA: 'CₙH₂ₙ', optionB: 'CₙH₂ₙ₊₂', optionC: 'CₙH₂ₙ₋₂', optionD: 'CₙHₙ', correctOption: 'B' },
+                        { questionText: '៤. ក្រដាសលីតមុសប្រែពីក្រហមទៅខៀវ នៅពេលជួបសូលុយស្យុងអ្វី?', optionA: 'HCl', optionB: 'ទឹកខ្មេះ', optionC: 'NaOH (បាស)', optionD: 'ទឹកសុទ្ធ', correctOption: 'C' },
+                        { questionText: '៥. មេតាន (CH₄) ជាសមាសធាតុសំខាន់ក្នុងឧស្ម័នអ្វី?', optionA: 'ជីវឧស្ម័ន / ឧស្ម័នធម្មជាតិ', optionB: 'អុកស៊ីសែន', optionC: 'ក្លរ', optionD: 'អាម៉ូញាក់', correctOption: 'A' }
+                    ]
+                },
+                upper: {
+                    formulas: 'ទិន្នន័យបាក់ឌុប៖ pH = -log[H₃O⁺] | [H₃O⁺][OH⁻] = 10⁻¹⁴ (25°C) | R = 0.082 L·atm/(mol·K) | M: H=1, C=12, N=14, O=16, Na=23, Ag=108',
+                    writingPrompt: '១. សូលុយស្យុងអាស៊ីតខ្លាំង HCl កំហាប់ 0.01 M មានមាឌ 200 mL លាយជាមួយ NaOH 0.01 M មាឌ 100 mL។ គណនា pH នៃសូលុយស្យុងក្រោយប្រតិកម្ម។\n២. អុកស៊ីតកម្មអេតាណុល (CH₃CH₂OH) 9.2 g ជាមួយ Na លើស។ គណនាមាឌ H₂ នៅលក្ខខណ្ឌធម្មតា។',
+                    q1: [
+                        { questionText: '១. កម្លាំងអន្តរម៉ូលេគុលសម្ព័ន្ធអ៊ីដ្រូសែនមាននៅក្នុងម៉ូលេគុលណា?', optionA: 'CH₄', optionB: 'H₂O និង C₂H₅OH', optionC: 'CO₂', optionD: 'N₂', correctOption: 'B' },
+                        { questionText: '២. អាស៊ីតក្លរីឌ្រិច HCl កំហាប់ 10⁻³ M មានតម្លៃ pH ស្មើប៉ុន្មាន?', optionA: '1', optionB: '2', optionC: '3', optionD: '11', correctOption: 'C' },
+                        { questionText: '៣. ល្បឿនប្រតិកម្មគីមីកើនឡើង នៅពេលណា?', optionA: 'បន្ថយសីតុណ្ហភាព', optionB: 'បង្កើនកំហាប់ សីតុណ្ហភាព ឬប្រើកាតាលីករ', optionC: 'បន្ថយផ្ទៃប៉ះ', optionD: 'បញ្ចុះសម្ពាធ', correctOption: 'B' },
+                        { questionText: '៤. កាតាលីករមានតួនាទីអ្វីក្នុងប្រតិកម្មគីមី?', optionA: 'បង្កើនថាមពលសកម្ម', optionB: 'បង្កើនល្បឿនប្រតិកម្មដោយមិនបាត់បង់ម៉ាស', optionC: 'ផ្លាស់ប្តូរផលិតផល', optionD: 'បញ្ឈប់ប្រតិកម្ម', correctOption: 'B' },
+                        { questionText: '៥. ចំនួនអុកស៊ីតកម្មនៃ Mn ក្នុង KMnO₄ ស្មើប៉ុន្មាន?', optionA: '+4', optionB: '+5', optionC: '+6', optionD: '+7', correctOption: 'D' }
+                    ],
+                    q2: [
+                        { questionText: '១. ប្រតិកម្មអុកស៊ីដូរេដុកម្មគឺជាការផ្លាស់ប្តូរអ្វី?', optionA: 'ប្រូតុង H⁺', optionB: 'អេឡិចត្រុង (e⁻)', optionC: 'ណឺត្រុង', optionD: 'ម៉ូលេគុលទឹក', correctOption: 'B' },
+                        { questionText: '២. សូលុយស្យុង NaOH កំហាប់ 0.01 M មាន pH ស្មើប៉ុន្មាន (25°C)?', optionA: '2', optionB: '7', optionC: '12', optionD: '14', correctOption: 'C' },
+                        { questionText: '៣. ល្បាយឧស្ម័ន H₂ + I₂ ⇌ 2HI នៅថេរលំនឹង K ។ ប្រសិនបើថែម H₂ លំនឹងរំកិលទៅខាងណា?', optionA: 'ទៅឆ្វេង', optionB: 'ទៅស្តាំ (បង្កើត HI)', optionC: 'មិនប្រែប្រួល', optionD: 'ឈប់ប្រតិកម្ម', correctOption: 'B' },
+                        { questionText: '៤. អាស៊ីតអាសេទិច (CH₃COOH) ជាអាស៊ីតប្រភេទណា?', optionA: 'អាស៊ីតខ្លាំង', optionB: 'អាស៊ីតខ្សោយ', optionC: 'បាសខ្លាំង', optionD: 'អំបិលណឺត', correctOption: 'B' },
+                        { questionText: '៥. គណនាមាឌ NaOH 0.5 M ត្រូវការដើម្បីបន្សាប H₂SO₄ 0.25 M ចំនួន 40 mL ៖', optionA: '20 mL', optionB: '40 mL', optionC: '80 mL', optionD: '10 mL', correctOption: 'B' }
+                    ],
+                    q3: [
+                        { questionText: '១. ក្រុមបង្គុំនាទី -COOH ជាក្រុមនាទីនៃសមាសធាតុអ្វី?', optionA: 'អាល់កុល', optionB: 'អាល់ដេអ៊ីត', optionC: 'អាស៊ីតកាបុកស៊ីលិច', optionD: 'អេស្ទែ', correctOption: 'C' },
+                        { questionText: '២. ប្រតិកម្មរវាងអាស៊ីតកាបុកស៊ីលិច និងអាល់កុលបង្កើតបានជាអ្វី?', optionA: 'អេស្ទែ និងទឹក', optionB: 'អាមីន', optionC: 'កេតូន', optionD: 'អាល់កែន', correctOption: 'A' },
+                        { questionText: '៣. សមាសធាតុ CH₃-COO-CH₃ មានឈ្មោះអ្វី?', optionA: 'មេទីលអាសេតាត (អេទីលអេតាណូអាត)', optionB: 'មេទីលអេតាណូអាត', optionC: 'អេតាណុល', optionD: 'អាស៊ីតមេតាណូអ៊ិច', correctOption: 'B' },
+                        { questionText: '៤. សាប៊ូត្រូវបានផលិតតាមប្រតិកម្មសាប៊ូកម្មរវាងខ្លាញ់/ប្រេង និងអ្វី?', optionA: 'អាស៊ីតស៊ុលផួរិច', optionB: 'បាសខ្លាំង (NaOH ឬ KOH)', optionC: 'ឧស្ម័នក្លរ', optionD: 'ទឹកសុទ្ធ', correctOption: 'B' },
+                        { questionText: '៥. ប៉ូលីមែរ «PVC» សំយោគចេញពីម៉ូណូមែរណា?', optionA: 'អេទីឡែន', optionB: 'វីនីលក្លរួ (CH₂=CHCl)', optionC: 'ស្ទីរ៉ែន', optionD: 'ប្រូពីឡែន', correctOption: 'B' }
+                    ]
+                }
+            },
+            'ជីវវិទ្យា': {
+                icon: '🧬', prefix: 'bio',
+                symbols: ['→', '×', '%', '°C', 'CO₂', 'O₂', 'H₂O', 'ADN', 'ARN', '²'],
+                noteTitle: '📌 ទិន្នន័យជីវវិទ្យា និងរូបមន្ត ADN/រស្មីសំយោគ (ស្រេចចិត្ត)',
+                s1: { heading: 'ផ្នែក I៖ កោសិកា និងរចនាសម្ព័ន្ធសារពាង្គកាយ', pill: 'កោសិកា', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s2: { heading: 'ផ្នែក II៖ សរីរវិទ្យា និងបរិស្ថានវិទ្យា', pill: 'សរីរវិទ្យា', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s3: { heading: 'ផ្នែក III៖ ពន្ធុវិទ្យា (ADN/ARN) និងវិវត្តន៍', pill: 'ពន្ធុវិទ្យា', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s4: { heading: 'ផ្នែក IV៖ សំណួរវិភាគ និងដោះស្រាយលម្អិត', pill: 'វិភាគលម្អិត', instr: 'ចូរពន្យល់ និងគណនាលម្អិតលើសំណួរខាងក្រោម៖' },
+                lower: {
+                    formulas: 'ទិន្នន័យជំនួយ៖ កោសិកាជាឯកតាគ្រឹះនៃភាវៈរស់ | បំពេញបាស ADN: A = T, G = C | រស្មីសំយោគ៖ 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂',
+                    writingPrompt: '១. ចូរប្រៀបធៀបភាពខុសគ្នាសំខាន់ៗ ៣ ចំណុចរវាង «កោសិការុក្ខជាតិ» និង «កោសិកាសត្វ»។\n២. អង្កត់ ADN មួយមាន 2,400 នុយក្លេអូទីត ដែលក្នុងនោះ A = 500 ។ ចូរគណនាចំនួន T, G និង C ។',
+                    q1: [
+                        { questionText: '១. តើធាតុកោសិកាណាដែលជា «មជ្ឈមណ្ឌលផលិតថាមពល» (ATP)?', optionA: 'រីបូសូម', optionB: 'មីតូកុងឌ្រី', optionC: 'លីសូសូម', optionD: 'ណ្វៃយ៉ូ', correctOption: 'B' },
+                        { questionText: '២. ធាតុកោសិកាណាមានតែក្នុងកោសិការុក្ខជាតិ?', optionA: 'ភ្នាសកោសិកា', optionB: 'ណ្វៃយ៉ូ', optionC: 'ក្លរ៉ូប្លាស និងភ្នាសគ្រោងសែលុយឡូស', optionD: 'ស៊ីតូប្លាស', correctOption: 'C' },
+                        { questionText: '៣. ជាលិកាអ្វីដឹកនាំទឹក និងអំបិលខនិជពីឫសទៅស្លឹក?', optionA: 'ផ្លូអែម', optionB: 'ស៊ីឡែម (Xylem)', optionC: 'អេពីឌែម', optionD: 'ប៉ារ៉ង់ស៊ីម', correctOption: 'B' },
+                        { questionText: '៤. មុខងារចម្បងរបស់កោសិកាឈាមក្រហមគឺ៖', optionA: 'កំចាត់មេរោគ', optionB: 'ដឹកនាំ O₂', optionC: 'ធ្វើឱ្យឈាមកក', optionD: 'ផលិតអង់ទីករ', correctOption: 'B' },
+                        { questionText: '៥. ជាលិកាណាមានសមត្ថភាពកន្ត្រាក់បង្កើតចលនា?', optionA: 'ជាលិកាសាច់ដុំ', optionB: 'សរសៃប្រសាទ', optionC: 'ឈាម', optionD: 'ឆ្អឹង', correctOption: 'A' }
+                    ],
+                    q2: [
+                        { questionText: '១. រុក្ខជាតិបៃតងផលិតអាហារតាមលំនាំអ្វី?', optionA: 'ដង្ហើម', optionB: 'រស្មីសំយោគ', optionC: 'រំលាយអាហារ', optionD: 'បន្សុទ្ធឈាម', correctOption: 'B' },
+                        { questionText: '២. ការដោះដូរឧស្ម័ន O₂ និង CO₂ ក្នុងសួតកើតឡើងនៅទីណា?', optionA: 'បំពង់ខ្យល់', optionB: 'ថង់សួត (Alveoli)', optionC: 'បំពង់អាហារ', optionD: 'បេះដូង', correctOption: 'B' },
+                        { questionText: '៣. ក្នុងខ្សែសង្វាក់អាហារ រុក្ខជាតិបៃតងជាអ្វី?', optionA: 'អ្នកផលិត', optionB: 'អ្នកប្រើប្រាស់ទី១', optionC: 'អ្នកប្រើប្រាស់ទី២', optionD: 'អ្នកបំបែក', correctOption: 'A' },
+                        { questionText: '៤. អ័រម៉ូនអាំងស៊ុយលីនជួយគ្រប់គ្រងអ្វី?', optionA: 'សម្ពាធឈាម', optionB: 'កម្រិតជាតិស្ករក្នុងឈាម', optionC: 'ឆ្អឹង', optionD: 'សីតុណ្ហភាព', correctOption: 'B' },
+                        { questionText: '៥. បេះដូងមនុស្សមានប៉ុន្មានថត?', optionA: '២ ថត', optionB: '៣ ថត', optionC: '៤ ថត', optionD: '៥ ថត', correctOption: 'C' }
+                    ],
+                    q3: [
+                        { questionText: '១. បាសអាសូត ៤ ក្នុង ADN គឺអ្វីខ្លះ?', optionA: 'A, U, G, C', optionB: 'A, T, G, C', optionC: 'A, B, C, D', optionD: 'T, U, G, C', correctOption: 'B' },
+                        { questionText: '២. បាសណាមានក្នុង ARN ប៉ុន្តែគ្មានក្នុង ADN?', optionA: 'A', optionB: 'T', optionC: 'អ៊ុយរ៉ាស៊ីល (U)', optionD: 'G', correctOption: 'C' },
+                        { questionText: '៣. មីតូស (Mitosis) បង្កើតបានកោសិកាកូនប៉ុន្មាន?', optionA: '១', optionB: '២', optionC: '៤', optionD: '៨', correctOption: 'B' },
+                        { questionText: '៤. មនុស្សធម្មតាមានក្រូម៉ូសូមចំនួនប៉ុន្មាន?', optionA: '២៣', optionB: '៤៦ (២៣ គូ)', optionC: '៤៨', optionD: '២២ គូ', correctOption: 'B' },
+                        { questionText: '៥. លោក Gregor Mendel ជាបិតានៃវិទ្យាសាស្ត្រអ្វី?', optionA: 'មីក្រូជីវវិទ្យា', optionB: 'ពន្ធុវិទ្យា', optionC: 'បរិស្ថានវិទ្យា', optionD: 'កាយវិភាគ', correctOption: 'B' }
+                    ]
+                },
+                upper: {
+                    formulas: 'ទិន្នន័យបាក់ឌុប៖ ប្រវែង ADN: L = (N/2) × 3.4 Å | ម៉ាសម៉ូលេគុល៖ M = N × 300 | A = T, G = C | សមាមាត្រ A+G = T+C = 50%',
+                    writingPrompt: '១. ម៉ូលេគុល ADN មួយមានប្រវែង 5100 Å និងមាននុយក្លេអូទីត A ស្មើ 20% នៃចំនួននុយក្លេអូទីតសរុប។ គណនា N, ចំនួននុយក្លេអូទីត A, T, G, C និងសម្ព័ន្ធអ៊ីដ្រូសែនសរុប (H = 2A + 3G)។\n២. ពន្យល់ពីដំណាក់កាល «ចម្លងក្រម» និង «បកប្រែក្រម» ក្នុងការសំយោគប្រូតេអ៊ីន។',
+                    q1: [
+                        { questionText: '១. ការសំយោគប្រូតេអ៊ីនកើតឡើងនៅលើធាតុកោសិកាណា?', optionA: 'គុលហ្ស៊ី', optionB: 'រីបូសូម (Ribosome)', optionC: 'វ៉ាគុយអូល', optionD: 'សង់ត្រូសូម', correctOption: 'B' },
+                        { questionText: '២. ច្រវាក់ ADN ២ ខ្សែភ្ជាប់គ្នាដោយសម្ព័ន្ធអ្វីរវាងបាសបំពេញ?', optionA: 'សម្ព័ន្ធអ៊ីយ៉ុង', optionB: 'សម្ព័ន្ធអ៊ីដ្រូសែន (A=T ២, G≡C ៣)', optionC: 'សម្ព័ន្ធលោហៈ', optionD: 'សម្ព័ន្ធប៉ិបទីត', correctOption: 'B' },
+                        { questionText: '៣. នុយក្លេអូទីតនីមួយៗផ្សំឡើងពីសមាសធាតុ ៣ អ្វីខ្លះ?', optionA: 'ស្ករ បាសអាសូត និងក្រុមផូស្វាត', optionB: 'អាស៊ីតខ្លាញ់ និងគ្លីសេរ៉ុល', optionC: 'អាស៊ីតអាមីណេ', optionD: 'ក្លរ៉ូភីល', correctOption: 'A' },
+                        { questionText: '៤. កោសិកាឈាមសមានតួនាទីសំខាន់ធ្វើអ្វី?', optionA: 'ដឹកនាំ CO₂', optionB: 'ការពាររាងកាយប្រឆាំងមេរោគ', optionC: 'បញ្ចូនព័ត៌មានប្រសាទ', optionD: 'រំលាយស្ករ', correctOption: 'B' },
+                        { questionText: '៥. តើប្រវែង ១០ គូនុយក្លេអូទីត (១ ជំហានរង្វិលADN) ស្មើប៉ុន្មានអាំងស្ត្រម (Å)?', optionA: '3.4 Å', optionB: '34 Å', optionC: '300 Å', optionD: '10 Å', correctOption: 'B' }
+                    ],
+                    q2: [
+                        { questionText: '១. ក្រពេញភីទុយអ៊ីទែរ (Pituitary Gland) ស្ថិតនៅផ្នែកណានៃរាងកាយ?', optionA: 'បាតខួរក្បាល', optionB: 'ក្រលៀន', optionC: 'បំពង់ក', optionD: 'ពោះ', correctOption: 'A' },
+                        { questionText: '២. តំរងនោមច្រោះឈាម និងបង្កើតទឹកនោមតាមឯកតាមុខងារណា?', optionA: 'ណឺរ៉ូន', optionB: 'ណេប្រុង (Nephron)', optionC: 'អាល់វេអូល', optionD: 'ស៊ីណាប់', correctOption: 'B' },
+                        { questionText: '៣. អង់ស៊ីមអាមីឡាសក្នុងទឹកមាត់ជួយបំបែកសារធាតុអ្វី?', optionA: 'ប្រូតេអ៊ីន', optionB: 'ខ្លាញ់', optionC: 'អាមីដុង (ម្សៅ)', optionD: 'វីតាមីន', correctOption: 'C' },
+                        { questionText: '៤. កោសិកាប្រសាទ (ណឺរ៉ូន) បញ្ជូនសារពីណឺរ៉ូនមួយទៅណឺរ៉ូនមួយតាមទីតាំងណា?', optionA: 'ដង់ឌ្រីត', optionB: 'ស៊ីណាប់ (Synapse)', optionC: 'ណ្វៃយ៉ូ', optionD: 'កោសិកាឈាម', correctOption: 'B' },
+                        { questionText: '៥. ប្រព័ន្ធរ៉េស៊ីស្តង់ភាពស៊ាំដោយចាក់វ៉ាក់សាំងបង្កើតភាពស៊ាំប្រភេទណា?', optionA: 'ភាពស៊ាំសកម្មសិប្បនិម្មិត', optionB: 'ភាពស៊ាំអកម្ម', optionC: 'ការរលាក', optionD: 'អាលែហ្ស៊ី', correctOption: 'A' }
+                    ],
+                    q3: [
+                        { questionText: '១. ការសំយោគ ARN នាំសារ (mRNA) ចេញពីគំរូ ADN ហៅថា៖', optionA: 'ស្វ័យតម្លើងទ្វេ', optionB: 'ចម្លងក្រម (Transcription)', optionC: 'បកប្រែក្រម', optionD: 'មុយតាស្យុង', correctOption: 'B' },
+                        { questionText: '២. កូដុងចាប់ផ្តើម (Start Codon) លើ mRNA គឺ៖', optionA: 'UAA', optionB: 'AUG', optionC: 'UAG', optionD: 'UGA', correctOption: 'B' },
+                        { questionText: '៣. មេយ៉ូស (Meiosis) បង្កើតកោសិកាកាម៉ែតប៉ុន្មាន (n ក្រូម៉ូសូម)?', optionA: '២ កោសិកា (2n)', optionB: '៤ កោសិកា (n)', optionC: '១ កោសិកា', optionD: '៨ កោសិកា', correctOption: 'B' },
+                        { questionText: '៤. ទ្រឹស្តីវិវត្តន៍តាមរយៈ «ជម្រើសដោយធម្មជាតិ» ជារបស់អ្នកវិទ្យាសាស្ត្រណា?', optionA: 'ល្វី ប៉ាស្ទ័រ', optionB: 'ហ្សាល ដាវីន (Charles Darwin)', optionC: 'ឡាម៉ាក', optionD: 'ម៉ង់ដែល', correctOption: 'B' },
+                        { questionText: '៥. ជំងឺទ្រីសូមី ២១ (Down Syndrome) បណ្តាលមកពីភាពខុសប្រក្រតីក្រូម៉ូសូមគូទីប៉ុន្មាន?', optionA: 'គូទី ១៣', optionB: 'គូទី ១៨', optionC: 'គូទី ២១ (មាន ៣ ដង)', optionD: 'គូភេទ XY', correctOption: 'C' }
+                    ]
+                }
+            },
+            'ប្រវត្តិវិទ្យា': {
+                icon: '🏛️', prefix: 'hist',
+                symbols: ['ព.ស.', 'គ.ស.', 'មុន គ.ស.', 'ស.វ.', '→', '«', '»', '–'],
+                noteTitle: '📌 កាលបរិច្ឆេទ និងឯកសារប្រវត្តិសាស្ត្រជំនួយ (ស្រេចចិត្ត)',
+                s1: { heading: 'ផ្នែក I៖ ប្រវត្តិសាស្ត្រកម្ពុជា', pill: 'កម្ពុជា', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s2: { heading: 'ផ្នែក II៖ ប្រវត្តិសាស្ត្រពិភពលោក និងតំបន់', pill: 'ពិភពលោក', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s3: { heading: 'ផ្នែក III៖ កាលបរិច្ឆេទ ព្រឹត្តិការណ៍ និងអង្គការអន្តរជាតិ', pill: 'ព្រឹត្តិការណ៍', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s4: { heading: 'ផ្នែក IV៖ សំណួរពិភាក្សា និងវិភាគប្រវត្តិសាស្ត្រ', pill: 'វិភាគប្រវត្តិ', instr: 'ចូរសរសេរចម្លើយពន្យល់ និងវិភាគឱ្យបានក្បោះក្បាយ៖' },
+                lower: {
+                    formulas: 'ទិន្នន័យសង្ខេប៖ សម័យអង្គរ (៨០២-១៤៣១) | ទិវាបុណ្យឯករាជ្យជាតិ (៩ វិច្ឆិកា ១៩៥៣) | UN (២៤ តុលា ១៩៤៥)',
+                    writingPrompt: '១. តើកត្តាសំខាន់ៗអ្វីខ្លះធ្វើឱ្យចក្រភពអង្គររុងរឿងក្នុងរជ្ជកាលព្រះបាទជ័យវរ្ម័នទី៧?\n២. ចូររៀបរាប់ពីព្រះរាជបូជនីយកិច្ចទាមទារឯករាជ្យជាតិថ្ងៃទី ៩ វិច្ឆិកា ១៩៥៣ ។',
+                    q1: [
+                        { questionText: '១. ព្រះមហាក្សត្រខ្មែរអង្គណាស្ថាបនាសម័យអង្គរនៅឆ្នាំ ៨០២ លើភ្នំគូលែន?', optionA: 'ព្រះបាទយសោវរ្ម័នទី១', optionB: 'ព្រះបាទជ័យវរ្ម័នទី២', optionC: 'ព្រះបាទសូរ្យវរ្ម័នទី២', optionD: 'ព្រះបាទជ័យវរ្ម័នទី៧', correctOption: 'B' },
+                        { questionText: '២. ប្រាសាទអង្គរវត្តកសាងក្នុងរជ្ជកាលព្រះមហាក្សត្រណា?', optionA: 'ព្រះបាទសូរ្យវរ្ម័នទី២', optionB: 'ព្រះបាទឥន្ទ្រវរ្ម័នទី១', optionC: 'ព្រះបាទជ័យវរ្ម័នទី៧', optionD: 'ព្រះបាទយសោវរ្ម័នទី១', correctOption: 'A' },
+                        { questionText: '៣. ប្រាសាទបាយ័ន តាព្រហ្ម និងមន្ទីរពេទ្យ ១០២ ស្ថាបនាដោយ៖', optionA: 'ព្រះបាទសូរ្យវរ្ម័នទី២', optionB: 'ព្រះបាទជ័យវរ្ម័នទី៧', optionC: 'ព្រះបាទត្រសក់ផ្អែម', optionD: 'ព្រះបាទនរោត្តម', correctOption: 'B' },
+                        { questionText: '៤. កម្ពុជាទទួលឯករាជ្យពីបារាំងនៅថ្ងៃណា?', optionA: '២៣ តុលា ១៩៩១', optionB: '៩ វិច្ឆិកា ១៩៥៣', optionC: '៧ មករា ១៩៧៩', optionD: '២៤ កញ្ញា ១៩៩៣', correctOption: 'B' },
+                        { questionText: '៥. រាជធានីដំបូងនៃនគរភ្នំ (ហ្វូណន) មានឈ្មោះអ្វី?', optionA: 'អង្គរធំ', optionB: 'វ្យាធបុរៈ', optionC: 'លង្វែក', optionD: 'ឧត្តុង្គ', correctOption: 'B' }
+                    ],
+                    q2: [
+                        { questionText: '១. សង្គ្រាមលោកលើកទី១ កើតនៅចន្លោះឆ្នាំណា?', optionA: '១៩១៤-១៩១៨', optionB: '១៩៣៩-១៩៤៥', optionC: '១៩៥០-១៩៥៣', optionD: '១៩៤៥-១៩៧៥', correctOption: 'A' },
+                        { questionText: '២. សង្គ្រាមលោកលើកទី២ បញ្ចប់នៅឆ្នាំណា?', optionA: '១៩១៨', optionB: '១៩៣៩', optionC: '១៩៤៥', optionD: '១៩៥៤', correctOption: 'C' },
+                        { questionText: '៣. បដិវត្តន៍ឧស្សាហកម្មដំបូងចាប់ផ្តើមនៅប្រទេសណា?', optionA: 'បារាំង', optionB: 'អាល្លឺម៉ង់', optionC: 'អង់គ្លេស', optionD: 'អាមេរិក', correctOption: 'C' },
+                        { questionText: '៤. អរិយធម៌មេសូប៉ូតាមីកកើតតាមទន្លេណា?', optionA: 'ទន្លេនីល', optionB: 'ទន្លេទីគ្រីស និងអឺប្រាត', optionC: 'គង្គា', optionD: 'លឿង', correctOption: 'B' },
+                        { questionText: '៥. ជញ្ជាំងប៊ែរឡាំងដួលរលំនៅឆ្នាំណា?', optionA: '១៩៧៩', optionB: '១៩៨៩', optionC: '១៩៩១', optionD: '១៩៩៩', correctOption: 'B' }
+                    ],
+                    q3: [
+                        { questionText: '១. អង្គការសហប្រជាជាតិ (UN) បង្កើតនៅថ្ងៃណា?', optionA: '២៤ តុលា ១៩៤៥', optionB: '៨ សីហា ១៩៦៧', optionC: '១០ ធ្នូ ១៩៤៨', optionD: '៩ វិច្ឆិកា ១៩៥៣', correctOption: 'A' },
+                        { questionText: '២. កម្ពុជាចូលជាសមាជិកទី ១០ នៃអាស៊ាននៅថ្ងៃណា?', optionA: '២៣ តុលា ១៩៩១', optionB: '៣០ មេសា ១៩៩៩', optionC: '១៤ ធ្នូ ១៩៥៥', optionD: '៧ កក្កដា ២០០៨', correctOption: 'B' },
+                        { questionText: '៣. កិច្ចព្រមព្រៀងសន្តិភាពទីក្រុងប៉ារីសចុះហត្ថលេខាថ្ងៃណា?', optionA: '២៣ តុលា ១៩៩១', optionB: '២១ កញ្ញា ១៩៩៣', optionC: '៩ វិច្ឆិកា ១៩៥៣', optionD: '៣០ មេសា ១៩៩៩', correctOption: 'A' },
+                        { questionText: '៤. ប្រាសាទព្រះវិហារចុះបញ្ជីបេតិកភណ្ឌពិភពលោក UNESCO ថ្ងៃណា?', optionA: '១៤ ធ្នូ ១៩៩២', optionB: '៧ កក្កដា ២០០៨', optionC: '៨ កក្កដា ២០១៧', optionD: '១៧ កញ្ញា ២០២៣', correctOption: 'B' },
+                        { questionText: '៥. ថ្ងៃ ៧ មករា ១៩៧៩ គឺជាទិវាអ្វី?', optionA: 'ឯករាជ្យជាតិ', optionB: 'ជ័យជម្នះលើរបបប្រល័យពូជសាសន៍', optionC: 'រដ្ឋធម្មនុញ្ញ', optionD: 'អង្គរ', correctOption: 'B' }
+                    ]
+                },
+                upper: {
+                    formulas: 'ទិន្នន័យសំខាន់៖ សម័យអាណាព្យាបាលបារាំង (១៨៦៣-១៩៥៣) | សង្គមរាស្ត្រនិយម (១៩៥៥-១៩៧០) | នយោបាយឈ្នះ-ឈ្នះ (១៩៩៨)',
+                    writingPrompt: '១. វិភាគពីសមិទ្ធផលធំៗក្នុងសម័យសង្គមរាស្ត្រនិយម (១៩៥៥-១៩៧០) លើវិស័យអប់រំ សេដ្ឋកិច្ច និងការទូត។\n២. ពន្យល់ពីអត្ថន័យនៃ «កិច្ចព្រមព្រៀងសន្តិភាពទីក្រុងប៉ារីស ២៣ តុលា ១៩៩១» និងនយោបាយឈ្នះ-ឈ្នះ ឆ្នាំ១៩៩៨ ក្នុងការបង្រួបបង្រួមជាតិកម្ពុជា។',
+                    q1: [
+                        { questionText: '១. សន្ធិសញ្ញាអាណាព្យាបាលបារាំង-ខ្មែរ ត្រូវបានចុះនៅថ្ងៃខែឆ្នាំណា?', optionA: '១១ សីហា ១៨៦៣', optionB: '១៧ មិថុនា ១៨៨៤', optionC: '២៣ មីនា ១៩០៧', optionD: '៩ វិច្ឆិកា ១៩៥៣', correctOption: 'A' },
+                        { questionText: '២. តើខេត្តបាត់ដំបង សៀមរាប និងសិរីសោភ័ណ ត្រូវបារាំងទាមទារពីសៀមមកឱ្យកម្ពុជាវិញនៅឆ្នាំណា?', optionA: '១៩០៤', optionB: '១៩០៧', optionC: '១៩៤១', optionD: '១៩៥៣', correctOption: 'B' },
+                        { questionText: '៣. តើកិច្ចព្រមព្រៀងហ្សឺណែវស្តីពីឥណ្ឌូចិន ត្រូវបានចុះហត្ថលេខានៅឆ្នាំណា?', optionA: '១៩៥៣', optionB: '១៩៥៤ (២១ កក្កដា)', optionC: '១៩៦២', optionD: '១៩៧០', correctOption: 'B' },
+                        { questionText: '៤. កម្ពុជាឈ្នះក្តីប្រាសាទព្រះវិហារនៅតុលាការយុត្តិធម៌អន្តរជាតិ (ICJ) នៅថ្ងៃណា?', optionA: '១៥ មិថុនា ១៩៦២', optionB: '៧ កក្កដា ២០០៨', optionC: '១១ វិច្ឆិកា ២០១៣', optionD: '៩ វិច្ឆិកា ១៩៥៣', correctOption: 'A' },
+                        { questionText: '៥. រដ្ឋធម្មនុញ្ញនៃព្រះរាជាណាចក្រកម្ពុជាបច្ចុប្បន្នត្រូវបានប្រកាសឱ្យប្រើនៅថ្ងៃណា?', optionA: '២៣ ឧសភា ១៩៩៣', optionB: '២៤ កញ្ញា ១៩៩៣', optionC: '២៩ ធ្នូ ១៩៩៨', optionD: '២៣ តុលា ១៩៩១', correctOption: 'B' }
+                    ],
+                    q2: [
+                        { questionText: '១. សង្គ្រាមត្រជាក់ (Cold War) គឺជាការប្រឈមមុខដាក់គ្នារវាងមហាអំណាចណាខ្លះ?', optionA: 'អង់គ្លេស និងបារាំង', optionB: 'សហរដ្ឋអាមេរិក (លោកសេរី) និងសហភាពសូវៀត (កុម្មុយនីស្ត)', optionC: 'ចិន និងជប៉ុន', optionD: 'អាល្លឺម៉ង់ និងអ៊ីតាលី', correctOption: 'B' },
+                        { questionText: '២. សហភាពសូវៀតត្រូវបានរំលាយជាផ្លូវការនៅឆ្នាំណា?', optionA: '១៩៨៩', optionB: '១៩៩១ (ធ្នូ)', optionC: '១៩៩៣', optionD: '១៩៧៥', correctOption: 'B' },
+                        { questionText: '៣. សមាគមប្រជាជាតិអាស៊ីអាគ្នេយ៍ (ASEAN) បង្កើតដំបូងនៅទីក្រុងបាងកកនៅឆ្នាំណា?', optionA: '៨ សីហា ១៩៦៧', optionB: '២៤ តុលា ១៩៤៥', optionC: '៣០ មេសា ១៩៩៩', optionD: '១ មករា ១៩៩៥', correctOption: 'A' },
+                        { questionText: '៤. បដិវត្តន៍បារាំងឆ្នាំ ១៧៨៩ បានប្រកាសគោលការណ៍អ្វី?', optionA: 'សេរីភាព សមភាព ភាតរភាព', optionB: 'សង្គ្រាមសាសនា', optionC: 'អាណានិគមនិយម', optionD: 'សក្តិភូមិ', correctOption: 'A' },
+                        { questionText: '៥. ទស្សនវិទូ អភិក្រម «សម័យពន្លឺ» (Enlightenment) នៅអឺរ៉ុបសតវត្សទី១៨ រួមមានអ្នកណាខ្លះ?', optionA: 'ម៉ុងតេស្គីយើ រូស្សូ និងវ៉ុលទែរ', optionB: 'ណាប៉ូឡេអុង', optionC: 'ហ៊ីត្លែរ', optionD: 'មូសូលីនី', correctOption: 'A' }
+                    ],
+                    q3: [
+                        { questionText: '១. នយោបាយឈ្នះ-ឈ្នះ នៅកម្ពុជាបានបញ្ចប់សង្គ្រាមស៊ីវិលទាំងស្រុងនៅថ្ងៃណា?', optionA: '២៣ តុលា ១៩៩១', optionB: '២៩ ធ្នូ ១៩៩៨', optionC: '៧ មករា ១៩៧៩', optionD: '២៤ កញ្ញា ១៩៩៣', correctOption: 'B' },
+                        { questionText: '២. អង្គជំនុំជម្រះវិសាមញ្ញក្នុងតុលាការកម្ពុជា (ECCC) បង្កើតដើម្បីកាត់ទោសនរណា?', optionA: 'មន្ត្រីអាណានិគម', optionB: 'មេដឹកនាំកំពូលខ្មែរក្រហម', optionC: 'ឧក្រិដ្ឋជនចរាចរណ៍', optionD: 'ក្រុមហ៊ុនឯកជន', correctOption: 'B' },
+                        { questionText: '៣. ប្រទេសកម្ពុជាចូលជាសមាជិកអង្គការពាណិជ្ជកម្មពិភពលោក (WTO) នៅឆ្នាំណា?', optionA: '១៩៩៩', optionB: '២០០៤ (១៣ តុលា)', optionC: '២០០៨', optionD: '២០១៥', correctOption: 'B' },
+                        { questionText: '៤. ប្រាសាទកោះកេរ្តិ៍ត្រូវបានចុះបញ្ជីបេតិកភណ្ឌពិភពលោករបស់ UNESCO នៅថ្ងៃណា?', optionA: '១៧ កញ្ញា ២០២៣', optionB: '៨ កក្កដា ២០១៧', optionC: '៧ កក្កដា ២០០៨', optionD: '១៤ ធ្នូ ១៩៩២', correctOption: 'A' },
+                        { questionText: '៥. សហគមន៍សេដ្ឋកិច្ចអាស៊ាន (AEC) ត្រូវបានបង្កើតជាផ្លូវការនៅចុងឆ្នាំណា?', optionA: '២០០៨', optionB: '២០១៥ (៣១ ធ្នូ)', optionC: '២០២០', optionD: '១៩៩៩', correctOption: 'B' }
+                    ]
+                }
+            },
+            'ភូមិវិទ្យា': {
+                icon: '🌍', prefix: 'geo',
+                symbols: ['km²', '°C', '%', ':', 'ម៉ែត្រ', 'លាននាក់', '→'],
+                noteTitle: '📌 ទិន្នន័យភូមិសាស្ត្រ ប្រជាសាស្ត្រ និងមាត្រដ្ឋានផែនទី (ស្រេចចិត្ត)',
+                s1: { heading: 'ផ្នែក I៖ ភូមិវិទ្យារូប និងអាកាសធាតុ', pill: 'ភូមិវិទ្យារូប', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s2: { heading: 'ផ្នែក II៖ ភូមិវិទ្យាកម្ពុជា និងតំបន់អាស៊ី', pill: 'កម្ពុជា/អាស៊ី', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s3: { heading: 'ផ្នែក III៖ សេដ្ឋកិច្ច ប្រជាសាស្ត្រ និងផែនទី', pill: 'សេដ្ឋកិច្ច', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s4: { heading: 'ផ្នែក IV៖ សំណួរវិភាគភូមិសាស្ត្រ និងសេដ្ឋកិច្ច', pill: 'វិភាគទិន្នន័យ', instr: 'ចូររៀបរាប់ និងវិភាគសំណួរខាងក្រោមឱ្យបានច្បាស់លាស់៖' },
+                lower: {
+                    formulas: 'ទិន្នន័យភូមិសាស្ត្រកម្ពុជា៖ ផ្ទៃដី 181,035 km² | រាជធានី-ខេត្ត៖ ២៥ | ភ្នំឱរ៉ាល់៖ 1,813 m | ដង់ស៊ីតេ = ប្រជាជន / ផ្ទៃដី',
+                    writingPrompt: '១. ចូររៀបរាប់ពីសារៈសំខាន់ ៤ យ៉ាងនៃបឹងទន្លេសាបចំពោះសេដ្ឋកិច្ច សង្គម និងជីវចម្រុះនៅកម្ពុជា។\n២. ខេត្តមួយមានផ្ទៃដី 5,000 km² និងប្រជាជន 750,000 នាក់។ គណនាដង់ស៊ីតេប្រជាជន និងពន្យល់ពីកត្តានាំឱ្យវាលទំនាបមានប្រជាជនរស់នៅកុះករ។',
+                    q1: [
+                        { questionText: '១. ភ្នំដែលខ្ពស់ជាងគេនៅកម្ពុជាគឺភ្នំណា?', optionA: 'ភ្នំគូលែន', optionB: 'ភ្នំឱរ៉ាល់ (1,813 m)', optionC: 'ភ្នំបូកគោ', optionD: 'ភ្នំដងរែក', correctOption: 'B' },
+                        { questionText: '២. កម្ពុជាស្ថិតក្នុងតំបន់អាកាសធាតុអ្វី?', optionA: 'តំបន់ត្រជាក់', optionB: 'មូសុងត្រូពិច (២ រដូវ)', optionC: 'វាលខ្សាច់', optionD: 'តំបន់ប៉ូល', correctOption: 'B' },
+                        { questionText: '៣. ខ្សែស្របកណ្តាលនៃផែនដី (រយៈទទឹង 0°) ហៅថាអ្វី?', optionA: 'ខ្សែប៉ូល', optionB: 'អេក្វាទ័រ', optionC: 'មេរីឌៀនដើម', optionD: 'ត្រូពិច', correctOption: 'B' },
+                        { questionText: '៤. មហាសមុទ្រធំជាងគេលើពិភពលោកគឺ៖', optionA: 'អាត្លង់ទិក', optionB: 'ឥណ្ឌា', optionC: 'ប៉ាស៊ីហ្វិក', optionD: 'អាកទិក', correctOption: 'C' },
+                        { questionText: '៥. កម្លាំងធម្មជាតិណាធ្វើឱ្យដីមានជីជាតិនៅតាមដងទន្លេមេគង្គ?', optionA: 'ល្បាប់ទឹកជំនន់', optionB: 'ខ្យល់ព្យុះ', optionC: 'រលកសមុទ្រ', optionD: 'ភ្នំភ្លើង', correctOption: 'A' }
+                    ],
+                    q2: [
+                        { questionText: '១. ប្រទេសកម្ពុជាមានផ្ទៃក្រឡាសរុបប៉ុន្មាន km²?', optionA: '181,035 km²', optionB: '236,800 km²', optionC: '331,210 km²', optionD: '513,120 km²', correctOption: 'A' },
+                        { questionText: '២. ព្រំប្រទល់ខាងលិចរបស់កម្ពុជាជាប់ប្រទេសណា?', optionA: 'វៀតណាម', optionB: 'ឡាវ', optionC: 'ថៃ', optionD: 'មីយ៉ាន់ម៉ា', correctOption: 'C' },
+                        { questionText: '៣. បឹងទឹកសាបធំជាងគេនៅអាស៊ីអាគ្នេយ៍គឺ៖', optionA: 'បឹងកំពីងពួយ', optionB: 'បឹងទន្លេសាប', optionC: 'យក្សឡោម', optionD: 'បៃកាល់', correctOption: 'B' },
+                        { questionText: '៤. កំពង់ផែទឹកជ្រៅអន្តរជាតិសំខាន់បំផុតនៅកម្ពុជាស្ថិតនៅ៖', optionA: 'កំពត', optionB: 'កោះកុង', optionC: 'ព្រះសីហនុ', optionD: 'ភ្នំពេញ', correctOption: 'C' },
+                        { questionText: '៥. ខេត្តណាល្បីល្បាញខាងផ្សោតទឹកសាបកាំពី?', optionA: 'បាត់ដំបង', optionB: 'ក្រចេះ', optionC: 'ពោធិ៍សាត់', optionD: 'កែប', correctOption: 'B' }
+                    ],
+                    q3: [
+                        { questionText: '១. វិស័យសេដ្ឋកិច្ចចម្បងៗរបស់កម្ពុជារួមមាន៖', optionA: 'កសិកម្ម វាយនភណ្ឌ-កាត់ដេរ ទេសចរណ៍ និងសំណង់', optionB: 'នេសាទម្យ៉ាង', optionC: 'ផលិតយន្តហោះ', optionD: 'រ៉ែប្រេងកាត', correctOption: 'A' },
+                        { questionText: '២. តំបន់ណាមានដង់ស៊ីតេប្រជាជនច្រើនជាងគេនៅកម្ពុជា?', optionA: 'តំបន់ខ្ពង់រាប', optionB: 'វាលទំនាបកណ្តាល និងភ្នំពេញ', optionC: 'ភ្នំក្រវាញ', optionD: 'កោះដាច់', correctOption: 'B' },
+                        { questionText: '៣. មាត្រដ្ឋាន 1:100,000 មានន័យថា 1 cm លើផែនទីស្មើប៉ុន្មានលើដី?', optionA: '100 m', optionB: '1 km', optionC: '10 km', optionD: '100 km', correctOption: 'B' },
+                        { questionText: '៤. ទ្វីបណាមានប្រជាជនច្រើនជាងគេបំផុត?', optionA: 'អឺរ៉ុប', optionB: 'អាហ្វ្រិក', optionC: 'អាស៊ី', optionD: 'អាមេរិក', correctOption: 'C' },
+                        { questionText: '៥. ដំណាំកសិឧស្សាហកម្មសំខាន់នៅកម្ពុជាគឺ៖', optionA: 'ស្រូវ កៅស៊ូ ស្វាយចន្ទី ដំឡូងមី ម្រេច', optionB: 'ស្រូវសាលី', optionC: 'ប៉ោម', optionD: 'អូលីវ', correctOption: 'A' }
+                    ]
+                },
+                upper: {
+                    formulas: 'រូបមន្តប្រជាសាស្ត្រ៖ កំណើនធម្មជាតិ = អត្រាកំណើត - អត្រាមរណៈ | ដង់ស៊ីតេ = ប្រជាជន / ផ្ទៃដី | តុល្យភាពពាណិជ្ជកម្ម = នាំចេញ - នាំចូល',
+                    writingPrompt: '១. វិភាគពីសក្តានុពល និងបញ្ហាប្រឈមនៃវិស័យកសិកម្ម និងឧស្សាហកម្មនៅកម្ពុជាក្នុងសម័យសេដ្ឋកិច្ចឌីជីថល។\n២. ប្រទេសមួយមានអត្រាកំណើត 22‰ និងអត្រាមរណៈ 6‰ ។ គណនាអត្រាកំណើនធម្មជាតិ (%) និងពន្យល់ពីផលវិបាកនៃនគរូបនីយកម្មឆាប់រហ័ស។',
+                    q1: [
+                        { questionText: '១. បាតុភូតរដូវទាំង ៤ នៅតំបន់មធ្យមកើតឡើងដោយសារអ្វី?', optionA: 'ជំនោរសមុទ្រ', optionB: 'ទម្រេតអ័ក្សផែនដី ២៣.៥° ពេលវិលជុំវិញព្រះអាទិត្យ', optionC: 'ខ្យល់មូសុង', optionD: 'ភ្នំភ្លើង', correctOption: 'B' },
+                        { questionText: '២. ទន្លេមេគង្គហូរឆ្លងកាត់ខេត្តណាខ្លះរបស់កម្ពុជា?', optionA: 'ស្ទឹងត្រែង ក្រចេះ កំពង់ចាម ត្បូងឃ្មុំ កណ្តាល ព្រៃវែង', optionB: 'បាត់ដំបង ប៉ៃលិន', optionC: 'កំពត កែប', optionD: 'កោះកុង', correctOption: 'A' },
+                        { questionText: '៣. តើប្រទេសណាជាដៃគូទន្លេមេគង្គខាងក្រោម (ចំនួន ៤ ប្រទេស)?', optionA: 'កម្ពុជា ថៃ ឡាវ វៀតណាម', optionB: 'កម្ពុជា ចិន ម៉ាឡេស៊ី', optionC: 'ឥណ្ឌូនេស៊ី ហ្វីលីពីន', optionD: 'សិង្ហបុរី ប្រ៊ុយណេ', correctOption: 'A' },
+                        { questionText: '៤. ប្រព័ន្ធដីសណ្តទន្លេមេគង្គនៅកម្ពុជាចាប់ផ្តើមបំបែកពីទន្លេបួនមុខត្រង់ណា?', optionA: 'ក្រចេះ', optionB: 'រាជធានីភ្នំពេញ (ទន្លេមេគង្គក្រោម ទន្លេបាសាក់)', optionC: 'សៀមរាប', optionD: 'កំពង់ធំ', correctOption: 'B' },
+                        { questionText: '៥. តំបន់ឆ្នេរសមុទ្រកម្ពុជាមានប្រវែងប្រមាណប៉ុន្មានគីឡូម៉ែត្រ?', optionA: '120 km', optionB: '440 km', optionC: '800 km', optionD: '1200 km', correctOption: 'B' }
+                    ],
+                    q2: [
+                        { questionText: '១. អាងទន្លេមេគង្គផ្គត់ផ្គង់ទឹកបញ្ច្រាសចូលបឹងទន្លេសាបនៅរដូវណា?', optionA: 'រដូវប្រាំង', optionB: 'រដូវវស្សា', optionC: 'រដូវរងា', optionD: 'ពេញមួយឆ្នាំ', correctOption: 'B' },
+                        { questionText: '២. តំបន់សេដ្ឋកិច្ចពិសេស (SEZ) មានគោលបំណងសំខាន់អ្វី?', optionA: 'កាត់បន្ថយការនាំចេញ', optionB: 'ទាក់ទាញការវិនិយោគឧស្សាហកម្ម និងបង្កើតការងារ', optionC: 'បិទរោងចក្រ', optionD: 'បង្កើនពន្ធនាំចេញ', correctOption: 'B' },
+                        { questionText: '៣. មហាអំណាចសេដ្ឋកិច្ចធំបំផុតទាំង ២ នៅអាស៊ីបូព៌ាគឺ៖', optionA: 'ចិន និងជប៉ុន', optionB: 'ថៃ និងម៉ាឡេស៊ី', optionC: 'ឥណ្ឌា និងប៉ាគីស្ថាន', optionD: 'ឡាវ និងវៀតណាម', correctOption: 'A' },
+                        { questionText: '៤. ច្រករបៀងសេដ្ឋកិច្ចភាគខាងត្បូងអាស៊ានតភ្ជាប់តាមទីក្រុងណាខ្លះ?', optionA: 'បាងកក - ភ្នំពេញ - ហូជីមិញ', optionB: 'ហាណូយ - ប៉េកាំង', optionC: 'តូក្យូ - សេអ៊ូល', optionD: 'ម៉ានីល - ហ្សាការតា', correctOption: 'A' },
+                        { questionText: '៥. ថាមពលកកើតឡើងវិញសំខាន់នៅកម្ពុជារួមមាន៖', optionA: 'ធ្យូងថ្ម', optionB: 'វារីអគ្គិសនី និងថាមពលពន្លឺព្រះអាទិត្យ (Solar)', optionC: 'ប្រេងម៉ាស៊ូត', optionD: 'នុយក្លេអ៊ែរ', correctOption: 'B' }
+                    ],
+                    q3: [
+                        { questionText: '១. នគរូបនីយកម្ម (Urbanization) សំដៅលើអ្វី?', optionA: 'ការកើនឡើងប្រជាជនរស់នៅទីក្រុង និងការពង្រីកទីក្រុង', optionB: 'ការបោះបង់ទីក្រុង', optionC: 'ការធ្វើស្រែចម្ការ', optionD: 'ការការពារព្រៃ', correctOption: 'A' },
+                        { questionText: '២. កម្រិតចំណូលមធ្យមគិតជា GDP per capita វាស់ស្ទង់អ្វី?', optionA: 'ផ្ទៃដីប្រទេស', optionB: 'ផលិតផលក្នុងស្រុកសរុបសម្រាប់មនុស្សម្នាក់ៗ', optionC: 'ចំនួនទន្លេ', optionD: 'អាកាសធាតុ', correctOption: 'B' },
+                        { questionText: '៣. ពីរ៉ាមីតអាយុប្រជាជនដែលមាន «បាតធំ» បង្ហាញពីអ្វី?', optionA: 'ចំនួនមនុស្សចាស់ច្រើន', optionB: 'អត្រាកំណើតខ្ពស់ និងកម្លាំងវ័យក្មេងច្រើន', optionC: 'ប្រជាជនថយចុះ', optionD: 'អត្រាមរណៈទារកទាប', correctOption: 'B' },
+                        { questionText: '៤. សន្ទស្សន៍អភិវឌ្ឍន៍មនុស្ស (HDI) គិតលើកត្តាគោល ៣ អ្វីខ្លះ?', optionA: 'សុខភាព (អាយុសង្ឃឹមរស់), ការអប់រំ និងប្រាក់ចំណូល', optionB: 'ផ្ទៃដី ភ្នំ និងសមុទ្រ', optionC: 'អាកាសធាតុ', optionD: 'យោធា', correctOption: 'A' },
+                        { questionText: '៥. ផលិតផលនាំចេញលេខ ១ របស់កម្ពុជាក្នុងវិស័យឧស្សាហកម្មគឺ៖', optionA: 'សម្លៀកបំពាក់ ស្បែកជើង និងផលិតផលធ្វើដំណើរ', optionB: 'រថយន្ត', optionC: 'ទូរស័ព្ទដៃ', optionD: 'យន្តហោះ', correctOption: 'A' }
+                    ]
+                }
+            },
+            'សីលធម៌': {
+                icon: '⚖️', prefix: 'civic',
+                symbols: ['«', '»', '•', '→', '១.', '២.', '៣.'],
+                noteTitle: '📌 ច្បាប់គ្រឹះ និងគោលការណ៍សីលធម៌សង្គម (ស្រេចចិត្ត)',
+                s1: { heading: 'ផ្នែក I៖ សីលធម៌ វប្បធម៌ និងសង្គមខ្មែរ', pill: 'សីលធម៌', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s2: { heading: 'ផ្នែក II៖ ច្បាប់ សិទ្ធិមនុស្ស និងពលរដ្ឋល្អ', pill: 'ច្បាប់/សិទ្ធិ', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s3: { heading: 'ផ្នែក III៖ ការគ្រប់គ្រងរដ្ឋ ប្រជាធិបតេយ្យ និងសន្តិភាព', pill: 'រដ្ឋ/សង្គម', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s4: { heading: 'ផ្នែក IV៖ សំណួរវិភាគស្ថានភាពសង្គម និងពលរដ្ឋវិជ្ជា', pill: 'វិភាគសង្គម', instr: 'ចូរឆ្លើយសំណួរវិភាគខាងក្រោមដោយលើកអំណះអំណាងសមស្រប៖' },
+                lower: {
+                    formulas: 'ចំណេះដឹងគោល៖ បាវចនាជាតិ «ជាតិ សាសនា ព្រះមហាក្សត្រ» | អំណាច ៣៖ នីតិប្បញ្ញត្តិ នីតិប្រតិបត្តិ តុលាការ | សិទ្ធិ និងកាតព្វកិច្ចពលរដ្ឋ',
+                    writingPrompt: '១. ក្នុងនាមជាយុវជន និងសិស្សល្អ តើប្អូនត្រូវប្រតិបត្តិសីលធម៌រស់នៅក្នុងសាលារៀន និងគ្រួសារដូចម្តេចខ្លះ?\n២. ចូរពន្យល់ទំនាក់ទំនងរវាង «សិទ្ធិ» និង «កាតព្វកិច្ច» របស់ពលរដ្ឋក្នុងសង្គមនីតិរដ្ឋ។',
+                    q1: [
+                        { questionText: '១. ការសំពះតាមប្រពៃណីខ្មែរមានប៉ុន្មានរបៀបសំខាន់ៗ?', optionA: '៣ របៀប', optionB: '៥ របៀប', optionC: '៧ របៀប', optionD: '១០ របៀប', correctOption: 'B' },
+                        { questionText: '២. ព្រហ្មវិហារធម៌ ៤ យ៉ាងគឺ៖', optionA: 'សទ្ធា សីល', optionB: 'មេត្តា ករុណា មុទិតា ឧបេក្ខា', optionC: 'ទាន សីល', optionD: 'លោភៈ ទោសៈ', correctOption: 'B' },
+                        { questionText: '៣. ទង្វើណាបង្ហាញពីសីលធម៌ល្អលើបណ្តាញសង្គម?', optionA: 'ផ្សាយព័ត៌មានមិនពិត', optionB: 'ប្រើភាសាគួរសម គោរពសិទ្ធិអ្នកដទៃ និងផ្ទៀងផ្ទាត់ការពិត', optionC: 'ជេរប្រមាថ', optionD: 'លួចរូបភាព', correctOption: 'B' },
+                        { questionText: '៤. ទិវាសិទ្ធិនារីអន្តរជាតិប្រារព្ធនៅថ្ងៃណា?', optionA: '១ មិថុនា', optionB: '៨ មីនា', optionC: '១០ ធ្នូ', optionD: '១ ឧសភា', correctOption: 'B' },
+                        { questionText: '៥. ពាក្យ «កតញ្ញូតាធម៌» មានន័យដូចម្តេច?', optionA: 'ការដឹងគុណ និងតបស្នងសងគុណ', optionB: 'កំហឹង', optionC: 'ប្រកួតប្រជែង', optionD: 'អាត្មានិយម', correctOption: 'A' }
+                    ],
+                    q2: [
+                        { questionText: '១. ច្បាប់កំពូលនៃព្រះរាជាណាចក្រកម្ពុជាគឺ៖', optionA: 'ច្បាប់ចរាចរណ៍', optionB: 'រដ្ឋធម្មនុញ្ញ', optionC: 'ប្រកាស', optionD: 'សារាចរ', correctOption: 'B' },
+                        { questionText: '២. ពលរដ្ឋខ្មែរមានសិទ្ធិបោះឆ្នោតចាប់ពីអាយុប៉ុន្មាន?', optionA: '១៥ ឆ្នាំ', optionB: '១៨ ឆ្នាំឡើងទៅ', optionC: '២១ ឆ្នាំ', optionD: '២៥ ឆ្នាំ', correctOption: 'B' },
+                        { questionText: '៣. សិទ្ធិកុមារជាមូលដ្ឋាន ៤ ក្រុមសំខាន់គឺ៖', optionA: 'រស់រានមានជីវិត អភិវឌ្ឍ ការពារ និងចូលរួម', optionB: 'លេងកម្សាន្តម្យ៉ាង', optionC: 'រកប្រាក់', optionD: 'គ្មានសិទ្ធិ', correctOption: 'A' },
+                        { questionText: '៤. ពេលជិះម៉ូតូ អ្នកបើកបរត្រូវគោរពច្បាប់អ្វី?', optionA: 'បើកលឿន', optionB: 'ពាក់មួកសុវត្ថិភាព និងគោរពភ្លើងសញ្ញាចរាចរណ៍', optionC: 'មិនបាច់មានកញ្ចក់', optionD: 'ជែងគ្រប់ពេល', correctOption: 'B' },
+                        { questionText: '៥. កាតព្វកិច្ចពលរដ្ឋចំពោះបរិស្ថានគឺ៖', optionA: 'បោះសំរាម', optionB: 'សម្អាតអនាម័យ និងដាំដើមឈើ', optionC: 'កាប់ព្រៃ', optionD: 'ដុតប្លាស្ទិក', correctOption: 'B' }
+                    ],
+                    q3: [
+                        { questionText: '១. អំណាចរដ្ឋនៅកម្ពុជាបែងចែកជា ៣ អំណាចគឺ៖', optionA: 'នីតិប្បញ្ញត្តិ នីតិប្រតិបត្តិ និងតុលាការ', optionB: 'យោធា ប៉ូលិស', optionC: 'ឃុំ ស្រុក ខេត្ត', optionD: 'សេដ្ឋកិច្ច', correctOption: 'A' },
+                        { questionText: '២. ស្ថាប័នតាក់តែង និងអនុម័តច្បាប់គឺ៖', optionA: 'រាជរដ្ឋាភិបាល', optionB: 'រដ្ឋសភា និងព្រឹទ្ធសភា', optionC: 'តុលាការកំពូល', optionD: 'គជប', correctOption: 'B' },
+                        { questionText: '៣. ប្រព័ន្ធនយោបាយកម្ពុជាគឺ៖', optionA: 'រាជានិយមអាស្រ័យរដ្ឋធម្មនុញ្ញ និងប្រជាធិបតេយ្យសេរីពហុបក្ស', optionB: 'ផ្តាច់ការ', optionC: 'សហព័ន្ធ', optionD: 'ឯកបក្ស', correctOption: 'A' },
+                        { questionText: '៤. ទិវាសិទ្ធិមនុស្សអន្តរជាតិប្រារព្ធនៅថ្ងៃណា?', optionA: '៨ មីនា', optionB: '៩ វិច្ឆិកា', optionC: '១០ ធ្នូ', optionD: '២៣ តុលា', correctOption: 'C' },
+                        { questionText: '៥. ការដោះស្រាយទំនាស់ដោយសន្តិវិធីផ្តល់ផលប្រយោជន៍អ្វី?', optionA: 'បង្កើតសត្រូវ', optionB: 'រក្សាសាមគ្គីភាព ស្ថិរភាព និងសុខដុមរមនា', optionC: 'ខាតពេល', optionD: 'បំផ្លាញសហគមន៍', correctOption: 'B' }
+                    ]
+                },
+                upper: {
+                    formulas: 'ច្បាប់ និងនីតិរដ្ឋ៖ អភិបាលកិច្ចល្អ (តម្លាភាព គណនេយ្យភាព នីតិរដ្ឋ ការចូលរួម) | មាត្រា ១ នៃរដ្ឋធម្មនុញ្ញ | យុត្តិធម៌សង្គម',
+                    writingPrompt: '១. តើធាតុផ្សំសំខាន់ៗទាំង ៤ នៃ «អភិបាលកិច្ចល្អ (Good Governance)» មានអ្វីខ្លះ? ចូរពន្យល់ធាតុផ្សំនីមួយៗដោយលើកឧទាហរណ៍ពីសង្គមជាក់ស្តែង។\n២. វិភាគពីតួនាទីរបស់យុវជនក្នុងការចូលរួមបង្ការអំពើហិង្សា ការប្រើប្រាស់គ្រឿងញៀន និងការកសាងវប្បធម៌សន្តិភាព។',
+                    q1: [
+                        { questionText: '១. «អរិយទ្រព្យ» ទាំង ៧ ប្រការក្នុងព្រះពុទ្ធសាសនារួមមានអ្វីខ្លះ?', optionA: 'មាស ប្រាក់', optionB: 'សទ្ធា សីល ហិរិ ឱត្តប្បៈ ពាហុសច្ចៈ ចាគៈ បញ្ញា', optionC: 'ឡាន ផ្ទះ', optionD: 'អំណាច', correctOption: 'B' },
+                        { questionText: '២. ក្នុងទ្រឹស្តីសីលធម៌វិជ្ជាជីវៈ តើពាក្យ «ក្រមសីលធម៌វិជ្ជាជីវៈ» សំដៅលើអ្វី?', optionA: 'ច្បាប់លេងកីឡា', optionB: 'វិធានប្រតិបត្តិសុចរិតភាព និងទំនួលខុសត្រូវក្នុងការងារ', optionC: 'ការរកប្រាក់ចំណេញ', optionD: 'ការប្រឡង', correctOption: 'B' },
+                        { questionText: '៣. ការអត់ឱន និងការយោគយល់គ្នា (Tolerance) ជួយបង្ការអ្វីក្នុងសង្គមពហុវប្បធម៌?', optionA: 'ការរើសអើង និងជម្លោះសាសនា/ជាតិសាសន៍', optionB: 'ការអប់រំ', optionC: 'ការអភិវឌ្ឍ', optionD: 'ការសិក្សា', correctOption: 'A' },
+                        { questionText: '៤. ទិវាកុមារអន្តរជាតិនៅកម្ពុជាប្រារព្ធនៅថ្ងៃណា?', optionA: '១ មិថុនា', optionB: '៨ មីនា', optionC: '១០ ធ្នូ', optionD: '៩ វិច្ឆិកា', correctOption: 'A' },
+                        { questionText: '៥. គោលការណ៍ «សមភាពយេនឌ័រ» មានន័យដូចម្តេច?', optionA: 'បុរស និងស្ត្រីមានសិទ្ធិ និងឱកាសស្មើគ្នាក្នុងគ្រប់វិស័យ', optionB: 'ស្ត្រីធ្វើការតែក្នុងផ្ទះ', optionC: 'បុរសដឹកនាំតែម្នាក់ឯង', optionD: 'មិនចាំបាច់រៀន', correctOption: 'A' }
+                    ],
+                    q2: [
+                        { questionText: '១. ក្នុងសង្គមនីតិរដ្ឋ (Rule of Law) តើនរណាខ្លះស្ថិតនៅក្រោមច្បាប់?', optionA: 'តែប្រជាពលរដ្ឋធម្មតា', optionB: 'បុគ្គលគ្រប់រូប និងអាជ្ញាធររដ្ឋទាំងអស់ស្មើគ្នាចំពោះមុខច្បាប់', optionC: 'តែអ្នកជំនួញ', optionD: 'តែសិស្ស', correctOption: 'B' },
+                        { questionText: '២. អង្គការកំពូលធានាធម្មនុញ្ញភាពនៃច្បាប់នៅកម្ពុជាគឺ៖', optionA: 'ក្រសួងអប់រំ', optionB: 'ក្រុមប្រឹក្សាធម្មនុញ្ញ', optionC: 'សាលាដំបូង', optionD: 'ធនាគារជាតិ', correctOption: 'B' },
+                        { questionText: '៣. យោងតាមរដ្ឋធម្មនុញ្ញ ព្រះមហាក្សត្រកម្ពុជាទ្រង់គ្រងរាជសម្បត្តិ ប៉ុន្តែទ្រង់មិនធ្វើអ្វី?', optionA: 'មិនកាន់អំណាចនយោបាយប្រតិបត្តិផ្ទាល់', optionB: 'មិនគង់នៅរាជវាំង', optionC: 'មិនចុះព្រះហស្តលេខា', optionD: 'មិនប្រោសព្រះរាជទាន', correctOption: 'A' },
+                        { questionText: '៤. អាណត្តិនៃការបោះឆ្នោតជ្រើសតាំងតំណាងរាស្ត្រ (រដ្ឋសភា) នៅកម្ពុជាមានរយៈពេលប៉ុន្មានឆ្នាំ?', optionA: '៤ ឆ្នាំ', optionB: '៥ ឆ្នាំ', optionC: '៦ ឆ្នាំ', optionD: '៧ ឆ្នាំ', correctOption: 'B' },
+                        { questionText: '៥. អំពើពុករលួយបង្កផលប៉ះពាល់អ្វីខ្លះដល់សង្គម?', optionA: 'បាត់បង់យុត្តិធម៌សង្គម បង្អាក់ការអភិវឌ្ឍ និងធ្វើឱ្យខាតបង់ថវិកាជាតិ', optionB: 'ជំរុញសេដ្ឋកិច្ច', optionC: 'បង្កើនទំនុកចិត្ត', optionD: 'គ្មានផលប៉ះពាល់', correctOption: 'A' }
+                    ],
+                    q3: [
+                        { questionText: '១. ការបោះឆ្នោតក្រុមប្រឹក្សាឃុំ-សង្កាត់ជាផ្នែកនៃគោលនយោបាយអ្វី?', optionA: 'វិមជ្ឈការ និងវិសហមជ្ឈការ (អំណាចថ្នាក់មូលដ្ឋាន)', optionB: 'មជ្ឈការទាំងស្រុង', optionC: 'ការផ្ដាច់ខ្លួន', optionD: 'សង្គមបិទជិត', correctOption: 'A' },
+                        { questionText: '២. ក្នុងប្រជាធិបតេយ្យសេរី ពលរដ្ឋចូលរួមគ្រប់គ្រងប្រទេសតាមរយៈអ្វី?', optionA: 'ការបោះឆ្នោតដោយសេរី ត្រឹមត្រូវ និងយុត្តិធម៌', optionB: 'អំពើហិង្សា', optionC: 'ពាក្យចចាមអារ៉ាម', optionD: 'ការមិនអើពើ', correctOption: 'A' },
+                        { questionText: '៣. ធាតុផ្សំនៃគោលការណ៍ «តម្លាភាព» (Transparency) មានន័យដូចម្តេច?', optionA: 'លាក់បាំងព័ត៌មាន', optionB: 'បើកចំហព័ត៌មាន និងដំណើរការសម្រេចចិត្តដល់សាធារណជន', optionC: 'ប្រើអំណាចផ្ទាល់ខ្លួន', optionD: 'មិនរាយការណ៍', correctOption: 'B' },
+                        { questionText: '៤. គោលដៅអភិវឌ្ឍន៍ប្រកបដោយចីរភាពរបស់ UN (SDGs ២០១៥-២០៣០) មានប៉ុន្មានគោលដៅ?', optionA: '៨ គោលដៅ', optionB: '១០ គោលដៅ', optionC: '១៧ គោលដៅ', optionD: '២៥ គោលដៅ', correctOption: 'C' },
+                        { questionText: '៥. វប្បធម៌សន្តិភាពផ្តើមចេញពីអ្វីជាចម្បង?', optionA: 'ការប្រើកម្លាំងបាយ', optionB: 'ការសន្ទនា ការគោរពសិទ្ធិមនុស្ស និងសច្ចធម៌', optionC: 'ការប្រជែងអាវុធ', optionD: 'ការរើសអើង', correctOption: 'B' }
+                    ]
+                }
+            },
+            'ផែនដីវិទ្យា': {
+                icon: '🌋', prefix: 'earth',
+                symbols: ['°C', '%', 'km', 'N₂', 'O₂', 'CO₂', '→'],
+                noteTitle: '📌 ទិន្នន័យភូគព្ភវិទ្យា បរិយាកាស និងតារាសាស្ត្រ (ស្រេចចិត្ត)',
+                s1: { heading: 'ផ្នែក I៖ ស្រទាប់ផែនដី ថ្ម និងរ៉ែ', pill: 'ភូគព្ភវិទ្យា', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s2: { heading: 'ផ្នែក II៖ បរិយាកាស អាកាសធាតុ និងមហាសមុទ្រ', pill: 'បរិយាកាស', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s3: { heading: 'ផ្នែក III៖ តារាសាស្ត្រ និងបរិស្ថានផែនដី', pill: 'តារាសាស្ត្រ', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s4: { heading: 'ផ្នែក IV៖ សំណួរពន្យល់បាតុភូមិផែនដី និងវិភាគ', pill: 'ពន្យល់បាតុភូមិ', instr: 'ចូរពន្យល់ពីមូលហេតុ និងដំណោះស្រាយចំពោះសំណួរខាងក្រោម៖' },
+                lower: {
+                    formulas: 'ទិន្នន័យភូគព្ភវិទ្យា៖ ស្រទាប់ផែនដី ៣ (សម្បក ម៉ង់តូ ស្នូល) | ខ្យល់៖ N₂ 78%, O₂ 21% | ប្រព័ន្ធព្រះអាទិត្យមានភព ៨',
+                    writingPrompt: '១. ចូររៀបរាប់ពីស្រទាប់ធំៗទាំង ៣ នៃរចនាសម្ព័ន្ធខាងក្នុងផែនដី និងលក្ខណៈនីមួយៗ។\n២. តើអ្វីជា «ផលផ្ទះកញ្ចក់» និងការឡើងកម្ដៅផែនដី? ចូរលើកវិធានការ ៣ យ៉ាងកាត់បន្ថយផលប៉ះពាល់។',
+                    q1: [
+                        { questionText: '១. រចនាសម្ព័ន្ធខាងក្នុងផែនដីចែកជាស្រទាប់ធំៗប៉ុន្មាន?', optionA: '២', optionB: '៣ (សម្បក ម៉ង់តូ ស្នូល)', optionC: '៤', optionD: '១', correctOption: 'B' },
+                        { questionText: '២. ថ្មណាកកើតពីការត្រជាក់នៃម៉ាក់ម៉ា ឬកម្អែភ្នំភ្លើង?', optionA: 'ថ្មកម្ទេចកំណ', optionB: 'ថ្មភ្នំភ្លើង (Igneous)', optionC: 'ថ្មប្រែរូប', optionD: 'ដីខ្សាច់', correctOption: 'B' },
+                        { questionText: '៣. មូលហេតុចម្បងបង្កឱ្យរញ្ជួយដី និងភ្នំភ្លើងគឺ៖', optionA: 'ចលនាផ្លាកតិចតូនិច', optionB: 'ខ្យល់បក់', optionC: 'ជំនោរ', optionD: 'ព្រះច័ន្ទ', correctOption: 'A' },
+                        { questionText: '៤. មាត្រដ្ឋានវាស់កម្រិតរញ្ជួយដីគឺ៖', optionA: 'សេលស្យុស', optionB: 'មាត្រដ្ឋានរិចទ័រ (Richter)', optionC: 'ប៉ាស្កាល់', optionD: 'pH', correctOption: 'B' },
+                        { questionText: '៥. ផូស៊ីលច្រើនរកឃើញក្នុងថ្មប្រភេទណា?', optionA: 'ថ្មក្រានីត', optionB: 'ថ្មកម្ទេចកំណ', optionC: 'បាសាល់', optionD: 'លោហៈ', correctOption: 'B' }
+                    ],
+                    q2: [
+                        { questionText: '១. ស្រទាប់បរិយាកាសនៅជិតដីជាងគេ និងកើតភ្លៀងពពកគឺ៖', optionA: 'ស្ត្រាតូស្វ៊ែរ', optionB: 'ត្រូប៉ូស្វ៊ែរ', optionC: 'មេសូស្វ៊ែរ', optionD: 'ទែម៉ូស្វ៊ែរ', correctOption: 'B' },
+                        { questionText: '២. ស្រទាប់អូហ្សូនស្ថិតនៅស្រទាប់ណា?', optionA: 'ត្រូប៉ូស្វ៊ែរ', optionB: 'ស្ត្រាតូស្វ៊ែរ', optionC: 'ស្នូល', optionD: 'សមុទ្រ', correctOption: 'B' },
+                        { questionText: '៣. ដំណើរវិលវង់ទឹកចាប់ផ្តើមពីរំហួតទឹក រួចកកើតជាអ្វី?', optionA: 'ថ្ម', optionB: 'ពពក និងទឹកភ្លៀង', optionC: 'រ៉ែ', optionD: 'អំបិល', correctOption: 'B' },
+                        { questionText: '៤. ឧស្ម័នចម្បងបង្កផលផ្ទះកញ្ចក់គឺ៖', optionA: 'O₂', optionB: 'CO₂ និងមេតាន', optionC: 'N₂', optionD: 'Ar', correctOption: 'B' },
+                        { questionText: '៥. ឧបករណ៍បារ៉ូម៉ែត្រវាស់អ្វី?', optionA: 'សីតុណ្ហភាព', optionB: 'សម្ពាធបរិយាកាស', optionC: 'ខ្យល់', optionD: 'ទឹកភ្លៀង', correctOption: 'B' }
+                    ],
+                    q3: [
+                        { questionText: '១. ផែនដីជាភពលំដាប់ទីប៉ុន្មានពីព្រះអាទិត្យ?', optionA: 'ទី ២', optionB: 'ទី ៣', optionC: 'ទី ៤', optionD: 'ទី ៥', correctOption: 'B' },
+                        { questionText: '២. ការវិលជុំវិញអ័ក្សខ្លួនឯង ២៤ ម៉ោងបង្កើតឱ្យមានអ្វី?', optionA: 'រដូវ ៤', optionB: 'យប់ និងថ្ងៃ', optionC: 'ចន្ទគ្រាស', optionD: 'រញ្ជួយដី', correctOption: 'B' },
+                        { questionText: '៣. ផែនដីវិលជុំវិញព្រះអាទិត្យប្រើរយៈពេលប៉ុន្មាន?', optionA: '២៨ ថ្ងៃ', optionB: '១៨០ ថ្ងៃ', optionC: '៣៦៥.២៥ ថ្ងៃ', optionD: '៥០០ ថ្ងៃ', correctOption: 'C' },
+                        { questionText: '៤. ភពធំជាងគេក្នុងប្រព័ន្ធព្រះអាទិត្យគឺ៖', optionA: 'ផែនដី', optionB: 'អង្គារ', optionC: 'ព្រហស្បតិ៍ (Jupiter)', optionD: 'សុក្រ', correctOption: 'C' },
+                        { questionText: '៥. ជំនោរសមុទ្របណ្តាលមកពីកម្លាំងទំនាញរបស់អ្វី?', optionA: 'ភពពុធ', optionB: 'ព្រះច័ន្ទ និងព្រះអាទិត្យ', optionC: 'ភ្លៀង', optionD: 'រញ្ជួយដី', correctOption: 'B' }
+                    ]
+                },
+                upper: {
+                    formulas: 'ទិន្នន័យភូគព្ភ និងតារាសាស្ត្រ៖ កាំផែនដី ≈ 6,371 km | 1 AU ≈ 150 លាន km | វដ្តថ្ម (Rock Cycle) | ទ្រឹស្តីបន្សាត់ទ្វីប Wegener',
+                    writingPrompt: '១. ពន្យល់ពីវដ្តកំណើតថ្មទាំង ៣ ប្រភេទ (ថ្មម៉ាក់ម៉ា ថ្មកម្ទេចកំណ ថ្មប្រែរូប) និងទំនាក់ទំនងជាមួយចលនាផ្លាកតិចតូនិច។\n២. ប្រៀបធៀបបាតុភូត «សូរ្យគ្រាស (Solar Eclipse)» និង «ចន្ទគ្រាស (Lunar Eclipse)» រួមទាំងទីតាំងព្រះអាទិត្យ ផែនដី និងព្រះច័ន្ទ។',
+                    q1: [
+                        { questionText: '១. អ្នកវិទ្យាសាស្ត្រណាបានស្នើទ្រឹស្តី «បន្សាត់ទ្វីប» (Continental Drift) ឆ្នាំ១៩១២?', optionA: 'អ៊ីសាក់ ញូតុន', optionB: 'អាល់ហ្វ្រេដ វេហ្គឺនឺរ (Alfred Wegener)', optionC: 'ហ្គាលីលេ', optionD: 'អាញស្តាញ', correctOption: 'B' },
+                        { questionText: '២. ទ្វីបដើមតែមួយដែលផ្គុំទ្វីបទាំងអស់កាលពី ២៥០ លានឆ្នាំមុនមានឈ្មោះថាអ្វី?', optionA: 'ប៉ង់ហ្សេអា (Pangaea)', optionB: 'អឺរ៉ាស៊ី', optionC: 'ហ្គុងដ្វាណា', optionD: 'អាត្លង់ទីស', correctOption: 'A' },
+                        { questionText: '៣. ថ្មម៉ាប (Marble) ជាថ្មប្រែរូបកើតចេញពីថ្មដើមប្រភេទណា?', optionA: 'ថ្មក្រានីត', optionB: 'ថ្មកំបោរ (Limestone)', optionC: 'ថ្មភក់', optionD: 'ដីឥដ្ឋ', correctOption: 'B' },
+                        { questionText: '៤. រ៉ែដែលមានកម្រិតរឹងខ្ពស់ជាងគេបំផុត (១០ លើមាត្រដ្ឋាន Mohs) គឺ៖', optionA: 'មាស', optionB: 'ពេជ្រ (Diamond)', optionC: 'ក្វាត', optionD: 'ដែក', correctOption: 'B' },
+                        { questionText: '៥. ស្នូលខាងក្រៅ (Outer Core) របស់ផែនដីមានភាពរូបជាអ្វី ដែលបង្កើតដែនម៉ាញេទិក?', optionA: 'ឧស្ម័ន', optionB: 'លោហៈរាវ (ដែក និងនីកែល)', optionC: 'ទឹកកក', optionD: 'ថ្មរឹង', correctOption: 'B' }
+                    ],
+                    q2: [
+                        { questionText: '១. ចរន្តទឹកសមុទ្រក្តៅជួយធ្វើឱ្យតំបន់ឆ្នេរសមុទ្រក្បែរនោះមានលក្ខណៈដូចម្តេច?', optionA: 'ត្រជាក់កក', optionB: 'ក្តៅឧណ្ហៗ និងមានសំណើម', optionC: 'រាំងស្ងួត', optionD: 'គ្មានខ្យល់', correctOption: 'B' },
+                        { questionText: '២. បាតុភូត El Niño បង្កផលប៉ះពាល់អ្វីជាទូទៅនៅតំបន់អាស៊ីអាគ្នេយ៍?', optionA: 'ព្រិលធ្លាក់ខ្លាំង', optionB: 'រាំងស្ងួត និងកម្តៅកើនឡើងខុសប្រក្រតី', optionC: 'ទឹកកករលាយ', optionD: 'គ្មានឥទ្ធិពល', correctOption: 'B' },
+                        { questionText: '៣. ភ្លៀងអាស៊ីត (Acid Rain) កើតឡើងដោយសារការលាយបញ្ចូលក្នុងខ្យល់នៃឧស្ម័នណា?', optionA: 'O₂ និង H₂', optionB: 'SO₂ និង NOₓ', optionC: 'He និង Ne', optionD: 'N₂', correctOption: 'B' },
+                        { questionText: '៤. កំហាប់ប្រៃជាមធ្យមនៃទឹកមហាសមុទ្រប្រមាណប៉ុន្មានក្រាមក្នុង ១ លីត្រទឹក?', optionA: '5 g/L', optionB: '35 g/L (3.5%)', optionC: '100 g/L', optionD: '200 g/L', correctOption: 'B' },
+                        { questionText: '៥. សំឡេងរន្ទះ និងផ្លេកបន្ទោរកើតឡើងក្នុងពពកប្រភេទណា?', optionA: 'ស៊ីរុស', optionB: 'ពពកព្យុះ Cumulonimbus', optionC: 'ស្ត្រាទុស', optionD: 'អ័ព្ទ', correctOption: 'B' }
+                    ],
+                    q3: [
+                        { questionText: '១. សូរ្យគ្រាស (Solar Eclipse) កើតឡើងនៅពេលណា?', optionA: 'ផែនដីនៅចន្លោះព្រះអាទិត្យ និងព្រះច័ន្ទ', optionB: 'ព្រះច័ន្ទនៅចន្លោះព្រះអាទិត្យ និងផែនដី', optionC: 'ព្រះអាទិត្យនៅចន្លោះ', optionD: 'ថ្ងៃពេញបូណ៌មី', correctOption: 'B' },
+                        { questionText: '២. ពន្លឺពីព្រះអាទិត្យធ្វើដំណើរមកដល់ផែនដីប្រើរយៈពេលប្រហែលប៉ុន្មាន?', optionA: '១ វិនាទី', optionB: '៨ នាទី ២០ វិនាទី', optionC: '២៤ ម៉ោង', optionD: '១ ឆ្នាំ', correctOption: 'B' },
+                        { questionText: '៣. ភពទាំង ៤ នៅខាងក្នុង (ភពថ្ម) នៃប្រព័ន្ធព្រះអាទិត្យគឺ៖', optionA: 'ពុធ សុក្រ ផែនដី អង្គារ', optionB: 'ព្រហស្បតិ៍ សៅរ៍ អ៊ុយរ៉ានុស ណិបទូន', optionC: 'ភ្លុយតុង', optionD: 'ដួងច័ន្ទ', correctOption: 'A' },
+                        { questionText: '៤. កាឡាក់ស៊ីដែលប្រព័ន្ធព្រះអាទិត្យយើងស្ថិតនៅមានឈ្មោះអ្វី?', optionA: 'អាន់ដ្រូមេដា', optionB: 'គន្លងដំរីស (Milky Way)', optionC: 'ណេប៊ុយឡា', optionD: 'អូរីយ៉ុង', correctOption: 'B' },
+                        { questionText: '៥. អង្គរតារាសាស្ត្រ (1 AU) វាស់ចម្ងាយពីណាទៅណា?', optionA: 'ផែនដី ទៅព្រះច័ន្ទ', optionB: 'ចម្ងាយមធ្យមពីផែនដី ទៅព្រះអាទិត្យ (~150 លាន km)', optionC: 'ទៅផ្កាយជិតបំផុត', optionD: 'បរិមាត្រផែនដី', correctOption: 'B' }
+                    ]
+                }
+            },
+            'កុំព្យូទ័រ': {
+                icon: '💻', prefix: 'it',
+                symbols: ['=', '<>', '<=', '>=', '(', ')', '{', '}', ';', '&&', '||', '</>', '→'],
+                noteTitle: '📌 រូបមន្ត Excel / Syntax កូដ / មូលដ្ឋានទិន្នន័យជំនួយ (ស្រេចចិត្ត)',
+                s1: { heading: 'ផ្នែក I៖ ផ្នែករឹង (Hardware) និងប្រព័ន្ធប្រតិបត្តិការ', pill: 'Hardware/OS', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s2: { heading: 'ផ្នែក II៖ កម្មវិធីការិយាល័យ (Word, Excel) និងទិន្នន័យ', pill: 'Office/Data', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s3: { heading: 'ផ្នែក III៖ បណ្តាញ Internet, HTML/កូដ និងសុវត្ថិភាព', pill: 'Web/Security', instr: 'ចូរជ្រើសរើសចម្លើយ A, B, C ឬ D ដែលត្រឹមត្រូវបំផុត៖' },
+                s4: { heading: 'ផ្នែក IV៖ លំហាត់អនុវត្ត រូបមន្ត Excel និងសរសេរកូដ', pill: 'អនុវត្ត/កូដ', instr: 'ចូរឆ្លើយសំណួរអនុវត្ត និងសរសេររូបមន្ត/កូដខាងក្រោម៖' },
+                lower: {
+                    formulas: 'មូលដ្ឋានគ្រឹះ៖ 1 Byte = 8 bits | 1 KB = 1024 Bytes | Excel: =SUM(A1:A10), =AVERAGE(A1:A10), =IF(A1>=50,"Pass","Fail")',
+                    writingPrompt: '១. ក្នុង MS Excel គេមានពិន្ទុសិស្សក្នុង B2:B6 ៖\n   ក) សរសេររូបមន្តបូកសរុប និងមធ្យមភាគ។\n   ខ) សរសេររូបមន្ត IF បង្ហាញ «ជាប់» បើ C2>=50 ឬ «ធ្លាក់» បើតិចជាង 50 ។\n២. ចូរបំប្លែងលេខគោលដប់ 25 ទៅជា Binary និងរៀបរាប់វិធីការពារសុវត្ថិភាពគណនី ៣ ចំណុច។',
+                    q1: [
+                        { questionText: '១. ឧបករណ៍ណាជា «ខួរក្បាល» គណនា និងដំណើរការទិន្នន័យ?', optionA: 'Monitor', optionB: 'CPU', optionC: 'Printer', optionD: 'Mouse', correctOption: 'B' },
+                        { questionText: '២. 1 Byte ស្មើនឹងប៉ុន្មាន bits?', optionA: '4 bits', optionB: '8 bits', optionC: '16 bits', optionD: '32 bits', correctOption: 'B' },
+                        { questionText: '៣. អង្គចងចាំណាបាត់បង់ទិន្នន័យពេលបិទភ្លើង?', optionA: 'SSD/HDD', optionB: 'RAM', optionC: 'USB', optionD: 'CD', correctOption: 'B' },
+                        { questionText: '៤. ឧបករណ៍ណាជា Output Device?', optionA: 'Keyboard', optionB: 'Scanner', optionC: 'Printer និង Monitor', optionD: 'Mic', correctOption: 'C' },
+                        { questionText: '៥. Windows, macOS និង Linux ជាកម្មវិធីប្រភេទណា?', optionA: 'រចនារូប', optionB: 'ប្រព័ន្ធប្រតិបត្តិការ (OS)', optionC: 'ហ្គេម', optionD: 'Hardware', correctOption: 'B' }
+                    ],
+                    q2: [
+                        { questionText: '១. ក្នុង Excel រូបមន្តត្រូវចាប់ផ្តើមដោយសញ្ញាអ្វី?', optionA: '+', optionB: '=', optionC: '$', optionD: '#', correctOption: 'B' },
+                        { questionText: '២. Shortcut សម្រាប់ Copy និង Paste លើ Windows គឺ៖', optionA: 'Ctrl+X, Ctrl+Z', optionB: 'Ctrl+C, Ctrl+V', optionC: 'Ctrl+S, Ctrl+P', optionD: 'Ctrl+A, Ctrl+F', correctOption: 'B' },
+                        { questionText: '៣. អនុគមន៍ Excel រកតម្លៃធំបំផុតក្នុង A1:A10 គឺ៖', optionA: '=MIN(A1:A10)', optionB: '=SUM(A1:A10)', optionC: '=MAX(A1:A10)', optionD: '=COUNT(A1:A10)', correctOption: 'C' },
+                        { questionText: '៤. ឯកសារ Microsoft Word ថ្មីមានកន្ទុយ (Extension) អ្វី?', optionA: '.xlsx', optionB: '.docx', optionC: '.pptx', optionD: '.mp3', correctOption: 'B' },
+                        { questionText: '៥. លេខគោលដប់ «10» សរសេរជា Binary បានអ្វី?', optionA: '1001', optionB: '1010', optionC: '1100', optionD: '0101', correctOption: 'B' }
+                    ],
+                    q3: [
+                        { questionText: '១. «URL» ក្នុងអ៊ីនធឺណិតតំណាងឱ្យអ្វី?', optionA: 'អាសយដ្ឋានគេហទំព័រ', optionB: 'ព្រីនធ័រ', optionC: 'ខ្សែភ្លើង', optionD: 'Antivirus', correctOption: 'A' },
+                        { questionText: '២. ស្លាក HTML ណាប្រើបង្កើតតំណភ្ជាប់ (Link)?', optionA: '<p>', optionB: '<img>', optionC: '<a>', optionD: '<table>', correctOption: 'C' },
+                        { questionText: '៣. ប្រូតូកូលណាអ៊ិនគ្រីបទិន្នន័យលើគេហទំព័រឱ្យមានសុវត្ថិភាព?', optionA: 'HTTP', optionB: 'HTTPS', optionC: 'FTP', optionD: 'SMTP', correctOption: 'B' },
+                        { questionText: '៤. ការបោកប្រាស់តាមសារ/អ៊ីមែលដើម្បីលួច Password ហៅថាអ្វី?', optionA: 'Firewall', optionB: 'Phishing', optionC: 'Backup', optionD: 'Update', correctOption: 'B' },
+                        { questionText: '៥. ពាក្យសម្ងាត់សុវត្ថិភាពខ្ពស់គួរមានលក្ខណៈដូចម្តេច?', optionA: 'ថ្ងៃកំណើត', optionB: '123456', optionC: 'វែង លាយអក្សរធំ-តូច លេខ និងនិមិត្តសញ្ញា', optionD: 'ឈ្មោះខ្លួនឯង', correctOption: 'C' }
+                    ]
+                },
+                upper: {
+                    formulas: 'ជំនួយសរសេរកូដ និង Database៖ HTML/CSS/JS | Python/C++ Loop: for i in range(n) | SQL: SELECT ... FROM ... WHERE ... | 2FA & Cybersecurity',
+                    writingPrompt: '១. សរសេរកូដ HTML + CSS សាមញ្ញមួយដើម្បីបង្កើតតារាងពិន្ទុសិស្ស (ឈ្មោះ មុខវិជ្ជា ពិន្ទុ) ដែលមាន ៣ ជួរ។\n២. សរសេរអាល់ហ្គោរីត ឬកូដ Python/C++ ដើម្បីគណនាផលបូកចំនួនគូពី 2 ដល់ 100 និងពន្យល់ពីការការពារសុវត្ថិភាពតាមរយៈ Two-Factor Authentication (2FA)។',
+                    q1: [
+                        { questionText: '១. ប្រព័ន្ធលេខគោល១៦ (Hexadecimal) ប្រើតួអក្សរអ្វីខ្លះបន្ថែមលើលេខ 0-9?', optionA: 'X, Y, Z', optionB: 'A, B, C, D, E, F (តំណាង 10-15)', optionC: 'G, H, I', optionD: 'K, L, M', correctOption: 'B' },
+                        { questionText: '២. ច្រកឡូជីខល (Logic Gate) «AND» ឱ្យលទ្ធផល 1 លុះត្រាតែ៖', optionA: 'Input យ៉ាងតិច ១ ស្មើ 1', optionB: 'Input ទាំងអស់ស្មើ 1', optionC: 'Input ទាំងអស់ស្មើ 0', optionD: 'មិនអាស្រ័យលើ Input', correctOption: 'B' },
+                        { questionText: '៣. ល្បឿននាឡិកា CPU វាស់ដោយខ្នាតអ្វី?', optionA: 'MB', optionB: 'GHz (Gigahertz)', optionC: 'bps', optionD: 'Pixels', correctOption: 'B' },
+                        { questionText: '៤. BIOS / UEFI មានមុខងារអ្វីពេលបើកកុំព្យូទ័រ?', optionA: 'កែរូបភាព', optionB: 'ត្រួតពិនិត្យផ្នែករឹង (POST) និងចាប់ផ្តើមប្រព័ន្ធប្រតិបត្តិការ', optionC: 'រក្សាទុកវីដេអូ', optionD: 'ភ្ជាប់ព្រីនធ័រតែម្យ៉ាង', correctOption: 'B' },
+                        { questionText: '៥. តើ SSD លឿនជាង HDD បែបបុរាណដោយសារអ្វី?', optionA: 'មានឌីសវិលលឿន', optionB: 'ប្រើបន្ទះឈីប Flash Memory គ្មានផ្នែកមេកានិកវិល', optionC: 'ធំជាង', optionD: 'ប្រើខ្សែ VGA', correctOption: 'B' }
+                    ],
+                    q2: [
+                        { questionText: '១. ក្នុងមូលដ្ឋានទិន្នន័យ (Database) តើ «Primary Key» មានលក្ខណៈអ្វី?', optionA: 'អាចស្ទួនគ្នាបាន', optionB: 'កំណត់អត្តសញ្ញាណជួរដេកនីមួយៗដោយមិនស្ទួន (Unique & Not Null)', optionC: 'រក្សាទុកតែអក្សរ', optionD: 'ជា Password', correctOption: 'B' },
+                        { questionText: '២. ពាក្យបញ្ជា SQL ណាសម្រាប់ទាញយកទិន្នន័យពីតារាង «students»?', optionA: 'GET * FROM students;', optionB: 'SELECT * FROM students;', optionC: 'OPEN students;', optionD: 'FETCH ALL students;', correctOption: 'B' },
+                        { questionText: '៣. ក្នុង Excel អនុគមន៍ =COUNTIF(B2:B20, ">=50") ធ្វើការងារអ្វី?', optionA: 'បូកលេខ', optionB: 'រាប់ចំនួនប្រអប់ដែលមានតម្លៃធំជាង ឬស្មើ 50', optionC: 'រកមធ្យមភាគ', optionD: 'តម្រៀបលេខ', correctOption: 'B' },
+                        { questionText: '៤. ប្រភេទទិន្នន័យ «Boolean» រក្សាទុកតម្លៃអ្វី?', optionA: 'លេខទសភាគ', optionB: 'True ឬ False', optionC: 'អត្ថបទវែង', optionD: 'កាលបរិច្ឆេទ', correctOption: 'B' },
+                        { questionText: '៥. ក្នុង Python រចនាសម្ព័ន្ធទិន្នន័យណាមិនអាចកែតម្លៃបានក្រោយពេលបង្កើត (Immutable)?', optionA: 'List [1,2]', optionB: 'Tuple (1,2)', optionC: 'Dictionary {"a":1}', optionD: 'Set {1,2}', correctOption: 'B' }
+                    ],
+                    q3: [
+                        { questionText: '១. អាសយដ្ឋាន IPv4 មានប្រវែងប៉ុន្មាន bits (ឧ. 192.168.1.1)?', optionA: '16 bits', optionB: '32 bits (4 bytes)', optionC: '64 bits', optionD: '128 bits', correctOption: 'B' },
+                        { questionText: '២. ម៉ាស៊ីនបម្រើ DNS (Domain Name System) មានតួនាទីអ្វី?', optionA: 'បកប្រែឈ្មោះ Domain (ឧ. google.com) ទៅជា IP Address', optionB: 'កំចាត់មេរោគ', optionC: 'រក្សាទុកអ៊ីមែល', optionD: 'ពន្លឿន CPU', correctOption: 'A' },
+                        { questionText: '៣. ក្នុង CSS លក្ខណៈសម្បត្តិណាសម្រាប់ប្តូរពណ៌អក្សរ?', optionA: 'font-color', optionB: 'color', optionC: 'text-background', optionD: 'bg-color', correctOption: 'B' },
+                        { questionText: '៤. កូដ JavaScript៖ console.log(typeof [1,2,3]) បង្ហាញលទ្ធផលអ្វី?', optionA: 'array', optionB: 'object', optionC: 'list', optionD: 'number', correctOption: 'B' },
+                        { questionText: '៥. ការពារទិន្នន័យដោយ «Two-Factor Authentication (2FA)» ត្រូវការអ្វី?', optionA: 'Password តែម្យ៉ាង', optionB: 'Password + លេខកូដផ្ទៀងផ្ទាត់ទី២ (OTP/App)', optionC: 'ឈ្មោះអ្នកប្រើតែម្យ៉ាង', optionD: 'បិទអ៊ីនធឺណិត', correctOption: 'B' }
+                    ]
+                }
+            }
+        };
+
+        let lastFocusedStdField = null;
+        document.addEventListener('focusin', (e) => {
+            if (e.target && e.target.closest('#section-generic-std-container') && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') && e.target.type !== 'number' && e.target.type !== 'checkbox' && e.target.type !== 'radio' && e.target.type !== 'file') {
+                lastFocusedStdField = e.target;
+            }
+        });
+
+        function getActiveStdConfig() {
+            const subj = document.getElementById('subjectSelect').value;
+            return STANDARD_SUBJECT_CONFIGS[subj] ? { subj, cfg: STANDARD_SUBJECT_CONFIGS[subj] } : null;
+        }
+
+        function insertStdSymbol(sym) {
+            const target = lastFocusedStdField || document.getElementById('stdWritingPrompt');
+            if (!target || target.disabled) return;
+            const start = target.selectionStart != null ? target.selectionStart : target.value.length;
+            const end = target.selectionEnd != null ? target.selectionEnd : target.value.length;
+            target.value = target.value.slice(0, start) + sym + target.value.slice(end);
+            target.focus();
+            const pos = start + sym.length;
+            if (target.setSelectionRange) target.setSelectionRange(pos, pos);
+        }
+
+        function applyStdConfigUI(subject) {
+            const cfg = STANDARD_SUBJECT_CONFIGS[subject];
+            if (!cfg) return;
+            const btnTxt = document.getElementById('btnLoadStdSampleText');
+            if (btnTxt) btnTxt.textContent = '📥 ផ្ទុកគំរូវិញ្ញាសា' + subject + 'ស្តង់ដា';
+            const bTitle = document.getElementById('stdBannerTitle');
+            if (bTitle) bTitle.textContent = cfg.icon + ' គម្រូវិញ្ញាសាស្តង់ដា' + subject + ' (ពិន្ទុសរុប):';
+            const nTitle = document.getElementById('stdNoteLabel');
+            if (nTitle) nTitle.textContent = cfg.noteTitle;
+
+            const toolbar = document.getElementById('stdSymbolToolbar');
+            if (toolbar) {
+                toolbar.innerHTML = `<span style="font-size:0.85rem; font-weight:700; color:#334155; margin-right:4px;">${cfg.icon} និមិត្តសញ្ញា & ពាក្យគន្លឹះ (ចុចដើម្បីបញ្ចូល):</span>` +
+                    cfg.symbols.map(s => `<button type="button" class="std-sym-btn" onclick="insertStdSymbol('${escapeHtml(s)}')" style="padding:3px 9px; border-radius:6px; border:1px solid #cbd5e1; background:#fff; font-weight:bold; cursor:pointer;">${escapeHtml(s)}</button>`).join('');
+            }
+
+            [1, 2, 3, 4].forEach(num => {
+                const sec = cfg['s' + num];
+                const h = document.getElementById('stdSec' + num + 'Heading');
+                if (h) h.textContent = sec.heading;
+                const tEl = document.getElementById('stdSec' + num + 'Title');
+                if (tEl && !tEl.value) tEl.value = sec.heading.replace(/^ផ្នែក\s*/, '') + '៖';
+                const iEl = document.getElementById('stdSec' + num + 'Instruction');
+                if (iEl && !iEl.value) iEl.value = sec.instr;
+            });
+            renderExamGallery('std');
+            updateStdSummaryBadges();
+        }
+
+        function toggleStdWritingSection() {
+            const enabled = document.getElementById('stdWritingEnabled').checked;
+            document.getElementById('stdWritingContent').style.display = enabled ? 'block' : 'none';
+            updateStdSummaryBadges();
+        }
+
+        function addStdQuestion(secNum, qData = null) {
+            const active = getActiveStdConfig();
+            const prefix = active ? active.cfg.prefix : 'std';
+            const skillType = prefix + '_sec' + secNum;
+            const c = document.getElementById('stdSec' + secNum + 'Container');
+            if (c) {
+                c.appendChild(createQuestionCard(skillType, qData, c.children.length + 1));
+                updateStdSummaryBadges();
+            }
+        }
+
+        function initStdContainers() {
+            const active = getActiveStdConfig();
+            if (!active) return;
+            applyStdConfigUI(active.subj);
+            [1, 2, 3].forEach(secNum => {
+                const c = document.getElementById('stdSec' + secNum + 'Container');
+                if (c && c.children.length === 0) {
+                    for (let i = 1; i <= 5; i++) addStdQuestion(secNum);
+                }
+            });
+            updateStdSummaryBadges();
+        }
+
+        function updateStdSummaryBadges() {
+            const active = getActiveStdConfig();
+            const cfg = active ? active.cfg : null;
+            const p1 = parseFloat((document.getElementById('stdSec1MaxPoints') || {}).value) || 0;
+            const p2 = parseFloat((document.getElementById('stdSec2MaxPoints') || {}).value) || 0;
+            const p3 = parseFloat((document.getElementById('stdSec3MaxPoints') || {}).value) || 0;
+            const isWOpen = (document.getElementById('stdWritingEnabled') || {}).checked;
+            const p4 = isWOpen ? (parseFloat((document.getElementById('stdWritingMaxPoints') || {}).value) || 0) : 0;
+
+            const total = p1 + p2 + p3 + p4;
+            const totalEl = document.getElementById('stdTotalPointsDisplay');
+            if (totalEl) totalEl.textContent = Number.isInteger(total) ? total : total.toFixed(1);
+
+            [{ num: 1, pts: p1 }, { num: 2, pts: p2 }, { num: 3, pts: p3 }].forEach(({ num, pts }) => {
+                const cnt = document.querySelectorAll('#stdSec' + num + 'Container .question-card').length;
+                const perQ = cnt > 0 ? (pts / cnt) : 0;
+                const perStr = Number.isInteger(perQ) ? perQ : perQ.toFixed(1);
+                const el = document.getElementById('stdBadgeSec' + num + 'Summary');
+                if (el) el.textContent = cnt + ' សំណួរ (' + perStr + ' ពិន្ទុ/សំណួរ)';
+                const pill = document.getElementById('stdBadgeSec' + num + 'Pill');
+                if (pill && cfg) pill.textContent = cfg['s' + num].pill + '៖ ' + pts + ' ពិន្ទុ';
+            });
+            const p4El = document.getElementById('stdBadgeSec4Pill');
+            if (p4El && cfg) p4El.textContent = isWOpen ? (cfg.s4.pill + '៖ ' + p4 + ' ពិន្ទុ') : (cfg.s4.pill + '៖ បិទ (0)');
+        }
+
+        function loadStdSampleChooser() {
+            const active = getActiveStdConfig();
+            if (!active) return;
+            Swal.fire({
+                title: `📥 ជ្រើសរើសគម្រូវិញ្ញាសា${active.subj}ស្តង់ដា (MoEYS)`,
+                html: `<div style="text-align: left; font-size: 0.95rem; line-height: 1.6;">
+                    <p style="margin-top: 0; color: #475569;">សូមជ្រើសរើសកម្រិតថ្នាក់សម្រាប់គម្រូវិញ្ញាសា${active.subj} (អាច Upload រូបភាព និងកែសម្រួលលំហាត់តាមក្រោយបាន)៖</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button type="button" onclick="Swal.close(); applyStdSample('lower');" style="text-align: left; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #4338ca; background: #eef2ff; color: #1e1b4b; cursor: pointer; font-family: inherit;">
+                            <div style="font-weight: 700; font-size: 1rem;">📘 គំរូទី ១៖ អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩)</div>
+                            <div style="font-size: 0.85rem; color: #334155;">ពិន្ទុសរុប ៧០ ពិន្ទុ (ផ្នែក I: ១៥ + ផ្នែក II: ១៥ + ផ្នែក III: ១៥ + ផ្នែក IV: ២៥)</div>
+                        </button>
+                        <button type="button" onclick="Swal.close(); applyStdSample('upper');" style="text-align: left; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #047857; background: #ecfdf5; color: #065f46; cursor: pointer; font-family: inherit;">
+                            <div style="font-weight: 700; font-size: 1rem;">📗 គំរូទី ២៖ វិទ្យាល័យ / បាក់ឌុប (ថ្នាក់ទី ១០-១២)</div>
+                            <div style="font-size: 0.85rem; color: #334155;">ពិន្ទុសរុប ១០០ ពិន្ទុ (ផ្នែក I: ២០ + ផ្នែក II: ២០ + ផ្នែក III: ២០ + ផ្នែក IV: ៤០)</div>
+                        </button>
+                    </div>
+                </div>`,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'បោះបង់',
+                width: '580px'
+            });
+        }
+
+        function applyStdSample(level) {
+            const active = getActiveStdConfig();
+            if (!active) return;
+            const { subj, cfg } = active;
+            document.getElementById('currentExamId').value = '';
+            onSubjectChanged();
+            if (getSelectedClasses().length === 0) toggleAllExamClasses(true);
+
+            const isUpper = (level === 'upper');
+            const p1 = isUpper ? 20 : 15;
+            const p2 = isUpper ? 20 : 15;
+            const p3 = isUpper ? 20 : 15;
+            const p4 = isUpper ? 40 : 25;
+            const sample = isUpper ? cfg.upper : cfg.lower;
+
+            document.getElementById('stdFormulaNote').value = sample.formulas || '';
+            [1, 2, 3].forEach(num => {
+                const sec = cfg['s' + num];
+                const pts = num === 1 ? p1 : (num === 2 ? p2 : p3);
+                document.getElementById('stdSec' + num + 'Title').value = sec.heading.replace(/^ផ្នែក\s*/, '') + '៖';
+                document.getElementById('stdSec' + num + 'Instruction').value = sec.instr + ' (' + pts + ' ពិន្ទុ)';
+                document.getElementById('stdSec' + num + 'MaxPoints').value = pts;
+                const c = document.getElementById('stdSec' + num + 'Container');
+                c.innerHTML = '';
+                (sample['q' + num] || []).forEach(q => addStdQuestion(num, q));
+            });
+
+            document.getElementById('stdWritingEnabled').checked = true;
+            document.getElementById('stdWritingContent').style.display = 'block';
+            document.getElementById('stdSec4Title').value = cfg.s4.heading.replace(/^ផ្នែក\s*/, '') + '៖';
+            document.getElementById('stdSec4Instruction').value = cfg.s4.instr + ' (' + p4 + ' ពិន្ទុ)';
+            document.getElementById('stdWritingPrompt').value = sample.writingPrompt || '';
+            document.getElementById('stdWritingMaxPoints').value = p4;
+
+            updateStdSummaryBadges();
+            enableEditMode();
+            document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
+
+            Swal.fire({
+                icon: 'success',
+                title: isUpper ? `បានផ្ទុកគំរូវិញ្ញាសា${subj} (ថ្នាក់ទី ១០-១២)!` : `បានផ្ទុកគំរូវិញ្ញាសា${subj} (ថ្នាក់ទី ៧-៩)!`,
+                text: 'លោកគ្រូ-អ្នកគ្រូអាច Upload រូបភាព កែសម្រួលសំណួរ ឬចុច «💾 រក្សាទុកវិញ្ញាសា» បានភ្លាមៗ។',
+                timer: 2400,
+                showConfirmButton: false
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function populateStdExamData(exam, questions) {
+            const subj = exam.subjectName;
+            const cfg = STANDARD_SUBJECT_CONFIGS[subj];
+            if (!cfg) return;
+            applyStdConfigUI(subj);
+            document.getElementById('stdFormulaNote').value = exam.readingPassage || '';
+            loadExamGalleryFromJson('std', exam.examImagesJson);
+
+            [1, 2, 3].forEach(num => {
+                const sec = cfg['s' + num];
+                document.getElementById('stdSec' + num + 'Title').value = exam['section' + num + 'Title'] || (sec.heading.replace(/^ផ្នែក\s*/, '') + '៖');
+                document.getElementById('stdSec' + num + 'Instruction').value = exam['section' + num + 'Instruction'] || sec.instr;
+                document.getElementById('stdSec' + num + 'MaxPoints').value = exam['section' + num + 'MaxPoints'] != null ? exam['section' + num + 'MaxPoints'] : 15;
+            });
+
+            const hasWriting = !!(exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            document.getElementById('stdWritingEnabled').checked = hasWriting;
+            document.getElementById('stdWritingContent').style.display = hasWriting ? 'block' : 'none';
+            document.getElementById('stdSec4Title').value = exam.section4Title || (cfg.s4.heading.replace(/^ផ្នែក\s*/, '') + '៖');
+            document.getElementById('stdSec4Instruction').value = exam.section4Instruction || cfg.s4.instr;
+            document.getElementById('stdWritingPrompt').value = exam.writingPrompt || '';
+            document.getElementById('stdWritingMaxPoints').value = exam.writingMaxPoints != null ? exam.writingMaxPoints : 25;
+
+            const q1 = questions.filter(q => q.skillType === cfg.prefix + '_sec1');
+            const q2 = questions.filter(q => q.skillType === cfg.prefix + '_sec2');
+            const q3 = questions.filter(q => q.skillType === cfg.prefix + '_sec3');
+            const legacyGeneral = questions.filter(q => q.skillType === 'general' || !q.skillType);
+
+            [
+                { num: 1, arr: q1.length > 0 ? q1 : (legacyGeneral.length > 0 && q2.length === 0 ? legacyGeneral : []) },
+                { num: 2, arr: q2 },
+                { num: 3, arr: q3 }
+            ].forEach(({ num, arr }) => {
+                const c = document.getElementById('stdSec' + num + 'Container');
+                c.innerHTML = '';
+                if (arr.length > 0) arr.forEach(q => addStdQuestion(num, q));
+                else for (let i = 1; i <= 5; i++) addStdQuestion(num);
+            });
+            updateStdSummaryBadges();
+        }
+
+        function printStdExamSheet() {
+            const active = getActiveStdConfig();
+            const container = document.getElementById('khPrintOfficialContainer');
+            if (!active || !container) return;
+            const { subj, cfg } = active;
+            const month = document.getElementById('monthSelect').value;
+            const classes = getSelectedClasses().join(', ') || '...................';
+            const totalPts = document.getElementById('stdTotalPointsDisplay').textContent || '70';
+            const formulas = document.getElementById('stdFormulaNote').value || '';
+            const q1 = collectSectionQuestions('stdSec1Container', cfg.prefix + '_sec1');
+            const q2 = collectSectionQuestions('stdSec2Container', cfg.prefix + '_sec2');
+            const q3 = collectSectionQuestions('stdSec3Container', cfg.prefix + '_sec3');
+            const wOpen = document.getElementById('stdWritingEnabled').checked;
+
+            const renderPrintQs = (arr) => arr.map((q, idx) =>
+                '<div class="kh-print-q">' +
+                    '<div><b>' + escapeHtml(q.questionText || ((idx + 1) + '.')) + '</b></div>' +
+                    (q.imageData ? '<div style="margin:4px 0;"><img src="' + q.imageData + '" style="max-height:150px; max-width:95%; border:1px solid #cbd5e1;" alt="Figure"></div>' : '') +
+                    '<div class="kh-print-opts">' +
+                        '<div>ក. ' + escapeHtml(q.optionA) + '</div>' +
+                        '<div>ខ. ' + escapeHtml(q.optionB) + '</div>' +
+                        '<div>គ. ' + escapeHtml(q.optionC) + '</div>' +
+                        '<div>ឃ. ' + escapeHtml(q.optionD) + '</div>' +
+                    '</div>' +
+                '</div>'
+            ).join('');
+
+            const meta = window.__EXAM_META__ || {};
+            container.innerHTML =
+                '<div class="kh-print-header">' +
+                    '<div>' +
+                        '<div style="font-weight:bold;">ក្រសួងអប់រំ យុវជន និងកីឡា</div>' +
+                        '<div style="font-weight:bold;">' + escapeHtml(meta.schoolName || 'សាលារៀន') + '</div>' +
+                        '<div>វិញ្ញាសា៖ <b>' + escapeHtml(subj) + '</b> | ថ្នាក់៖ <b>' + escapeHtml(classes) + '</b></div>' +
+                        '<div>សម័យប្រឡង៖ <b>' + escapeHtml(month) + '</b> (' + escapeHtml(meta.academicYear || '២០២៦-២០២៧') + ')</div>' +
+                    '</div>' +
+                    '<div style="text-align:center;">' +
+                        '<div style="font-weight:bold; font-size:11.5pt;">ព្រះរាជាណាចក្រកម្ពុជា</div>' +
+                        '<div style="font-weight:bold;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>' +
+                        '<div style="margin-top:6px;">ពិន្ទុសរុប៖ <b>' + escapeHtml(totalPts) + ' ពិន្ទុ</b></div>' +
+                        '<div>រយៈពេល៖ ៩០ នាទី</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="text-align:center; font-weight:bold; font-size:12pt; border-top:1.5px solid #000; border-bottom:1.5px solid #000; padding:4px 0; margin-bottom:8px;">វិញ្ញាសាប្រឡងមុខវិជ្ជា' + escapeHtml(subj) + ' (ទម្រង់ស្តង់ដា)</div>' +
+                (formulas.trim() ? '<div class="kh-print-passage">' + escapeHtml(formulas) + '</div>' : '') +
+                renderPrintGalleryHtml(examGalleryStore.std) +
+                (q1.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('stdSec1Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('stdSec1Instruction').value) + '</i></div>' + renderPrintQs(q1) : '') +
+                (q2.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('stdSec2Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('stdSec2Instruction').value) + '</i></div>' + renderPrintQs(q2) : '') +
+                (q3.length > 0 ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('stdSec3Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('stdSec3Instruction').value) + '</i></div>' + renderPrintQs(q3) : '') +
+                (wOpen && document.getElementById('stdWritingPrompt').value.trim() ? '<div class="kh-print-section-title">' + escapeHtml(document.getElementById('stdSec4Title').value) + '</div><div><i>' + escapeHtml(document.getElementById('stdSec4Instruction').value) + '</i></div><div style="margin-top:4px; white-space:pre-wrap; font-weight:bold;">' + escapeHtml(document.getElementById('stdWritingPrompt').value) + '</div>' : '') +
+                '<div style="display:flex; justify-content:space-between; margin-top:22px; page-break-inside:avoid;">' +
+                    '<div style="text-align:center;"><div>បានឃើញ និងឯកភាព</div><div><b>នាយកសាលា</b></div></div>' +
+                    '<div style="text-align:center;"><div>គ្រូមុខវិជ្ជា' + escapeHtml(subj) + '</div><div><b>' + escapeHtml(meta.teacherName || '') + '</b></div></div>' +
+                '</div>';
+            window.print();
+        }
+
         function loadMoeyseGrade11Sample() {
             initEnglishContainers();
             document.getElementById('currentExamId').value = '';
@@ -2608,6 +3562,7 @@
             initKhmerContainers();
             initMathContainers();
             initPhysicsContainers();
+            initStdContainers();
             try {
                 const res = await fetch(`/api/exams/get?id=${examId}`);
                 if (res.ok) {
@@ -2627,6 +3582,8 @@
                             populateMathExamData(data.exam, data.questions || []);
                         } else if (data.exam.subjectName === 'រូបវិទ្យា') {
                             populatePhysicsExamData(data.exam, data.questions || []);
+                        } else if (STANDARD_SUBJECT_CONFIGS[data.exam.subjectName]) {
+                            populateStdExamData(data.exam, data.questions || []);
                         } else if (data.exam.readingPassage) {
                             populateEnglishExamData(data.exam, data.questions || []);
                         } else {
@@ -2651,8 +3608,13 @@
             initKhmerContainers();
             initMathContainers();
             initPhysicsContainers();
+            initStdContainers();
             physicsUploadedImages = [];
             renderPhysicsUploadedImages();
+            examGalleryStore.math = [];
+            renderExamGallery('math');
+            examGalleryStore.std = [];
+            renderExamGallery('std');
             document.getElementById('btnSave').textContent = '💾 រក្សាទុកវិញ្ញាសា';
             const month = document.getElementById('monthSelect').value;
             const subjectName = document.getElementById('subjectSelect').value;
@@ -2686,6 +3648,9 @@
                         } else if (data.exam.subjectName === 'រូបវិទ្យា') {
                             populatePhysicsExamData(data.exam, data.questions || []);
                             foundExisting = true;
+                        } else if (STANDARD_SUBJECT_CONFIGS[data.exam.subjectName]) {
+                            populateStdExamData(data.exam, data.questions || []);
+                            foundExisting = true;
                         } else if (data.exam.readingPassage) {
                             populateEnglishExamData(data.exam, data.questions || []);
                             foundExisting = true;
@@ -2704,7 +3669,7 @@
                 disableEditMode();
             } else {
                 document.getElementById('currentExamId').value = '';
-                if (subjectName !== 'ភាសាអង់គ្លេស' && subjectName !== 'ភាសាខ្មែរ' && subjectName !== 'គណិតវិទ្យា' && subjectName !== 'រូបវិទ្យា') {
+                if (subjectName !== 'ភាសាអង់គ្លេស' && subjectName !== 'ភាសាខ្មែរ' && subjectName !== 'គណិតវិទ្យា' && subjectName !== 'រូបវិទ្យា' && !STANDARD_SUBJECT_CONFIGS[subjectName]) {
                     clearAllQuestions();
                     addQuestion('general');
                 }
@@ -2930,17 +3895,18 @@
                     ...collectSectionQuestions('mathGeometryContainer', 'math_geometry'),
                     ...collectSectionQuestions('mathAppliedContainer', 'math_applied')
                 ];
-                if (questions.length === 0) {
+                const writingEnabled = document.getElementById('mathWritingEnabled').checked;
+                const writingPromptVal = writingEnabled ? document.getElementById('mathWritingPrompt').value.trim() : '';
+                if (questions.length === 0 && examGalleryStore.math.length === 0 && !writingPromptVal) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'សូមបញ្ចូលសំណួរយ៉ាងតិច ១!',
-                        text: 'សូមបំពេញសំណួរក្នុងផ្នែកពីជគណិត ធរណីមាត្រ ឬអនុគមន៍/ស្ថិតិ ឬចុចប៊ូតុង «📥 ផ្ទុកគំរូវិញ្ញាសាគណិតវិទ្យាស្តង់ដា»។',
+                        title: 'សូមបញ្ចូលសំណួរ ឬរូបភាពវិញ្ញាសា!',
+                        text: 'សូមបំពេញសំណួរក្នុងផ្នែកពីជគណិត ធរណីមាត្រ អនុគមន៍/ស្ថិតិ Upload រូបភាព ឬចុចប៊ូតុង «📥 ផ្ទុកគំរូវិញ្ញាសាគណិតវិទ្យាស្តង់ដា»។',
                         confirmButtonText: 'យល់ព្រម',
                         confirmButtonColor: '#4361ee'
                     });
                     return;
                 }
-                const writingEnabled = document.getElementById('mathWritingEnabled').checked;
                 payload = {
                     id: examId ? parseInt(examId) : null,
                     month: month,
@@ -2948,6 +3914,7 @@
                     subjectName: subjectName,
                     readingPassage: document.getElementById('mathFormulaNote').value,
                     wordBank: null,
+                    examImagesJson: examGalleryStore.math.length > 0 ? JSON.stringify(examGalleryStore.math) : null,
                     section1Title: document.getElementById('mathSec1Title').value,
                     section1Instruction: document.getElementById('mathSec1Instruction').value,
                     section1MaxPoints: parseInt(document.getElementById('mathSec1MaxPoints').value) || 15,
@@ -3003,6 +3970,49 @@
                     section4Instruction: writingEnabled ? document.getElementById('physicsSec4Instruction').value : null,
                     writingPrompt: writingEnabled ? document.getElementById('physicsWritingPrompt').value : null,
                     writingMaxPoints: writingEnabled ? (parseInt(document.getElementById('physicsWritingMaxPoints').value) || 25) : null,
+                    questions: questions
+                };
+
+            } else if (STANDARD_SUBJECT_CONFIGS[subjectName]) {
+                const cfg = STANDARD_SUBJECT_CONFIGS[subjectName];
+                const questions = [
+                    ...collectSectionQuestions('stdSec1Container', cfg.prefix + '_sec1'),
+                    ...collectSectionQuestions('stdSec2Container', cfg.prefix + '_sec2'),
+                    ...collectSectionQuestions('stdSec3Container', cfg.prefix + '_sec3')
+                ];
+                const writingEnabled = document.getElementById('stdWritingEnabled').checked;
+                const writingPromptVal = writingEnabled ? document.getElementById('stdWritingPrompt').value.trim() : '';
+                if (questions.length === 0 && examGalleryStore.std.length === 0 && !writingPromptVal) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'សូមបញ្ចូលសំណួរ ឬរូបភាពវិញ្ញាសា!',
+                        text: `សូមបំពេញសំណួរក្នុងផ្នែកណាមួយ Upload រូបភាពវិញ្ញាសា ឬចុចប៊ូតុង «📥 ផ្ទុកគំរូវិញ្ញាសា${subjectName}ស្តង់ដា»។`,
+                        confirmButtonText: 'យល់ព្រម',
+                        confirmButtonColor: '#4361ee'
+                    });
+                    return;
+                }
+                payload = {
+                    id: examId ? parseInt(examId) : null,
+                    month: month,
+                    classes: selectedClasses,
+                    subjectName: subjectName,
+                    readingPassage: document.getElementById('stdFormulaNote').value,
+                    wordBank: null,
+                    examImagesJson: examGalleryStore.std.length > 0 ? JSON.stringify(examGalleryStore.std) : null,
+                    section1Title: document.getElementById('stdSec1Title').value,
+                    section1Instruction: document.getElementById('stdSec1Instruction').value,
+                    section1MaxPoints: parseInt(document.getElementById('stdSec1MaxPoints').value) || 15,
+                    section2Title: document.getElementById('stdSec2Title').value,
+                    section2Instruction: document.getElementById('stdSec2Instruction').value,
+                    section2MaxPoints: parseInt(document.getElementById('stdSec2MaxPoints').value) || 15,
+                    section3Title: document.getElementById('stdSec3Title').value,
+                    section3Instruction: document.getElementById('stdSec3Instruction').value,
+                    section3MaxPoints: parseInt(document.getElementById('stdSec3MaxPoints').value) || 15,
+                    section4Title: writingEnabled ? document.getElementById('stdSec4Title').value : null,
+                    section4Instruction: writingEnabled ? document.getElementById('stdSec4Instruction').value : null,
+                    writingPrompt: writingEnabled ? document.getElementById('stdWritingPrompt').value : null,
+                    writingMaxPoints: writingEnabled ? (parseInt(document.getElementById('stdWritingMaxPoints').value) || 25) : null,
                     questions: questions
                 };
 
@@ -3452,6 +4462,7 @@
         initKhmerContainers();
         initMathContainers();
         initPhysicsContainers();
+        initStdContainers();
         onSubjectChanged();
         loadExam();
         loadExamsList();
