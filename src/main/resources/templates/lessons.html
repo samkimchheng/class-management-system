@@ -343,6 +343,8 @@
         </div>
 
         <div class="content" style="padding: 0;">
+            <!-- Admin Computer Training Center Hub (3 Links) -->
+            <div th:replace="~{fragments/admin-computer-links :: cardPanel}"></div>
             <!-- Action Header & Filter (Teachers ONLY: Students do NOT see class and subject dropdown buttons) -->
             <div th:if="${!isStudent}" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
                 <form id="filterForm" action="/lessons" method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">

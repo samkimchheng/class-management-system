@@ -1138,4 +1138,48 @@ class ClassroomApplicationTests {
         assertEquals(kimchhengExamCountBefore, examRepository.findByAccountId(97L).size());
         assertEquals(48, studentRepository.findByClassNameAndAccountId("៨D", somuny.getId()).size());
     }
+
+    @Test
+    void testAdminComputerTrainingLinksVisibleForTeacherAndStudent() throws Exception {
+        Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(somuny);
+
+        String fbUrl = "https://web.facebook.com/bv.2pc";
+        String webUrl = "https://thebravocenter.pages.dev";
+        String ttUrl = "https://www.tiktok.com/@bravocenter27";
+
+        // 1. Verify Teacher Dashboard "/" and "/lessons" contain all 3 Admin computer center link buttons
+        mockMvc.perform(get("/")
+                .sessionAttr("ACCOUNT_ID", somuny.getId())
+                .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
+                .sessionAttr("ACCOUNT_NAME", somuny.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(fbUrl)))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(webUrl)))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(ttUrl)));
+
+        mockMvc.perform(get("/lessons")
+                .sessionAttr("ACCOUNT_ID", somuny.getId())
+                .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
+                .sessionAttr("ACCOUNT_NAME", somuny.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(fbUrl)))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(webUrl)))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(ttUrl)));
+
+        // 2. Verify Student Portal pages (/test/take, /test/leave) contain all 3 Admin computer center link buttons
+        Student sampleStudent = studentRepository.findByClassNameAndAccountId("៨D", somuny.getId()).get(0);
+        for (String stuPath : new String[]{"/test/take", "/test/leave"}) {
+            mockMvc.perform(get(stuPath)
+                    .sessionAttr("loggedInStudent", sampleStudent)
+                    .sessionAttr("ACTIVE_USER_MODE", "STUDENT")
+                    .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                    .andExpect(status().isOk())
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(fbUrl)))
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(webUrl)))
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(ttUrl)));
+        }
+    }
 }
