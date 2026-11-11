@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>រៀនវាក្យសព្ទថ្នាក់ទី១០ (Grade 10 Vocabulary) - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <title th:text="'រៀនវាក្យសព្ទថ្នាក់ទី' + ${gradeKhmer} + ' (Grade ' + ${selectedGrade} + ' Vocabulary) - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន'">រៀនវាក្យសព្ទថ្នាក់ទី១០ (Grade 10 Vocabulary) - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Battambang:wght@400;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -575,8 +575,8 @@
 
         <!-- Hero Progress Banner -->
         <div class="hero-banner">
-            <h2 class="hero-title">🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (English Book 4)</h2>
-            <p class="hero-subtitle">
+            <h2 class="hero-title" th:text="${selectedGrade == 11 ? '🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១១ (English Grade 11)' : '🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (English Book 4)'}">🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (English Book 4)</h2>
+            <p class="hero-subtitle" th:text="'រៀនពាក្យគន្លឹះ ' + ${totalWords} + ' ពាក្យតាមមេរៀននីមួយៗ (' + (${units.isEmpty()} ? 'Units' : ${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(units[0])} + ' ដល់ ' + ${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(units[units.size()-1])}) + ') ជាមួយសំឡេង និងល្បែងអនុវត្ត'">
                 រៀនពាក្យគន្លឹះ ៤៦០ ពាក្យតាមមេរៀននីមួយៗ (Unit 1 ដល់ Unit 31) ជាមួយសំឡេង និងល្បែងអនុវត្ត
             </p>
 
@@ -598,12 +598,12 @@
         <!-- Unit Scroll Bar -->
         <div class="unit-scroll-container">
             <div class="unit-scroll">
-                <a th:href="@{/test/vocabulary(unit='ALL')}"
+                <a th:href="@{/test/vocabulary(grade=${selectedGrade}, unit='ALL')}"
                    class="unit-pill" th:classappend="${selectedUnit == 'ALL' ? 'active' : ''}">
                     🌐 មេរៀនទាំងអស់ (All)
                 </a>
                 <th:block th:each="u : ${units}">
-                    <a th:href="@{/test/vocabulary(unit=${u})}"
+                    <a th:href="@{/test/vocabulary(grade=${selectedGrade}, unit=${u})}"
                        class="unit-pill" th:classappend="${selectedUnit.equalsIgnoreCase(u) ? 'active' : ''}">
                         <span th:text="${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(u)}">Unit 1</span>
                     </a>
@@ -779,6 +779,7 @@
         const vocabList = /*[[${words}]]*/ [];
         const masteredIds = new Set(/*[[${masteredWordIds}]]*/ []);
         const targetUnit = /*[[${selectedUnit}]]*/ 'ALL';
+        const targetGrade = /*[[${selectedGrade}]]*/ 10;
 
         let currentIndex = 0;
         let isFlipped = false;
@@ -940,7 +941,7 @@
             document.getElementById('quizContent').style.display = 'none';
             document.getElementById('quizResult').style.display = 'none';
 
-            fetch(`/api/student-portal/vocabulary/quiz-data?unit=${encodeURIComponent(targetUnit)}`)
+            fetch(`/api/student-portal/vocabulary/quiz-data?unit=${encodeURIComponent(targetUnit)}&grade=${encodeURIComponent(targetGrade)}`)
             .then(res => res.json())
             .then(data => {
                 quizQuestions = data;
@@ -1043,6 +1044,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    gradeLevel: targetGrade,
                     unitName: targetUnit,
                     totalQuestions: quizQuestions.length,
                     correctAnswers: quizScore,

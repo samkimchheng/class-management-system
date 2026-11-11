@@ -326,6 +326,10 @@
                 <a href="/test/take" class="btn" style="background: #e0f2fe; color: #0284c7; text-decoration: none; font-weight: bold; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
                     📝 ផ្ទាំងប្រឡងសិស្ស
                 </a>
+                <a th:if="${session.loggedInStudent != null and (session.loggedInStudent.accountId == 97 or (session.loggedInStudent.className != null and (session.loggedInStudent.className.contains('10') or session.loggedInStudent.className.contains('១០') or session.loggedInStudent.className.contains('11') or session.loggedInStudent.className.contains('១១'))))}"
+                   href="/test/vocabulary" class="btn" style="background: #ede9fe; color: #6d28d9; text-decoration: none; font-weight: bold; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+                    🔤 រៀនពាក្យ (Vocab)
+                </a>
                 <a href="/test/leave" class="btn" style="background: #d1fae5; color: #059669; text-decoration: none; font-weight: bold; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
                     📋 សុំច្បាប់ឈប់សម្រាក
                 </a>

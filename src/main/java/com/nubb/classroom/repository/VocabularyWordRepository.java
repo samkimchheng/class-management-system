@@ -16,6 +16,8 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
 
     Optional<VocabularyWord> findByWordNumber(Integer wordNumber);
 
+    Optional<VocabularyWord> findByGradeLevelAndWordNumber(Integer gradeLevel, Integer wordNumber);
+
     long countByGradeLevel(Integer gradeLevel);
 
     List<VocabularyWord> findByGradeLevelAndUnitNameIgnoreCase(Integer gradeLevel, String unitName);

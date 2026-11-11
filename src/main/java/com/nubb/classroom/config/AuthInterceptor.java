@@ -63,6 +63,12 @@ public class AuthInterceptor implements HandlerInterceptor {
                                 session.setAttribute("ACCOUNT_ID", acc.getId());
                                 session.setAttribute("ACCOUNT_ROLE", acc.getRole());
                                 session.setAttribute("ACCOUNT_NAME", acc.getFullName());
+                                session.setAttribute("ACCOUNT_USERNAME", acc.getUsername());
+                                boolean canAccessVocab = Boolean.TRUE.equals(acc.getVocabularyPermission())
+                                        || "ADMIN".equalsIgnoreCase(acc.getRole())
+                                        || Long.valueOf(97L).equals(acc.getId())
+                                        || "samkimchheng".equalsIgnoreCase(acc.getUsername());
+                                session.setAttribute("VOCABULARY_PERMISSION", canAccessVocab);
                                 if (acc.getCurrentAcademicYear() != null && !acc.getCurrentAcademicYear().trim().isEmpty()) {
                                     session.setAttribute("CURRENT_ACADEMIC_YEAR", acc.getCurrentAcademicYear().trim());
                                 } else {
@@ -183,20 +189,28 @@ public class AuthInterceptor implements HandlerInterceptor {
             session.setAttribute("ACTIVE_USER_MODE", "TEACHER");
         }
 
-        // Verify account is still active (not disabled by admin)
+        // Verify account is still active and keep VOCABULARY_PERMISSION synced with DB
         try {
             Optional<Account> currentAccOpt = accountRepository.findById(accountId);
-            if (currentAccOpt.isPresent() && Boolean.FALSE.equals(currentAccOpt.get().getActive())) {
-                session.invalidate();
-                ResponseCookie clr = ResponseCookie.from("REMEMBER_ACCOUNT_ID", "")
-                        .httpOnly(true)
-                        .path("/")
-                        .maxAge(0)
-                        .sameSite("Lax")
-                        .build();
-                response.addHeader(HttpHeaders.SET_COOKIE, clr.toString());
-                response.sendRedirect("/login?disabled=true");
-                return false;
+            if (currentAccOpt.isPresent()) {
+                Account curr = currentAccOpt.get();
+                if (Boolean.FALSE.equals(curr.getActive())) {
+                    session.invalidate();
+                    ResponseCookie clr = ResponseCookie.from("REMEMBER_ACCOUNT_ID", "")
+                            .httpOnly(true)
+                            .path("/")
+                            .maxAge(0)
+                            .sameSite("Lax")
+                            .build();
+                    response.addHeader(HttpHeaders.SET_COOKIE, clr.toString());
+                    response.sendRedirect("/login?disabled=true");
+                    return false;
+                }
+                boolean canAccessVocab = Boolean.TRUE.equals(curr.getVocabularyPermission())
+                        || "ADMIN".equalsIgnoreCase(curr.getRole())
+                        || Long.valueOf(97L).equals(curr.getId())
+                        || "samkimchheng".equalsIgnoreCase(curr.getUsername());
+                session.setAttribute("VOCABULARY_PERMISSION", canAccessVocab);
             }
         } catch (Exception ignored) {}
 

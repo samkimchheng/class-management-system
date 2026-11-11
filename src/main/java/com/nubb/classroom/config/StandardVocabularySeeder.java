@@ -22,16 +22,25 @@ public class StandardVocabularySeeder {
 
     @Transactional
     public void seedGrade10Vocabulary() {
+        seedVocabularyFromResource(10, 460, "data/grade10_vocabulary.json", "Grade 10");
+    }
+
+    @Transactional
+    public void seedGrade11Vocabulary() {
+        seedVocabularyFromResource(11, 303, "data/grade11_vocabulary.json", "Grade 11");
+    }
+
+    private void seedVocabularyFromResource(int gradeLevel, int expectedMinCount, String resourcePath, String label) {
         try {
-            long existingCount = vocabularyWordRepository.countByGradeLevel(10);
-            if (existingCount >= 460) {
+            long existingCount = vocabularyWordRepository.countByGradeLevel(gradeLevel);
+            if (existingCount >= expectedMinCount) {
                 // Already fully seeded
                 return;
             }
 
-            ClassPathResource resource = new ClassPathResource("data/grade10_vocabulary.json");
+            ClassPathResource resource = new ClassPathResource(resourcePath);
             if (!resource.exists()) {
-                System.err.println(">>> [StandardVocabularySeeder] grade10_vocabulary.json resource not found!");
+                System.err.println(">>> [StandardVocabularySeeder] " + resourcePath + " resource not found!");
                 return;
             }
 
@@ -39,8 +48,8 @@ public class StandardVocabularySeeder {
                 List<Map<String, Object>> list = objectMapper.readValue(is, new TypeReference<>() {});
                 if (list == null || list.isEmpty()) return;
 
-                // Load existing words to avoid duplicating by wordNumber
-                List<VocabularyWord> existingList = vocabularyWordRepository.findByGradeLevelOrderByWordNumberAsc(10);
+                // Load existing words for this grade to avoid duplicating by wordNumber
+                List<VocabularyWord> existingList = vocabularyWordRepository.findByGradeLevelOrderByWordNumberAsc(gradeLevel);
                 Map<Integer, VocabularyWord> existingByNum = new HashMap<>();
                 for (VocabularyWord w : existingList) {
                     if (w.getWordNumber() != null) {
@@ -64,7 +73,7 @@ public class StandardVocabularySeeder {
                     if (word == null) {
                         word = new VocabularyWord();
                         word.setWordNumber(num);
-                        word.setGradeLevel(10);
+                        word.setGradeLevel(gradeLevel);
                         word.setActive(true);
                     }
                     word.setEnglishWord(english);
@@ -77,11 +86,11 @@ public class StandardVocabularySeeder {
 
                 if (!toSave.isEmpty()) {
                     vocabularyWordRepository.saveAll(toSave);
-                    System.out.println(">>> [StandardVocabularySeeder] Successfully seeded " + toSave.size() + " Grade 10 vocabulary words!");
+                    System.out.println(">>> [StandardVocabularySeeder] Successfully seeded " + toSave.size() + " " + label + " vocabulary words!");
                 }
             }
         } catch (Exception e) {
-            System.err.println(">>> [StandardVocabularySeeder] Error seeding vocabulary: " + e.getMessage());
+            System.err.println(">>> [StandardVocabularySeeder] Error seeding " + label + " vocabulary: " + e.getMessage());
         }
     }
 }

@@ -759,8 +759,8 @@
         <!-- Topbar -->
         <div class="topbar">
             <div class="topbar-left" style="font-weight: 700; font-size: 1.15rem; color: #0f172a;">
-                <span class="title-full">🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (Grade 10 English Vocabulary)</span>
-                <span class="title-short">🔤 វាក្យសព្ទថ្នាក់ទី១០</span>
+                <span class="title-full" th:text="'🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី' + ${gradeKhmer} + ' (Grade ' + ${selectedGrade} + ' English Vocabulary)'">🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (Grade 10 English Vocabulary)</span>
+                <span class="title-short" th:text="'🔤 វាក្យសព្ទថ្នាក់ទី' + ${gradeKhmer}">🔤 វាក្យសព្ទថ្នាក់ទី១០</span>
             </div>
             <div class="topbar-right-vocab" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <span class="unit-badge year-badge-vocab" style="background: #eef2ff; color: #3730a3; border-color: #c7d2fe;">
@@ -780,22 +780,45 @@
                 <div class="vocab-hero-info">
                     <div class="vocab-hero-icon">🔤</div>
                     <div>
-                        <h2 class="vocab-hero-title">មជ្ឈមណ្ឌលគ្រប់គ្រងវាក្យសព្ទថ្នាក់ទី១០ (Grade 10 Vocab Hub)</h2>
-                        <p class="vocab-hero-sub">
+                        <h2 class="vocab-hero-title" th:text="'មជ្ឈមណ្ឌលគ្រប់គ្រងវាក្យសព្ទថ្នាក់ទី' + ${gradeKhmer} + ' (Grade ' + ${selectedGrade} + ' Vocab Hub)'">មជ្ឈមណ្ឌលគ្រប់គ្រងវាក្យសព្ទថ្នាក់ទី១០ (Grade 10 Vocab Hub)</h2>
+                        <p class="vocab-hero-sub" th:text="'គ្រប់គ្រងបញ្ជីវាក្យសព្ទស្តង់ដារ ' + ${totalWords} + ' ពាក្យ (' + (${units.isEmpty()} ? 'Units' : ${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(units[0])} + ' ដល់ ' + ${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(units[units.size()-1])}) + ') និងតាមដានការរៀនរបស់សិស្សគ្រប់ពេលវេលា'">
                             គ្រប់គ្រងបញ្ជីវាក្យសព្ទស្តង់ដារ ៤៦០ ពាក្យ (Unit 1 ដល់ Unit 31) និងតាមដានការរៀនរបស់សិស្សគ្រប់ពេលវេលា
                         </p>
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <a href="/test/vocabulary" target="_blank" class="btn-custom btn-custom-outline" style="color: white; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.15);">
+                    <a th:href="@{/test/vocabulary(grade=${selectedGrade})}" target="_blank" class="btn-custom btn-custom-outline" style="color: white; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.15);">
                         <span>👁️ សាកល្បងមើលផ្ទាំងសិស្ស</span>
                     </a>
                     <button type="button" onclick="openAddModal()" class="btn-custom btn-custom-success">
                         <span>➕ បន្ថែមពាក្យថ្មី</span>
                     </button>
-                    <button type="button" onclick="resetDefaultWords()" class="btn-custom btn-custom-warning" title="កំណត់ឡើងវិញនូវ ៤៦០ ពាក្យស្តង់ដា">
+                    <button type="button" onclick="resetDefaultWords()" class="btn-custom btn-custom-warning" title="កំណត់ឡើងវិញនូវពាក្យស្តង់ដា">
                         <span>🔄 កំណត់ដើមឡើងវិញ</span>
                     </button>
+                </div>
+            </div>
+
+            <!-- Grade Level Switcher (Grade 10 / Grade 11) -->
+            <div class="action-bar" style="padding: 12px 18px; margin-bottom: 18px; background: linear-gradient(90deg, #ffffff 0%, #f8fafc 100%);">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="font-weight: 700; color: #334155; font-size: 0.94rem;">🎓 ជ្រើសរើសកម្រិតថ្នាក់៖</span>
+                    <a th:href="@{/vocabulary(grade=10)}"
+                       class="unit-pill" th:classappend="${selectedGrade == 10 ? 'active' : ''}"
+                       style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;">
+                        <span>📘 ថ្នាក់ទី១០ (Grade 10)</span>
+                        <span style="background: rgba(255,255,255,0.25); padding: 1px 7px; border-radius: 10px; font-size: 0.78rem;"
+                              th:styleappend="${selectedGrade == 10 ? 'background: rgba(255,255,255,0.25); color: white;' : 'background: #e2e8f0; color: #334155;'}"
+                              th:text="${grade10Total} + ' ពាក្យ'">460 ពាក្យ</span>
+                    </a>
+                    <a th:href="@{/vocabulary(grade=11)}"
+                       class="unit-pill" th:classappend="${selectedGrade == 11 ? 'active' : ''}"
+                       style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;">
+                        <span>📗 ថ្នាក់ទី១១ (Grade 11)</span>
+                        <span style="padding: 1px 7px; border-radius: 10px; font-size: 0.78rem;"
+                              th:styleappend="${selectedGrade == 11 ? 'background: rgba(255,255,255,0.25); color: white;' : 'background: #e2e8f0; color: #334155;'}"
+                              th:text="${grade11Total} + ' ពាក្យ'">303 ពាក្យ</span>
+                    </a>
                 </div>
             </div>
 
@@ -805,7 +828,7 @@
                     <div class="kpi-icon" style="background: #e0e7ff; color: #4361ee;">📚</div>
                     <div>
                         <div class="kpi-val" th:text="${totalWords}">460</div>
-                        <div class="kpi-lbl">ពាក្យសរុបក្នុងប្រព័ន្ធ</div>
+                        <div class="kpi-lbl" th:text="'ពាក្យសរុបថ្នាក់ទី' + ${gradeKhmer}">ពាក្យសរុបក្នុងប្រព័ន្ធ</div>
                     </div>
                 </div>
                 <div class="kpi-card">
@@ -826,7 +849,7 @@
                     <div class="kpi-icon" style="background: #fef3c7; color: #d97706;">👥</div>
                     <div>
                         <div class="kpi-val" th:text="${totalStudentsCount}">50</div>
-                        <div class="kpi-lbl">សិស្សថ្នាក់ទី១០ សរុប</div>
+                        <div class="kpi-lbl" th:text="'សិស្សថ្នាក់ទី' + ${gradeKhmer} + ' សរុប'">សិស្សថ្នាក់ទី១០ សរុប</div>
                     </div>
                 </div>
             </div>
@@ -846,12 +869,12 @@
             <div id="wordsTab" class="tab-pane active">
                 <!-- Unit Pill Bar -->
                 <div class="unit-scroll">
-                    <a th:href="@{/vocabulary(unit='ALL', search=${searchQuery})}"
+                    <a th:href="@{/vocabulary(grade=${selectedGrade}, unit='ALL', search=${searchQuery})}"
                        class="unit-pill" th:classappend="${selectedUnit == 'ALL' ? 'active' : ''}">
                         🌐 មេរៀនទាំងអស់ (All)
                     </a>
                     <th:block th:each="u : ${units}">
-                        <a th:href="@{/vocabulary(unit=${u}, search=${searchQuery})}"
+                        <a th:href="@{/vocabulary(grade=${selectedGrade}, unit=${u}, search=${searchQuery})}"
                            class="unit-pill" th:classappend="${selectedUnit.equalsIgnoreCase(u) ? 'active' : ''}"
                            th:text="${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(u)}">
                             Unit 1
@@ -862,10 +885,11 @@
                 <!-- Action Bar & Search -->
                 <div class="action-bar">
                     <form method="get" action="/vocabulary" style="display: flex; gap: 8px; flex: 1; max-width: 450px;">
+                        <input type="hidden" name="grade" th:value="${selectedGrade}">
                         <input type="hidden" name="unit" th:value="${selectedUnit}">
                         <input type="text" name="search" th:value="${searchQuery}" class="form-control" placeholder="🔍 ស្វែងរកពាក្យ (អង់គ្លេស ឬខ្មែរ)...">
                         <button type="submit" class="btn-custom btn-custom-primary">ស្វែងរក</button>
-                        <a th:if="${searchQuery != null and !searchQuery.isEmpty()}" th:href="@{/vocabulary(unit=${selectedUnit})}" class="btn-custom btn-custom-outline">សម្អាត</a>
+                        <a th:if="${searchQuery != null and !searchQuery.isEmpty()}" th:href="@{/vocabulary(grade=${selectedGrade}, unit=${selectedUnit})}" class="btn-custom btn-custom-outline">សម្អាត</a>
                     </form>
 
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;" th:if="${!selectedUnit.equalsIgnoreCase('ALL')}">
@@ -1040,6 +1064,7 @@
     <!-- JavaScript -->
     <script th:inline="javascript">
         const currentUnit = /*[[${selectedUnit}]]*/ 'ALL';
+        const currentGrade = /*[[${selectedGrade}]]*/ 10;
 
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
@@ -1109,6 +1134,7 @@
                     const formData = new URLSearchParams();
                     formData.append('unit', currentUnit);
                     formData.append('active', active);
+                    formData.append('grade', currentGrade);
 
                     fetch('/api/vocabulary/bulk-toggle', {
                         method: 'POST',
@@ -1129,18 +1155,22 @@
             });
         }
 
-        // Reset to default 460 words
+        // Reset to default standard words for current grade
         function resetDefaultWords() {
+            const gradeTitle = currentGrade === 11 ? '៣០៣ ពាក្យស្តង់ដាថ្នាក់ទី១១?' : '៤៦០ ពាក្យស្តង់ដាថ្នាក់ទី១០?';
+            const gradeText = currentGrade === 11
+                ? 'ប្រព័ន្ធនឹងបញ្ចូលបំពេញបន្ថែមនូវពាក្យស្តង់ដាថ្នាក់ទី១១ (Unit 1 & 3 ដល់ Unit 31) ដោយមិនប៉ះពាល់ទិន្នន័យផ្សេងៗឡើយ។'
+                : 'ប្រព័ន្ធនឹងបញ្ចូលបំពេញបន្ថែមនូវពាក្យស្តង់ដាថ្នាក់ទី១០ (Unit 1 ដល់ Unit 31) ដោយមិនប៉ះពាល់ទិន្នន័យផ្សេងៗឡើយ។';
             Swal.fire({
-                title: 'កំណត់ឡើងវិញនូវ ៤៦០ ពាក្យស្តង់ដា?',
-                text: 'ប្រព័ន្ធនឹងបញ្ចូលបំពេញបន្ថែមនូវពាក្យស្តង់ដាថ្នាក់ទី១០ (Unit 1 ដល់ Unit 31) ដោយមិនប៉ះពាល់ទិន្នន័យផ្សេងៗឡើយ។',
+                title: 'កំណត់ឡើងវិញនូវ ' + gradeTitle,
+                text: gradeText,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'យល់ព្រម',
                 cancelButtonText: 'បោះបង់'
             }).then(result => {
                 if (result.isConfirmed) {
-                    fetch('/api/vocabulary/reset-default', { method: 'POST' })
+                    fetch('/api/vocabulary/reset-default?grade=' + encodeURIComponent(currentGrade), { method: 'POST' })
                     .then(res => res.json())
                     .then(data => {
                         Swal.fire({ icon: 'success', title: 'ជោគជ័យ', text: data.message }).then(() => {
@@ -1193,7 +1223,8 @@
                 englishWord: english,
                 partOfSpeech: pos,
                 khmerTranslation: khmer,
-                unitName: unit
+                unitName: unit,
+                gradeLevel: currentGrade
             };
 
             fetch('/api/vocabulary/save', {

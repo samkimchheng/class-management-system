@@ -638,21 +638,38 @@ class ClassroomApplicationTests {
 
     @Test
     void testGrade10VocabularySystem() throws Exception {
-        // 1. Verify 460 words were seeded
-        long count = vocabularyWordRepository.countByGradeLevel(10);
-        assertTrue(count >= 460, "Expected at least 460 Grade 10 vocabulary words but found " + count);
+        // 1. Verify 460 Grade 10 words and 303 Grade 11 words were seeded
+        long count10 = vocabularyWordRepository.countByGradeLevel(10);
+        assertTrue(count10 >= 460, "Expected at least 460 Grade 10 vocabulary words but found " + count10);
 
-        // Verify specific words
-        var firstWordOpt = vocabularyWordRepository.findByWordNumber(1);
+        long count11 = vocabularyWordRepository.countByGradeLevel(11);
+        assertTrue(count11 >= 303, "Expected at least 303 Grade 11 vocabulary words but found " + count11);
+
+        // Verify specific Grade 10 words
+        var firstWordOpt = vocabularyWordRepository.findByGradeLevelAndWordNumber(10, 1);
         assertTrue(firstWordOpt.isPresent());
         assertEquals("birthday (n)", firstWordOpt.get().getEnglishWord());
         assertEquals("birthday", firstWordOpt.get().getCleanWord());
         assertEquals("n", firstWordOpt.get().getPartOfSpeech());
         assertEquals("ថ្ងៃកំណើត", firstWordOpt.get().getKhmerTranslation());
 
-        var lastWordOpt = vocabularyWordRepository.findByWordNumber(460);
+        var lastWordOpt = vocabularyWordRepository.findByGradeLevelAndWordNumber(10, 460);
         assertTrue(lastWordOpt.isPresent());
         assertEquals("watersports (n)", lastWordOpt.get().getEnglishWord());
+
+        // Verify specific Grade 11 words
+        var firstG11Opt = vocabularyWordRepository.findByGradeLevelAndWordNumber(11, 1);
+        assertTrue(firstG11Opt.isPresent());
+        assertEquals("cinema (n)", firstG11Opt.get().getEnglishWord());
+        assertEquals("cinema", firstG11Opt.get().getCleanWord());
+        assertEquals("n", firstG11Opt.get().getPartOfSpeech());
+        assertEquals("រោងភាពយន្ត", firstG11Opt.get().getKhmerTranslation());
+        assertEquals("unit 1 & 3", firstG11Opt.get().getUnitName());
+
+        var lastG11Opt = vocabularyWordRepository.findByGradeLevelAndWordNumber(11, 303);
+        assertTrue(lastG11Opt.isPresent());
+        assertEquals("unnoticed (adj)", lastG11Opt.get().getEnglishWord());
+        assertEquals("unit 31", lastG11Opt.get().getUnitName());
 
         // 2. Verify Teacher Vocabulary Management View (/vocabulary)
         Account kimchheng = accountRepository.findByUsername("samkimchheng").orElse(null);
@@ -725,6 +742,36 @@ class ClassroomApplicationTests {
                 .param("id", testWordId.toString())
                 .sessionAttr("ACCOUNT_ID", kimchheng.getId()))
                 .andExpect(status().isOk());
+
+        // 7b. Verify Teacher Grade 11 Vocabulary Management View & Grade 11 Student Portal
+        mockMvc.perform(get("/vocabulary")
+                .param("grade", "11")
+                .sessionAttr("ACCOUNT_ID", kimchheng.getId())
+                .sessionAttr("ACCOUNT_ROLE", kimchheng.getRole())
+                .sessionAttr("ACCOUNT_NAME", kimchheng.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("selectedGrade", 11))
+                .andExpect(model().attribute("totalWords", count11));
+
+        Student g11Student = students.stream()
+                .filter(s -> s.getClassName() != null && (s.getClassName().contains("11") || s.getClassName().contains("១១")))
+                .findFirst()
+                .orElse(null);
+        if (g11Student != null) {
+            mockMvc.perform(get("/test/vocabulary")
+                    .sessionAttr("loggedInStudent", g11Student)
+                    .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                    .andExpect(status().isOk())
+                    .andExpect(model().attribute("selectedGrade", 11))
+                    .andExpect(model().attributeExists("words"));
+
+            mockMvc.perform(get("/api/student-portal/vocabulary/quiz-data")
+                    .param("unit", "unit 2")
+                    .param("grade", "11")
+                    .sessionAttr("loggedInStudent", g11Student))
+                    .andExpect(status().isOk());
+        }
 
         // Clean up progress created for testStudent
         studentVocabularyProgressRepository.delete(progOpt.get());

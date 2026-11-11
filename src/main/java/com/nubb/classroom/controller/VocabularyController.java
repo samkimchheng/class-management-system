@@ -72,11 +72,59 @@ public class VocabularyController {
         return w.contains(t);
     }
 
+    private static int normalizeGradeLevel(Integer grade) {
+        return (grade != null && grade == 11) ? 11 : 10;
+    }
+
+    private static int detectStudentGradeLevel(Student student) {
+        if (student != null && student.getClassName() != null) {
+            String cls = student.getClassName();
+            if (cls.contains("11") || cls.contains("១១")) {
+                return 11;
+            }
+        }
+        return 10;
+    }
+
+    private static boolean belongsToGrade(String className, int grade) {
+        if (className == null) return false;
+        String khmerGrade = (grade == 11) ? "១១" : "១០";
+        return className.contains(String.valueOf(grade)) || className.contains(khmerGrade);
+    }
+
+    private void ensureGradeSeeded(int grade) {
+        if (grade == 11) {
+            if (vocabularyWordRepository.countByGradeLevel(11) < 303) {
+                standardVocabularySeeder.seedGrade11Vocabulary();
+            }
+        } else {
+            if (vocabularyWordRepository.countByGradeLevel(10) < 460) {
+                standardVocabularySeeder.seedGrade10Vocabulary();
+            }
+        }
+    }
+
+    private List<String> buildSortedUnits(List<VocabularyWord> words) {
+        Set<String> unitSet = new TreeSet<>((a, b) -> {
+            int numA = extractFirstNumber(a);
+            int numB = extractFirstNumber(b);
+            if (numA != numB) return Integer.compare(numA, numB);
+            return a.compareToIgnoreCase(b);
+        });
+        for (VocabularyWord w : words) {
+            if (w.getUnitName() != null && !w.getUnitName().trim().isEmpty()) {
+                unitSet.add(w.getUnitName().trim().toLowerCase());
+            }
+        }
+        return new ArrayList<>(unitSet);
+    }
+
     // ==========================================
     // 1. TEACHER MANAGEMENT VIEW
     // ==========================================
     @GetMapping("/vocabulary")
     public String teacherVocabularyView(
+            @RequestParam(required = false) Integer grade,
             @RequestParam(required = false) String unit,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String className,
@@ -99,40 +147,29 @@ public class VocabularyController {
             return "redirect:/login";
         }
 
-        // Strict access control: Only Sam Kimchheng or ADMIN or account with explicit permission
-        String role = (String) session.getAttribute("ACCOUNT_ROLE");
-        String username = (String) session.getAttribute("ACCOUNT_USERNAME");
-        Boolean vocabPerm = (Boolean) session.getAttribute("VOCABULARY_PERMISSION");
-        boolean allowed = Boolean.TRUE.equals(vocabPerm)
-                || "ADMIN".equalsIgnoreCase(role)
-                || Long.valueOf(97L).equals(accountId)
-                || "samkimchheng".equalsIgnoreCase(username)
-                || (teacher != null && ("samkimchheng".equalsIgnoreCase(teacher.getUsername()) || Boolean.TRUE.equals(teacher.getVocabularyPermission())));
+        // Strict access control: Only Sam Kimchheng or ADMIN or account with explicit permission from Admin
+        boolean allowed = "ADMIN".equalsIgnoreCase(teacher.getRole())
+                || Long.valueOf(97L).equals(teacher.getId())
+                || "samkimchheng".equalsIgnoreCase(teacher.getUsername())
+                || Boolean.TRUE.equals(teacher.getVocabularyPermission());
+        session.setAttribute("VOCABULARY_PERMISSION", allowed);
 
         if (!allowed) {
             return "redirect:/?accessDenied=vocab";
         }
 
-        // Auto-seed if empty
-        if (vocabularyWordRepository.countByGradeLevel(10) < 460) {
-            standardVocabularySeeder.seedGrade10Vocabulary();
-        }
+        int selectedGrade = normalizeGradeLevel(grade);
 
-        List<VocabularyWord> allWords = vocabularyWordRepository.findByGradeLevelOrderByWordNumberAsc(10);
+        // Auto-seed both grades if missing
+        ensureGradeSeeded(10);
+        ensureGradeSeeded(11);
 
-        // Build distinct ordered list of units (Unit 1 to Unit 31)
-        Set<String> unitSet = new TreeSet<>((a, b) -> {
-            int numA = extractFirstNumber(a);
-            int numB = extractFirstNumber(b);
-            if (numA != numB) return Integer.compare(numA, numB);
-            return a.compareToIgnoreCase(b);
-        });
-        for (VocabularyWord w : allWords) {
-            if (w.getUnitName() != null && !w.getUnitName().trim().isEmpty()) {
-                unitSet.add(w.getUnitName().trim().toLowerCase());
-            }
-        }
-        List<String> units = new ArrayList<>(unitSet);
+        long grade10Total = vocabularyWordRepository.countByGradeLevel(10);
+        long grade11Total = vocabularyWordRepository.countByGradeLevel(11);
+
+        List<VocabularyWord> allWords = vocabularyWordRepository.findByGradeLevelOrderByWordNumberAsc(selectedGrade);
+        List<String> units = buildSortedUnits(allWords);
+        Set<Long> gradeWordIds = allWords.stream().map(VocabularyWord::getId).collect(Collectors.toSet());
 
         // Filter words
         String selectedUnit = (unit != null && !unit.trim().isEmpty()) ? unit.trim() : "ALL";
@@ -158,31 +195,24 @@ public class VocabularyController {
         // Student Progress Tracking under teacher supervision
         // ----------------------------------------------------
         List<Student> allStudents;
-        boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(teacher.getRole());
 
         if (isAdmin) {
             allStudents = studentRepository.findAll();
         } else {
-            // Find teacher's students (e.g. matching accountId or teaching classes)
             allStudents = studentRepository.findByAccountId(accountId);
             if (allStudents.isEmpty()) {
                 allStudents = studentRepository.findAll();
             }
         }
 
-        // Filter to Grade 10 students (e.g. 10E, 10F, 10G, etc.)
-        List<Student> grade10Students = allStudents.stream()
-                .filter(s -> s.getClassName() != null && (s.getClassName().contains("10") || s.getClassName().contains("១០")))
+        // Filter students matching the selected grade (10 or 11)
+        List<Student> gradeStudents = allStudents.stream()
+                .filter(s -> belongsToGrade(s.getClassName(), selectedGrade))
                 .sorted(Comparator.comparing(Student::getClassName).thenComparing(Student::getName))
                 .collect(Collectors.toList());
 
-        // If no Grade 10 specific, fallback to all students
-        if (grade10Students.isEmpty()) {
-            grade10Students = allStudents;
-        }
-
-        // Distinct Grade 10 classes
-        List<String> grade10Classes = grade10Students.stream()
+        List<String> gradeClasses = gradeStudents.stream()
                 .map(Student::getClassName)
                 .filter(Objects::nonNull)
                 .distinct()
@@ -191,17 +221,21 @@ public class VocabularyController {
 
         String selectedClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ALL";
 
-        // Build Student Progress Cards
+        // Build Student Progress Cards scoped to selectedGrade's words
         List<Map<String, Object>> studentProgressList = new ArrayList<>();
         long totalMasteredAcrossStudents = 0;
         int activePracticingStudents = 0;
 
-        for (Student s : grade10Students) {
+        for (Student s : gradeStudents) {
             if (!"ALL".equalsIgnoreCase(selectedClass) && !selectedClass.equalsIgnoreCase(s.getClassName())) {
                 continue;
             }
 
-            List<StudentVocabularyProgress> progressList = studentVocabularyProgressRepository.findByStudentId(s.getId());
+            List<StudentVocabularyProgress> progressList = studentVocabularyProgressRepository.findByStudentId(s.getId())
+                    .stream()
+                    .filter(p -> gradeWordIds.contains(p.getWordId()))
+                    .collect(Collectors.toList());
+
             long masteredCount = progressList.stream().filter(p -> Boolean.TRUE.equals(p.getMastered())).count();
             int totalPractice = progressList.stream().mapToInt(StudentVocabularyProgress::getPracticeCount).sum();
 
@@ -216,7 +250,7 @@ public class VocabularyController {
             row.put("totalWords", totalWords);
             row.put("percent", percent);
             row.put("totalPractice", totalPractice);
-            
+
             LocalDateTime lastActive = progressList.stream()
                     .map(StudentVocabularyProgress::getLastPracticed)
                     .filter(Objects::nonNull)
@@ -231,6 +265,10 @@ public class VocabularyController {
         studentProgressList.sort((a, b) -> Long.compare((Long) b.get("masteredCount"), (Long) a.get("masteredCount")));
 
         model.addAttribute("teacherAccount", teacher);
+        model.addAttribute("selectedGrade", selectedGrade);
+        model.addAttribute("gradeKhmer", selectedGrade == 11 ? "១១" : "១០");
+        model.addAttribute("grade10Total", grade10Total);
+        model.addAttribute("grade11Total", grade11Total);
         model.addAttribute("words", filteredWords);
         model.addAttribute("units", units);
         model.addAttribute("selectedUnit", selectedUnit);
@@ -238,7 +276,7 @@ public class VocabularyController {
         model.addAttribute("totalWords", totalWords);
         model.addAttribute("activeWords", activeWords);
         model.addAttribute("totalUnits", units.size());
-        model.addAttribute("classes", grade10Classes);
+        model.addAttribute("classes", gradeClasses);
         model.addAttribute("selectedClass", selectedClass);
         model.addAttribute("studentProgressList", studentProgressList);
         model.addAttribute("totalStudentsCount", studentProgressList.size());
@@ -253,6 +291,7 @@ public class VocabularyController {
     // ==========================================
     @GetMapping("/test/vocabulary")
     public String studentVocabularyView(
+            @RequestParam(required = false) Integer grade,
             @RequestParam(required = false) String unit,
             @RequestParam(required = false) String search,
             Model model,
@@ -276,27 +315,23 @@ public class VocabularyController {
         }
         session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
 
-        // Auto-seed if empty
-        if (vocabularyWordRepository.countByGradeLevel(10) < 460) {
-            standardVocabularySeeder.seedGrade10Vocabulary();
-        }
+        // Auto-detect Grade 10 vs Grade 11 from student's class (unless explicitly switched)
+        int selectedGrade = (grade != null && (grade == 10 || grade == 11))
+                ? grade
+                : detectStudentGradeLevel(student);
 
-        List<VocabularyWord> allActiveWords = vocabularyWordRepository.findByGradeLevelAndActiveTrueOrderByWordNumberAsc(10);
+        ensureGradeSeeded(selectedGrade);
 
-        // Build distinct units
-        Set<String> unitSet = new TreeSet<>((a, b) -> {
-            int numA = extractFirstNumber(a);
-            int numB = extractFirstNumber(b);
-            if (numA != numB) return Integer.compare(numA, numB);
-            return a.compareToIgnoreCase(b);
-        });
-        for (VocabularyWord w : allActiveWords) {
-            if (w.getUnitName() != null) unitSet.add(w.getUnitName().trim().toLowerCase());
-        }
-        List<String> units = new ArrayList<>(unitSet);
+        List<VocabularyWord> allActiveWords = vocabularyWordRepository.findByGradeLevelAndActiveTrueOrderByWordNumberAsc(selectedGrade);
+        List<String> units = buildSortedUnits(allActiveWords);
+        Set<Long> gradeWordIds = allActiveWords.stream().map(VocabularyWord::getId).collect(Collectors.toSet());
 
-        // Fetch student's progress
-        List<StudentVocabularyProgress> progressList = studentVocabularyProgressRepository.findByStudentId(student.getId());
+        // Fetch student's progress scoped to words in selectedGrade
+        List<StudentVocabularyProgress> progressList = studentVocabularyProgressRepository.findByStudentId(student.getId())
+                .stream()
+                .filter(p -> gradeWordIds.contains(p.getWordId()))
+                .collect(Collectors.toList());
+
         Set<Long> masteredWordIds = progressList.stream()
                 .filter(p -> Boolean.TRUE.equals(p.getMastered()))
                 .map(StudentVocabularyProgress::getWordId)
@@ -337,6 +372,8 @@ public class VocabularyController {
         }
 
         model.addAttribute("student", student);
+        model.addAttribute("selectedGrade", selectedGrade);
+        model.addAttribute("gradeKhmer", selectedGrade == 11 ? "១១" : "១០");
         model.addAttribute("words", displayWords);
         model.addAttribute("units", units);
         model.addAttribute("selectedUnit", selectedUnit);
@@ -357,13 +394,24 @@ public class VocabularyController {
     private boolean isAuthorizedForVocabulary() {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) return false;
-        String role = (String) session.getAttribute("ACCOUNT_ROLE");
-        String username = (String) session.getAttribute("ACCOUNT_USERNAME");
-        Boolean vocabPerm = (Boolean) session.getAttribute("VOCABULARY_PERMISSION");
-        return Boolean.TRUE.equals(vocabPerm)
-                || "ADMIN".equalsIgnoreCase(role)
-                || Long.valueOf(97L).equals(accountId)
-                || "samkimchheng".equalsIgnoreCase(username);
+        Account acc = accountRepository.findById(accountId).orElse(null);
+        if (acc == null) return false;
+        boolean allowed = "ADMIN".equalsIgnoreCase(acc.getRole())
+                || Long.valueOf(97L).equals(acc.getId())
+                || "samkimchheng".equalsIgnoreCase(acc.getUsername())
+                || Boolean.TRUE.equals(acc.getVocabularyPermission());
+        session.setAttribute("VOCABULARY_PERMISSION", allowed);
+        return allowed;
+    }
+
+    private long countMasteredForGrade(Long studentId, int gradeLevel) {
+        Set<Long> gradeWordIds = vocabularyWordRepository.findByGradeLevelAndActiveTrueOrderByWordNumberAsc(gradeLevel)
+                .stream()
+                .map(VocabularyWord::getId)
+                .collect(Collectors.toSet());
+        return studentVocabularyProgressRepository.findByStudentId(studentId).stream()
+                .filter(p -> Boolean.TRUE.equals(p.getMastered()) && gradeWordIds.contains(p.getWordId()))
+                .count();
     }
 
     @PostMapping("/api/vocabulary/save")
@@ -386,6 +434,9 @@ public class VocabularyController {
             String unit = (String) payload.get("unitName");
             String pos = (String) payload.get("partOfSpeech");
             String sentence = (String) payload.get("exampleSentence");
+            Integer gradeReq = payload.get("gradeLevel") != null && !payload.get("gradeLevel").toString().isEmpty()
+                    ? Integer.parseInt(payload.get("gradeLevel").toString()) : 10;
+            int targetGrade = normalizeGradeLevel(gradeReq);
             Integer wordNum = payload.get("wordNumber") != null ? Integer.parseInt(payload.get("wordNumber").toString()) : null;
 
             if (english == null || english.trim().isEmpty() || khmer == null || khmer.trim().isEmpty()) {
@@ -395,15 +446,18 @@ public class VocabularyController {
             VocabularyWord word;
             if (id != null) {
                 word = vocabularyWordRepository.findById(id).orElse(new VocabularyWord());
+                if (word.getGradeLevel() == null) {
+                    word.setGradeLevel(targetGrade);
+                }
             } else {
                 word = new VocabularyWord();
-                word.setWordNumber(wordNum != null ? wordNum : (int) (vocabularyWordRepository.count() + 1));
-                word.setGradeLevel(10);
+                word.setGradeLevel(targetGrade);
+                word.setWordNumber(wordNum != null ? wordNum : (int) (vocabularyWordRepository.countByGradeLevel(targetGrade) + 1));
                 word.setActive(true);
             }
 
             word.setEnglishWord(english.trim());
-            
+
             // Clean word for TTS
             String clean = english.trim().replaceAll("\\s*\\(.*?\\)", "").trim();
             word.setCleanWord(clean);
@@ -454,7 +508,10 @@ public class VocabularyController {
 
     @PostMapping("/api/vocabulary/bulk-toggle")
     @ResponseBody
-    public ResponseEntity<?> bulkToggleByUnit(@RequestParam String unit, @RequestParam boolean active) {
+    public ResponseEntity<?> bulkToggleByUnit(
+            @RequestParam String unit,
+            @RequestParam boolean active,
+            @RequestParam(required = false, defaultValue = "10") Integer grade) {
         if (!isAuthorizedForVocabulary()) {
             return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
         }
@@ -463,7 +520,8 @@ public class VocabularyController {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
         }
 
-        List<VocabularyWord> all = vocabularyWordRepository.findByGradeLevelOrderByWordNumberAsc(10);
+        int targetGrade = normalizeGradeLevel(grade);
+        List<VocabularyWord> all = vocabularyWordRepository.findByGradeLevelOrderByWordNumberAsc(targetGrade);
         int updated = 0;
         for (VocabularyWord w : all) {
             if (matchesUnit(w.getUnitName(), unit)) {
@@ -502,7 +560,7 @@ public class VocabularyController {
 
     @PostMapping("/api/vocabulary/reset-default")
     @ResponseBody
-    public ResponseEntity<?> resetDefaultVocabulary() {
+    public ResponseEntity<?> resetDefaultVocabulary(@RequestParam(required = false, defaultValue = "10") Integer grade) {
         if (!isAuthorizedForVocabulary()) {
             return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
         }
@@ -511,8 +569,14 @@ public class VocabularyController {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
         }
 
-        standardVocabularySeeder.seedGrade10Vocabulary();
-        return ResponseEntity.ok(Map.of("success", true, "message", "បានកំណត់វាក្យសព្ទថ្នាក់ទី១០ ទៅជាស្តង់ដាដើម ៤៦០ ពាក្យដោយជោគជ័យ!"));
+        int targetGrade = normalizeGradeLevel(grade);
+        if (targetGrade == 11) {
+            standardVocabularySeeder.seedGrade11Vocabulary();
+            return ResponseEntity.ok(Map.of("success", true, "message", "បានបញ្ចូលបំពេញបន្ថែមវាក្យសព្ទស្តង់ដាថ្នាក់ទី១១ (៣០៣ ពាក្យ) ដោយជោគជ័យ!"));
+        } else {
+            standardVocabularySeeder.seedGrade10Vocabulary();
+            return ResponseEntity.ok(Map.of("success", true, "message", "បានបញ្ចូលបំពេញបន្ថែមវាក្យសព្ទស្តង់ដាថ្នាក់ទី១០ (៤៦០ ពាក្យ) ដោយជោគជ័យ!"));
+        }
     }
 
     // ==========================================
@@ -551,7 +615,8 @@ public class VocabularyController {
         prog.setLastPracticed(LocalDateTime.now());
         studentVocabularyProgressRepository.save(prog);
 
-        long totalMastered = studentVocabularyProgressRepository.countByStudentIdAndMasteredTrue(student.getId());
+        int gradeLevel = word.getGradeLevel() != null ? word.getGradeLevel() : detectStudentGradeLevel(student);
+        long totalMastered = countMasteredForGrade(student.getId(), gradeLevel);
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -569,6 +634,11 @@ public class VocabularyController {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាសិស្សជាមុនសិន!"));
         }
 
+        Integer resolvedGrade = null;
+        if (payload.get("gradeLevel") != null) {
+            try { resolvedGrade = Integer.parseInt(payload.get("gradeLevel").toString()); } catch (Exception ignored) {}
+        }
+
         List<Map<String, Object>> results = (List<Map<String, Object>>) payload.get("results");
         if (results != null && !results.isEmpty()) {
             for (Map<String, Object> r : results) {
@@ -578,6 +648,9 @@ public class VocabularyController {
 
                 VocabularyWord word = vocabularyWordRepository.findById(wordId).orElse(null);
                 if (word == null) continue;
+                if (resolvedGrade == null && word.getGradeLevel() != null) {
+                    resolvedGrade = word.getGradeLevel();
+                }
 
                 StudentVocabularyProgress prog = studentVocabularyProgressRepository
                         .findByStudentIdAndWordId(student.getId(), wordId)
@@ -594,7 +667,8 @@ public class VocabularyController {
             }
         }
 
-        long totalMastered = studentVocabularyProgressRepository.countByStudentIdAndMasteredTrue(student.getId());
+        int gradeLevel = resolvedGrade != null ? normalizeGradeLevel(resolvedGrade) : detectStudentGradeLevel(student);
+        long totalMastered = countMasteredForGrade(student.getId(), gradeLevel);
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -603,11 +677,19 @@ public class VocabularyController {
         ));
     }
 
-    // Dynamic quiz questions generator for a unit
+    // Dynamic quiz questions generator for a unit and grade
     @GetMapping("/api/student-portal/vocabulary/quiz-data")
     @ResponseBody
-    public ResponseEntity<?> getQuizData(@RequestParam(required = false) String unit) {
-        List<VocabularyWord> allActive = vocabularyWordRepository.findByGradeLevelAndActiveTrueOrderByWordNumberAsc(10);
+    public ResponseEntity<?> getQuizData(
+            @RequestParam(required = false) String unit,
+            @RequestParam(required = false) Integer grade) {
+        Student student = (Student) session.getAttribute("loggedInStudent");
+        int targetGrade = (grade != null && (grade == 10 || grade == 11))
+                ? grade
+                : detectStudentGradeLevel(student);
+
+        ensureGradeSeeded(targetGrade);
+        List<VocabularyWord> allActive = vocabularyWordRepository.findByGradeLevelAndActiveTrueOrderByWordNumberAsc(targetGrade);
         if (allActive.isEmpty()) {
             return ResponseEntity.ok(Collections.emptyList());
         }

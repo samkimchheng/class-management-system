@@ -456,11 +456,12 @@ public class DataInitializer {
                 System.err.println(">>> [DataInitializer] Notice seeding standard lessons: " + e.getMessage());
             }
 
-            // 2c-bis. Ensure Grade 10 Standard Vocabulary words (460 words) are seeded
+            // 2c-bis. Ensure Grade 10 (460 words) & Grade 11 (303 words) Standard Vocabulary words are seeded
             try {
                 standardVocabularySeeder.seedGrade10Vocabulary();
+                standardVocabularySeeder.seedGrade11Vocabulary();
             } catch (Exception e) {
-                System.err.println(">>> [DataInitializer] Notice seeding grade 10 vocabulary: " + e.getMessage());
+                System.err.println(">>> [DataInitializer] Notice seeding vocabulary: " + e.getMessage());
             }
 
             // 2d. Ensure default schedule exists for Sam Kimchheng if empty
