@@ -238,7 +238,7 @@
                 <a href="/lessons" class="nav-pill" style="background: #ede9fe; color: #6d28d9;">
                     📚 មើលមេរៀន
                 </a>
-                <a th:if="${student != null and (student.accountId == 97 or student.className.contains('10') or student.className.contains('១០') or student.className.contains('11') or student.className.contains('១១'))}" href="/test/vocabulary" class="nav-pill" style="background: #eff6ff; color: #1d4ed8;">
+                <a th:if="${student != null and (student.accountId == 97 or (student.className != null and (student.className.contains('10') or student.className.contains('១០') or student.className.contains('11') or student.className.contains('១១') or student.className.contains('12') or student.className.contains('១២'))))}" href="/test/vocabulary" class="nav-pill" style="background: #eff6ff; color: #1d4ed8;">
                     🔤 រៀនពាក្យ (Vocab)
                 </a>
                 <a href="/certificate" class="nav-pill" style="background: #fef3c7; color: #b45309;">

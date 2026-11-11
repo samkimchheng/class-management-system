@@ -30,6 +30,11 @@ public class StandardVocabularySeeder {
         seedVocabularyFromResource(11, 303, "data/grade11_vocabulary.json", "Grade 11");
     }
 
+    @Transactional
+    public void seedGrade12Vocabulary() {
+        seedVocabularyFromResource(12, 294, "data/grade12_vocabulary.json", "Grade 12");
+    }
+
     private void seedVocabularyFromResource(int gradeLevel, int expectedMinCount, String resourcePath, String label) {
         try {
             long existingCount = vocabularyWordRepository.countByGradeLevel(gradeLevel);

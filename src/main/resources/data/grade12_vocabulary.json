@@ -1,0 +1,2354 @@
+[
+    {
+        "num":  1,
+        "english":  "come between (phr v)",
+        "cleanWord":  "come between",
+        "pos":  "phr v",
+        "khmer":  "នៅចន្លោះ",
+        "unit":  "unit 1"
+    },
+    {
+        "num":  2,
+        "english":  "count on (phr v)",
+        "cleanWord":  "count on",
+        "pos":  "phr v",
+        "khmer":  "ពឹងផ្អែកលើ",
+        "unit":  "unit 1"
+    },
+    {
+        "num":  3,
+        "english":  "down to earth (phr v)",
+        "cleanWord":  "down to earth",
+        "pos":  "phr v",
+        "khmer":  "សាមញ្ញ",
+        "unit":  "unit 1"
+    },
+    {
+        "num":  4,
+        "english":  "get along (phr v)",
+        "cleanWord":  "get along",
+        "pos":  "phr v",
+        "khmer":  "ចុះសម្រុង",
+        "unit":  "unit 1"
+    },
+    {
+        "num":  5,
+        "english":  "hear from (phr v)",
+        "cleanWord":  "hear from",
+        "pos":  "phr v",
+        "khmer":  "ដឹងពី",
+        "unit":  "unit 1"
+    },
+    {
+        "num":  6,
+        "english":  "let down (phr v)",
+        "cleanWord":  "let down",
+        "pos":  "phr v",
+        "khmer":  "ធ្វើឱ្យខកបំណង",
+        "unit":  "unit 1"
+    },
+    {
+        "num":  7,
+        "english":  "run into (phr v)",
+        "cleanWord":  "run into",
+        "pos":  "phr v",
+        "khmer":  "ជួបដោយចៃដន្យ",
+        "unit":  "unit 1"
+    },
+    {
+        "num":  8,
+        "english":  "stick up for (phr v)",
+        "cleanWord":  "stick up for",
+        "pos":  "phr v",
+        "khmer":  "នៅជាមួយ",
+        "unit":  "unit 1"
+    },
+    {
+        "num":  9,
+        "english":  "activities (n)",
+        "cleanWord":  "activities",
+        "pos":  "n",
+        "khmer":  "សកម្មភាព",
+        "unit":  "unit 2"
+    },
+    {
+        "num":  10,
+        "english":  "routines (n)",
+        "cleanWord":  "routines",
+        "pos":  "n",
+        "khmer":  "ទម្លាប់",
+        "unit":  "unit 2"
+    },
+    {
+        "num":  11,
+        "english":  "argue (v)",
+        "cleanWord":  "argue",
+        "pos":  "v",
+        "khmer":  "ប្រកែកគ្នា",
+        "unit":  "unit 3"
+    },
+    {
+        "num":  12,
+        "english":  "deal with (phr v)",
+        "cleanWord":  "deal with",
+        "pos":  "phr v",
+        "khmer":  "ដោះស្រាយជាមួយ",
+        "unit":  "unit 3"
+    },
+    {
+        "num":  13,
+        "english":  "fall out (phr v)",
+        "cleanWord":  "fall out",
+        "pos":  "phr v",
+        "khmer":  "ធ្លាក់ចេញ",
+        "unit":  "unit 3"
+    },
+    {
+        "num":  14,
+        "english":  "changes (n)",
+        "cleanWord":  "changes",
+        "pos":  "n",
+        "khmer":  "ការផ្លាស់ប្ដូរ",
+        "unit":  "unit 4"
+    },
+    {
+        "num":  15,
+        "english":  "child (n)",
+        "cleanWord":  "child",
+        "pos":  "n",
+        "khmer":  "កូនក្មេង",
+        "unit":  "unit 4"
+    },
+    {
+        "num":  16,
+        "english":  "generations (n)",
+        "cleanWord":  "generations",
+        "pos":  "n",
+        "khmer":  "ជំនាន់",
+        "unit":  "unit 4"
+    },
+    {
+        "num":  17,
+        "english":  "kid (n)",
+        "cleanWord":  "kid",
+        "pos":  "n",
+        "khmer":  "កូនក្មេង",
+        "unit":  "unit 4"
+    },
+    {
+        "num":  18,
+        "english":  "memories (n)",
+        "cleanWord":  "memories",
+        "pos":  "n",
+        "khmer":  "ការចងចាំ",
+        "unit":  "unit 4"
+    },
+    {
+        "num":  19,
+        "english":  "teenager (n)",
+        "cleanWord":  "teenager",
+        "pos":  "n",
+        "khmer":  "យុវវ័យ",
+        "unit":  "unit 4"
+    },
+    {
+        "num":  20,
+        "english":  "achieve (v)",
+        "cleanWord":  "achieve",
+        "pos":  "v",
+        "khmer":  "សម្រេចបាន",
+        "unit":  "unit 5"
+    },
+    {
+        "num":  21,
+        "english":  "achievement (n)",
+        "cleanWord":  "achievement",
+        "pos":  "n",
+        "khmer":  "ការសម្រេចបាន",
+        "unit":  "unit 5"
+    },
+    {
+        "num":  22,
+        "english":  "candle (n)",
+        "cleanWord":  "candle",
+        "pos":  "n",
+        "khmer":  "ទៀន",
+        "unit":  "unit 5"
+    },
+    {
+        "num":  23,
+        "english":  "decorations (n)",
+        "cleanWord":  "decorations",
+        "pos":  "n",
+        "khmer":  "ការតុបតែង",
+        "unit":  "unit 5"
+    },
+    {
+        "num":  24,
+        "english":  "success (n)",
+        "cleanWord":  "success",
+        "pos":  "n",
+        "khmer":  "ជោគជ័យ",
+        "unit":  "unit 5"
+    },
+    {
+        "num":  25,
+        "english":  "successful (adj)",
+        "cleanWord":  "successful",
+        "pos":  "adj",
+        "khmer":  "ដែលជោគជ័យ",
+        "unit":  "unit 5"
+    },
+    {
+        "num":  26,
+        "english":  "Buddha (n)",
+        "cleanWord":  "Buddha",
+        "pos":  "n",
+        "khmer":  "ព្រះពុទ្ធ",
+        "unit":  "unit 7"
+    },
+    {
+        "num":  27,
+        "english":  "afterwards (adv)",
+        "cleanWord":  "afterwards",
+        "pos":  "adv",
+        "khmer":  "ពេលក្រោយទៀត",
+        "unit":  "unit 7"
+    },
+    {
+        "num":  28,
+        "english":  "ethnic (adj)",
+        "cleanWord":  "ethnic",
+        "pos":  "adj",
+        "khmer":  "ជនជាតិភាគតិច",
+        "unit":  "unit 7"
+    },
+    {
+        "num":  29,
+        "english":  "make a living (verb phrase)",
+        "cleanWord":  "make a living",
+        "pos":  "verb phrase",
+        "khmer":  "ប្រកបរបរ",
+        "unit":  "unit 7"
+    },
+    {
+        "num":  30,
+        "english":  "plantation (n)",
+        "cleanWord":  "plantation",
+        "pos":  "n",
+        "khmer":  "ការដាំដុះ",
+        "unit":  "unit 7"
+    },
+    {
+        "num":  31,
+        "english":  "two-day (adj)",
+        "cleanWord":  "two-day",
+        "pos":  "adj",
+        "khmer":  "២ថ្ងៃ",
+        "unit":  "unit 7"
+    },
+    {
+        "num":  32,
+        "english":  "village (n)",
+        "cleanWord":  "village",
+        "pos":  "n",
+        "khmer":  "ភូមិ",
+        "unit":  "unit 7"
+    },
+    {
+        "num":  33,
+        "english":  "waterfall (n)",
+        "cleanWord":  "waterfall",
+        "pos":  "n",
+        "khmer":  "ទឹកធ្លាក់",
+        "unit":  "unit 7"
+    },
+    {
+        "num":  34,
+        "english":  "bank (n)",
+        "cleanWord":  "bank",
+        "pos":  "n",
+        "khmer":  "ច្រាំងទន្លេ",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  35,
+        "english":  "crops (n)",
+        "cleanWord":  "crops",
+        "pos":  "n",
+        "khmer":  "ដំណាំ",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  36,
+        "english":  "dig (v)",
+        "cleanWord":  "dig",
+        "pos":  "v",
+        "khmer":  "ជីក",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  37,
+        "english":  "flow (v)",
+        "cleanWord":  "flow",
+        "pos":  "v",
+        "khmer":  "ហូរ",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  38,
+        "english":  "garbage (n)",
+        "cleanWord":  "garbage",
+        "pos":  "n",
+        "khmer":  "សំរាម",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  39,
+        "english":  "irrigate (v)",
+        "cleanWord":  "irrigate",
+        "pos":  "v",
+        "khmer":  "ការបញ្ចូលទឹក",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  40,
+        "english":  "mouth (n)",
+        "cleanWord":  "mouth",
+        "pos":  "n",
+        "khmer":  "ចំណុចប្រទាញ (ទន្លេ)",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  41,
+        "english":  "plant (v)",
+        "cleanWord":  "plant",
+        "pos":  "v",
+        "khmer":  "ដាំដុះ",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  42,
+        "english":  "polluted (v)",
+        "cleanWord":  "polluted",
+        "pos":  "v",
+        "khmer":  "ធ្វើឱ្យខូចខាត",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  43,
+        "english":  "soil (n)",
+        "cleanWord":  "soil",
+        "pos":  "n",
+        "khmer":  "ដី",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  44,
+        "english":  "source (n)",
+        "cleanWord":  "source",
+        "pos":  "n",
+        "khmer":  "ប្រភព",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  45,
+        "english":  "sow (v)",
+        "cleanWord":  "sow",
+        "pos":  "v",
+        "khmer":  "សាប/ព្រោះ/បណ្ដុះ",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  46,
+        "english":  "water (v)",
+        "cleanWord":  "water",
+        "pos":  "v",
+        "khmer":  "ស្រោចទឹក",
+        "unit":  "unit 8"
+    },
+    {
+        "num":  47,
+        "english":  "Antarctica (n)",
+        "cleanWord":  "Antarctica",
+        "pos":  "n",
+        "khmer":  "ទ្វីបអង់តាក់ទិក",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  48,
+        "english":  "algae (n)",
+        "cleanWord":  "algae",
+        "pos":  "n",
+        "khmer":  "សារាយ",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  49,
+        "english":  "beach (n)",
+        "cleanWord":  "beach",
+        "pos":  "n",
+        "khmer":  "ឆ្នេរខ្សាច់",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  50,
+        "english":  "crowded (adj)",
+        "cleanWord":  "crowded",
+        "pos":  "adj",
+        "khmer":  "ពោរពេញនដុះ",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  51,
+        "english":  "current (n)",
+        "cleanWord":  "current",
+        "pos":  "n",
+        "khmer":  "បច្ចុប្បន្ន",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  52,
+        "english":  "deep (adj)",
+        "cleanWord":  "deep",
+        "pos":  "adj",
+        "khmer":  "ជ្រៅ",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  53,
+        "english":  "iceberg (n)",
+        "cleanWord":  "iceberg",
+        "pos":  "n",
+        "khmer":  "ផ្ទាំងទឹកកក",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  54,
+        "english":  "marine (adj)",
+        "cleanWord":  "marine",
+        "pos":  "adj",
+        "khmer":  "នៃសមុទ្រ",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  55,
+        "english":  "natural (adj)",
+        "cleanWord":  "natural",
+        "pos":  "adj",
+        "khmer":  "ធម្មជាតិ",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  56,
+        "english":  "pressure (n)",
+        "cleanWord":  "pressure",
+        "pos":  "n",
+        "khmer":  "សម្ពាធ",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  57,
+        "english":  "resources (n)",
+        "cleanWord":  "resources",
+        "pos":  "n",
+        "khmer":  "ធនធាន",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  58,
+        "english":  "sea (n)",
+        "cleanWord":  "sea",
+        "pos":  "n",
+        "khmer":  "សមុទ្រ",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  59,
+        "english":  "shallow (adj)",
+        "cleanWord":  "shallow",
+        "pos":  "adj",
+        "khmer":  "រាក់",
+        "unit":  "unit 9"
+    },
+    {
+        "num":  60,
+        "english":  "dam (n)",
+        "cleanWord":  "dam",
+        "pos":  "n",
+        "khmer":  "ទំនប់ទឹក",
+        "unit":  "unit 10"
+    },
+    {
+        "num":  61,
+        "english":  "hydroelectric (adj)",
+        "cleanWord":  "hydroelectric",
+        "pos":  "adj",
+        "khmer":  "វារីអគ្គិសនី",
+        "unit":  "unit 10"
+    },
+    {
+        "num":  62,
+        "english":  "rare (adj)",
+        "cleanWord":  "rare",
+        "pos":  "adj",
+        "khmer":  "កម្រ",
+        "unit":  "unit 10"
+    },
+    {
+        "num":  63,
+        "english":  "renewable (adj)",
+        "cleanWord":  "renewable",
+        "pos":  "adj",
+        "khmer":  "ដែលអាចកកើតឡើងវិញ",
+        "unit":  "unit 10"
+    },
+    {
+        "num":  64,
+        "english":  "solar panel (n)",
+        "cleanWord":  "solar panel",
+        "pos":  "n",
+        "khmer":  "បន្ទះសូឡា",
+        "unit":  "unit 10"
+    },
+    {
+        "num":  65,
+        "english":  "thermal (adj)",
+        "cleanWord":  "thermal",
+        "pos":  "adj",
+        "khmer":  "នៃកំដៅ",
+        "unit":  "unit 10"
+    },
+    {
+        "num":  66,
+        "english":  "waves (n)",
+        "cleanWord":  "waves",
+        "pos":  "n",
+        "khmer":  "រលក",
+        "unit":  "unit 10"
+    },
+    {
+        "num":  67,
+        "english":  "windmill (n)",
+        "cleanWord":  "windmill",
+        "pos":  "n",
+        "khmer":  "ម៉ាស៊ីនដើរដោយកម្លាំងខ្យល់",
+        "unit":  "unit 10"
+    },
+    {
+        "num":  68,
+        "english":  "astronaut (n)",
+        "cleanWord":  "astronaut",
+        "pos":  "n",
+        "khmer":  "អាកាសយានិក",
+        "unit":  "unit 11"
+    },
+    {
+        "num":  69,
+        "english":  "exploration (n)",
+        "cleanWord":  "exploration",
+        "pos":  "n",
+        "khmer":  "ការរុករក",
+        "unit":  "unit 11"
+    },
+    {
+        "num":  70,
+        "english":  "explore (v)",
+        "cleanWord":  "explore",
+        "pos":  "v",
+        "khmer":  "រុករក",
+        "unit":  "unit 11"
+    },
+    {
+        "num":  71,
+        "english":  "flag (n)",
+        "cleanWord":  "flag",
+        "pos":  "n",
+        "khmer":  "ទង់ជាតិ",
+        "unit":  "unit 11"
+    },
+    {
+        "num":  72,
+        "english":  "launch (n \u0026 v)",
+        "cleanWord":  "launch",
+        "pos":  "n \u0026 v",
+        "khmer":  "ការដាក់ឱ្យប្រើប្រាស់",
+        "unit":  "unit 11"
+    },
+    {
+        "num":  73,
+        "english":  "moon (n)",
+        "cleanWord":  "moon",
+        "pos":  "n",
+        "khmer":  "កំដៅព្រះចន្ទ",
+        "unit":  "unit 11"
+    },
+    {
+        "num":  74,
+        "english":  "rocket (n)",
+        "cleanWord":  "rocket",
+        "pos":  "n",
+        "khmer":  "កាំជ្រួច",
+        "unit":  "unit 11"
+    },
+    {
+        "num":  75,
+        "english":  "solar system (n)",
+        "cleanWord":  "solar system",
+        "pos":  "n",
+        "khmer":  "ប្រព័ន្ធសូឡា/ព្រះអាទិត្យ",
+        "unit":  "unit 11"
+    },
+    {
+        "num":  76,
+        "english":  "space station (n)",
+        "cleanWord":  "space station",
+        "pos":  "n",
+        "khmer":  "ស្ថានីយអាកាស",
+        "unit":  "unit 11"
+    },
+    {
+        "num":  77,
+        "english":  "surface (n)",
+        "cleanWord":  "surface",
+        "pos":  "n",
+        "khmer":  "ផ្ទៃដី",
+        "unit":  "unit 11"
+    },
+    {
+        "num":  78,
+        "english":  "abdomen (n)",
+        "cleanWord":  "abdomen",
+        "pos":  "n",
+        "khmer":  "ពោះ",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  79,
+        "english":  "caffeine (n)",
+        "cleanWord":  "caffeine",
+        "pos":  "n",
+        "khmer":  "ជាតិកាហ្វេអ៊ីន",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  80,
+        "english":  "calories (n)",
+        "cleanWord":  "calories",
+        "pos":  "n",
+        "khmer":  "កាឡូរី",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  81,
+        "english":  "consume (v)",
+        "cleanWord":  "consume",
+        "pos":  "v",
+        "khmer":  "ប្រើប្រាស់",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  82,
+        "english":  "diabetes (n)",
+        "cleanWord":  "diabetes",
+        "pos":  "n",
+        "khmer":  "ជំងឺទឹកនោមផ្អែម",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  83,
+        "english":  "elbow (n)",
+        "cleanWord":  "elbow",
+        "pos":  "n",
+        "khmer":  "កែងដៃ",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  84,
+        "english":  "excess (n)",
+        "cleanWord":  "excess",
+        "pos":  "n",
+        "khmer":  "លើសកំណត់",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  85,
+        "english":  "fats (n)",
+        "cleanWord":  "fats",
+        "pos":  "n",
+        "khmer":  "ខ្លាញ់",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  86,
+        "english":  "immune system (n)",
+        "cleanWord":  "immune system",
+        "pos":  "n",
+        "khmer":  "ប្រព័ន្ធភាពស៊ាំ",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  87,
+        "english":  "knee (n)",
+        "cleanWord":  "knee",
+        "pos":  "n",
+        "khmer":  "ក្បាលជង្គង់",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  88,
+        "english":  "regular (adj)",
+        "cleanWord":  "regular",
+        "pos":  "adj",
+        "khmer":  "ទៀងទាត់",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  89,
+        "english":  "shoulder (n)",
+        "cleanWord":  "shoulder",
+        "pos":  "n",
+        "khmer":  "ស្មា",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  90,
+        "english":  "spine (n)",
+        "cleanWord":  "spine",
+        "pos":  "n",
+        "khmer":  "ឆ្អឹងខ្នង",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  91,
+        "english":  "stress (n)",
+        "cleanWord":  "stress",
+        "pos":  "n",
+        "khmer":  "សម្ពាធ",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  92,
+        "english":  "toes (n)",
+        "cleanWord":  "toes",
+        "pos":  "n",
+        "khmer":  "ម្រាមជើង",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  93,
+        "english":  "vitamins (n)",
+        "cleanWord":  "vitamins",
+        "pos":  "n",
+        "khmer":  "វីតាមីន",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  94,
+        "english":  "workout (n)",
+        "cleanWord":  "workout",
+        "pos":  "n",
+        "khmer":  "ការហាត់ប្រាណ",
+        "unit":  "unit 13"
+    },
+    {
+        "num":  95,
+        "english":  "danger (n)",
+        "cleanWord":  "danger",
+        "pos":  "n",
+        "khmer":  "គ្រោះថ្នាក់",
+        "unit":  "unit 14"
+    },
+    {
+        "num":  96,
+        "english":  "delete (v)",
+        "cleanWord":  "delete",
+        "pos":  "v",
+        "khmer":  "លុប",
+        "unit":  "unit 14"
+    },
+    {
+        "num":  97,
+        "english":  "notice (n \u0026 v)",
+        "cleanWord":  "notice",
+        "pos":  "n \u0026 v",
+        "khmer":  "កំណត់សម្គាល់",
+        "unit":  "unit 14"
+    },
+    {
+        "num":  98,
+        "english":  "password (n)",
+        "cleanWord":  "password",
+        "pos":  "n",
+        "khmer":  "លេខសម្ងាត់",
+        "unit":  "unit 14"
+    },
+    {
+        "num":  99,
+        "english":  "virus (n)",
+        "cleanWord":  "virus",
+        "pos":  "n",
+        "khmer":  "មេរោគ",
+        "unit":  "unit 14"
+    },
+    {
+        "num":  100,
+        "english":  "warning (n)",
+        "cleanWord":  "warning",
+        "pos":  "n",
+        "khmer":  "ពាក្យាស់សឿន",
+        "unit":  "unit 14"
+    },
+    {
+        "num":  101,
+        "english":  "breaking (adj)",
+        "cleanWord":  "breaking",
+        "pos":  "adj",
+        "khmer":  "ទាន់ហេតុការណ៍",
+        "unit":  "unit 15"
+    },
+    {
+        "num":  102,
+        "english":  "headline (n)",
+        "cleanWord":  "headline",
+        "pos":  "n",
+        "khmer":  "ចំណងជើង",
+        "unit":  "unit 15"
+    },
+    {
+        "num":  103,
+        "english":  "journalist (n)",
+        "cleanWord":  "journalist",
+        "pos":  "n",
+        "khmer":  "អ្នកសារព័ត៌មាន",
+        "unit":  "unit 15"
+    },
+    {
+        "num":  104,
+        "english":  "news (n)",
+        "cleanWord":  "news",
+        "pos":  "n",
+        "khmer":  "សារព័ត៌មាន",
+        "unit":  "unit 15"
+    },
+    {
+        "num":  105,
+        "english":  "report (n)",
+        "cleanWord":  "report",
+        "pos":  "n",
+        "khmer":  "សេចក្តីរាយការណ៍",
+        "unit":  "unit 15"
+    },
+    {
+        "num":  106,
+        "english":  "reporter (n)",
+        "cleanWord":  "reporter",
+        "pos":  "n",
+        "khmer":  "អ្នករាយការណ៍",
+        "unit":  "unit 15"
+    },
+    {
+        "num":  107,
+        "english":  "summary (n)",
+        "cleanWord":  "summary",
+        "pos":  "n",
+        "khmer":  "សេចក្ដីសង្ខេប",
+        "unit":  "unit 15"
+    },
+    {
+        "num":  108,
+        "english":  "witness (n)",
+        "cleanWord":  "witness",
+        "pos":  "n",
+        "khmer":  "សាក្សី",
+        "unit":  "unit 15"
+    },
+    {
+        "num":  109,
+        "english":  "aid (n)",
+        "cleanWord":  "aid",
+        "pos":  "n",
+        "khmer":  "ជំនួយ",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  110,
+        "english":  "announce (v)",
+        "cleanWord":  "announce",
+        "pos":  "v",
+        "khmer":  "ប្រកាស",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  111,
+        "english":  "civil war (n)",
+        "cleanWord":  "civil war",
+        "pos":  "n",
+        "khmer":  "សង្គ្រាមស៊ីវិល",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  112,
+        "english":  "economy (n)",
+        "cleanWord":  "economy",
+        "pos":  "n",
+        "khmer":  "សេដ្ឋកិច្ច",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  113,
+        "english":  "election (n)",
+        "cleanWord":  "election",
+        "pos":  "n",
+        "khmer":  "ការបោះឆ្នោត",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  114,
+        "english":  "epidemic (n)",
+        "cleanWord":  "epidemic",
+        "pos":  "n",
+        "khmer":  "ការរីករាលដាល",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  115,
+        "english":  "famine (n)",
+        "cleanWord":  "famine",
+        "pos":  "n",
+        "khmer":  "ការអត់ឃ្លាន",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  116,
+        "english":  "joke (n)",
+        "cleanWord":  "joke",
+        "pos":  "n",
+        "khmer":  "រឿងកំប្លែង",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  117,
+        "english":  "lie (n)",
+        "cleanWord":  "lie",
+        "pos":  "n",
+        "khmer":  "រឿងកុហក",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  118,
+        "english":  "recession (n)",
+        "cleanWord":  "recession",
+        "pos":  "n",
+        "khmer":  "វិបត្តិ",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  119,
+        "english":  "secret (n)",
+        "cleanWord":  "secret",
+        "pos":  "n",
+        "khmer":  "រឿងសម្ងាត់",
+        "unit":  "unit 16"
+    },
+    {
+        "num":  120,
+        "english":  "advert (n)",
+        "cleanWord":  "advert",
+        "pos":  "n",
+        "khmer":  "ការផ្សាយពាណិជ្ជកម្ម",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  121,
+        "english":  "audience (n)",
+        "cleanWord":  "audience",
+        "pos":  "n",
+        "khmer":  "ទស្សនិកជន",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  122,
+        "english":  "candy (n)",
+        "cleanWord":  "candy",
+        "pos":  "n",
+        "khmer":  "ស្ករគ្រាប់",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  123,
+        "english":  "coffin (n)",
+        "cleanWord":  "coffin",
+        "pos":  "n",
+        "khmer":  "ក្ដារមឈូស",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  124,
+        "english":  "designer (n \u0026 adj)",
+        "cleanWord":  "designer",
+        "pos":  "n \u0026 adj",
+        "khmer":  "អ្នករចនា",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  125,
+        "english":  "detergent (n)",
+        "cleanWord":  "detergent",
+        "pos":  "n",
+        "khmer":  "ទឹកសាប៊ូោកខោអាវ",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  126,
+        "english":  "fresh (adj)",
+        "cleanWord":  "fresh",
+        "pos":  "adj",
+        "khmer":  "ស្រស់ស្រាយ",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  127,
+        "english":  "insurance (n)",
+        "cleanWord":  "insurance",
+        "pos":  "n",
+        "khmer":  "ការធានារ៉ាប់រង",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  128,
+        "english":  "market (n)",
+        "cleanWord":  "market",
+        "pos":  "n",
+        "khmer":  "ផ្សារ",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  129,
+        "english":  "mask (n)",
+        "cleanWord":  "mask",
+        "pos":  "n",
+        "khmer":  "ម៉ាស់បាំង",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  130,
+        "english":  "sell (v)",
+        "cleanWord":  "sell",
+        "pos":  "v",
+        "khmer":  "លក់",
+        "unit":  "unit 17"
+    },
+    {
+        "num":  131,
+        "english":  "ID card (n)",
+        "cleanWord":  "ID card",
+        "pos":  "n",
+        "khmer":  "អត្តសញ្ញាណប័ណ្ណ",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  132,
+        "english":  "choice (n)",
+        "cleanWord":  "choice",
+        "pos":  "n",
+        "khmer":  "ជម្រើស",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  133,
+        "english":  "citizen (n)",
+        "cleanWord":  "citizen",
+        "pos":  "n",
+        "khmer":  "ពលរដ្ឋ",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  134,
+        "english":  "civic (adj)",
+        "cleanWord":  "civic",
+        "pos":  "adj",
+        "khmer":  "នៃពលរដ្ឋ",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  135,
+        "english":  "community (n)",
+        "cleanWord":  "community",
+        "pos":  "n",
+        "khmer":  "សហគមន៍",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  136,
+        "english":  "engage (v)",
+        "cleanWord":  "engage",
+        "pos":  "v",
+        "khmer":  "ចូលរួម",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  137,
+        "english":  "license (n)",
+        "cleanWord":  "license",
+        "pos":  "n",
+        "khmer":  "អាជ្ញាប័ណ្ណ",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  138,
+        "english":  "moral values (n)",
+        "cleanWord":  "moral values",
+        "pos":  "n",
+        "khmer":  "តម្លៃសីលធម៌",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  139,
+        "english":  "register (v)",
+        "cleanWord":  "register",
+        "pos":  "v",
+        "khmer":  "ចុះឈ្មោះ",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  140,
+        "english":  "registration (n)",
+        "cleanWord":  "registration",
+        "pos":  "n",
+        "khmer":  "ការចុះឈ្មោះ",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  141,
+        "english":  "respect (v)",
+        "cleanWord":  "respect",
+        "pos":  "v",
+        "khmer":  "គោរព",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  142,
+        "english":  "responsibility (n)",
+        "cleanWord":  "responsibility",
+        "pos":  "n",
+        "khmer":  "ការទទួលខុសត្រូវ",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  143,
+        "english":  "take place (v)",
+        "cleanWord":  "take place",
+        "pos":  "v",
+        "khmer":  "កើតឡើង",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  144,
+        "english":  "vote (v \u0026 n)",
+        "cleanWord":  "vote",
+        "pos":  "v \u0026 n",
+        "khmer":  "បោះឆ្នោត",
+        "unit":  "unit 21"
+    },
+    {
+        "num":  145,
+        "english":  "border (n)",
+        "cleanWord":  "border",
+        "pos":  "n",
+        "khmer":  "ព្រំដែន",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  146,
+        "english":  "claims (n)",
+        "cleanWord":  "claims",
+        "pos":  "n",
+        "khmer":  "ទាមទារ",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  147,
+        "english":  "commitment (n)",
+        "cleanWord":  "commitment",
+        "pos":  "n",
+        "khmer":  "ការប្ដេជ្ញាចិត្ត",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  148,
+        "english":  "currency (n)",
+        "cleanWord":  "currency",
+        "pos":  "n",
+        "khmer":  "រូបិយប័ណ្ណ",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  149,
+        "english":  "development (n)",
+        "cleanWord":  "development",
+        "pos":  "n",
+        "khmer":  "ការអភិវឌ្ឍ",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  150,
+        "english":  "disputes (n)",
+        "cleanWord":  "disputes",
+        "pos":  "n",
+        "khmer":  "ជម្លោះ",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  151,
+        "english":  "economic (adj)",
+        "cleanWord":  "economic",
+        "pos":  "adj",
+        "khmer":  "នៃសេដ្ឋកិច្ច",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  152,
+        "english":  "growth (n)",
+        "cleanWord":  "growth",
+        "pos":  "n",
+        "khmer":  "កំណើន",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  153,
+        "english":  "join (v)",
+        "cleanWord":  "join",
+        "pos":  "v",
+        "khmer":  "ចូលរួម",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  154,
+        "english":  "member (n)",
+        "cleanWord":  "member",
+        "pos":  "n",
+        "khmer":  "សមាជិក",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  155,
+        "english":  "official (adj)",
+        "cleanWord":  "official",
+        "pos":  "adj",
+        "khmer":  "ផ្លូវការ",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  156,
+        "english":  "organisation (n)",
+        "cleanWord":  "organisation",
+        "pos":  "n",
+        "khmer":  "អង្គការ",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  157,
+        "english":  "regional (adj)",
+        "cleanWord":  "regional",
+        "pos":  "adj",
+        "khmer":  "ប្រចាំតំបន់",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  158,
+        "english":  "security (n)",
+        "cleanWord":  "security",
+        "pos":  "n",
+        "khmer":  "សន្តិសុខ",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  159,
+        "english":  "stand for (phr v)",
+        "cleanWord":  "stand for",
+        "pos":  "phr v",
+        "khmer":  "តំណាងឱ្យ",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  160,
+        "english":  "territorial (adj)",
+        "cleanWord":  "territorial",
+        "pos":  "adj",
+        "khmer":  "នៃដែនដី",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  161,
+        "english":  "trade (v)",
+        "cleanWord":  "trade",
+        "pos":  "v",
+        "khmer":  "ធ្វើពាណិជ្ជកម្ម",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  162,
+        "english":  "unity (n)",
+        "cleanWord":  "unity",
+        "pos":  "n",
+        "khmer":  "ការបង្រួបបង្រួម",
+        "unit":  "unit 22"
+    },
+    {
+        "num":  163,
+        "english":  "block (v)",
+        "cleanWord":  "block",
+        "pos":  "v",
+        "khmer":  "បិទ",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  164,
+        "english":  "bully (n)",
+        "cleanWord":  "bully",
+        "pos":  "n",
+        "khmer":  "មនុស្សរង្គៀងគេ",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  165,
+        "english":  "bullying (v)",
+        "cleanWord":  "bullying",
+        "pos":  "v",
+        "khmer":  "រករឿងគេ",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  166,
+        "english":  "cyber (n)",
+        "cleanWord":  "cyber",
+        "pos":  "n",
+        "khmer":  "អ៊ីនធឺណិត",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  167,
+        "english":  "exclude (v)",
+        "cleanWord":  "exclude",
+        "pos":  "v",
+        "khmer":  "មិនរាប់បញ្ចូល",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  168,
+        "english":  "fight back (phr v)",
+        "cleanWord":  "fight back",
+        "pos":  "phr v",
+        "khmer":  "តទល់",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  169,
+        "english":  "hurt (v)",
+        "cleanWord":  "hurt",
+        "pos":  "v",
+        "khmer":  "ធ្វើឱ្យឈឺចាប់",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  170,
+        "english":  "join in (v)",
+        "cleanWord":  "join in",
+        "pos":  "v",
+        "khmer":  "ចូលរួមក្នុង",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  171,
+        "english":  "log in (v)",
+        "cleanWord":  "log in",
+        "pos":  "v",
+        "khmer":  "ចូល",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  172,
+        "english":  "make fun of (verb phrase)",
+        "cleanWord":  "make fun of",
+        "pos":  "verb phrase",
+        "khmer":  "លេងសើច",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  173,
+        "english":  "pick on (phr v)",
+        "cleanWord":  "pick on",
+        "pos":  "phr v",
+        "khmer":  "សម្លុត",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  174,
+        "english":  "privacy (n)",
+        "cleanWord":  "privacy",
+        "pos":  "n",
+        "khmer":  "ភាពឯកជន",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  175,
+        "english":  "put up with (phr v)",
+        "cleanWord":  "put up with",
+        "pos":  "phr v",
+        "khmer":  "អត់ធ្មត់",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  176,
+        "english":  "rumours (n)",
+        "cleanWord":  "rumours",
+        "pos":  "n",
+        "khmer":  "ពាក្យចចាមអារ៉ាម",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  177,
+        "english":  "settings (n)",
+        "cleanWord":  "settings",
+        "pos":  "n",
+        "khmer":  "ការកំណត់",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  178,
+        "english":  "spread (v)",
+        "cleanWord":  "spread",
+        "pos":  "v",
+        "khmer":  "ផ្សព្វផ្សាយ",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  179,
+        "english":  "stand up for (phr v)",
+        "cleanWord":  "stand up for",
+        "pos":  "phr v",
+        "khmer":  "ការពារដើម្បី",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  180,
+        "english":  "upset (v \u0026 adj)",
+        "cleanWord":  "upset",
+        "pos":  "v \u0026 adj",
+        "khmer":  "មិនសប្បាយចិត្ត",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  181,
+        "english":  "verbal (adj)",
+        "cleanWord":  "verbal",
+        "pos":  "adj",
+        "khmer":  "ពាក្យសម្ដី",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  182,
+        "english":  "victim (n)",
+        "cleanWord":  "victim",
+        "pos":  "n",
+        "khmer":  "អ្នករងគ្រោះ",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  183,
+        "english":  "viral (n)",
+        "cleanWord":  "viral",
+        "pos":  "n",
+        "khmer":  "ភាពល្បីល្បាញបញ្ជូនញឹកញាប់",
+        "unit":  "unit 23"
+    },
+    {
+        "num":  184,
+        "english":  "abuse (v)",
+        "cleanWord":  "abuse",
+        "pos":  "v",
+        "khmer":  "រំលោភបំពាន",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  185,
+        "english":  "alarmed (adj)",
+        "cleanWord":  "alarmed",
+        "pos":  "adj",
+        "khmer":  "ប្រាប់ឱ្យដឹងមុន",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  186,
+        "english":  "anxious (adj)",
+        "cleanWord":  "anxious",
+        "pos":  "adj",
+        "khmer":  "បារម្ភព្រួយ",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  187,
+        "english":  "authority (n)",
+        "cleanWord":  "authority",
+        "pos":  "n",
+        "khmer":  "អាជ្ញាធរ",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  188,
+        "english":  "child labour (n)",
+        "cleanWord":  "child labour",
+        "pos":  "n",
+        "khmer":  "ពលកម្មកុមារ",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  189,
+        "english":  "consultant (n)",
+        "cleanWord":  "consultant",
+        "pos":  "n",
+        "khmer":  "ទីប្រឹក្សា",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  190,
+        "english":  "crime (n)",
+        "cleanWord":  "crime",
+        "pos":  "n",
+        "khmer":  "បទឧក្រិដ្ឋ",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  191,
+        "english":  "crucial (adj)",
+        "cleanWord":  "crucial",
+        "pos":  "adj",
+        "khmer":  "សំខាន់",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  192,
+        "english":  "defenceless (adj)",
+        "cleanWord":  "defenceless",
+        "pos":  "adj",
+        "khmer":  "គ្មានទីពឹង",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  193,
+        "english":  "domestic (adj)",
+        "cleanWord":  "domestic",
+        "pos":  "adj",
+        "khmer":  "ក្នុងស្រុក",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  194,
+        "english":  "exploit (v)",
+        "cleanWord":  "exploit",
+        "pos":  "v",
+        "khmer":  "កេងប្រវ័ញ្ច",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  195,
+        "english":  "force (v)",
+        "cleanWord":  "force",
+        "pos":  "v",
+        "khmer":  "បង្ខំ",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  196,
+        "english":  "goal (n)",
+        "cleanWord":  "goal",
+        "pos":  "n",
+        "khmer":  "គោលដៅ",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  197,
+        "english":  "illegal (adj)",
+        "cleanWord":  "illegal",
+        "pos":  "adj",
+        "khmer":  "ខុសច្បាប់",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  198,
+        "english":  "infection (n)",
+        "cleanWord":  "infection",
+        "pos":  "n",
+        "khmer":  "ការឆ្លងមេរោគ",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  199,
+        "english":  "law (n)",
+        "cleanWord":  "law",
+        "pos":  "n",
+        "khmer":  "ច្បាប់",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  200,
+        "english":  "prevention (n)",
+        "cleanWord":  "prevention",
+        "pos":  "n",
+        "khmer":  "ការការពារ",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  201,
+        "english":  "priority (n)",
+        "cleanWord":  "priority",
+        "pos":  "n",
+        "khmer":  "អទិភាព",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  202,
+        "english":  "self-esteem (n)",
+        "cleanWord":  "self-esteem",
+        "pos":  "n",
+        "khmer":  "ការជឿទុកចិត្តលើខ្លួនឯង",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  203,
+        "english":  "slavery (n)",
+        "cleanWord":  "slavery",
+        "pos":  "n",
+        "khmer":  "ទាសភាព",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  204,
+        "english":  "transmit (v)",
+        "cleanWord":  "transmit",
+        "pos":  "v",
+        "khmer":  "បញ្ជូនបន្ត",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  205,
+        "english":  "traumatic (adj)",
+        "cleanWord":  "traumatic",
+        "pos":  "adj",
+        "khmer":  "ធ្វើឱ្យខ្សត់",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  206,
+        "english":  "wander off (v)",
+        "cleanWord":  "wander off",
+        "pos":  "v",
+        "khmer":  "វង្វេង",
+        "unit":  "unit 24"
+    },
+    {
+        "num":  207,
+        "english":  "aggressive (adj)",
+        "cleanWord":  "aggressive",
+        "pos":  "adj",
+        "khmer":  "ប្រចែប្រជែង/ឆេវឆាវ",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  208,
+        "english":  "alcohol (n)",
+        "cleanWord":  "alcohol",
+        "pos":  "n",
+        "khmer":  "ស្រាអង្គុលី",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  209,
+        "english":  "alcoholic (adj)",
+        "cleanWord":  "alcoholic",
+        "pos":  "adj",
+        "khmer":  "ដែលមានជាតិអាល់កុល",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  210,
+        "english":  "banner (n)",
+        "cleanWord":  "banner",
+        "pos":  "n",
+        "khmer":  "បដា",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  211,
+        "english":  "behavioural (adj)",
+        "cleanWord":  "behavioural",
+        "pos":  "adj",
+        "khmer":  "អាកប្បកិរិយា",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  212,
+        "english":  "disrespect (v)",
+        "cleanWord":  "disrespect",
+        "pos":  "v",
+        "khmer":  "មិនគោរព",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  213,
+        "english":  "distress (n)",
+        "cleanWord":  "distress",
+        "pos":  "n",
+        "khmer":  "ទុក្ខព្រួយ",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  214,
+        "english":  "drugs (n)",
+        "cleanWord":  "drugs",
+        "pos":  "n",
+        "khmer":  "ថ្នាំញៀន",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  215,
+        "english":  "harm (v)",
+        "cleanWord":  "harm",
+        "pos":  "v",
+        "khmer":  "ធ្វើឱ្យខូចខាត",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  216,
+        "english":  "lure (v)",
+        "cleanWord":  "lure",
+        "pos":  "v",
+        "khmer":  "ល្បួងលួស",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  217,
+        "english":  "prevent (v)",
+        "cleanWord":  "prevent",
+        "pos":  "v",
+        "khmer":  "ការពារ",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  218,
+        "english":  "punishment (n)",
+        "cleanWord":  "punishment",
+        "pos":  "n",
+        "khmer":  "ទណ្ឌកម្ម",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  219,
+        "english":  "risks (n)",
+        "cleanWord":  "risks",
+        "pos":  "n",
+        "khmer":  "ហានិភ័យ",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  220,
+        "english":  "vendor (n)",
+        "cleanWord":  "vendor",
+        "pos":  "n",
+        "khmer":  "អ្នកលក់",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  221,
+        "english":  "violence (n)",
+        "cleanWord":  "violence",
+        "pos":  "n",
+        "khmer":  "ហិង្សា",
+        "unit":  "unit 25"
+    },
+    {
+        "num":  222,
+        "english":  "abroad (adv)",
+        "cleanWord":  "abroad",
+        "pos":  "adv",
+        "khmer":  "បរទេស ឬក្រៅប្រទេស",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  223,
+        "english":  "accommodation (n)",
+        "cleanWord":  "accommodation",
+        "pos":  "n",
+        "khmer":  "កន្លែងស្នាក់នៅ",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  224,
+        "english":  "campus (n)",
+        "cleanWord":  "campus",
+        "pos":  "n",
+        "khmer":  "បរិវេណ",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  225,
+        "english":  "embassy (n)",
+        "cleanWord":  "embassy",
+        "pos":  "n",
+        "khmer":  "ស្ថានទូត",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  226,
+        "english":  "fancy (v \u0026 adj)",
+        "cleanWord":  "fancy",
+        "pos":  "v \u0026 adj",
+        "khmer":  "ប្រណីត",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  227,
+        "english":  "flight (n)",
+        "cleanWord":  "flight",
+        "pos":  "n",
+        "khmer":  "ជើងហោះហើរ",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  228,
+        "english":  "iconic (adj)",
+        "cleanWord":  "iconic",
+        "pos":  "adj",
+        "khmer":  "ល្បីល្បាញ",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  229,
+        "english":  "immigration (n)",
+        "cleanWord":  "immigration",
+        "pos":  "n",
+        "khmer":  "អន្តោប្រវេសន៍",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  230,
+        "english":  "medical records (n)",
+        "cleanWord":  "medical records",
+        "pos":  "n",
+        "khmer":  "កំណត់ត្រាវេជ្ជសាស្ត្រ",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  231,
+        "english":  "scholarship (n)",
+        "cleanWord":  "scholarship",
+        "pos":  "n",
+        "khmer":  "អាហារូបករណ៍",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  232,
+        "english":  "submit (v)",
+        "cleanWord":  "submit",
+        "pos":  "v",
+        "khmer":  "ដាក់ស្នើ",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  233,
+        "english":  "university (n)",
+        "cleanWord":  "university",
+        "pos":  "n",
+        "khmer":  "សាកលវិទ្យាល័យ",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  234,
+        "english":  "visa (n)",
+        "cleanWord":  "visa",
+        "pos":  "n",
+        "khmer":  "ទិដ្ឋាការ",
+        "unit":  "unit 27"
+    },
+    {
+        "num":  235,
+        "english":  "adapt (v)",
+        "cleanWord":  "adapt",
+        "pos":  "v",
+        "khmer":  "សម្របខ្លួនតាម",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  236,
+        "english":  "climate (n)",
+        "cleanWord":  "climate",
+        "pos":  "n",
+        "khmer":  "អាកាសធាតុ",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  237,
+        "english":  "curious (adj)",
+        "cleanWord":  "curious",
+        "pos":  "adj",
+        "khmer":  "ចង់ចេះចង់ដឹង",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  238,
+        "english":  "dependent (adj)",
+        "cleanWord":  "dependent",
+        "pos":  "adj",
+        "khmer":  "ពឹងផ្អែក",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  239,
+        "english":  "differences (n)",
+        "cleanWord":  "differences",
+        "pos":  "n",
+        "khmer":  "ភាពខុសគ្នា",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  240,
+        "english":  "different (adj)",
+        "cleanWord":  "different",
+        "pos":  "adj",
+        "khmer":  "ដែលខុសគ្នា",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  241,
+        "english":  "disorientated (adj)",
+        "cleanWord":  "disorientated",
+        "pos":  "adj",
+        "khmer":  "វង្វេងស្មារតី",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  242,
+        "english":  "diverse (adj)",
+        "cleanWord":  "diverse",
+        "pos":  "adj",
+        "khmer":  "ផ្សេងៗ",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  243,
+        "english":  "flexible (adj)",
+        "cleanWord":  "flexible",
+        "pos":  "adj",
+        "khmer":  "អាចបត់បែនបាន",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  244,
+        "english":  "foreigner (n)",
+        "cleanWord":  "foreigner",
+        "pos":  "n",
+        "khmer":  "ជនបរទេស",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  245,
+        "english":  "homesick (adj)",
+        "cleanWord":  "homesick",
+        "pos":  "adj",
+        "khmer":  "ដែលនឹករលឹកផ្ទះ",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  246,
+        "english":  "informal (adj)",
+        "cleanWord":  "informal",
+        "pos":  "adj",
+        "khmer":  "មិនផ្លូវការ",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  247,
+        "english":  "settle in (v)",
+        "cleanWord":  "settle in",
+        "pos":  "v",
+        "khmer":  "សម្រប",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  248,
+        "english":  "shock (n \u0026 v)",
+        "cleanWord":  "shock",
+        "pos":  "n \u0026 v",
+        "khmer":  "កត់ស្ញុច",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  249,
+        "english":  "similar (n)",
+        "cleanWord":  "similar",
+        "pos":  "n",
+        "khmer":  "ប្រហាក់ប្រហែលគ្នា",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  250,
+        "english":  "weather (n)",
+        "cleanWord":  "weather",
+        "pos":  "n",
+        "khmer":  "អាកាសធាតុ",
+        "unit":  "unit 28"
+    },
+    {
+        "num":  251,
+        "english":  "CV (n)",
+        "cleanWord":  "CV",
+        "pos":  "n",
+        "khmer":  "ប្រវត្តិរូប",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  252,
+        "english":  "accountant (n)",
+        "cleanWord":  "accountant",
+        "pos":  "n",
+        "khmer":  "គណនេយ្យ",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  253,
+        "english":  "administrative (adj)",
+        "cleanWord":  "administrative",
+        "pos":  "adj",
+        "khmer":  "នៃរដ្ឋបាល",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  254,
+        "english":  "barista (n)",
+        "cleanWord":  "barista",
+        "pos":  "n",
+        "khmer":  "អ្នកឆុះកាហ្វេ",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  255,
+        "english":  "candidate (n)",
+        "cleanWord":  "candidate",
+        "pos":  "n",
+        "khmer":  "បេក្ខជន",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  256,
+        "english":  "check out (v \u0026 n)",
+        "cleanWord":  "check out",
+        "pos":  "v \u0026 n",
+        "khmer":  "ពិនិត្យ",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  257,
+        "english":  "chef (n)",
+        "cleanWord":  "chef",
+        "pos":  "n",
+        "khmer":  "មេចុងភៅ",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  258,
+        "english":  "cleaner (n)",
+        "cleanWord":  "cleaner",
+        "pos":  "n",
+        "khmer":  "សម្អាត",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  259,
+        "english":  "client (n)",
+        "cleanWord":  "client",
+        "pos":  "n",
+        "khmer":  "អតិថិជន",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  260,
+        "english":  "cover letter (n)",
+        "cleanWord":  "cover letter",
+        "pos":  "n",
+        "khmer":  "លិខិតអម",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  261,
+        "english":  "cure (v \u0026 n)",
+        "cleanWord":  "cure",
+        "pos":  "v \u0026 n",
+        "khmer":  "ព្យាបាល/ការព្យាបាល",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  262,
+        "english":  "desirable (adj)",
+        "cleanWord":  "desirable",
+        "pos":  "adj",
+        "khmer":  "គួរឱ្យចង់បាន",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  263,
+        "english":  "essential (adj)",
+        "cleanWord":  "essential",
+        "pos":  "adj",
+        "khmer":  "សំខាន់",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  264,
+        "english":  "farmer (n)",
+        "cleanWord":  "farmer",
+        "pos":  "n",
+        "khmer":  "កសិករ",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  265,
+        "english":  "grind (v)",
+        "cleanWord":  "grind",
+        "pos":  "v",
+        "khmer":  "កិន",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  266,
+        "english":  "lawyer (n)",
+        "cleanWord":  "lawyer",
+        "pos":  "n",
+        "khmer":  "មេធាវី",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  267,
+        "english":  "librarian (n)",
+        "cleanWord":  "librarian",
+        "pos":  "n",
+        "khmer":  "បណ្ណារក្ស",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  268,
+        "english":  "position (n)",
+        "cleanWord":  "position",
+        "pos":  "n",
+        "khmer":  "មុខតំណែង",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  269,
+        "english":  "post (n \u0026 v)",
+        "cleanWord":  "post",
+        "pos":  "n \u0026 v",
+        "khmer":  "ការដាក់បង្ហាញតាមអ៊ិនធឺណិត",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  270,
+        "english":  "prefer (v)",
+        "cleanWord":  "prefer",
+        "pos":  "v",
+        "khmer":  "ចូលចិត្តជាង",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  271,
+        "english":  "publish (v)",
+        "cleanWord":  "publish",
+        "pos":  "v",
+        "khmer":  "បោះពុម្ពផ្សាយ",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  272,
+        "english":  "qualities (n)",
+        "cleanWord":  "qualities",
+        "pos":  "n",
+        "khmer":  "គុណសម្បត្តិ",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  273,
+        "english":  "requirements (n)",
+        "cleanWord":  "requirements",
+        "pos":  "n",
+        "khmer":  "អ្វីដែលតម្រូវឱ្យមាន",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  274,
+        "english":  "stylist (n)",
+        "cleanWord":  "stylist",
+        "pos":  "n",
+        "khmer":  "ភាពទាន់សម័យ",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  275,
+        "english":  "tailor (n)",
+        "cleanWord":  "tailor",
+        "pos":  "n",
+        "khmer":  "ជាងកាត់សម្លៀកបំពាក់",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  276,
+        "english":  "vet (n)",
+        "cleanWord":  "vet",
+        "pos":  "n",
+        "khmer":  "ពេទ្យសត្វ",
+        "unit":  "unit 29"
+    },
+    {
+        "num":  277,
+        "english":  "application (n)",
+        "cleanWord":  "application",
+        "pos":  "n",
+        "khmer":  "ពាក្យសុំ",
+        "unit":  "unit 30"
+    },
+    {
+        "num":  278,
+        "english":  "apply (v)",
+        "cleanWord":  "apply",
+        "pos":  "v",
+        "khmer":  "ដាក់ពាក្យ",
+        "unit":  "unit 30"
+    },
+    {
+        "num":  279,
+        "english":  "communicate (v)",
+        "cleanWord":  "communicate",
+        "pos":  "v",
+        "khmer":  "ប្រាស្រ័យទាក់ទង",
+        "unit":  "unit 30"
+    },
+    {
+        "num":  280,
+        "english":  "dedicated (adj)",
+        "cleanWord":  "dedicated",
+        "pos":  "adj",
+        "khmer":  "ប្ដេជ្ញាចិត្ត",
+        "unit":  "unit 30"
+    },
+    {
+        "num":  281,
+        "english":  "employment (n)",
+        "cleanWord":  "employment",
+        "pos":  "n",
+        "khmer":  "ការងារ",
+        "unit":  "unit 30"
+    },
+    {
+        "num":  282,
+        "english":  "exchange student (n)",
+        "cleanWord":  "exchange student",
+        "pos":  "n",
+        "khmer":  "និស្សិតផ្លាស់ប្ដូរនាក់សិក្សា",
+        "unit":  "unit 30"
+    },
+    {
+        "num":  283,
+        "english":  "gender (n)",
+        "cleanWord":  "gender",
+        "pos":  "n",
+        "khmer":  "ភេទ",
+        "unit":  "unit 30"
+    },
+    {
+        "num":  284,
+        "english":  "internship (n)",
+        "cleanWord":  "internship",
+        "pos":  "n",
+        "khmer":  "កម្មសិក្សា",
+        "unit":  "unit 30"
+    },
+    {
+        "num":  285,
+        "english":  "multi-tasking (n)",
+        "cleanWord":  "multi-tasking",
+        "pos":  "n",
+        "khmer":  "កិច្ចការច្រើនពេលតែមួយ",
+        "unit":  "unit 30"
+    },
+    {
+        "num":  286,
+        "english":  "respectful (adj)",
+        "cleanWord":  "respectful",
+        "pos":  "adj",
+        "khmer":  "ដែលគួរឱ្យគោរព",
+        "unit":  "unit 30"
+    },
+    {
+        "num":  287,
+        "english":  "ambitions (n)",
+        "cleanWord":  "ambitions",
+        "pos":  "n",
+        "khmer":  "មហិច្ឆតា",
+        "unit":  "unit 31"
+    },
+    {
+        "num":  288,
+        "english":  "body language (n)",
+        "cleanWord":  "body language",
+        "pos":  "n",
+        "khmer":  "ភាសាកាយវិការ",
+        "unit":  "unit 31"
+    },
+    {
+        "num":  289,
+        "english":  "co-operative (adj)",
+        "cleanWord":  "co-operative",
+        "pos":  "adj",
+        "khmer":  "សហការងារ",
+        "unit":  "unit 31"
+    },
+    {
+        "num":  290,
+        "english":  "diploma (n)",
+        "cleanWord":  "diploma",
+        "pos":  "n",
+        "khmer":  "សញ្ញាបត្រ",
+        "unit":  "unit 31"
+    },
+    {
+        "num":  291,
+        "english":  "handle (v)",
+        "cleanWord":  "handle",
+        "pos":  "v",
+        "khmer":  "គ្រប់គ្រង",
+        "unit":  "unit 31"
+    },
+    {
+        "num":  292,
+        "english":  "punctual (adj)",
+        "cleanWord":  "punctual",
+        "pos":  "adj",
+        "khmer":  "ទៀងពេលវេលា",
+        "unit":  "unit 31"
+    },
+    {
+        "num":  293,
+        "english":  "reliable (adj)",
+        "cleanWord":  "reliable",
+        "pos":  "adj",
+        "khmer":  "អាចទុកចិត្តបាន",
+        "unit":  "unit 31"
+    },
+    {
+        "num":  294,
+        "english":  "van (n)",
+        "cleanWord":  "van",
+        "pos":  "n",
+        "khmer":  "ឡាន",
+        "unit":  "unit 31"
+    }
+]

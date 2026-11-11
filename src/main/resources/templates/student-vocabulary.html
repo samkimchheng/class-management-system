@@ -575,7 +575,7 @@
 
         <!-- Hero Progress Banner -->
         <div class="hero-banner">
-            <h2 class="hero-title" th:text="${selectedGrade == 11 ? '🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១១ (English Grade 11)' : '🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (English Book 4)'}">🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (English Book 4)</h2>
+            <h2 class="hero-title" th:text="${selectedGrade == 12 ? '🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១២ (English Grade 12)' : (selectedGrade == 11 ? '🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១១ (English Grade 11)' : '🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (English Book 4)')}">🔤 វាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (English Book 4)</h2>
             <p class="hero-subtitle" th:text="'រៀនពាក្យគន្លឹះ ' + ${totalWords} + ' ពាក្យតាមមេរៀននីមួយៗ (' + (${units.isEmpty()} ? 'Units' : ${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(units[0])} + ' ដល់ ' + ${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(units[units.size()-1])}) + ') ជាមួយសំឡេង និងល្បែងអនុវត្ត'">
                 រៀនពាក្យគន្លឹះ ៤៦០ ពាក្យតាមមេរៀននីមួយៗ (Unit 1 ដល់ Unit 31) ជាមួយសំឡេង និងល្បែងអនុវត្ត
             </p>

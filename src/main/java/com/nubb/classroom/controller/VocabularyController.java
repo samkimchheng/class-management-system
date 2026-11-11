@@ -73,12 +73,24 @@ public class VocabularyController {
     }
 
     private static int normalizeGradeLevel(Integer grade) {
-        return (grade != null && grade == 11) ? 11 : 10;
+        if (grade != null && (grade == 11 || grade == 12)) {
+            return grade;
+        }
+        return 10;
+    }
+
+    private static String toKhmerGrade(int grade) {
+        if (grade == 11) return "១១";
+        if (grade == 12) return "១២";
+        return "១០";
     }
 
     private static int detectStudentGradeLevel(Student student) {
         if (student != null && student.getClassName() != null) {
             String cls = student.getClassName();
+            if (cls.contains("12") || cls.contains("១២")) {
+                return 12;
+            }
             if (cls.contains("11") || cls.contains("១១")) {
                 return 11;
             }
@@ -88,12 +100,16 @@ public class VocabularyController {
 
     private static boolean belongsToGrade(String className, int grade) {
         if (className == null) return false;
-        String khmerGrade = (grade == 11) ? "១១" : "១០";
+        String khmerGrade = toKhmerGrade(grade);
         return className.contains(String.valueOf(grade)) || className.contains(khmerGrade);
     }
 
     private void ensureGradeSeeded(int grade) {
-        if (grade == 11) {
+        if (grade == 12) {
+            if (vocabularyWordRepository.countByGradeLevel(12) < 294) {
+                standardVocabularySeeder.seedGrade12Vocabulary();
+            }
+        } else if (grade == 11) {
             if (vocabularyWordRepository.countByGradeLevel(11) < 303) {
                 standardVocabularySeeder.seedGrade11Vocabulary();
             }
@@ -160,12 +176,14 @@ public class VocabularyController {
 
         int selectedGrade = normalizeGradeLevel(grade);
 
-        // Auto-seed both grades if missing
+        // Auto-seed all grades if missing
         ensureGradeSeeded(10);
         ensureGradeSeeded(11);
+        ensureGradeSeeded(12);
 
         long grade10Total = vocabularyWordRepository.countByGradeLevel(10);
         long grade11Total = vocabularyWordRepository.countByGradeLevel(11);
+        long grade12Total = vocabularyWordRepository.countByGradeLevel(12);
 
         List<VocabularyWord> allWords = vocabularyWordRepository.findByGradeLevelOrderByWordNumberAsc(selectedGrade);
         List<String> units = buildSortedUnits(allWords);
@@ -266,9 +284,10 @@ public class VocabularyController {
 
         model.addAttribute("teacherAccount", teacher);
         model.addAttribute("selectedGrade", selectedGrade);
-        model.addAttribute("gradeKhmer", selectedGrade == 11 ? "១១" : "១០");
+        model.addAttribute("gradeKhmer", toKhmerGrade(selectedGrade));
         model.addAttribute("grade10Total", grade10Total);
         model.addAttribute("grade11Total", grade11Total);
+        model.addAttribute("grade12Total", grade12Total);
         model.addAttribute("words", filteredWords);
         model.addAttribute("units", units);
         model.addAttribute("selectedUnit", selectedUnit);
@@ -315,8 +334,8 @@ public class VocabularyController {
         }
         session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
 
-        // Auto-detect Grade 10 vs Grade 11 from student's class (unless explicitly switched)
-        int selectedGrade = (grade != null && (grade == 10 || grade == 11))
+        // Auto-detect Grade 10 / 11 / 12 from student's class (unless explicitly switched)
+        int selectedGrade = (grade != null && (grade == 10 || grade == 11 || grade == 12))
                 ? grade
                 : detectStudentGradeLevel(student);
 
@@ -373,7 +392,7 @@ public class VocabularyController {
 
         model.addAttribute("student", student);
         model.addAttribute("selectedGrade", selectedGrade);
-        model.addAttribute("gradeKhmer", selectedGrade == 11 ? "១១" : "១០");
+        model.addAttribute("gradeKhmer", toKhmerGrade(selectedGrade));
         model.addAttribute("words", displayWords);
         model.addAttribute("units", units);
         model.addAttribute("selectedUnit", selectedUnit);
@@ -570,7 +589,10 @@ public class VocabularyController {
         }
 
         int targetGrade = normalizeGradeLevel(grade);
-        if (targetGrade == 11) {
+        if (targetGrade == 12) {
+            standardVocabularySeeder.seedGrade12Vocabulary();
+            return ResponseEntity.ok(Map.of("success", true, "message", "បានបញ្ចូលបំពេញបន្ថែមវាក្យសព្ទស្តង់ដាថ្នាក់ទី១២ (២៩៤ ពាក្យ) ដោយជោគជ័យ!"));
+        } else if (targetGrade == 11) {
             standardVocabularySeeder.seedGrade11Vocabulary();
             return ResponseEntity.ok(Map.of("success", true, "message", "បានបញ្ចូលបំពេញបន្ថែមវាក្យសព្ទស្តង់ដាថ្នាក់ទី១១ (៣០៣ ពាក្យ) ដោយជោគជ័យ!"));
         } else {
@@ -684,7 +706,7 @@ public class VocabularyController {
             @RequestParam(required = false) String unit,
             @RequestParam(required = false) Integer grade) {
         Student student = (Student) session.getAttribute("loggedInStudent");
-        int targetGrade = (grade != null && (grade == 10 || grade == 11))
+        int targetGrade = (grade != null && (grade == 10 || grade == 11 || grade == 12))
                 ? grade
                 : detectStudentGradeLevel(student);
 

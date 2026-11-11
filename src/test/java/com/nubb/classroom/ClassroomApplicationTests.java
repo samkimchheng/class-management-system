@@ -797,6 +797,138 @@ class ClassroomApplicationTests {
     }
 
     @Test
+    void testGrade12VocabularySystemAndPermissions() throws Exception {
+        // 1. Verify all 294 Grade 12 words were seeded cleanly
+        long count12 = vocabularyWordRepository.countByGradeLevel(12);
+        assertTrue(count12 >= 294, "Expected at least 294 Grade 12 vocabulary words but found " + count12);
+
+        var firstG12Opt = vocabularyWordRepository.findByGradeLevelAndWordNumber(12, 1);
+        assertTrue(firstG12Opt.isPresent());
+        assertEquals("come between (phr v)", firstG12Opt.get().getEnglishWord());
+        assertEquals("come between", firstG12Opt.get().getCleanWord());
+        assertEquals("phr v", firstG12Opt.get().getPartOfSpeech());
+        assertEquals("នៅចន្លោះ", firstG12Opt.get().getKhmerTranslation());
+        assertEquals("unit 1", firstG12Opt.get().getUnitName());
+
+        var row98Opt = vocabularyWordRepository.findByGradeLevelAndWordNumber(12, 98);
+        assertTrue(row98Opt.isPresent());
+        assertEquals("password (n)", row98Opt.get().getEnglishWord());
+        assertEquals("password", row98Opt.get().getCleanWord());
+        assertEquals("n", row98Opt.get().getPartOfSpeech());
+        assertEquals("លេខសម្ងាត់", row98Opt.get().getKhmerTranslation());
+
+        var lastG12Opt = vocabularyWordRepository.findByGradeLevelAndWordNumber(12, 294);
+        assertTrue(lastG12Opt.isPresent());
+        assertEquals("van (n)", lastG12Opt.get().getEnglishWord());
+        assertEquals("ឡាន", lastG12Opt.get().getKhmerTranslation());
+        assertEquals("unit 31", lastG12Opt.get().getUnitName());
+
+        // 2. Verify Sam Kimchheng can manage Grade 12 vocabulary
+        Account kimchheng = accountRepository.findByUsername("samkimchheng").orElse(null);
+        assertNotNull(kimchheng);
+
+        mockMvc.perform(get("/vocabulary")
+                .param("grade", "12")
+                .sessionAttr("ACCOUNT_ID", kimchheng.getId())
+                .sessionAttr("ACCOUNT_ROLE", kimchheng.getRole())
+                .sessionAttr("ACCOUNT_NAME", kimchheng.getFullName())
+                .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("selectedGrade", 12))
+                .andExpect(model().attribute("gradeKhmer", "១២"))
+                .andExpect(model().attribute("totalWords", count12));
+
+        // 3. Verify Unauthorized teacher (Seung Somuny) is blocked unless Admin grants permission
+        Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(somuny);
+        boolean origPerm = Boolean.TRUE.equals(somuny.getVocabularyPermission());
+
+        Student tempG12Student = null;
+        Long g12WordId = firstG12Opt.get().getId();
+        try {
+            mockMvc.perform(get("/vocabulary")
+                    .param("grade", "12")
+                    .sessionAttr("ACCOUNT_ID", somuny.getId())
+                    .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
+                    .sessionAttr("ACCOUNT_NAME", somuny.getFullName()))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/?accessDenied=vocab"));
+
+            mockMvc.perform(post("/api/vocabulary/reset-default")
+                    .param("grade", "12")
+                    .sessionAttr("ACCOUNT_ID", somuny.getId()))
+                    .andExpect(status().isForbidden());
+
+            // Admin explicitly grants vocabulary permission -> allowed
+            somuny.setVocabularyPermission(true);
+            accountRepository.save(somuny);
+
+            mockMvc.perform(get("/vocabulary")
+                    .param("grade", "12")
+                    .sessionAttr("ACCOUNT_ID", somuny.getId())
+                    .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
+                    .sessionAttr("ACCOUNT_NAME", somuny.getFullName())
+                    .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                    .andExpect(status().isOk())
+                    .andExpect(model().attribute("selectedGrade", 12));
+
+            // 4. Verify Grade 12 student auto-detects Grade 12 vocabulary, quiz, mastery, & portal links
+            tempG12Student = new Student();
+            tempG12Student.setName("សិស្សសាកល្បងទី១២");
+            tempG12Student.setGender("ប្រុស");
+            tempG12Student.setClassName("12A");
+            tempG12Student.setStudentCode("TEST-G12-VOCAB-001");
+            tempG12Student.setAccountId(somuny.getId());
+            tempG12Student = studentRepository.save(tempG12Student);
+
+            mockMvc.perform(get("/test/vocabulary")
+                    .sessionAttr("loggedInStudent", tempG12Student)
+                    .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                    .andExpect(status().isOk())
+                    .andExpect(model().attribute("selectedGrade", 12))
+                    .andExpect(model().attribute("gradeKhmer", "១២"))
+                    .andExpect(model().attribute("totalWords", count12))
+                    .andExpect(model().attributeExists("words"));
+
+            // Student portal pages (/test/take and /test/leave) show Vocab link for Grade 12 student
+            mockMvc.perform(get("/test/take")
+                    .sessionAttr("loggedInStudent", tempG12Student)
+                    .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                    .andExpect(status().isOk())
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString("/test/vocabulary")));
+
+            mockMvc.perform(get("/test/leave")
+                    .sessionAttr("loggedInStudent", tempG12Student)
+                    .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                    .andExpect(status().isOk())
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString("/test/vocabulary")));
+
+            // Quiz & mastery APIs work for Grade 12
+            mockMvc.perform(get("/api/student-portal/vocabulary/quiz-data")
+                    .param("unit", "unit 1")
+                    .param("grade", "12")
+                    .sessionAttr("loggedInStudent", tempG12Student))
+                    .andExpect(status().isOk());
+
+            mockMvc.perform(post("/api/student-portal/vocabulary/toggle-mastered")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .content("{\"wordId\":" + g12WordId + ",\"mastered\":true}")
+                    .sessionAttr("loggedInStudent", tempG12Student))
+                    .andExpect(status().isOk());
+        } finally {
+            somuny.setVocabularyPermission(origPerm);
+            accountRepository.save(somuny);
+            if (tempG12Student != null && tempG12Student.getId() != null) {
+                var progList = studentVocabularyProgressRepository.findByStudentId(tempG12Student.getId());
+                if (!progList.isEmpty()) {
+                    studentVocabularyProgressRepository.deleteAll(progList);
+                }
+                studentRepository.deleteById(tempG12Student.getId());
+            }
+        }
+    }
+
+    @Test
     void testKhmerStandardExamWorkflow_ZeroDataLoss() throws Exception {
         Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
         assertNotNull(somuny);
