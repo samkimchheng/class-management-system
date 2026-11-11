@@ -1907,8 +1907,8 @@
 
                         const quickActions = classes.length > 0 ? `
                             <div style="margin-top: 5px; display: flex; gap: 8px; font-size: 0.78rem;">
-                                <button type="button" class="btn-quick-toggle" onclick="toggleAllExamClasses(${item.id}, true)">🟢 បើកគ្រប់ថ្នាក់</button>
-                                <button type="button" class="btn-quick-toggle" style="color: #ef4444;" onclick="toggleAllExamClasses(${item.id}, false)">🔴 បិទគ្រប់ថ្នាក់</button>
+                                <button type="button" class="btn-quick-toggle" onclick="toggleAllExamClassesApi(${item.id}, true)">🟢 បើកគ្រប់ថ្នាក់</button>
+                                <button type="button" class="btn-quick-toggle" style="color: #ef4444;" onclick="toggleAllExamClassesApi(${item.id}, false)">🔴 បិទគ្រប់ថ្នាក់</button>
                             </div>
                         ` : '';
                         
@@ -2003,7 +2003,7 @@
             }
         }
 
-        async function toggleAllExamClasses(examId, openAll) {
+        async function toggleAllExamClassesApi(examId, openAll) {
             try {
                 const res = await fetch(`/api/exams/toggle-class-access?examId=${examId}&openAll=${openAll}`, {
                     method: 'POST'
