@@ -351,11 +351,12 @@
         .slot-card-body {
             padding: 18px;
             display: grid;
-            grid-template-columns: repeat(12, 1fr);
+            grid-template-columns: repeat(12, minmax(0, 1fr));
             gap: 14px;
         }
 
         .col-span-12 { grid-column: span 12; }
+        .col-span-8 { grid-column: span 8; }
         .col-span-6 { grid-column: span 6; }
         .col-span-4 { grid-column: span 4; }
         .col-span-3 { grid-column: span 3; }
@@ -364,7 +365,11 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
+            min-width: 0;
         }
+
+        /* Mobile-only short title (full title shown on desktop) */
+        .title-short { display: none; }
 
         .form-group-plan label {
             font-size: 0.85rem;
@@ -556,13 +561,49 @@
             }
         }
 
+        @media (max-width: 992px) {
+            .title-full { display: none !important; }
+            .title-short { display: inline !important; }
+        }
+
         @media (max-width: 768px) {
             .content { padding: 10px; }
-            .col-span-6, .col-span-4, .col-span-3 { grid-column: span 12; }
+            .slot-card-body {
+                grid-template-columns: minmax(0, 1fr);
+                padding: 14px 12px;
+                gap: 12px;
+            }
+            .col-span-12, .col-span-8, .col-span-6, .col-span-4, .col-span-3 { grid-column: 1 / -1; }
+            .form-group-plan label { white-space: normal; }
             .plan-kpi-bar { grid-template-columns: 1fr; }
-            .plan-toolbar { flex-direction: column; align-items: stretch; }
+            .plan-toolbar { flex-direction: column; align-items: stretch; padding: 12px; }
             .toolbar-buttons { width: 100%; }
             .btn-plan { flex: 1; justify-content: center; }
+
+            /* Hero banner compact on phones */
+            .plan-hero { padding: 14px; border-radius: 14px; }
+            .plan-hero-icon { width: 42px; height: 42px; font-size: 1.4rem; }
+            .plan-hero-title { font-size: 1.08rem; line-height: 1.4; }
+            .plan-hero-sub { font-size: 0.82rem; }
+            .plan-hero > div:last-child { width: 100%; }
+
+            /* Date toolbar wraps neatly */
+            .date-control-group { gap: 6px; }
+            .date-control-group > span { display: none; }
+            .date-control-group label { width: 100%; justify-content: space-between; }
+            .date-input-field { flex: 1; min-width: 0; }
+            .target-khmer-badge { width: 100%; justify-content: center; font-size: 0.85rem; }
+
+            /* Slot card header: stack status & buttons under the title */
+            .slot-card-header { padding: 10px 12px; }
+            .slot-header-left { align-items: flex-start; }
+            .slot-header-left > div:last-child { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+            .slot-card-header > div:last-child { width: 100%; flex-wrap: wrap; }
+            .slot-time-text { font-size: 0.8rem; }
+
+            /* History table */
+            .history-header { flex-wrap: wrap; gap: 6px; padding: 12px; }
+            .history-table { min-width: 640px; }
         }
     </style>
 </head>
@@ -607,7 +648,8 @@
         <div class="topbar">
             <div class="topbar-left">
                 <h3 style="display: flex; align-items: center; gap: 8px; margin: 0;">
-                    <span>📋 សេវាប្រចាំថ្ងៃ និងកំណត់ត្រាខ្លឹមសារមេរៀនបង្រៀន</span>
+                    <span class="title-full">📋 សេវាប្រចាំថ្ងៃ និងកំណត់ត្រាខ្លឹមសារមេរៀនបង្រៀន</span>
+                    <span class="title-short">📋 សេវាប្រចាំថ្ងៃ</span>
                 </h3>
             </div>
             <div class="topbar-right" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -1339,5 +1381,6 @@
         });
     </script>
     <script src="/js/logout-confirm.js"></script>
+    <script src="/js/mobile-nav.js?v=20261111a"></script>
 </body>
 </html>

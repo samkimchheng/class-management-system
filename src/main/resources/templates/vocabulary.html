@@ -554,16 +554,126 @@
             border-color: var(--primary);
         }
 
-        @media (max-width: 768px) {
+        /* Mobile-only helpers (hidden on desktop) */
+        .title-short { display: none; }
+        .mobile-word-meta { display: none; }
+        .mobile-menu-btn { display: none; }
+
+        /* ===== Tablet & Mobile (<= 992px): off-canvas sidebar + compact 1-row topbar ===== */
+        @media (max-width: 992px) {
+            body { overflow-x: hidden; }
+
             .sidebar {
-                display: none;
+                display: flex !important;
+                position: fixed !important;
+                top: 0; left: 0; bottom: 0;
+                width: 280px !important;
+                max-width: 85vw;
+                height: 100vh;
+                height: 100dvh;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 1050;
+                box-shadow: 4px 0 25px rgba(0, 0, 0, 0.35);
             }
-            .main-content {
-                margin-left: 0;
+            .sidebar.mobile-open { transform: translateX(0); }
+
+            .mobile-sidebar-backdrop {
+                position: fixed; inset: 0;
+                background: rgba(15, 23, 42, 0.65);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                z-index: 1040;
+                opacity: 0; visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
             }
-            .content {
-                padding: 12px;
+            .mobile-sidebar-backdrop.active { opacity: 1; visibility: visible; }
+
+            .main-content { margin-left: 0 !important; width: 100%; }
+
+            .mobile-menu-btn {
+                display: inline-flex !important;
+                align-items: center; justify-content: center;
+                width: 36px; height: 36px; min-width: 36px;
+                padding: 0; margin: 0;
+                font-size: 1.25rem;
+                border-radius: 8px;
+                background: #f1f5f9; border: 1px solid #cbd5e1; color: #0f172a;
+                cursor: pointer; flex-shrink: 0;
             }
+
+            .topbar {
+                padding: 8px 12px;
+                flex-wrap: nowrap;
+                gap: 8px;
+                min-height: 52px;
+            }
+            .topbar-left {
+                display: inline-flex; align-items: center; gap: 8px;
+                font-size: 0.98rem !important;
+                min-width: 0; flex: 1 1 auto;
+                white-space: nowrap; overflow: hidden;
+            }
+            .topbar-left > span { overflow: hidden; text-overflow: ellipsis; }
+            .title-full { display: none !important; }
+            .title-short { display: inline !important; }
+            .topbar-right-vocab { flex-wrap: nowrap !important; gap: 6px !important; flex-shrink: 0; }
+            .teacher-label-vocab, .year-label-text { display: none !important; }
+            .year-badge-vocab { font-size: 0.78rem; padding: 3px 8px; }
+            .btn-logout-header { padding: 5px 10px !important; font-size: 0.82rem !important; }
+        }
+
+        @media (max-width: 768px) {
+            .content { padding: 12px 10px; }
+
+            /* Hero compact */
+            .vocab-hero { padding: 16px; border-radius: 14px; margin-bottom: 14px; }
+            .vocab-hero-info { gap: 12px; align-items: flex-start; }
+            .vocab-hero-icon { width: 44px; height: 44px; font-size: 1.5rem; border-radius: 12px; }
+            .vocab-hero-title { font-size: 1.1rem; line-height: 1.45; }
+            .vocab-hero-sub { font-size: 0.82rem; }
+            .vocab-hero > div:last-child { width: 100%; }
+            .vocab-hero > div:last-child .btn-custom { flex: 1 1 auto; justify-content: center; font-size: 0.85rem; padding: 8px 12px; }
+
+            /* KPI 2 per row */
+            .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+            .kpi-card { padding: 12px; gap: 10px; }
+            .kpi-icon { width: 38px; height: 38px; font-size: 1.15rem; }
+            .kpi-val { font-size: 1.15rem; }
+            .kpi-lbl { font-size: 0.75rem; }
+
+            /* Tabs scroll horizontally */
+            .tab-nav { overflow-x: auto; padding: 6px 8px 0 8px; -webkit-overflow-scrolling: touch; }
+            .tab-btn { white-space: nowrap; padding: 10px 12px; font-size: 0.88rem; flex-shrink: 0; }
+
+            /* Search / actions full width */
+            .action-bar { padding: 12px; flex-direction: column; align-items: stretch; }
+            .action-bar form { max-width: none !important; width: 100%; }
+            .action-bar form .form-control { min-width: 0; flex: 1; }
+            .action-bar > div { width: 100%; }
+            .action-bar > div .btn-custom { flex: 1 1 auto; justify-content: center; }
+
+            /* Tables: horizontal scroll safety */
+            .data-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .vocab-table th, .vocab-table td { padding: 10px 8px; font-size: 0.86rem; }
+
+            /* Words table: Khmer + Unit shown under the English word */
+            .col-khmer, .col-unit { display: none; }
+            .mobile-word-meta {
+                display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+                margin-top: 4px;
+            }
+            .mobile-khmer { color: #334155; font-weight: 500; font-size: 0.88rem; }
+            .mobile-word-meta .unit-badge { font-size: 0.7rem; padding: 1px 7px; }
+            #wordsTab .vocab-table th:first-child,
+            #wordsTab .vocab-table td:first-child { width: 34px !important; padding-left: 4px; padding-right: 4px; }
+
+            /* Progress table keeps its columns but scrolls */
+            #progressTab .vocab-table { min-width: 760px; }
+            #progressTab .action-bar > div:first-child { flex-wrap: wrap; }
+
+            /* Modal fits the phone */
+            .modal-content { width: 94%; padding: 18px; max-height: 90vh; overflow-y: auto; }
         }
     </style>
 </head>
@@ -608,13 +718,14 @@
         <!-- Topbar -->
         <div class="topbar">
             <div class="topbar-left" style="font-weight: 700; font-size: 1.15rem; color: #0f172a;">
-                <span>🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (Grade 10 English Vocabulary)</span>
+                <span class="title-full">🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (Grade 10 English Vocabulary)</span>
+                <span class="title-short">🔤 វាក្យសព្ទថ្នាក់ទី១០</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <span class="unit-badge" style="background: #eef2ff; color: #3730a3; border-color: #c7d2fe;">
-                    📅 ឆ្នាំសិក្សា៖ <b th:text="${teacherAccount.currentAcademicYear != null ? teacherAccount.currentAcademicYear : '២០២៦-២០២៧'}">២០២៦-២០២៧</b>
+            <div class="topbar-right-vocab" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <span class="unit-badge year-badge-vocab" style="background: #eef2ff; color: #3730a3; border-color: #c7d2fe;">
+                    📅<span class="year-label-text"> ឆ្នាំសិក្សា៖</span> <b th:text="${teacherAccount.currentAcademicYear != null ? teacherAccount.currentAcademicYear : '២០២៦-២០២៧'}">២០២៦-២០២៧</b>
                 </span>
-                <span style="font-size: 0.9rem; color: #475569;">
+                <span class="teacher-label-vocab" style="font-size: 0.9rem; color: #475569;">
                     គ្រូទទួលបន្ទុក៖ <b th:text="${teacherAccount.fullName}">សំ គឹមឆេង</b>
                 </span>
             
@@ -734,8 +845,8 @@
                                 <th style="width: 50px; text-align: center;">ល.រ</th>
                                 <th style="width: 220px;">ពាក្យអង់គ្លេស (English)</th>
                                 <th style="width: 50px; text-align: center;">សំឡេង</th>
-                                <th>ការបកប្រែជាភាសាខ្មែរ (Khmer Translation)</th>
-                                <th style="width: 140px; text-align: center;">មេរៀន (Unit)</th>
+                                <th class="col-khmer">ការបកប្រែជាភាសាខ្មែរ (Khmer Translation)</th>
+                                <th class="col-unit" style="width: 140px; text-align: center;">មេរៀន (Unit)</th>
                                 <th style="width: 100px; text-align: center;">បើកឱ្យសិស្សរៀន</th>
                                 <th style="width: 120px; text-align: center;">សកម្មភាព</th>
                             </tr>
@@ -746,14 +857,18 @@
                                 <td>
                                     <span style="font-weight: 700; color: #1e293b; font-size: 1rem;" th:text="${w.cleanWord}">birthday</span>
                                     <span class="pos-badge" th:if="${w.partOfSpeech != null and !w.partOfSpeech.isEmpty()}" th:text="${w.partOfSpeech}">(n)</span>
+                                    <div class="mobile-word-meta">
+                                        <span class="mobile-khmer" th:text="${w.khmerTranslation}">ថ្ងៃកំណើត</span>
+                                        <span class="unit-badge" th:text="${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(w.unitName)}">Unit 1</span>
+                                    </div>
                                 </td>
                                 <td style="text-align: center;">
                                     <button type="button" class="btn-audio" th:attr="onclick='playAudio(\'' + ${#strings.escapeJavaScript(w.cleanWord)} + '\')'" title="ស្តាប់សំឡេង">
                                         <i class="fa fa-volume-up"></i>
                                     </button>
                                 </td>
-                                <td style="font-weight: 500; color: #334155;" th:text="${w.khmerTranslation}">ថ្ងៃកំណើត</td>
-                                <td style="text-align: center;">
+                                <td class="col-khmer" style="font-weight: 500; color: #334155;" th:text="${w.khmerTranslation}">ថ្ងៃកំណើត</td>
+                                <td class="col-unit" style="text-align: center;">
                                     <span class="unit-badge" th:text="${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(w.unitName)}">Unit 1</span>
                                 </td>
                                 <td style="text-align: center;">
