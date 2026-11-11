@@ -801,7 +801,7 @@ class ClassroomApplicationTests {
         Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
         assertNotNull(somuny);
 
-        // 1. Verify Seung Somuny (/exams) page loads cleanly with 200 OK
+        // 1. Verify /exams page loads cleanly with 200 OK
         mockMvc.perform(get("/exams")
                 .sessionAttr("ACCOUNT_ID", somuny.getId())
                 .sessionAttr("ACCOUNT_ROLE", somuny.getRole())
@@ -809,16 +809,18 @@ class ClassroomApplicationTests {
                 .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
                 .andExpect(status().isOk());
 
-        // 2. Verify starter Standard MoEYS Khmer Exam was seeded safely without losing existing data
-        List<com.nubb.classroom.model.Exam> somunyExams = examRepository.findByAccountId(somuny.getId()).stream()
+        // 2. Verify Demo account (98) received starter Standard MoEYS Khmer Exam safely
+        Account demoAcc = accountRepository.findById(98L).orElse(null);
+        assertNotNull(demoAcc);
+        List<com.nubb.classroom.model.Exam> demoKhmerExams = examRepository.findByAccountId(demoAcc.getId()).stream()
                 .filter(e -> "ភាសាខ្មែរ".equals(e.getSubjectName()))
                 .toList();
-        assertFalse(somunyExams.isEmpty(), "Expected starter Standard Khmer Exam for Khmer teacher Seung Somuny");
+        assertFalse(demoKhmerExams.isEmpty(), "Expected starter Standard Khmer Exam for Demo account");
 
-        com.nubb.classroom.model.Exam sampleExam = somunyExams.get(0);
+        com.nubb.classroom.model.Exam sampleExam = demoKhmerExams.get(0);
         assertNotNull(sampleExam.getReadingPassage());
         assertNotNull(sampleExam.getWritingPrompt());
-        List<com.nubb.classroom.model.Question> qs = questionRepository.findByExamIdAndAccountId(sampleExam.getId(), somuny.getId());
+        List<com.nubb.classroom.model.Question> qs = questionRepository.findByExamIdAndAccountId(sampleExam.getId(), demoAcc.getId());
         assertTrue(qs.stream().anyMatch(q -> "kh_reading".equals(q.getSkillType())));
         assertTrue(qs.stream().anyMatch(q -> "kh_grammar".equals(q.getSkillType())));
         assertTrue(qs.stream().anyMatch(q -> "kh_literature".equals(q.getSkillType())));
@@ -861,12 +863,15 @@ class ClassroomApplicationTests {
 
         assertEquals(kimchhengExamCountBefore, examRepository.findByAccountId(97L).size());
 
-        // Clean up the test-created "ប្រចាំឆ្នាំ" exam while keeping starter seeded data intact
+        // 4. Verify saved Khmer exam can be loaded back with all 4 sections + questions
         var createdOpt = examRepository.findByMonthAndSubjectNameAndAccountId("ប្រចាំឆ្នាំ", "ភាសាខ្មែរ", somuny.getId()).stream().findFirst();
-        if (createdOpt.isPresent()) {
-            var createdQs = questionRepository.findByExamIdAndAccountId(createdOpt.get().getId(), somuny.getId());
-            questionRepository.deleteAll(createdQs);
-            examRepository.delete(createdOpt.get());
-        }
+        assertTrue(createdOpt.isPresent());
+        assertEquals("ពន្យល់សុភាសិត ចេះពីរៀន មានពីរក។", createdOpt.get().getWritingPrompt());
+        assertEquals(3, questionRepository.findByExamIdAndAccountId(createdOpt.get().getId(), somuny.getId()).size());
+
+        // Clean up the test-created "ប្រចាំឆ្នាំ" exam while keeping starter seeded data intact
+        var createdQs = questionRepository.findByExamIdAndAccountId(createdOpt.get().getId(), somuny.getId());
+        questionRepository.deleteAll(createdQs);
+        examRepository.delete(createdOpt.get());
     }
 }

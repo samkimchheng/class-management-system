@@ -1019,7 +1019,8 @@ public class DataInitializer {
             List<Account> allAccounts = accountRepository.findAll();
             for (Account acc : allAccounts) {
                 String subj = acc.getSubject();
-                if (subj == null || !subj.contains("ខ្មែរ")) {
+                boolean isDemo = Long.valueOf(98L).equals(acc.getId());
+                if (!isDemo && (subj == null || !subj.contains("ខ្មែរ"))) {
                     continue;
                 }
 
