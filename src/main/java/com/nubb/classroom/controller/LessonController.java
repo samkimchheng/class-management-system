@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class LessonController {
@@ -164,6 +166,8 @@ public class LessonController {
     public String listLessons(
             @RequestParam(required = false) String className,
             @RequestParam(required = false) String subjectName,
+            @RequestParam(required = false) String progressClass,
+            @RequestParam(required = false) String tab,
             Model model,
             HttpServletResponse response) {
 
@@ -272,7 +276,179 @@ public class LessonController {
         model.addAttribute("completedLessonsCount", completedLessonsCount);
         model.addAttribute("isAllCompleted", isAllCompleted);
 
+        if (!useStudentMode && accountId != null) {
+            String role = (String) session.getAttribute("ACCOUNT_ROLE");
+            boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+            populateStudentLessonProgress(model, isAdmin, accountId, progressClass, subjectName, tab);
+        } else {
+            model.addAttribute("progressClasses", Collections.emptyList());
+            model.addAttribute("selectedProgressClass", "ALL");
+            model.addAttribute("studentProgressList", Collections.emptyList());
+            model.addAttribute("activeStudyingStudents", 0);
+            model.addAttribute("completedAllStudentsCount", 0);
+            model.addAttribute("activeTab", "lessons");
+        }
+
         return "lessons";
+    }
+
+    private void populateStudentLessonProgress(
+            Model model,
+            boolean isAdmin,
+            Long accountId,
+            String progressClass,
+            String subjectName,
+            String tab) {
+
+        List<Student> allStudents = isAdmin
+                ? studentRepository.findAll()
+                : studentRepository.findByAccountId(accountId);
+
+        List<String> progressClasses = allStudents.stream()
+                .map(Student::getClassName)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        String selectedProgressClass = (progressClass != null && !progressClass.trim().isEmpty())
+                ? progressClass.trim()
+                : "ALL";
+
+        // Group lessons by teacher accountId in a single query to avoid N+1 lookups
+        List<Lesson> poolLessons = isAdmin
+                ? lessonRepository.findAll()
+                : lessonRepository.findByAccountIdOrderByIdAsc(accountId);
+
+        Map<Long, List<Lesson>> lessonsByAccountId = poolLessons.stream()
+                .filter(l -> l.getAccountId() != null)
+                .collect(Collectors.groupingBy(Lesson::getAccountId));
+        lessonsByAccountId.values().forEach(list -> list.sort(Comparator.comparing(Lesson::getId)));
+
+        // Index all student lesson progress records in one query
+        Map<String, Map<Long, LessonProgress>> progressByUserKey = new HashMap<>();
+        for (LessonProgress lp : lessonProgressRepository.findAll()) {
+            if (lp.getUserKey() != null && lp.getUserKey().startsWith("STUDENT_") && lp.getLessonId() != null) {
+                progressByUserKey
+                        .computeIfAbsent(lp.getUserKey(), k -> new HashMap<>())
+                        .put(lp.getLessonId(), lp);
+            }
+        }
+
+        boolean filterBySubject = subjectName != null && !subjectName.trim().isEmpty()
+                && !"មុខវិជ្ជាទាំងអស់".equals(subjectName.trim());
+
+        List<Map<String, Object>> studentProgressList = new ArrayList<>();
+        int activeStudyingStudents = 0;
+        int completedAllStudentsCount = 0;
+
+        for (Student s : allStudents) {
+            if (!"ALL".equalsIgnoreCase(selectedProgressClass)) {
+                String stuClass = s.getClassName() != null ? s.getClassName().trim() : "";
+                if (!selectedProgressClass.equalsIgnoreCase(stuClass)
+                        && !isExplicitClassMatching(selectedProgressClass, stuClass)) {
+                    continue;
+                }
+            }
+
+            List<Lesson> teacherLessons = lessonsByAccountId.getOrDefault(s.getAccountId(), Collections.emptyList());
+            List<Lesson> assignedLessons = new ArrayList<>();
+            for (Lesson l : teacherLessons) {
+                boolean classOk = (s.getClassName() == null || s.getClassName().trim().isEmpty())
+                        || isClassMatching(l.getClassName(), s.getClassName());
+                if (!classOk) continue;
+                if (filterBySubject && !com.nubb.classroom.WebController.isSameSubject(l.getSubjectName(), subjectName)) {
+                    continue;
+                }
+                assignedLessons.add(l);
+            }
+
+            Map<Long, LessonProgress> stuProgressMap = progressByUserKey.getOrDefault("STUDENT_" + s.getId(), Collections.emptyMap());
+            int totalAssigned = assignedLessons.size();
+            int completedCount = 0;
+            int inProgressCount = 0;
+            int sumPct = 0;
+            LocalDateTime lastActive = null;
+            List<Map<String, Object>> details = new ArrayList<>();
+
+            for (Lesson l : assignedLessons) {
+                LessonProgress lp = stuProgressMap.get(l.getId());
+                int pct = lp != null ? Math.min(100, Math.max(0, lp.getProgressPercentage())) : 0;
+                boolean done = lp != null && lp.isCompleted();
+                if (done) {
+                    pct = 100;
+                    completedCount++;
+                } else if (pct > 0) {
+                    inProgressCount++;
+                }
+                sumPct += pct;
+
+                if (lp != null && lp.getUpdatedAt() != null) {
+                    if (lastActive == null || lp.getUpdatedAt().isAfter(lastActive)) {
+                        lastActive = lp.getUpdatedAt();
+                    }
+                }
+
+                Map<String, Object> d = new LinkedHashMap<>();
+                d.put("title", l.getTitle());
+                d.put("subject", l.getSubjectName());
+                d.put("percent", pct);
+                d.put("completed", done);
+                d.put("updatedAt", lp != null ? lp.getUpdatedAt() : null);
+                details.add(d);
+            }
+
+            int avgPercent = totalAssigned > 0 ? (int) Math.round((double) sumPct / totalAssigned) : 0;
+            boolean isAllDone = totalAssigned > 0 && completedCount >= totalAssigned;
+            boolean hasActivity = completedCount > 0 || inProgressCount > 0 || lastActive != null;
+            if (hasActivity) activeStudyingStudents++;
+            if (isAllDone) completedAllStudentsCount++;
+
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("student", s);
+            row.put("completedCount", completedCount);
+            row.put("inProgressCount", inProgressCount);
+            row.put("totalAssigned", totalAssigned);
+            row.put("avgPercent", avgPercent);
+            row.put("isAllDone", isAllDone);
+            row.put("hasActivity", hasActivity);
+            row.put("lastActive", lastActive);
+            row.put("details", details);
+            studentProgressList.add(row);
+        }
+
+        studentProgressList.sort((a, b) -> {
+            int cmp = Integer.compare((Integer) b.get("completedCount"), (Integer) a.get("completedCount"));
+            if (cmp != 0) return cmp;
+            cmp = Integer.compare((Integer) b.get("avgPercent"), (Integer) a.get("avgPercent"));
+            if (cmp != 0) return cmp;
+            LocalDateTime la = (LocalDateTime) a.get("lastActive");
+            LocalDateTime lb = (LocalDateTime) b.get("lastActive");
+            if (la != null && lb != null) {
+                cmp = lb.compareTo(la);
+                if (cmp != 0) return cmp;
+            } else if (la != null || lb != null) {
+                return lb != null ? 1 : -1;
+            }
+            Student sa = (Student) a.get("student");
+            Student sb = (Student) b.get("student");
+            String ca = sa.getClassName() != null ? sa.getClassName() : "";
+            String cb = sb.getClassName() != null ? sb.getClassName() : "";
+            cmp = ca.compareToIgnoreCase(cb);
+            if (cmp != 0) return cmp;
+            String na = sa.getName() != null ? sa.getName() : "";
+            String nb = sb.getName() != null ? sb.getName() : "";
+            return na.compareToIgnoreCase(nb);
+        });
+
+        model.addAttribute("progressClasses", progressClasses);
+        model.addAttribute("selectedProgressClass", selectedProgressClass);
+        model.addAttribute("studentProgressList", studentProgressList);
+        model.addAttribute("activeStudyingStudents", activeStudyingStudents);
+        model.addAttribute("completedAllStudentsCount", completedAllStudentsCount);
+        model.addAttribute("activeTab", "progress".equalsIgnoreCase(tab) ? "progress" : "lessons");
     }
 
     @GetMapping("/api/lessons/{id}/transcripts")

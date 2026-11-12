@@ -52,6 +52,9 @@ class ClassroomApplicationTests {
     private LessonRepository lessonRepository;
 
     @Autowired
+    private com.nubb.classroom.repository.LessonProgressRepository lessonProgressRepository;
+
+    @Autowired
     private StudentRepository studentRepository;
 
     @Autowired
@@ -1312,6 +1315,72 @@ class ClassroomApplicationTests {
                     .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(fbUrl)))
                     .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(webUrl)))
                     .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(ttUrl)));
+        }
+    }
+
+    @Test
+    void testLessonStudentProgressTracking() throws Exception {
+        Account kimchheng = accountRepository.findByUsername("samkimchheng").orElse(null);
+        assertNotNull(kimchheng);
+
+        List<Student> kimStudents = studentRepository.findByAccountId(kimchheng.getId());
+        assertFalse(kimStudents.isEmpty());
+        Student stu = kimStudents.stream()
+                .filter(s -> !LessonController.resolveLessonsForStudent(lessonRepository, s).isEmpty())
+                .findFirst()
+                .orElse(kimStudents.get(0));
+        List<Lesson> stuLessons = LessonController.resolveLessonsForStudent(lessonRepository, stu);
+        assertFalse(stuLessons.isEmpty());
+        Lesson targetLesson = stuLessons.get(0);
+
+        String userKey = "STUDENT_" + stu.getId();
+        var existingOpt = lessonProgressRepository.findByLessonIdAndUserKey(targetLesson.getId(), userKey);
+        int origPct = existingOpt.map(com.nubb.classroom.model.LessonProgress::getProgressPercentage).orElse(-1);
+        boolean origDone = existingOpt.map(com.nubb.classroom.model.LessonProgress::isCompleted).orElse(false);
+
+        try {
+            // 1. Student updates lesson progress via /api/lessons/progress
+            mockMvc.perform(post("/api/lessons/progress")
+                    .param("lessonId", targetLesson.getId().toString())
+                    .param("progressPercentage", "100")
+                    .sessionAttr("loggedInStudent", stu)
+                    .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                    .andExpect(status().isOk());
+
+            // 2. Teacher opens /lessons?tab=progress&progressClass=... and sees student progress tracking
+            mockMvc.perform(get("/lessons")
+                    .param("tab", "progress")
+                    .param("progressClass", stu.getClassName())
+                    .sessionAttr("ACCOUNT_ID", kimchheng.getId())
+                    .sessionAttr("ACCOUNT_ROLE", kimchheng.getRole())
+                    .sessionAttr("ACCOUNT_NAME", kimchheng.getFullName())
+                    .sessionAttr("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧"))
+                    .andExpect(status().isOk())
+                    .andExpect(model().attribute("activeTab", "progress"))
+                    .andExpect(model().attribute("selectedProgressClass", stu.getClassName()))
+                    .andExpect(model().attributeExists("studentProgressList"))
+                    .andExpect(model().attributeExists("progressClasses"))
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString("📊 តាមដានការរៀនរបស់សិស្ស")))
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString(stu.getName())));
+
+            // 3. Student view of /lessons does NOT render the teacher progress tracking tab
+            mockMvc.perform(get("/lessons")
+                    .sessionAttr("loggedInStudent", stu)
+                    .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                    .andExpect(status().isOk())
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("id=\"progressTab\""))));
+        } finally {
+            var afterOpt = lessonProgressRepository.findByLessonIdAndUserKey(targetLesson.getId(), userKey);
+            if (afterOpt.isPresent()) {
+                if (origPct == -1) {
+                    lessonProgressRepository.delete(afterOpt.get());
+                } else {
+                    var lp = afterOpt.get();
+                    lp.setProgressPercentage(origPct);
+                    lp.setCompleted(origDone);
+                    lessonProgressRepository.save(lp);
+                }
+            }
         }
     }
 }
