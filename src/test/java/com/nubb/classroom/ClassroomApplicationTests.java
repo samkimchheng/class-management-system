@@ -1383,4 +1383,41 @@ class ClassroomApplicationTests {
             }
         }
     }
+
+    @Test
+    void testAdminBackupAndRestoreWorkflow() throws Exception {
+        Account admin = accountRepository.findByUsername("admin").orElse(null);
+        assertNotNull(admin);
+
+        // 1. Verify /admin dashboard renders Backup & Restore card
+        mockMvc.perform(get("/admin")
+                .sessionAttr("ACCOUNT_ID", admin.getId())
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN")
+                .sessionAttr("ACCOUNT_NAME", admin.getFullName()))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString("/admin/backup/download")))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString("មជ្ឈមណ្ឌល Backup & Restore មូលដ្ឋានទិន្នន័យ")));
+
+        // 2. Verify /admin/backup/download generates valid SQL backup
+        var mvcResult = mockMvc.perform(get("/admin/backup/download")
+                .sessionAttr("ACCOUNT_ID", admin.getId())
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string("Content-Disposition", org.hamcrest.Matchers.containsString("attachment; filename=")))
+                .andReturn();
+
+        String sqlDump = mvcResult.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        assertNotNull(sqlDump);
+        assertTrue(sqlDump.contains("Class Management System 2027 - Full Database Backup"));
+        assertTrue(sqlDump.contains("INSERT INTO"));
+
+        // 3. Verify Non-Admin teacher (Teacher1001) is forbidden from downloading backup
+        Account somuny = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(somuny);
+        mockMvc.perform(get("/admin/backup/download")
+                .sessionAttr("ACCOUNT_ID", somuny.getId())
+                .sessionAttr("ACCOUNT_ROLE", somuny.getRole()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+    }
 }

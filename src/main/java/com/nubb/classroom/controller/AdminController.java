@@ -19,6 +19,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.nubb.classroom.service.BackupRestoreService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeFormatter;
 
 @Controller
 @RequestMapping("/admin")
@@ -30,6 +37,9 @@ public class AdminController {
 
     @Autowired(required = false)
     private LeaveRequestRepository leaveRequestRepository;
+
+    @Autowired
+    private BackupRestoreService backupRestoreService;
 
     public AdminController(AccountRepository accountRepository, 
                            StudentRepository studentRepository,
@@ -314,5 +324,54 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("successMessage", "បានលុបមតិកែលម្អដោយជោគជ័យ!");
         }
         return "redirect:/admin/feedbacks";
+    }
+
+    // ================= Database Backup & Restore =================
+
+    @GetMapping("/backup/download")
+    public ResponseEntity<byte[]> downloadBackup() {
+        try {
+            String sql = backupRestoreService.generateSqlBackup();
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String filename = "classroom_backup_" + timestamp + ".sql";
+
+            byte[] bytes = sql.getBytes(StandardCharsets.UTF_8);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+            headers.setContentLength(bytes.length);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(bytes);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(("/* Backup Error: " + e.getMessage() + " */").getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    @PostMapping("/backup/restore")
+    public String restoreBackup(
+            @RequestParam("sqlFile") MultipartFile sqlFile,
+            RedirectAttributes redirectAttributes) {
+        if (sqlFile == null || sqlFile.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "សូមជ្រើសរើសឯកសារ Backup SQL ជាមុនសិន!");
+            return "redirect:/admin";
+        }
+
+        try {
+            String sqlContent = new String(sqlFile.getBytes(), StandardCharsets.UTF_8);
+            BackupRestoreService.RestoreResult result = backupRestoreService.restoreFromSql(sqlContent);
+            if (result.errorCount > 0) {
+                redirectAttributes.addFlashAttribute("successMessage",
+                        "បានបញ្ចូលទិន្នន័យ Restore រួចរាល់! (" + result.executedCount + " statements ជោគជ័យ, " + result.errorCount + " warnings)");
+            } else {
+                redirectAttributes.addFlashAttribute("successMessage",
+                        "🎉 បានបញ្ចូលទិន្នន័យ Restore ជោគជ័យ ១០០%! (សរុប " + result.executedCount + " statements)");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "កំហុសក្នុងការ Restore ទិន្នន័យ៖ " + e.getMessage());
+        }
+        return "redirect:/admin";
     }
 }
