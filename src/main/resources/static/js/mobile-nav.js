@@ -144,7 +144,15 @@
             '.leave-alert-header { padding: 18px 22px; background: #fffbeb; border-bottom: 1px solid #fde68a; display: flex; justify-content: space-between; align-items: center; gap: 10px; }' +
             '.leave-alert-body { padding: 18px 22px; overflow-y: auto; flex: 1; }' +
             '.leave-alert-item { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #f59e0b; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }' +
-            '.leave-alert-footer { padding: 14px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }';
+            '.leave-alert-footer { padding: 14px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }' +
+            '@media (max-width: 640px) {' +
+            '  .leave-alert-overlay { padding: 10px !important; }' +
+            '  .leave-alert-modal { width: calc(100vw - 20px) !important; max-height: 90vh !important; border-radius: 14px !important; }' +
+            '  .leave-alert-header { padding: 14px 16px !important; }' +
+            '  .leave-alert-body { padding: 14px 16px !important; }' +
+            '  .leave-alert-footer { padding: 12px 16px !important; flex-direction: column !important; }' +
+            '  .leave-alert-footer a, .leave-alert-footer button { width: 100% !important; text-align: center !important; justify-content: center !important; }' +
+            '}';
         document.head.appendChild(style);
 
         // Create Bell Button in Topbar
