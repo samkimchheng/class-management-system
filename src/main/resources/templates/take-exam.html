@@ -780,7 +780,7 @@
             const s1Pts = (exam && exam.section1MaxPoints != null) ? exam.section1MaxPoints : 20;
             const s2Pts = (exam && exam.section2MaxPoints != null) ? exam.section2MaxPoints : 15;
             const s3Pts = (exam && exam.section3MaxPoints != null) ? exam.section3MaxPoints : 15;
-            const hasWriting = !!(exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            const hasWriting = !!(exam && ((exam.writingPrompt && exam.writingPrompt.trim().length > 0) || (exam.writingMaxPoints != null && exam.writingMaxPoints > 0)));
             const s4Pts = hasWriting ? (exam.writingMaxPoints != null ? exam.writingMaxPoints : 15) : 0;
             const totalPossiblePoints = s1Pts + s2Pts + s3Pts + s4Pts;
 
@@ -959,7 +959,7 @@
             const s1Pts = (exam && exam.section1MaxPoints != null) ? exam.section1MaxPoints : 15;
             const s2Pts = (exam && exam.section2MaxPoints != null) ? exam.section2MaxPoints : 15;
             const s3Pts = (exam && exam.section3MaxPoints != null) ? exam.section3MaxPoints : 15;
-            const hasWriting = !!(exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            const hasWriting = !!(exam && ((exam.writingPrompt && exam.writingPrompt.trim().length > 0) || (exam.writingMaxPoints != null && exam.writingMaxPoints > 0)));
             const s4Pts = hasWriting ? (exam.writingMaxPoints != null ? exam.writingMaxPoints : 25) : 0;
             const totalPossiblePoints = (sec1Items.length > 0 || (exam.readingPassage && exam.readingPassage.trim()) ? s1Pts : 0)
                 + (grammarQs.length > 0 ? s2Pts : 0)
@@ -1090,7 +1090,7 @@
             const s1Pts = (exam && exam.section1MaxPoints != null) ? exam.section1MaxPoints : 15;
             const s2Pts = (exam && exam.section2MaxPoints != null) ? exam.section2MaxPoints : 15;
             const s3Pts = (exam && exam.section3MaxPoints != null) ? exam.section3MaxPoints : 15;
-            const hasWriting = !!(exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            const hasWriting = !!(exam && ((exam.writingPrompt && exam.writingPrompt.trim().length > 0) || (exam.writingMaxPoints != null && exam.writingMaxPoints > 0)));
             const s4Pts = hasWriting ? (exam.writingMaxPoints != null ? exam.writingMaxPoints : 25) : 0;
             const totalPossiblePoints = (sec1Items.length > 0 ? s1Pts : 0)
                 + (geoQs.length > 0 ? s2Pts : 0)
@@ -1250,7 +1250,7 @@
             const s1Pts = (exam && exam.section1MaxPoints != null) ? exam.section1MaxPoints : 15;
             const s2Pts = (exam && exam.section2MaxPoints != null) ? exam.section2MaxPoints : 15;
             const s3Pts = (exam && exam.section3MaxPoints != null) ? exam.section3MaxPoints : 15;
-            const hasWriting = !!(exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            const hasWriting = !!(exam && ((exam.writingPrompt && exam.writingPrompt.trim().length > 0) || (exam.writingMaxPoints != null && exam.writingMaxPoints > 0)));
             const s4Pts = hasWriting ? (exam.writingMaxPoints != null ? exam.writingMaxPoints : 25) : 0;
             const totalPossiblePoints = (sec1Items.length > 0 ? s1Pts : 0) + (q2.length > 0 ? s2Pts : 0) + (q3.length > 0 ? s3Pts : 0) + s4Pts;
             const subj = exam ? exam.subjectName : '';
@@ -1382,7 +1382,7 @@
             const s1Pts = (exam && exam.section1MaxPoints != null) ? exam.section1MaxPoints : 15;
             const s2Pts = (exam && exam.section2MaxPoints != null) ? exam.section2MaxPoints : 15;
             const s3Pts = (exam && exam.section3MaxPoints != null) ? exam.section3MaxPoints : 15;
-            const hasWriting = !!(exam && exam.writingPrompt && exam.writingPrompt.trim().length > 0);
+            const hasWriting = !!(exam && ((exam.writingPrompt && exam.writingPrompt.trim().length > 0) || (exam.writingMaxPoints != null && exam.writingMaxPoints > 0)));
             const s4Pts = hasWriting ? (exam.writingMaxPoints != null ? exam.writingMaxPoints : 25) : 0;
             const totalPossiblePoints = (sec1Items.length > 0 ? s1Pts : 0)
                 + (optQs.length > 0 ? s2Pts : 0)
@@ -1718,7 +1718,7 @@
             const s1Pts = (currentExam && currentExam.section1MaxPoints != null) ? currentExam.section1MaxPoints : 20;
             const s2Pts = (currentExam && currentExam.section2MaxPoints != null) ? currentExam.section2MaxPoints : 15;
             const s3Pts = (currentExam && currentExam.section3MaxPoints != null) ? currentExam.section3MaxPoints : 15;
-            const hasWriting = !!(currentExam && currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0);
+            const hasWriting = !!(currentExam && ((currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0) || (currentExam.writingMaxPoints != null && currentExam.writingMaxPoints > 0)));
             const s4Pts = hasWriting ? (currentExam.writingMaxPoints != null ? currentExam.writingMaxPoints : 15) : 0;
             const totalPossiblePoints = s1Pts + s2Pts + s3Pts + s4Pts;
 
@@ -1949,7 +1949,7 @@
             const s1Pts = (currentExam && currentExam.section1MaxPoints != null) ? currentExam.section1MaxPoints : 15;
             const s2Pts = (currentExam && currentExam.section2MaxPoints != null) ? currentExam.section2MaxPoints : 15;
             const s3Pts = (currentExam && currentExam.section3MaxPoints != null) ? currentExam.section3MaxPoints : 15;
-            const hasWriting = !!(currentExam && currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0);
+            const hasWriting = !!(currentExam && ((currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0) || (currentExam.writingMaxPoints != null && currentExam.writingMaxPoints > 0)));
             const s4Pts = hasWriting ? (currentExam.writingMaxPoints != null ? currentExam.writingMaxPoints : 25) : 0;
 
             const totalMcqMax = (sec1Items.length > 0 ? s1Pts : 0) + (grammarQs.length > 0 ? s2Pts : 0) + (litQs.length > 0 ? s3Pts : 0);
@@ -2039,7 +2039,7 @@
             const s1Pts = (currentExam && currentExam.section1MaxPoints != null) ? currentExam.section1MaxPoints : 15;
             const s2Pts = (currentExam && currentExam.section2MaxPoints != null) ? currentExam.section2MaxPoints : 15;
             const s3Pts = (currentExam && currentExam.section3MaxPoints != null) ? currentExam.section3MaxPoints : 15;
-            const hasWriting = !!(currentExam && currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0);
+            const hasWriting = !!(currentExam && ((currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0) || (currentExam.writingMaxPoints != null && currentExam.writingMaxPoints > 0)));
             const s4Pts = hasWriting ? (currentExam.writingMaxPoints != null ? currentExam.writingMaxPoints : 25) : 0;
 
             const totalMcqMax = (sec1Items.length > 0 ? s1Pts : 0) + (geoQs.length > 0 ? s2Pts : 0) + (appQs.length > 0 ? s3Pts : 0);
@@ -2129,7 +2129,7 @@
             const s1Pts = (currentExam && currentExam.section1MaxPoints != null) ? currentExam.section1MaxPoints : 15;
             const s2Pts = (currentExam && currentExam.section2MaxPoints != null) ? currentExam.section2MaxPoints : 15;
             const s3Pts = (currentExam && currentExam.section3MaxPoints != null) ? currentExam.section3MaxPoints : 15;
-            const hasWriting = !!(currentExam && currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0);
+            const hasWriting = !!(currentExam && ((currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0) || (currentExam.writingMaxPoints != null && currentExam.writingMaxPoints > 0)));
             const s4Pts = hasWriting ? (currentExam.writingMaxPoints != null ? currentExam.writingMaxPoints : 25) : 0;
 
             const totalMcqMax = (sec1Items.length > 0 ? s1Pts : 0) + (optQs.length > 0 ? s2Pts : 0) + (elecQs.length > 0 ? s3Pts : 0);
@@ -2219,7 +2219,7 @@
             const s1Pts = (currentExam && currentExam.section1MaxPoints != null) ? currentExam.section1MaxPoints : 15;
             const s2Pts = (currentExam && currentExam.section2MaxPoints != null) ? currentExam.section2MaxPoints : 15;
             const s3Pts = (currentExam && currentExam.section3MaxPoints != null) ? currentExam.section3MaxPoints : 15;
-            const hasWriting = !!(currentExam && currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0);
+            const hasWriting = !!(currentExam && ((currentExam.writingPrompt && currentExam.writingPrompt.trim().length > 0) || (currentExam.writingMaxPoints != null && currentExam.writingMaxPoints > 0)));
             const s4Pts = hasWriting ? (currentExam.writingMaxPoints != null ? currentExam.writingMaxPoints : 25) : 0;
 
             const totalMcqMax = (sec1Items.length > 0 ? s1Pts : 0) + (q2.length > 0 ? s2Pts : 0) + (q3.length > 0 ? s3Pts : 0);
