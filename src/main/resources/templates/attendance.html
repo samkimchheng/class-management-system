@@ -43,44 +43,72 @@
 
         /* Attendance Select Option Styles */
         .att-select {
-            width: 66px;
-            height: 30px;
-            padding: 1px 2px;
-            font-size: 11px;
+            width: 72px;
+            height: 33px;
+            padding: 2px 2px;
+            font-size: 12.5px;
             font-family: inherit;
-            font-weight: 600;
+            font-weight: 800;
             text-align: center;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 6px;
+            border: 2px solid #94a3b8;
+            border-radius: 7px;
             background-color: #ffffff;
-            color: #64748b;
+            color: #1e293b;
             cursor: pointer;
             transition: all 0.15s ease;
             outline: none;
+            letter-spacing: 0.2px;
         }
         .att-select:hover {
-            border-color: #94a3b8;
+            border-color: #64748b;
         }
         .att-select:focus {
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
         }
+        /* វត្តមាន (Present) - High Contrast Vivid Green & Deep Dark Green Text */
         .att-select.att-present {
-            background-color: #ecfdf5 !important;
-            color: #047857 !important;
-            border-color: #10b981 !important;
-            font-weight: 700 !important;
+            background-color: #dcfce7 !important;
+            color: #052e16 !important;
+            border: 2px solid #16a34a !important;
+            font-weight: 800 !important;
+            box-shadow: 0 1px 3px rgba(22, 163, 74, 0.25) !important;
         }
+        /* ច្បាប់ (Permission) - High Contrast Vivid Amber/Yellow & Deep Dark Brown Text */
         .att-select.att-permission {
-            background-color: #fef3c7 !important;
-            color: #92400e !important;
-            border-color: #f59e0b !important;
-            font-weight: bold !important;
+            background-color: #fef08a !important;
+            color: #451a03 !important;
+            border: 2px solid #d97706 !important;
+            font-weight: 800 !important;
+            box-shadow: 0 1px 3px rgba(217, 119, 6, 0.25) !important;
         }
+        /* គ្មានច្បាប់ (Unexcused) - High Contrast Vivid Red & Deep Dark Crimson Text */
         .att-select.att-unexcused {
             background-color: #fee2e2 !important;
-            color: #991b1b !important;
-            border-color: #ef4444 !important;
-            font-weight: bold !important;
+            color: #450a0a !important;
+            border: 2px solid #dc2626 !important;
+            font-weight: 800 !important;
+            box-shadow: 0 1px 3px rgba(220, 38, 38, 0.25) !important;
+        }
+        .att-select option {
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            padding: 8px 10px;
+        }
+        .att-select option.opt-present {
+            background-color: #dcfce7;
+            color: #052e16;
+            font-weight: 800;
+        }
+        .att-select option.opt-permission {
+            background-color: #fef08a;
+            color: #451a03;
+            font-weight: 800;
+        }
+        .att-select option.opt-unexcused {
+            background-color: #fee2e2;
+            color: #450a0a;
+            font-weight: 800;
         }
 
         .print-header { display: none; }
@@ -466,22 +494,22 @@
                 </div>
 
                 <!-- Clean Modern Attendance Legend -->
-                <div class="attendance-legend-box">
-                    <div class="legend-header">
-                        <span>📌 កំណត់សម្គាល់វត្តមាន៖</span>
+                <div class="attendance-legend-box" style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: 12px; padding: 12px 18px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);">
+                    <div class="legend-header" style="margin-bottom: 8px;">
+                        <span style="font-size: 1.05rem; font-weight: 800; color: #0f172a;">📌 កំណត់សម្គាល់វត្តមាន (សម្រាប់លោកគ្រូ-អ្នកគ្រូ)៖</span>
                     </div>
-                    <div class="legend-badges">
-                        <span class="legend-badge badge-present" style="background: #ecfdf5; color: #047857; border: 1.5px solid #10b981; padding: 4px 10px; border-radius: 8px; font-weight: 700;">
-                            <span>🟢</span> <b>វត្តមាន</b> (សិស្សមករៀន)
+                    <div class="legend-badges" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <span class="legend-badge badge-present" style="background: #dcfce7; color: #052e16; border: 2px solid #16a34a; padding: 6px 14px; border-radius: 10px; font-size: 0.98rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 1.15rem;">🟢</span> <b>វត្តមាន</b> (សិស្សមករៀន)
                         </span>
-                        <span class="legend-badge badge-perm">
-                            <span>🟡</span> <b>ច្បាប់</b> (មានច្បាប់អនុញ្ញាត - ច)
+                        <span class="legend-badge badge-perm" style="background: #fef08a; color: #451a03; border: 2px solid #d97706; padding: 6px 14px; border-radius: 10px; font-size: 0.98rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 1.15rem;">🟡</span> <b>ច្បាប់</b> (មានច្បាប់អនុញ្ញាត - ច)
                         </span>
-                        <span class="legend-badge badge-unex">
-                            <span>🔴</span> <b>គ្មានច្បាប់</b> (អវត្តមានឥតច្បាប់ - គ)
+                        <span class="legend-badge badge-unex" style="background: #fee2e2; color: #450a0a; border: 2px solid #dc2626; padding: 6px 14px; border-radius: 10px; font-size: 0.98rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 1.15rem;">🔴</span> <b>គ្មានច្បាប់</b> (អវត្តមានឥតច្បាប់ - គ)
                         </span>
-                        <span class="legend-badge badge-norm">
-                            <span>⚪</span> <b>-</b> (មិនទាន់កត់ត្រា)
+                        <span class="legend-badge badge-norm" style="background: #f8fafc; color: #1e293b; border: 2px solid #94a3b8; padding: 6px 14px; border-radius: 10px; font-size: 0.98rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 1.15rem;">⚪</span> <b>-</b> (មិនទាន់កត់ត្រា)
                         </span>
                     </div>
                 </div>
@@ -599,8 +627,8 @@
                                 <span th:if="${row.feb == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <!-- Sem 1 totals: ច្បាប់ / គ្មានច្បាប់ -->
-                            <td th:if="${isYearly or isSemester1}" style="text-align: center; font-weight: bold; padding: 6px; background: #fffbeb; color: #92400e;" th:text="${row.semester1Permission}">0</td>
-                            <td th:if="${isYearly or isSemester1}" style="text-align: center; font-weight: bold; padding: 6px; background: #fef2f2; color: #991b1b;" th:text="${row.semester1Unexcused}">0</td>
+                            <td th:if="${isYearly or isSemester1}" style="text-align: center; font-weight: 800; padding: 6px; background: #fef08a; color: #451a03; font-size: 1.02rem;" th:text="${row.semester1Permission}">0</td>
+                            <td th:if="${isYearly or isSemester1}" style="text-align: center; font-weight: 800; padding: 6px; background: #fee2e2; color: #450a0a; font-size: 1.02rem;" th:text="${row.semester1Unexcused}">0</td>
                             
                             <!-- Sem 2 month counts -->
                             <td th:if="${isYearly or isSemester2}" style="text-align: center; padding: 6px; font-size: 0.85rem;">
@@ -634,18 +662,18 @@
                                 <span th:if="${row.aug == 0}" style="color: #94a3b8;">-</span>
                             </td>
                             <!-- Sem 2 totals: ច្បាប់ / គ្មានច្បាប់ -->
-                            <td th:if="${isYearly or isSemester2}" style="text-align: center; font-weight: bold; padding: 6px; background: #fffbeb; color: #92400e;" th:text="${row.semester2Permission}">0</td>
-                            <td th:if="${isYearly or isSemester2}" style="text-align: center; font-weight: bold; padding: 6px; background: #fef2f2; color: #991b1b;" th:text="${row.semester2Unexcused}">0</td>
+                            <td th:if="${isYearly or isSemester2}" style="text-align: center; font-weight: 800; padding: 6px; background: #fef08a; color: #451a03; font-size: 1.02rem;" th:text="${row.semester2Permission}">0</td>
+                            <td th:if="${isYearly or isSemester2}" style="text-align: center; font-weight: 800; padding: 6px; background: #fee2e2; color: #450a0a; font-size: 1.02rem;" th:text="${row.semester2Unexcused}">0</td>
                             
                             <!-- Annual Totals: ច្បាប់ / គ្មានច្បាប់ / សរុប -->
-                            <td th:if="${isYearly}" style="text-align: center; font-weight: bold; padding: 6px; background: #fffbeb; color: #92400e;">
-                                <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; background: #fef3c7; border: 1px solid #f59e0b;" th:text="${row.totalYearlyPermission + ' ថ្ងៃ'}">0 ថ្ងៃ</span>
+                            <td th:if="${isYearly}" style="text-align: center; font-weight: 800; padding: 6px; background: #fffbeb;">
+                                <span style="display: inline-block; padding: 3px 10px; border-radius: 6px; background: #fef08a; color: #451a03; border: 2px solid #d97706; font-weight: 800; font-size: 0.98rem;" th:text="${row.totalYearlyPermission + ' ថ្ងៃ'}">0 ថ្ងៃ</span>
                             </td>
-                            <td th:if="${isYearly}" style="text-align: center; font-weight: bold; padding: 6px; background: #fef2f2; color: #991b1b;">
-                                <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; background: #fee2e2; border: 1px solid #ef4444;" th:text="${row.totalYearlyUnexcused + ' ថ្ងៃ'}">0 ថ្ងៃ</span>
+                            <td th:if="${isYearly}" style="text-align: center; font-weight: 800; padding: 6px; background: #fef2f2;">
+                                <span style="display: inline-block; padding: 3px 10px; border-radius: 6px; background: #fee2e2; color: #450a0a; border: 2px solid #dc2626; font-weight: 800; font-size: 0.98rem;" th:text="${row.totalYearlyUnexcused + ' ថ្ងៃ'}">0 ថ្ងៃ</span>
                             </td>
-                            <td th:if="${isYearly}" style="text-align: center; font-weight: 800; padding: 6px; background: #e0e7ff; color: #3730a3;">
-                                <span style="display: inline-block; padding: 3px 10px; border-radius: 6px; background: #c7d2fe; border: 1px solid #818cf8;" th:text="${row.totalYearly + ' ថ្ងៃ'}">0 ថ្ងៃ</span>
+                            <td th:if="${isYearly}" style="text-align: center; font-weight: 800; padding: 6px; background: #e0e7ff;">
+                                <span style="display: inline-block; padding: 4px 12px; border-radius: 8px; background: #c7d2fe; color: #1e1b4b; border: 2px solid #4338ca; font-weight: 800; font-size: 1.02rem;" th:text="${row.totalYearly + ' ថ្ងៃ'}">0 ថ្ងៃ</span>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(yearlyAbsences)}">
@@ -665,12 +693,12 @@
                             <th style="min-width: 60px; text-align: center; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0; white-space: nowrap;">ភេទ</th>
                             <th style="min-width: 85px; text-align: center; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0; white-space: nowrap;">ថ្នាក់ទី</th>
                             <!-- Days 1 to 31 -->
-                            <th th:each="i : ${#numbers.sequence(1, 31)}" th:text="${i}" th:attr="data-day=${i}" class="day-cell" style="min-width: 65px; text-align: center; padding: 8px 2px; font-size: 1.02rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">1</th>
+                            <th th:each="i : ${#numbers.sequence(1, 31)}" th:text="${i}" th:attr="data-day=${i}" class="day-cell" style="min-width: 76px; text-align: center; padding: 8px 2px; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">1</th>
                             
                             <!-- Totals divided into ច្បាប់ / គ្មានច្បាប់ / សរុប -->
-                            <th style="min-width: 75px; text-align: center; background: #fef3c7; color: #78350f; font-size: 0.98rem; font-weight: 800; white-space: nowrap;" title="សរុបអវត្តមានមានច្បាប់">🟡 ច្បាប់</th>
-                            <th style="min-width: 85px; text-align: center; background: #fee2e2; color: #7f1d1d; font-size: 0.98rem; font-weight: 800; white-space: nowrap;" title="សរុបអវត្តមានគ្មានច្បាប់">🔴 គ្មានច្បាប់</th>
-                            <th style="min-width: 75px; text-align: center; background: #e2e8f0; color: #0f172a; font-size: 0.98rem; font-weight: 800; white-space: nowrap;" title="អវត្តមានសរុប">សរុប</th>
+                            <th style="min-width: 80px; text-align: center; background: #fef08a; color: #451a03; font-size: 1.02rem; font-weight: 800; white-space: nowrap; border-left: 2px solid #cbd5e1;" title="សរុបអវត្តមានមានច្បាប់">🟡 ច្បាប់</th>
+                            <th style="min-width: 90px; text-align: center; background: #fee2e2; color: #450a0a; font-size: 1.02rem; font-weight: 800; white-space: nowrap;" title="សរុបអវត្តមានគ្មានច្បាប់">🔴 គ្មានច្បាប់</th>
+                            <th style="min-width: 80px; text-align: center; background: #e2e8f0; color: #0f172a; font-size: 1.02rem; font-weight: 800; white-space: nowrap; border-right: 2px solid #cbd5e1;" title="អវត្តមានសរុប">សរុប</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -697,22 +725,22 @@
                                         th:classappend="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PERMISSION' ? ' att-permission' : (absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'UNEXCUSED' ? ' att-unexcused' : (absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PRESENT' ? ' att-present' : ''))}"
                                         th:attr="data-student-id=${student.id}">
                                     <option value="" th:selected="${absentDayTypes == null or absentDayTypes.get(student.id + '_' + i) == null}">-</option>
-                                    <option th:value="${student.id + '_' + i + '_PRESENT'}" 
+                                    <option class="opt-present" th:value="${student.id + '_' + i + '_PRESENT'}" 
                                             th:selected="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PRESENT'}">វត្តមាន</option>
-                                    <option th:value="${student.id + '_' + i + '_PERMISSION'}" 
+                                    <option class="opt-permission" th:value="${student.id + '_' + i + '_PERMISSION'}" 
                                             th:selected="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PERMISSION'}">ច្បាប់</option>
-                                    <option th:value="${student.id + '_' + i + '_UNEXCUSED'}" 
+                                    <option class="opt-unexcused" th:value="${student.id + '_' + i + '_UNEXCUSED'}" 
                                             th:selected="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'UNEXCUSED'}">គ្មានច្បាប់</option>
                                 </select>
                             </td>
                             <!-- Totals: ច្បាប់ / គ្មានច្បាប់ / សរុប -->
-                            <td style="text-align: center; font-weight: bold; background: #fffbeb; color: #92400e;">
+                            <td style="text-align: center; font-weight: 800; background: #fef08a; color: #451a03; font-size: 1.02rem; border-left: 2px solid #cbd5e1;">
                                 <span class="total-perm" th:id="${'perm_' + student.id}" th:text="${studentPermissionCounts != null and studentPermissionCounts.containsKey(student.id) ? studentPermissionCounts.get(student.id) : 0}">0</span> ថ្ងៃ
                             </td>
-                            <td style="text-align: center; font-weight: bold; background: #fef2f2; color: #991b1b;">
+                            <td style="text-align: center; font-weight: 800; background: #fee2e2; color: #450a0a; font-size: 1.02rem;">
                                 <span class="total-unex" th:id="${'unex_' + student.id}" th:text="${studentUnexcusedCounts != null and studentUnexcusedCounts.containsKey(student.id) ? studentUnexcusedCounts.get(student.id) : 0}">0</span> ថ្ងៃ
                             </td>
-                            <td style="text-align: center; font-weight: 800; background: #f8fafc; color: #0f172a;">
+                            <td style="text-align: center; font-weight: 800; background: #f1f5f9; color: #0f172a; font-size: 1.02rem; border-right: 2px solid #cbd5e1;">
                                 <span class="total-all" th:id="${'tot_' + student.id}" th:text="${studentTotalCounts != null and studentTotalCounts.containsKey(student.id) ? studentTotalCounts.get(student.id) : 0}">0</span> ថ្ងៃ
                             </td>
                         </tr>
