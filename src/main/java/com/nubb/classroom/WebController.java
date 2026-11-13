@@ -1305,17 +1305,20 @@ public class WebController {
             Map<Long, Integer> studentTotalCounts = new HashMap<>();
 
             for (Attendance a : monthAtts) {
+                Long sId = a.getStudent().getId();
+                int day = a.getDate().getDayOfMonth();
+                String key = sId + "_" + day;
                 if (!a.isPresent()) {
-                    Long sId = a.getStudent().getId();
-                    int day = a.getDate().getDayOfMonth();
                     String type = a.isPermission() ? "PERMISSION" : "UNEXCUSED";
-                    absentDayTypes.put(sId + "_" + day, type);
+                    absentDayTypes.put(key, type);
                     if ("PERMISSION".equals(type)) {
                         studentPermissionCounts.put(sId, studentPermissionCounts.getOrDefault(sId, 0) + 1);
                     } else {
                         studentUnexcusedCounts.put(sId, studentUnexcusedCounts.getOrDefault(sId, 0) + 1);
                     }
                     studentTotalCounts.put(sId, studentTotalCounts.getOrDefault(sId, 0) + 1);
+                } else {
+                    absentDayTypes.put(key, "PRESENT");
                 }
             }
 
@@ -1613,8 +1616,8 @@ public class WebController {
                         Long sId = Long.parseLong(parts[0]);
                         int day = Integer.parseInt(parts[1]);
                         String type = (parts.length >= 3) ? parts[2] : "UNEXCUSED";
-                        if (!"PERMISSION".equalsIgnoreCase(type) && !"UNEXCUSED".equalsIgnoreCase(type)) {
-                            type = "UNEXCUSED";
+                        if (!"PERMISSION".equalsIgnoreCase(type) && !"UNEXCUSED".equalsIgnoreCase(type) && !"PRESENT".equalsIgnoreCase(type)) {
+                            continue;
                         }
                         Student st = studentMap.get(sId);
                         if (st == null) {
@@ -1622,7 +1625,8 @@ public class WebController {
                         }
                         if (st != null && day >= 1 && day <= end.getDayOfMonth()) {
                             LocalDate attDate = LocalDate.of(year, monthNum, day);
-                            Attendance att = new Attendance(st, attDate, false, type);
+                            boolean isPresent = "PRESENT".equalsIgnoreCase(type);
+                            Attendance att = new Attendance(st, attDate, isPresent, isPresent ? "PRESENT" : type.toUpperCase());
                             att.setAccountId(accountId);
                             toSave.add(att);
                         }

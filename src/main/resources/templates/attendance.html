@@ -43,7 +43,7 @@
 
         /* Attendance Select Option Styles */
         .att-select {
-            width: 62px;
+            width: 66px;
             height: 30px;
             padding: 1px 2px;
             font-size: 11px;
@@ -53,7 +53,7 @@
             border: 1.5px solid #cbd5e1;
             border-radius: 6px;
             background-color: #ffffff;
-            color: #94a3b8;
+            color: #64748b;
             cursor: pointer;
             transition: all 0.15s ease;
             outline: none;
@@ -63,6 +63,12 @@
         }
         .att-select:focus {
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+        }
+        .att-select.att-present {
+            background-color: #ecfdf5 !important;
+            color: #047857 !important;
+            border-color: #10b981 !important;
+            font-weight: 700 !important;
         }
         .att-select.att-permission {
             background-color: #fef3c7 !important;
@@ -465,6 +471,9 @@
                         <span>📌 កំណត់សម្គាល់វត្តមាន៖</span>
                     </div>
                     <div class="legend-badges">
+                        <span class="legend-badge badge-present" style="background: #ecfdf5; color: #047857; border: 1.5px solid #10b981; padding: 4px 10px; border-radius: 8px; font-weight: 700;">
+                            <span>🟢</span> <b>វត្តមាន</b> (សិស្សមករៀន)
+                        </span>
                         <span class="legend-badge badge-perm">
                             <span>🟡</span> <b>ច្បាប់</b> (មានច្បាប់អនុញ្ញាត - ច)
                         </span>
@@ -472,7 +481,7 @@
                             <span>🔴</span> <b>គ្មានច្បាប់</b> (អវត្តមានឥតច្បាប់ - គ)
                         </span>
                         <span class="legend-badge badge-norm">
-                            <span>⚪</span> <b>-</b> (វត្តមានធម្មតា)
+                            <span>⚪</span> <b>-</b> (មិនទាន់កត់ត្រា)
                         </span>
                     </div>
                 </div>
@@ -685,9 +694,11 @@
                                 <select name="attendanceData" 
                                         class="att-select"
                                         th:title="${leaveReasonTooltips != null ? leaveReasonTooltips.get(student.id + '_' + i) : ''}"
-                                        th:classappend="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PERMISSION' ? ' att-permission' : (absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'UNEXCUSED' ? ' att-unexcused' : '')}"
+                                        th:classappend="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PERMISSION' ? ' att-permission' : (absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'UNEXCUSED' ? ' att-unexcused' : (absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PRESENT' ? ' att-present' : ''))}"
                                         th:attr="data-student-id=${student.id}">
                                     <option value="" th:selected="${absentDayTypes == null or absentDayTypes.get(student.id + '_' + i) == null}">-</option>
+                                    <option th:value="${student.id + '_' + i + '_PRESENT'}" 
+                                            th:selected="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PRESENT'}">វត្តមាន</option>
                                     <option th:value="${student.id + '_' + i + '_PERMISSION'}" 
                                             th:selected="${absentDayTypes != null and absentDayTypes.get(student.id + '_' + i) == 'PERMISSION'}">ច្បាប់</option>
                                     <option th:value="${student.id + '_' + i + '_UNEXCUSED'}" 
@@ -743,13 +754,15 @@
                 let unex = 0;
                 selects.forEach(s => {
                     const val = s.value;
-                    s.classList.remove('att-permission', 'att-unexcused');
+                    s.classList.remove('att-permission', 'att-unexcused', 'att-present');
                     if (val.endsWith('_PERMISSION')) {
                         s.classList.add('att-permission');
                         perm++;
                     } else if (val.endsWith('_UNEXCUSED')) {
                         s.classList.add('att-unexcused');
                         unex++;
+                    } else if (val.endsWith('_PRESENT')) {
+                        s.classList.add('att-present');
                     }
                 });
                 
@@ -827,6 +840,32 @@
             }
 
             updateDaysInMonth();
+
+            // --- Quick Action: Double-click day header in table to mark all visible students as 'វត្តមាន' (Present) ---
+            const headerDayCells = document.querySelectorAll('thead th.day-cell');
+            headerDayCells.forEach(th => {
+                th.title = "ចុច ២ ដង (Double-click) ដើម្បីកំណត់ «វត្តមាន» ដល់សិស្សទាំងអស់ក្នុងថ្ងៃនេះ";
+                th.style.cursor = 'pointer';
+                th.addEventListener('dblclick', function() {
+                    const day = this.getAttribute('data-day');
+                    if (!day) return;
+                    document.querySelectorAll('tr.attendance-student-row').forEach(row => {
+                        if (row.style.display !== 'none') {
+                            const dayCell = row.querySelector(`.day-cell[data-day="${day}"]`);
+                            if (dayCell) {
+                                const sel = dayCell.querySelector('select.att-select');
+                                if (sel) {
+                                    const studentId = sel.getAttribute('data-student-id');
+                                    sel.value = `${studentId}_${day}_PRESENT`;
+                                    sel.classList.remove('att-permission', 'att-unexcused');
+                                    sel.classList.add('att-present');
+                                }
+                            }
+                            updateRowTotals(row);
+                        }
+                    });
+                });
+            });
 
             // --- Feature 3: Filter Attendance by Student Status (Default: studying) ---
             const khmerNumMap = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
