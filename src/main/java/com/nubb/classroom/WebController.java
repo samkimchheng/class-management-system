@@ -1360,8 +1360,17 @@ public class WebController {
         List<com.nubb.classroom.model.LeaveRequest> teacherLeaveRequests = getLeaveRequestsForTeacher(accountId, className);
         long pendingLeaveCount = teacherLeaveRequests.stream().filter(com.nubb.classroom.model.LeaveRequest::isPending).count();
 
+        long studyingCount = (students != null) ? students.stream().filter(Student::isStudying).count() : 0;
+        long droppedCount = (students != null) ? students.stream().filter(Student::isDroppedOut).count() : 0;
+        long transferredCount = (students != null) ? students.stream().filter(Student::isTransferred).count() : 0;
+        long totalStudentCount = (students != null) ? students.size() : 0;
+
         model.addAttribute("leaveRequests", teacherLeaveRequests);
         model.addAttribute("pendingLeaveCount", pendingLeaveCount);
+        model.addAttribute("studyingCount", studyingCount);
+        model.addAttribute("droppedCount", droppedCount);
+        model.addAttribute("transferredCount", transferredCount);
+        model.addAttribute("totalStudentCount", totalStudentCount);
         model.addAttribute("students", students);
         model.addAttribute("selectedClass", className);
         model.addAttribute("selectedMonth", month);

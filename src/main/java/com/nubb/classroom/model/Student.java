@@ -76,6 +76,37 @@ public class Student {
     public void setMotherOccupation(String motherOccupation) { this.motherOccupation = motherOccupation; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public boolean isStudying() {
+        if (status == null || status.trim().isEmpty()) return true;
+        String s = status.trim();
+        return !isDroppedOut() && !isTransferred();
+    }
+
+    public boolean isDroppedOut() {
+        if (status == null) return false;
+        String s = status.trim();
+        return s.contains("បោះបង់") || s.contains("ឈប់");
+    }
+
+    public boolean isTransferred() {
+        if (status == null) return false;
+        String s = status.trim();
+        return s.contains("ផ្ទេរ");
+    }
+
+    public String getStatusType() {
+        if (isDroppedOut()) return "dropped";
+        if (isTransferred()) return "transferred";
+        return "studying";
+    }
+
+    public String getStatusDisplayName() {
+        if (isDroppedOut()) return "បោះបង់ការសិក្សា";
+        if (isTransferred()) return "ផ្ទេរការសិក្សា";
+        return "កំពុងសិក្សា";
+    }
+
     public Long getAccountId() { return accountId; }
     public void setAccountId(Long accountId) { this.accountId = accountId; }
 

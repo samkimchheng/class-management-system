@@ -122,6 +122,7 @@
                 size: A4 landscape;
                 margin: 5mm;
             }
+            .attendance-status-tabs-box { display: none !important; }
         }
     
         /* Mobile Sticky Override */
@@ -137,7 +138,148 @@
                 -webkit-overflow-scrolling: touch !important;
             }
         }
-    
+
+        /* Attendance Status Tabs Filter */
+        .attendance-status-tabs-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        }
+        .status-tabs-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .status-tabs-list {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .status-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 15px;
+            border-radius: 20px;
+            border: 1.5px solid #cbd5e1;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .status-tab-btn:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            color: #0f172a;
+        }
+        .status-tab-btn.active[data-filter="studying"] {
+            background: #ecfdf5;
+            border-color: #10b981;
+            color: #065f46;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+        }
+        .status-tab-btn.active[data-filter="dropped"] {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #991b1b;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+        }
+        .status-tab-btn.active[data-filter="transferred"] {
+            background: #faf5ff;
+            border-color: #a855f7;
+            color: #6b21a8;
+            box-shadow: 0 2px 6px rgba(168, 85, 247, 0.25);
+        }
+        .status-tab-btn.active[data-filter="all"] {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            color: #1e40af;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);
+        }
+        .status-tab-btn .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .status-badge.badge-studying {
+            background: #d1fae5;
+            color: #047857;
+        }
+        .status-badge.badge-dropped {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .status-badge.badge-transferred {
+            background: #f3e8ff;
+            color: #7e22ce;
+        }
+        .status-badge.badge-all {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        /* Status Pills in Table Rows */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            white-space: nowrap;
+            line-height: 1.3;
+        }
+        .status-pill-dropped {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .status-pill-transferred {
+            background: #f3e8ff;
+            color: #6b21a8;
+            border: 1px solid #d8b4fe;
+        }
+
+        /* Row tinting for dropped and transferred students */
+        tr.row-student-dropped {
+            background-color: #fff8f8 !important;
+        }
+        tr.row-student-dropped:hover {
+            background-color: #fee2e2 !important;
+        }
+        tr.row-student-transferred {
+            background-color: #fbf8ff !important;
+        }
+        tr.row-student-transferred:hover {
+            background-color: #f3e8ff !important;
+        }
+        tr.row-student-dropped .sticky-col,
+        tr.row-student-transferred .sticky-col {
+            background-color: inherit !important;
+        }
     </style>
 </head>
 <body>
@@ -334,6 +476,35 @@
                         </span>
                     </div>
                 </div>
+
+                <!-- Student Status Filter Bar for Calling Attendance -->
+                <div class="attendance-status-tabs-box">
+                    <div class="status-tabs-label">
+                        <span>👥 តម្រងស្ថានភាពសិស្ស (សម្រាប់ហៅវត្តមាន)៖</span>
+                    </div>
+                    <div class="status-tabs-list">
+                        <button type="button" class="status-tab-btn active" data-filter="studying" onclick="filterAttendanceStatus('studying')" title="ហៅវត្តមានតែសិស្សដែលកំពុងរៀនជាក់ស្តែង (លាក់សិស្សបោះបង់និងផ្ទេរ)">
+                            <span>🟢</span>
+                            <span>កំពុងសិក្សា</span>
+                            <span class="status-badge badge-studying" th:text="${studyingCount != null ? studyingCount : 0}">0</span>
+                        </button>
+                        <button type="button" class="status-tab-btn" data-filter="dropped" onclick="filterAttendanceStatus('dropped')" title="មើលបញ្ជីសិស្សបោះបង់ការសិក្សា">
+                            <span>🔴</span>
+                            <span>បោះបង់ការសិក្សា</span>
+                            <span class="status-badge badge-dropped" th:text="${droppedCount != null ? droppedCount : 0}">0</span>
+                        </button>
+                        <button type="button" class="status-tab-btn" data-filter="transferred" onclick="filterAttendanceStatus('transferred')" title="មើលបញ្ជីសិស្សផ្ទេរការសិក្សា">
+                            <span>🟣</span>
+                            <span>ផ្ទេរការសិក្សា</span>
+                            <span class="status-badge badge-transferred" th:text="${transferredCount != null ? transferredCount : 0}">0</span>
+                        </button>
+                        <button type="button" class="status-tab-btn" data-filter="all" onclick="filterAttendanceStatus('all')" title="បង្ហាញសិស្សទាំងអស់ក្នុងថ្នាក់">
+                            <span>👥</span>
+                            <span>បង្ហាញទាំងអស់</span>
+                            <span class="status-badge badge-all" th:text="${totalStudentCount != null ? totalStudentCount : 0}">0</span>
+                        </button>
+                    </div>
+                </div>
                 
                 <!-- 1. ANNUAL / SEMESTER SUMMARY TABLE (Shown when 'ប្រចាំឆ្នាំ' or 'ឆមាស' is selected) -->
                 <div th:if="${isYearly or isSemester1 or isSemester2}" class="attendance-table-wrapper" style="overflow: auto; max-height: 65vh; border: 1px solid var(--border); border-radius: 8px;">
@@ -382,9 +553,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="row, iterStat : ${yearlyAbsences}">
-                            <td class="sticky-col-1" th:text="${iterStat.count}">១</td>
-                            <td class="sticky-col-2" th:text="${row.student.name}">ឈ្មោះសិស្ស</td>
+                        <tr th:each="row, iterStat : ${yearlyAbsences}"
+                            class="attendance-student-row"
+                            th:attr="data-status-type=${row.student != null ? row.student.statusType : 'studying'}"
+                            th:classappend="${row.student != null and row.student.droppedOut ? 'row-student-dropped' : (row.student != null and row.student.transferred ? 'row-student-transferred' : 'row-student-studying')}">
+                            <td class="sticky-col-1 att-row-num" th:text="${iterStat.count}">១</td>
+                            <td class="sticky-col-2">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                    <span th:text="${row.student.name}" style="font-weight: 700;">ឈ្មោះសិស្ស</span>
+                                    <span th:if="${row.student != null and row.student.droppedOut}" class="status-pill status-pill-dropped" title="សិស្សបោះបង់ការសិក្សា">🔴 បោះបង់</span>
+                                    <span th:if="${row.student != null and row.student.transferred}" class="status-pill status-pill-transferred" title="សិស្សផ្ទេរការសិក្សា">🟣 ផ្ទេរ</span>
+                                </div>
+                            </td>
                             <td style="text-align: center; padding: 8px;" th:text="${row.student.gender}">ភេទ</td>
                             <td style="text-align: center; padding: 8px;" th:text="${row.student.className}">ថ្នាក់រៀន</td>
                             
@@ -485,9 +665,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="student, iterStat : ${students}">
-                            <td class="sticky-col-1" th:text="${iterStat.count}">១</td>
-                            <td class="sticky-col-2" th:text="${student.name}">ឈ្មោះសិស្ស</td>
+                        <tr th:each="student, iterStat : ${students}"
+                            class="attendance-student-row"
+                            th:attr="data-status-type=${student.statusType}"
+                            th:classappend="${student.droppedOut ? 'row-student-dropped' : (student.transferred ? 'row-student-transferred' : 'row-student-studying')}">
+                            <td class="sticky-col-1 att-row-num" th:text="${iterStat.count}">១</td>
+                            <td class="sticky-col-2">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                    <span th:text="${student.name}" style="font-weight: 700;">ឈ្មោះសិស្ស</span>
+                                    <span th:if="${student.droppedOut}" class="status-pill status-pill-dropped" title="សិស្សបោះបង់ការសិក្សា">🔴 បោះបង់</span>
+                                    <span th:if="${student.transferred}" class="status-pill status-pill-transferred" title="សិស្សផ្ទេរការសិក្សា">🟣 ផ្ទេរ</span>
+                                </div>
+                            </td>
                             <td style="text-align: center; white-space: nowrap;" th:text="${student.gender}">ភេទ</td>
                             <td style="text-align: center; white-space: nowrap; font-weight: 600;" th:text="${student.className}">ថ្នាក់ទី</td>
                             <!-- Days 1 to 31 -->
@@ -638,6 +827,69 @@
             }
 
             updateDaysInMonth();
+
+            // --- Feature 3: Filter Attendance by Student Status (Default: studying) ---
+            const khmerNumMap = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+            function toKhmerNum(n) {
+                return String(n).split('').map(d => khmerNumMap[parseInt(d)] !== undefined ? khmerNumMap[parseInt(d)] : d).join('');
+            }
+
+            window.filterAttendanceStatus = function(status) {
+                if (!status) status = 'studying';
+                try {
+                    localStorage.setItem('attendance_status_filter', status);
+                } catch(e) {}
+
+                // Update active tab buttons
+                const buttons = document.querySelectorAll('.status-tab-btn');
+                buttons.forEach(btn => {
+                    if (btn.getAttribute('data-filter') === status) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+
+                // Filter student rows in both monthly and yearly tables
+                const studentRows = document.querySelectorAll('tr.attendance-student-row');
+                let visibleCount = 0;
+
+                studentRows.forEach(row => {
+                    const rowStatus = row.getAttribute('data-status-type') || 'studying';
+                    let show = false;
+                    if (status === 'all') {
+                        show = true;
+                    } else if (status === 'studying') {
+                        show = (rowStatus === 'studying');
+                    } else if (status === 'dropped') {
+                        show = (rowStatus === 'dropped');
+                    } else if (status === 'transferred') {
+                        show = (rowStatus === 'transferred');
+                    }
+
+                    if (show) {
+                        row.style.display = '';
+                        visibleCount++;
+                        // Renumber sequential ល.រ in Khmer
+                        const numCell = row.querySelector('.att-row-num');
+                        if (numCell) {
+                            numCell.textContent = toKhmerNum(visibleCount);
+                        }
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            };
+
+            // Restore saved filter or default to 'studying'
+            let savedStatusFilter = 'studying';
+            try {
+                const stored = localStorage.getItem('attendance_status_filter');
+                if (stored && ['studying', 'dropped', 'transferred', 'all'].includes(stored)) {
+                    savedStatusFilter = stored;
+                }
+            } catch(e) {}
+            filterAttendanceStatus(savedStatusFilter);
         });
     </script>
     <script src="/js/academic-year.js"></script>
