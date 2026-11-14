@@ -1054,20 +1054,20 @@
                                         <div style="font-weight: 600; color: #1e293b; font-size: 0.86rem;" th:text="${w.exampleSentence}">The cat sat on the mat.</div>
                                         <div style="color: #64748b; font-size: 0.82rem;" th:text="${w.exampleSentenceKhmer}">សត្វឆ្មាបានអង្គុយលើកន្ទេល។</div>
                                     </td>
-                                    <td style="text-align: center;">
+                                    <td style="text-align: center; white-space: nowrap;">
                                         <button th:if="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}"
                                                 type="button" th:onclick="'toggleWordActive(' + ${w.id} + ')'"
                                                 th:style="${w.active ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;'}"
-                                                style="padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; cursor: pointer;">
+                                                style="padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; cursor: pointer; white-space: nowrap;">
                                             <span th:text="${w.active ? '🟢 បើកបង្ហាញ' : '🔴 បិទ'}">🟢 បើកបង្ហាញ</span>
                                         </button>
                                         <span th:unless="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}"
                                               th:style="${w.active ? 'background:#dcfce7; color:#166534;' : 'background:#fee2e2; color:#991b1b;'}"
-                                              style="padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 0.78rem;"
+                                              style="padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 0.78rem; white-space: nowrap;"
                                               th:text="${w.active ? '🟢 បើកបង្ហាញ' : '🔴 បិទ'}">🟢 បើកបង្ហាញ</span>
                                     </td>
-                                    <td style="text-align: center;">
-                                        <div th:if="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}" style="display: inline-flex; gap: 5px;">
+                                    <td style="text-align: center; white-space: nowrap;">
+                                        <div th:if="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}" style="display: inline-flex; gap: 5px; white-space: nowrap;">
                                             <button type="button" class="btn" style="background: #dbeafe; color: #1e40af; padding: 5px 10px; font-size: 0.82rem;"
                                                     th:data-id="${w.id}"
                                                     th:data-level="${w.phonicsLevel}"
@@ -1090,9 +1090,9 @@
                                             </button>
                                         </div>
                                         <span th:unless="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}"
-                                              style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 3px 9px; border-radius: 8px; font-weight: 700; font-size: 0.76rem;"
+                                              style="display: inline-flex; align-items: center; gap: 4px; background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; white-space: nowrap;"
                                               title="ទិន្នន័យមេរៀនស្តង់ដារត្រូវបានការពារដោយ Admin">
-                                            🔒 មេរៀនស្តង់ដារ (Admin)
+                                            🔒 ស្តង់ដារ (Admin)
                                         </span>
                                     </td>
                                 </tr>

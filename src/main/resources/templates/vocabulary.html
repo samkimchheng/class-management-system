@@ -135,12 +135,12 @@
         .topbar {
             background-color: #ffffff !important;
             border-bottom: 1px solid var(--border);
-            padding: 12px 22px;
+            padding: 10px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: nowrap;
-            gap: 12px;
+            gap: 8px;
             position: sticky;
             top: 0;
             z-index: 90;
@@ -149,18 +149,17 @@
         .topbar-left {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
             min-width: 0;
             flex: 1 1 auto;
+            font-size: clamp(0.85rem, 1.12vw, 1.04rem) !important;
         }
 
         .topbar-right-vocab {
             display: inline-flex !important;
             align-items: center !important;
-            gap: 10px !important;
+            gap: 8px !important;
             flex-wrap: nowrap !important;
             white-space: nowrap !important;
             flex-shrink: 0 !important;
@@ -388,17 +387,18 @@
             border-radius: 14px;
             border: 1px solid var(--border);
             box-shadow: var(--shadow);
-            overflow: hidden;
+            overflow-x: auto;
+            width: 100%;
         }
 
         .vocab-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
         }
 
         .vocab-table th, .vocab-table td {
-            padding: 12px 16px;
+            padding: 10px 10px;
             border-bottom: 1px solid #f1f5f9;
             text-align: left;
             vertical-align: middle;
@@ -767,7 +767,7 @@
             #wordsTab .vocab-table th:nth-child(6),
             #wordsTab .vocab-table td:nth-child(6) { width: 56px !important; }
             #wordsTab .vocab-table th:nth-child(7),
-            #wordsTab .vocab-table td:nth-child(7) { width: 72px !important; }
+            #wordsTab .vocab-table td:nth-child(7) { width: 92px !important; }
 
             #wordsTab .btn-audio { width: 28px; height: 28px; font-size: 0.78rem; }
             #wordsTab .switch { width: 38px; height: 22px; }
@@ -830,19 +830,19 @@
     <div class="main-content">
         <!-- Topbar -->
         <div class="topbar">
-            <div class="topbar-left" style="font-weight: 700; font-size: 1.08rem; color: #0f172a !important; white-space: nowrap;">
-                <span class="title-full" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="'🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី' + ${gradeKhmer} + ' (Grade ' + ${selectedGrade} + ' English Vocabulary)'">🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (Grade 10 English Vocabulary)</span>
+            <div class="topbar-left" style="font-weight: 700; color: #0f172a !important; white-space: nowrap;">
+                <span class="title-full" style="white-space: nowrap;" th:text="'🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី' + ${gradeKhmer} + ' (Grade ' + ${selectedGrade} + ' English Vocabulary)'">🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (Grade 10 English Vocabulary)</span>
                 <span class="title-short" th:text="'🔤 វាក្យសព្ទថ្នាក់ទី' + ${gradeKhmer}">🔤 វាក្យសព្ទថ្នាក់ទី១០</span>
             </div>
-            <div class="topbar-right-vocab" style="display: inline-flex; align-items: center; gap: 10px; flex-wrap: nowrap; white-space: nowrap; flex-shrink: 0;">
-                <span class="unit-badge year-badge-vocab" style="background: #eef2ff; color: #3730a3; border-color: #c7d2fe; white-space: nowrap;">
+            <div class="topbar-right-vocab" style="display: inline-flex; align-items: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap; flex-shrink: 0;">
+                <span class="unit-badge year-badge-vocab" style="background: #eef2ff; color: #3730a3; border-color: #c7d2fe; white-space: nowrap; font-size: 0.82rem; padding: 3px 9px;">
                     📅<span class="year-label-text"> ឆ្នាំសិក្សា៖</span> <b th:text="${teacherAccount.currentAcademicYear != null ? teacherAccount.currentAcademicYear : '២០២៦-២០២៧'}">២០២៦-២០២៧</b>
                 </span>
-                <span class="teacher-label-vocab" style="font-size: 0.88rem; color: #475569; white-space: nowrap;">
+                <span class="teacher-label-vocab" style="font-size: 0.84rem; color: #475569; white-space: nowrap;">
                     គ្រូទទួលបន្ទុក៖ <b th:text="${teacherAccount.fullName}">សំ គឹមឆេង</b>
                 </span>
             
-                <a href="/logout" class="btn-logout-header" title="ចាកចេញពីប្រព័ន្ធ" style="background: #fee2e2; color: #b91c1c; text-decoration: none; font-weight: 700; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; border: 1px solid #fecaca; transition: all 0.2s; white-space: nowrap;"><span>🚪</span> <span>ចាកចេញ</span></a>
+                <a href="/logout" class="btn-logout-header" title="ចាកចេញពីប្រព័ន្ធ" style="background: #fee2e2; color: #b91c1c; text-decoration: none; font-weight: 700; padding: 5px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; font-size: 0.84rem; border: 1px solid #fecaca; transition: all 0.2s; white-space: nowrap;"><span>🚪</span> <span>ចាកចេញ</span></a>
             </div>
         </div>
 
@@ -1054,13 +1054,13 @@
                     <table class="vocab-table">
                         <thead>
                             <tr>
-                                <th style="width: 50px; text-align: center;">ល.រ</th>
-                                <th style="width: 220px;">ពាក្យអង់គ្លេស (English)</th>
-                                <th style="width: 50px; text-align: center;">សំឡេង</th>
+                                <th style="width: 44px; text-align: center;">ល.រ</th>
+                                <th style="width: 175px;">ពាក្យអង់គ្លេស (English)</th>
+                                <th style="width: 52px; text-align: center;">សំឡេង</th>
                                 <th class="col-khmer">ការបកប្រែជាភាសាខ្មែរ (Khmer Translation)</th>
-                                <th class="col-unit" style="width: 140px; text-align: center;">មេរៀន (Unit)</th>
-                                <th style="width: 100px; text-align: center;">បើកឱ្យសិស្សរៀន</th>
-                                <th style="width: 150px; text-align: center;">សកម្មភាព</th>
+                                <th class="col-unit" style="width: 95px; text-align: center;">មេរៀន (Unit)</th>
+                                <th style="width: 105px; text-align: center;">បើកឱ្យសិស្សរៀន</th>
+                                <th style="width: 135px; text-align: center;">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1084,7 +1084,7 @@
                                 <td class="col-unit" style="text-align: center;">
                                     <span class="unit-badge" th:text="${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(w.unitName)}">Unit 1</span>
                                 </td>
-                                <td style="text-align: center;">
+                                <td style="text-align: center; white-space: nowrap;">
                                     <label th:if="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}" class="switch">
                                         <input type="checkbox" th:checked="${w.active}" th:attr="onchange='toggleStatus(' + ${w.id} + ', this)'">
                                         <span class="slider"></span>
@@ -1095,19 +1095,19 @@
                                 </td>
                                 <td style="text-align: center; white-space: nowrap;">
                                     <th:block th:if="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}">
-                                        <button type="button" class="btn-custom btn-custom-outline" style="padding: 4px 8px; font-size: 0.8rem;"
+                                        <button type="button" class="btn-custom btn-custom-outline" style="padding: 4px 8px; font-size: 0.78rem;"
                                                 th:attr="onclick='openEditModal(' + ${w.id} + ', \'' + ${#strings.escapeJavaScript(w.englishWord)} + '\', \'' + ${#strings.escapeJavaScript(w.khmerTranslation)} + '\', \'' + ${#strings.escapeJavaScript(w.unitName)} + '\', \'' + ${#strings.escapeJavaScript(w.partOfSpeech != null ? w.partOfSpeech : '')} + '\')'">
                                             ✏️ កែ
                                         </button>
-                                        <button type="button" class="btn-custom btn-custom-outline" style="padding: 4px 8px; font-size: 0.8rem; color: #ef4444;"
+                                        <button type="button" class="btn-custom btn-custom-outline" style="padding: 4px 8px; font-size: 0.78rem; color: #ef4444;"
                                                 th:attr="onclick='deleteWord(' + ${w.id} + ')'">
                                             🗑️
                                         </button>
                                     </th:block>
                                     <span th:unless="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}"
-                                          style="font-size: 0.76rem; color: #64748b; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; font-weight: 600;"
+                                          style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #475569; background: #f8fafc; border: 1px solid #cbd5e1; padding: 3px 8px; border-radius: 6px; font-weight: 700; white-space: nowrap;"
                                           title="មេរៀនស្តង់ដារត្រូវបានការពារ (មានតែ Admin ប៉ុណ្ណោះអាចកែប្រែបាន)">
-                                        🔒 មេរៀនស្តង់ដារ (Admin)
+                                        🔒 ស្តង់ដារ (Admin)
                                     </span>
                                 </td>
                             </tr>
