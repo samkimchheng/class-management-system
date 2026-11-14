@@ -741,6 +741,7 @@
             <li class="nav-item"><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
             <li class="nav-item"><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
             <li class="nav-item active" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN' or session.ACCOUNT_ID == 97 or session.ACCOUNT_USERNAME == 'samkimchheng' or (teacherAccount != null and (teacherAccount.username == 'samkimchheng' or teacherAccount.id == 97 or teacherAccount.vocabularyPermission == true))}"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>វាក្យសព្ទ (Vocab)</span></a></li>
+            <li class="nav-item" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN' or session.ACCOUNT_ID == 97 or session.ACCOUNT_USERNAME == 'samkimchheng' or (teacherAccount != null and (teacherAccount.username == 'samkimchheng' or teacherAccount.id == 97 or teacherAccount.vocabularyPermission == true or (teacherAccount.subject != null and (teacherAccount.subject.toLowerCase().contains('english') or teacherAccount.subject.contains('អង់គ្លេស')))))}"><a href="/phonics" class="nav-link"><span>🗣️</span> <span>ប្រកបអង់គ្លេស (Phonics)</span></a></li>
             <li class="nav-item"><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
             <li class="nav-item"><a href="/daily-plan" class="nav-link"><span>📋</span> <span>សេវាប្រចាំថ្ងៃ</span></a></li>
             <li class="nav-item"><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
@@ -788,6 +789,9 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="/phonics" class="btn-custom" style="color: white; border: 1px solid rgba(255,255,255,0.45); background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); box-shadow: 0 3px 10px rgba(13, 148, 136, 0.35);">
+                        <span>🗣️ មេរៀនប្រកប (Oxford Phonics L1–L5)</span>
+                    </a>
                     <a th:href="@{/test/vocabulary(grade=${selectedGrade})}" target="_blank" class="btn-custom btn-custom-outline" style="color: white; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.15);">
                         <span>👁️ សាកល្បងមើលផ្ទាំងសិស្ស</span>
                     </a>

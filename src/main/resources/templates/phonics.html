@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>គ្រប់គ្រងមេរៀនប្រកបអង់គ្លេស (Oxford Phonics World) - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Battambang:wght@400;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3730a3;
+            --primary-light: #e0e7ff;
+            --secondary: #0ea5e9;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --sidebar-width: 260px;
+            --radius: 14px;
+            --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #f1f5f9;
+            color: var(--dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: #1e293b;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-header {
+            padding: 22px 20px;
+            text-align: center;
+            background-color: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .nav-item {
+            border-bottom: 1px solid #334155;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 18px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #334155;
+            color: white;
+        }
+
+        .nav-item.active .nav-link {
+            background-color: #334155;
+            color: white;
+            border-left-color: #6366f1;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .topbar {
+            background-color: white;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 26px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .content {
+            padding: 22px 26px;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Hero Banner */
+        .phonics-hero {
+            background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 50%, #4f46e5 100%);
+            border-radius: 18px;
+            padding: 24px 28px;
+            color: white;
+            box-shadow: 0 12px 28px rgba(55, 48, 163, 0.28);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 18px;
+        }
+
+        .phonics-hero-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .phonics-hero-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.16);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+
+        .phonics-hero h1 {
+            margin: 0;
+            font-size: 1.45rem;
+            font-weight: 800;
+        }
+
+        .phonics-hero p {
+            margin: 5px 0 0 0;
+            font-size: 0.92rem;
+            color: #e0e7ff;
+            line-height: 1.5;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-white { background: white; color: #1e1b4b; }
+        .btn-white:hover { background: #e0e7ff; transform: translateY(-1px); }
+        .btn-glass { background: rgba(255,255,255,0.16); color: white; border: 1px solid rgba(255,255,255,0.3); }
+        .btn-glass:hover { background: rgba(255,255,255,0.26); }
+        .btn-emerald { background: #10b981; color: white; }
+        .btn-emerald:hover { background: #059669; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        /* 5 Levels Switcher Bar */
+        .level-switcher-bar {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1100px) {
+            .level-switcher-bar {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        .level-tab-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px 16px;
+            text-decoration: none;
+            color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .level-tab-card:hover {
+            border-color: #818cf8;
+            transform: translateY(-2px);
+        }
+
+        .level-tab-card.active {
+            background: linear-gradient(135deg, #4361ee 0%, #3730a3 100%);
+            color: white;
+            border-color: #3730a3;
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.28);
+        }
+
+        .level-tab-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+        }
+
+        .level-tab-sub {
+            font-size: 0.82rem;
+            opacity: 0.85;
+            font-weight: 600;
+        }
+
+        .level-count-pill {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+
+        .level-tab-card.active .level-count-pill {
+            background: rgba(255,255,255,0.22);
+            color: white;
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 18px 20px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.45rem;
+            flex-shrink: 0;
+        }
+
+        .kpi-val {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1.2;
+        }
+
+        .kpi-lbl {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* Section Cards */
+        .panel-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            margin-bottom: 22px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 1.18rem;
+            font-weight: 800;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Tables */
+        .table-scroll {
+            overflow-x: auto;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 12px;
+        }
+
+        .data-table {
+            width: 100%;
+            min-width: 850px;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+            white-space: nowrap;
+        }
+
+        .data-table th {
+            background: #f1f5f9;
+            color: #0f172a;
+            font-weight: 800;
+            padding: 11px 12px;
+            border-bottom: 2px solid #cbd5e1;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Progress Bar */
+        .prog-bar-wrap {
+            width: 110px;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        .prog-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #4361ee, #10b981);
+        }
+
+        /* Blending Visual Chips */
+        .blend-chips {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .blend-chip {
+            background: #eef2ff;
+            color: #3730a3;
+            border: 1px solid #c7d2fe;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+        }
+
+        .skill-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+
+        /* Main View Tabs */
+        .main-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 2px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .main-tab-btn {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            padding: 11px 20px;
+            font-size: 0.96rem;
+            font-weight: 800;
+            color: #64748b;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .main-tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.65);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal-card {
+            background: white;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 680px;
+            padding: 26px;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.88rem;
+            margin-bottom: 5px;
+            color: #334155;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+    </style>
+    <link rel="stylesheet" href="/css/mobile-Wait.css" onerror="this.remove()">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 8px; font-size: 0.9rem; color: #a5b4fc;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${teacherAccount != null ? teacherAccount.fullName : session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/" class="nav-link"><span>🏠</span> <span>ទំព័រដើម</span></a></li>
+            <li class="nav-item"><a href="/profile" class="nav-link"><span>👤</span> <span>បំពេញព័ត៌មានផ្ទាល់ខ្លួន</span></a></li>
+            <li class="nav-item"><a href="/certificate" class="nav-link"><span>📜</span> <span>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span></a></li>
+            <li class="nav-item"><a href="/classrooms" class="nav-link"><span>🏫</span> <span>បញ្ជីថ្នាក់រៀនខ្ញុំ</span></a></li>
+            <li class="nav-item"><a href="/students" class="nav-link"><span>👥</span> <span>បញ្ជីឈ្មោះសិស្ស</span></a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link"><span>📅</span> <span>បញ្ជីអវត្តមាន</span></a></li>
+            <li class="nav-item"><a href="/wheel" class="nav-link"><span>🎡</span> <span>កង់បង្វិលសិស្ស</span></a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link"><span>📊</span> <span>បញ្ជីពិន្ទុ</span></a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link"><span>📈</span> <span>ស្ថិតិសិស្ស</span></a></li>
+            <li class="nav-item"><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
+            <li class="nav-item"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>វាក្យសព្ទ (Vocab)</span></a></li>
+            <li class="nav-item active"><a href="/phonics" class="nav-link"><span>🗣️</span> <span>ប្រកបអង់គ្លេស (Phonics)</span></a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
+            <li class="nav-item"><a href="/daily-plan" class="nav-link"><span>📋</span> <span>សេវាប្រចាំថ្ងៃ</span></a></li>
+            <li class="nav-item"><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
+            <li class="nav-item"><a href="/feedback" class="nav-link"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
+            <li class="nav-item"><a href="/guide" class="nav-link"><span>📖</span> <span>ណែនាំប្រើប្រាស់</span></a></li>
+        </ul>
+        <div style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/admin" class="nav-link" style="color: #fbbf24;"><span>🛡️</span> <span>ផ្ទាំង Admin</span></a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: #ef4444;"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">
+                    🗣️ មេរៀនប្រកបអង់គ្លេសតាមស្តង់ដារអន្តរជាតិ (Oxford Phonics World L1–L5)
+                </h3>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <a href="/vocabulary" class="btn" style="background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe;">
+                    🔤 ទៅកាន់វាក្យសព្ទ (Vocab 10–12)
+                </a>
+                <a href="/admin/accounts" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}" class="btn" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
+                    🛡️ គ្រប់គ្រងសិទ្ធិគ្រូ (Admin)
+                </a>
+                <a href="/logout" class="btn" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;">
+                    🚪 ចាកចេញ
+                </a>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Hero Banner -->
+            <div class="phonics-hero">
+                <div class="phonics-hero-left">
+                    <div class="phonics-hero-icon">🗣️</div>
+                    <div>
+                        <h1 th:text="${levelTitleKhmer}">កម្រិតទី១៖ អក្សរក្រម និងសូរសំឡេងមូលដ្ឋាន (Level 1: The Alphabet)</h1>
+                        <p>កម្មវិធីសិក្សាប្រកបអង់គ្លេសតាមសៀវភៅ <b>Oxford Phonics World (Level 1 – Level 5)</b> • បំណិនទាំង ៤៖ <b>ស្តាប់ 🎧 • អាន 📖 • និយាយ 🎙️ • សរសេរ ✍️</b></p>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <button type="button" class="btn btn-white" onclick="openAddPhonicsModal()">
+                        <i class="fas fa-plus-circle"></i> បន្ថែមពាក្យប្រកបថ្មី
+                    </button>
+                    <button type="button" class="btn btn-glass" onclick="resetOxfordDefault()">
+                        <i class="fas fa-sync-alt"></i> បញ្ចូលស្តង់ដារ Oxford ទាំង ៥ កម្រិត
+                    </button>
+                    <a href="/test/phonics" target="_blank" class="btn btn-emerald">
+                        <i class="fas fa-external-link-alt"></i> សាកល្បងផ្ទាំងសិស្សរៀន
+                    </a>
+                </div>
+            </div>
+
+            <!-- 5 Oxford Phonics Levels Switcher -->
+            <div class="level-switcher-bar">
+                <a th:href="@{/phonics(level=1, className=${selectedClass})}" class="level-tab-card" th:classappend="${selectedLevel == 1 ? 'active' : ''}">
+                    <div class="level-tab-top">
+                        <span>🌱 Level 1</span>
+                        <span class="level-count-pill" th:text="${level1Total} + ' ពាក្យ'">48 ពាក្យ</span>
+                    </div>
+                    <div class="level-tab-sub">The Alphabet (អក្សរក្រម A–Z)</div>
+                </a>
+                <a th:href="@{/phonics(level=2, className=${selectedClass})}" class="level-tab-card" th:classappend="${selectedLevel == 2 ? 'active' : ''}">
+                    <div class="level-tab-top">
+                        <span>🔤 Level 2</span>
+                        <span class="level-count-pill" th:text="${level2Total} + ' ពាក្យ'">40 ពាក្យ</span>
+                    </div>
+                    <div class="level-tab-sub">Short Vowels (ស្រៈខ្លី CVC)</div>
+                </a>
+                <a th:href="@{/phonics(level=3, className=${selectedClass})}" class="level-tab-top-wrap level-tab-card" th:classappend="${selectedLevel == 3 ? 'active' : ''}">
+                    <div class="level-tab-top">
+                        <span>🚀 Level 3</span>
+                        <span class="level-count-pill" th:text="${level3Total} + ' ពាក្យ'">40 ពាក្យ</span>
+                    </div>
+                    <div class="level-tab-sub">Long Vowels (ស្រៈវែង Magic E)</div>
+                </a>
+                <a th:href="@{/phonics(level=4, className=${selectedClass})}" class="level-tab-card" th:classappend="${selectedLevel == 4 ? 'active' : ''}">
+                    <div class="level-tab-top">
+                        <span>🔥 Level 4</span>
+                        <span class="level-count-pill" th:text="${level4Total} + ' ពាក្យ'">40 ពាក្យ</span>
+                    </div>
+                    <div class="level-tab-sub">Consonant Blends & Digraphs</div>
+                </a>
+                <a th:href="@{/phonics(level=5, className=${selectedClass})}" class="level-tab-card" th:classappend="${selectedLevel == 5 ? 'active' : ''}">
+                    <div class="level-tab-top">
+                        <span>👑 Level 5</span>
+                        <span class="level-count-pill" th:text="${level5Total} + ' ពាក្យ'">40 ពាក្យ</span>
+                    </div>
+                    <div class="level-tab-sub">Letter Combinations & Fluency</div>
+                </a>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background: #e0e7ff; color: #4361ee;">📚</div>
+                    <div>
+                        <div class="kpi-val" th:text="${allLevelsTotal}">208</div>
+                        <div class="kpi-lbl">ពាក្យសរុបទាំង ៥ កម្រិត (L1–L5)</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background: #dcfce7; color: #059669;">✅</div>
+                    <div>
+                        <div class="kpi-val"><span th:text="${activeLevelWords}">40</span> / <span th:text="${totalLevelWords}">40</span></div>
+                        <div class="kpi-lbl" th:text="'ពាក្យបើកឱ្យរៀនក្នុង Level ' + ${selectedLevel}">ពាក្យបើកឱ្យរៀន</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background: #fef3c7; color: #d97706;">🏫</div>
+                    <div>
+                        <div class="kpi-val" th:text="${#lists.size(classSummaryList)}">6</div>
+                        <div class="kpi-lbl">ចំនួនថ្នាក់រៀនកំពុងតាមដាន</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background: #f3e8ff; color: #7e22ce;">🎓</div>
+                    <div>
+                        <div class="kpi-val"><span th:text="${activePracticingStudents}">0</span> / <span th:text="${totalStudentsCount}">0</span></div>
+                        <div class="kpi-lbl">សិស្សបានចូលហាត់ប្រកបសកម្ម</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Switch Tabs -->
+            <div class="main-tabs">
+                <button type="button" class="main-tab-btn active" id="btnTabAnalytics" onclick="switchMainTab('tabAnalytics')">
+                    <span>📊</span> <span>តាមដានភាគរយ (%) ការសិក្សាតាមថ្នាក់ និងសិស្សម្នាក់ៗ</span>
+                </button>
+                <button type="button" class="main-tab-btn" id="btnTabCurriculum" onclick="switchMainTab('tabCurriculum')">
+                    <span>📖</span> <span th:text="'គ្រប់គ្រងមេរៀន និងពាក្យប្រកប (Level ' + ${selectedLevel} + ' - ' + ${#lists.size(items)} + ' ពាក្យ)'">គ្រប់គ្រងមេរៀន និងពាក្យប្រកប</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: CLASS-BY-CLASS & STUDENT PROGRESS ANALYTICS -->
+            <div id="tabAnalytics" class="tab-pane active">
+                <!-- 1A. Class-by-Class Summary Table -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3 class="panel-title">
+                            <span>🏫</span>
+                            <span>តារាងតាមដានភាគរយ (%) នៃការសិក្សាប្រកបអង់គ្លេសតាមថ្នាក់នីមួយៗ (Class-by-Class Progress)</span>
+                        </h3>
+                        <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                            ចុចលើឈ្មោះថ្នាក់ណាមួយដើម្បីមើលបញ្ជីសិស្សក្នុងថ្នាក់នោះលម្អិត
+                        </span>
+                    </div>
+
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px; text-align: center;">ល.រ</th>
+                                    <th>ថ្នាក់រៀន</th>
+                                    <th style="text-align: center;">សិស្សសរុប</th>
+                                    <th style="text-align: center;">សិស្សបានរៀន</th>
+                                    <th style="text-align: center;">🎧 ស្តាប់ (%)</th>
+                                    <th style="text-align: center;">📖 អាន (%)</th>
+                                    <th style="text-align: center;">🎙️ និយាយ (%)</th>
+                                    <th style="text-align: center;">✍️ សរសេរ (%)</th>
+                                    <th style="text-align: center;" th:text="'ភាគរយ Level ' + ${selectedLevel}">ភាគរយ Level 1</th>
+                                    <th>ភាគរយសរុបរួម (L1–L5)</th>
+                                    <th style="text-align: center;">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="cls, stat : ${classSummaryList}">
+                                    <td style="text-align: center; font-weight: 700; color: #64748b;" th:text="${stat.count}">1</td>
+                                    <td>
+                                        <a th:href="@{/phonics(level=${selectedLevel}, className=${cls.className})}"
+                                           style="background: #eef2ff; color: #3730a3; padding: 4px 12px; border-radius: 8px; font-weight: 800; text-decoration: none; border: 1px solid #c7d2fe;">
+                                            🏫 ថ្នាក់ <span th:text="${cls.className}">10A</span>
+                                        </a>
+                                    </td>
+                                    <td style="text-align: center; font-weight: 700;" th:text="${cls.studentCount} + ' នាក់'">45 នាក់</td>
+                                    <td style="text-align: center;">
+                                        <span style="background: #dcfce7; color: #166534; padding: 3px 10px; border-radius: 12px; font-weight: 800; font-size: 0.85rem;"
+                                              th:text="${cls.activeLearners} + ' / ' + ${cls.studentCount}">10 / 45</span>
+                                    </td>
+                                    <td style="text-align: center; font-weight: 700; color: #2563eb;" th:text="${cls.listeningPercent} + '%'">0%</td>
+                                    <td style="text-align: center; font-weight: 700; color: #7c3aed;" th:text="${cls.readingPercent} + '%'">0%</td>
+                                    <td style="text-align: center; font-weight: 700; color: #059669;" th:text="${cls.speakingPercent} + '%'">0%</td>
+                                    <td style="text-align: center; font-weight: 700; color: #d97706;" th:text="${cls.writingPercent} + '%'">0%</td>
+                                    <td style="text-align: center; font-weight: 800; color: #4338ca;" th:text="${cls.avgLevelPercent} + '%'">0%</td>
+                                    <td>
+                                        <div class="prog-bar-wrap">
+                                            <div class="prog-bar-fill" th:style="'width:' + ${cls.avgOverallPercent} + '%;'"></div>
+                                        </div>
+                                        <b style="color: #0f172a;" th:text="${cls.avgOverallPercent} + '%'">0%</b>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <a th:href="@{/phonics(level=${selectedLevel}, className=${cls.className})}"
+                                           class="btn" style="background: #f1f5f9; color: #0f172a; padding: 5px 10px; font-size: 0.82rem; border: 1px solid #cbd5e1;">
+                                            🔍 មើលសិស្ស
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(classSummaryList)}">
+                                    <td colspan="11" style="text-align: center; padding: 26px; color: #64748b;">មិនទាន់មានទិន្នន័យថ្នាក់រៀននៅឡើយទេ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 1B. Individual Student Progress Table -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3 class="panel-title">
+                            <span>🎓</span>
+                            <span>តាមដានភាគរយការសិក្សារបស់សិស្សម្នាក់ៗ តាមកម្រិត (L1–L5) និងបំណិនទាំង ៤</span>
+                        </h3>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <label style="font-weight: 700; font-size: 0.9rem;">ជ្រើសរើសថ្នាក់៖</label>
+                            <select onchange="filterByClass(this.value)" class="form-control" style="width: auto; font-weight: 700;">
+                                <option value="ALL" th:selected="${selectedClass == 'ALL'}">🏫 គ្រប់ថ្នាក់ទាំងអស់</option>
+                                <option th:each="c : ${classes}" th:value="${c}" th:text="'ថ្នាក់ ' + ${c}" th:selected="${selectedClass == c}"></option>
+                            </select>
+                            <input type="text" id="studentFilterInput" oninput="filterStudentRows()" class="form-control" style="width: 220px;" placeholder="🔍 ស្វែងរកឈ្មោះ ឬកូដសិស្ស...">
+                        </div>
+                    </div>
+
+                    <div class="table-scroll">
+                        <table class="data-table" id="studentProgressTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45px; text-align: center;">ល.រ</th>
+                                    <th>ឈ្មោះសិស្ស</th>
+                                    <th style="text-align: center;">កូដសិស្ស</th>
+                                    <th style="text-align: center;">ថ្នាក់</th>
+                                    <th style="text-align: center;">L1</th>
+                                    <th style="text-align: center;">L2</th>
+                                    <th style="text-align: center;">L3</th>
+                                    <th style="text-align: center;">L4</th>
+                                    <th style="text-align: center;">L5</th>
+                                    <th style="text-align: center;">បំណិនទាំង ៤ (🎧 📖 🎙️ ✍️)</th>
+                                    <th style="text-align: center;">ពាក្យចេះស្ទាត់</th>
+                                    <th>ភាគរយសរុប (%)</th>
+                                    <th style="text-align: center;">អនុវត្តចុងក្រោយ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="row, stat : ${studentProgressList}" class="stu-prog-row">
+                                    <td style="text-align: center; font-weight: 700; color: #64748b;" th:text="${stat.count}">1</td>
+                                    <td style="font-weight: 800; color: #0f172a;" class="stu-name-cell" th:text="${row.student.name}">សុខ សៅ</td>
+                                    <td style="text-align: center;" class="stu-code-cell">
+                                        <code style="background: #f1f5f9; padding: 2px 7px; border-radius: 5px; font-weight: 700;" th:text="${row.student.studentCode}">STU01</code>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.82rem;" th:text="${row.student.className}">10A</span>
+                                    </td>
+                                    <td style="text-align: center; font-weight: 700;" th:text="${row.l1Percent} + '%'">0%</td>
+                                    <td style="text-align: center; font-weight: 700;" th:text="${row.l2Percent} + '%'">0%</td>
+                                    <td style="text-align: center; font-weight: 700;" th:text="${row.l3Percent} + '%'">0%</td>
+                                    <td style="text-align: center; font-weight: 700;" th:text="${row.l4Percent} + '%'">0%</td>
+                                    <td style="text-align: center; font-weight: 700;" th:text="${row.l5Percent} + '%'">0%</td>
+                                    <td style="text-align: center;">
+                                        <span class="skill-badge" style="background:#dbeafe; color:#1e40af;" title="ស្តាប់ (Listening)">🎧 <b th:text="${row.listeningCount}">0</b></span>
+                                        <span class="skill-badge" style="background:#f3e8ff; color:#6b21a8;" title="អានប្រកប (Reading)">📖 <b th:text="${row.readingCount}">0</b></span>
+                                        <span class="skill-badge" style="background:#dcfce7; color:#065f46;" title="និយាយ (Speaking)">🎙️ <b th:text="${row.speakingCount}">0</b></span>
+                                        <span class="skill-badge" style="background:#fef3c7; color:#92400e;" title="សរសេរប្រកប (Writing)">✍️ <b th:text="${row.writingCount}">0</b></span>
+                                    </td>
+                                    <td style="text-align: center; font-weight: 800; color: #059669;" th:text="${row.overallMastered} + ' / ' + ${row.overallTotal}">0 / 208</td>
+                                    <td>
+                                        <div class="prog-bar-wrap">
+                                            <div class="prog-bar-fill" th:style="'width:' + ${row.overallPercent} + '%;'"></div>
+                                        </div>
+                                        <b th:text="${row.overallPercent} + '%'">0%</b>
+                                    </td>
+                                    <td style="text-align: center; font-size: 0.82rem; color: #64748b;"
+                                        th:text="${row.lastActive != null ? #temporals.format(row.lastActive, 'dd/MM/yyyy HH:mm') : 'មិនទាន់ចូលរៀន'}">-</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(studentProgressList)}">
+                                    <td colspan="13" style="text-align: center; padding: 28px; color: #64748b;">មិនមានទិន្នន័យសិស្សក្នុងថ្នាក់នេះទេ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: CURRICULUM & PHONICS ITEMS MANAGEMENT -->
+            <div id="tabCurriculum" class="tab-pane">
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h3 class="panel-title" th:text="'📖 មេរៀនប្រកបក្នុង ' + ${levelShortLabel}">មេរៀនប្រកប</h3>
+                            <select id="unitFilterSelect" onchange="applyUnitFilter(this.value)" class="form-control" style="width: auto; font-weight: 700;">
+                                <option value="ALL" th:selected="${selectedUnit == 'ALL'}">📚 គ្រប់មេរៀន (All Units)</option>
+                                <option th:each="u : ${units}" th:value="${u}" th:text="${u}" th:selected="${selectedUnit == u}"></option>
+                            </select>
+                            <input type="text" id="wordSearchInput" th:value="${searchQuery}" oninput="filterWordsTable()" class="form-control" style="width: 230px;" placeholder="🔍 ស្វែងរកពាក្យ ឬសូរប្រកប...">
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button type="button" class="btn" style="background: #dcfce7; color: #166534; border: 1px solid #86efac;" onclick="bulkToggleLevel(true)">
+                                🔓 បើកទាំងអស់ក្នុង Unit នេះ
+                            </button>
+                            <button type="button" class="btn" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;" onclick="bulkToggleLevel(false)">
+                                🔒 បិទទាំងអស់ក្នុង Unit នេះ
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="openAddPhonicsModal()">
+                                ➕ បន្ថែមពាក្យប្រកប
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-scroll">
+                        <table class="data-table" id="phonicsWordsTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45px; text-align: center;">ល.រ</th>
+                                    <th>មេរៀន (Unit)</th>
+                                    <th>សូរប្រកប</th>
+                                    <th>ពាក្យអង់គ្លេស & សំឡេង</th>
+                                    <th>ការបំបែកសូរប្រកប (Blending)</th>
+                                    <th>របៀបអានខ្មែរ</th>
+                                    <th>ការបកប្រែខ្មែរ</th>
+                                    <th>ប្រយោគគំរូ (អង់គ្លេស - ខ្មែរ)</th>
+                                    <th style="text-align: center;">ស្ថានភាព</th>
+                                    <th style="text-align: center;">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="w, stat : ${items}" class="phonics-word-row">
+                                    <td style="text-align: center; font-weight: 700; color: #64748b;" th:text="${stat.count}">1</td>
+                                    <td>
+                                        <span style="background: #f1f5f9; color: #334155; padding: 3px 9px; border-radius: 6px; font-weight: 700; font-size: 0.82rem;" th:text="${w.unitName}">Unit 1</span>
+                                    </td>
+                                    <td>
+                                        <span style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 3px 9px; border-radius: 8px; font-weight: 800; font-family: 'Poppins', sans-serif;" th:text="${w.soundPattern}">-at</span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-size: 1.4rem;" th:text="${w.emojiIcon}">🐱</span>
+                                            <div>
+                                                <b style="font-size: 1.05rem; color: #0f172a; font-family: 'Poppins', sans-serif;" th:text="${w.englishWord}">cat</b>
+                                                <span style="color: #64748b; font-size: 0.82rem; margin-left: 4px;" th:text="${w.ipaPhonetic}">/kæt/</span>
+                                            </div>
+                                            <button type="button" th:data-word="${w.cleanWord}" onclick="speakText(this.getAttribute('data-word'))"
+                                                    style="background: #e0e7ff; color: #4338ca; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;" title="ស្តាប់សំឡេងអាន">
+                                                🔊
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="blend-chips" th:if="${w.blendingParts != null}">
+                                            <span th:each="part, pStat : ${#strings.arraySplit(w.blendingParts, '|')}">
+                                                <span class="blend-chip" th:text="${part}">c</span>
+                                                <span th:if="${!pStat.last}" style="color: #94a3b8; font-weight: bold;">+</span>
+                                            </span>
+                                            <span style="color: #059669; font-weight: 800; margin-left: 4px;" th:text="'= ' + ${w.englishWord}">= cat</span>
+                                        </div>
+                                    </td>
+                                    <td style="color: #4338ca; font-weight: 700;" th:text="${w.khmerPhonetic}">ខែថ៏</td>
+                                    <td style="font-weight: 800; color: #059669;" th:text="${w.khmerTranslation}">សត្វឆ្មា</td>
+                                    <td>
+                                        <div style="font-weight: 600; color: #1e293b; font-size: 0.86rem;" th:text="${w.exampleSentence}">The cat sat on the mat.</div>
+                                        <div style="color: #64748b; font-size: 0.82rem;" th:text="${w.exampleSentenceKhmer}">សត្វឆ្មាបានអង្គុយលើកន្ទេល។</div>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <button type="button" th:onclick="'toggleWordActive(' + ${w.id} + ')'"
+                                                th:style="${w.active ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;'}"
+                                                style="padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; cursor: pointer;">
+                                            <span th:text="${w.active ? '🟢 បើកបង្ហាញ' : '🔴 បិទ'}">🟢 បើកបង្ហាញ</span>
+                                        </button>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <button type="button" class="btn" style="background: #dbeafe; color: #1e40af; padding: 5px 10px; font-size: 0.82rem;"
+                                                th:data-id="${w.id}"
+                                                th:data-level="${w.phonicsLevel}"
+                                                th:data-unit="${w.unitName}"
+                                                th:data-pattern="${w.soundPattern}"
+                                                th:data-word="${w.englishWord}"
+                                                th:data-ipa="${w.ipaPhonetic}"
+                                                th:data-khmerpho="${w.khmerPhonetic}"
+                                                th:data-blend="${w.blendingParts}"
+                                                th:data-khmer="${w.khmerTranslation}"
+                                                th:data-emoji="${w.emojiIcon}"
+                                                th:data-senten="${w.exampleSentence}"
+                                                th:data-sentkm="${w.exampleSentenceKhmer}"
+                                                onclick="openEditPhonicsModal(this)">
+                                            ✏️ កែប្រែ
+                                        </button>
+                                        <button type="button" class="btn" style="background: #fee2e2; color: #b91c1c; padding: 5px 10px; font-size: 0.82rem;"
+                                                th:onclick="'deletePhonicsWord(' + ${w.id} + ')'">
+                                            🗑️
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Phonics Modal -->
+    <div class="modal-overlay" id="phonicsModal">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">
+                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800;" id="modalTitle">➕ បន្ថែមមេរៀនប្រកបអង់គ្លេសថ្មី</h3>
+                <button type="button" onclick="closePhonicsModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <input type="hidden" id="itemId">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>កម្រិត (Oxford Level 1–5) *</label>
+                    <select id="itemLevel" class="form-control">
+                        <option value="1" th:selected="${selectedLevel == 1}">Level 1: The Alphabet (A–Z)</option>
+                        <option value="2" th:selected="${selectedLevel == 2}">Level 2: Short Vowels (CVC)</option>
+                        <option value="3" th:selected="${selectedLevel == 3}">Level 3: Long Vowels (Magic E)</option>
+                        <option value="4" th:selected="${selectedLevel == 4}">Level 4: Consonant Blends & Digraphs</option>
+                        <option value="5" th:selected="${selectedLevel == 5}">Level 5: Letter Combinations & Fluency</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ឈ្មោះមេរៀន (Unit Name) *</label>
+                    <input type="text" id="itemUnit" class="form-control" placeholder="ឧ. Unit 1: Short a (-at, -an)">
+                </div>
+                <div class="form-group">
+                    <label>សូរប្រកបគោល (Sound Pattern) *</label>
+                    <input type="text" id="itemPattern" class="form-control" placeholder="ឧ. -at /æt/ ឬ sh /ʃ/">
+                </div>
+                <div class="form-group">
+                    <label>ពាក្យអង់គ្លេស (English Word) *</label>
+                    <input type="text" id="itemWord" class="form-control" placeholder="ឧ. cat">
+                </div>
+                <div class="form-group">
+                    <label>ការបំបែកតួអក្សរប្រកប (ដាក់សញ្ញា | បំបែក) *</label>
+                    <input type="text" id="itemBlend" class="form-control" placeholder="ឧ. c|a|t ឬ sh|i|p ឬ c|a|k|e">
+                </div>
+                <div class="form-group">
+                    <label>និមិត្តសញ្ញាសូរសព្ទអន្តរជាតិ (IPA)</label>
+                    <input type="text" id="itemIpa" class="form-control" placeholder="ឧ. /kæt/">
+                </div>
+                <div class="form-group">
+                    <label>របៀបអានប្រកបជាខ្មែរ *</label>
+                    <input type="text" id="itemKhmerPho" class="form-control" placeholder="ឧ. ខ + អ៊ែ + ថ = ខែថ៏">
+                </div>
+                <div class="form-group">
+                    <label>ការបកប្រែភាសាខ្មែរ *</label>
+                    <input type="text" id="itemKhmer" class="form-control" placeholder="ឧ. សត្វឆ្មា">
+                </div>
+                <div class="form-group">
+                    <label>រូបតំណាង (Emoji Icon)</label>
+                    <input type="text" id="itemEmoji" class="form-control" placeholder="ឧ. 🐱">
+                </div>
+                <div class="form-group">
+                    <label>ប្រយោគគំរូភាសាអង់គ្លេស</label>
+                    <input type="text" id="itemSentEn" class="form-control" placeholder="ឧ. The cat sat on the mat.">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 12px;">
+                <label>ការបកប្រែប្រយោគគំរូជាភាសាខ្មែរ</label>
+                <input type="text" id="itemSentKm" class="form-control" placeholder="ឧ. សត្វឆ្មាបានអង្គុយលើកន្ទេល។">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button type="button" class="btn" style="background: #f1f5f9; color: #475569;" onclick="closePhonicsModal()">បោះបង់</button>
+                <button type="button" class="btn btn-primary" onclick="savePhonicsItem()">💾 រក្សាទុកមេរៀនប្រកប</button>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const CURRENT_LEVEL = /*[[${selectedLevel}]]*/ 1;
+        const CURRENT_CLASS = /*[[${selectedClass}]]*/ 'ALL';
+
+        function switchMainTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if (tabId === 'tabAnalytics') {
+                document.getElementById('btnTabAnalytics').classList.add('active');
+            } else {
+                document.getElementById('btnTabCurriculum').classList.add('active');
+            }
+        }
+
+        function filterByClass(cls) {
+            window.location.href = '/phonics?level=' + CURRENT_LEVEL + '&className=' + encodeURIComponent(cls);
+        }
+
+        function applyUnitFilter(unitVal) {
+            window.location.href = '/phonics?level=' + CURRENT_LEVEL + '&unit=' + encodeURIComponent(unitVal) + '&className=' + encodeURIComponent(CURRENT_CLASS);
+        }
+
+        function filterStudentRows() {
+            const q = (document.getElementById('studentFilterInput').value || '').toLowerCase().trim();
+            document.querySelectorAll('.stu-prog-row').forEach(row => {
+                const name = (row.querySelector('.stu-name-cell')?.textContent || '').toLowerCase();
+                const code = (row.querySelector('.stu-code-cell')?.textContent || '').toLowerCase();
+                row.style.display = (!q || name.includes(q) || code.includes(q)) ? '' : 'none';
+            });
+        }
+
+        function filterWordsTable() {
+            const q = (document.getElementById('wordSearchInput').value || '').toLowerCase().trim();
+            document.querySelectorAll('.phonics-word-row').forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = (!q || text.includes(q)) ? '' : 'none';
+            });
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            u.rate = 0.85;
+            window.speechSynthesis.speak(u);
+        }
+
+        function openAddPhonicsModal() {
+            document.getElementById('modalTitle').textContent = '➕ បន្ថែមមេរៀនប្រកបអង់គ្លេសថ្មី';
+            document.getElementById('itemId').value = '';
+            document.getElementById('itemLevel').value = CURRENT_LEVEL;
+            document.getElementById('itemUnit').value = '';
+            document.getElementById('itemPattern').value = '';
+            document.getElementById('itemWord').value = '';
+            document.getElementById('itemBlend').value = '';
+            document.getElementById('itemIpa').value = '';
+            document.getElementById('itemKhmerPho').value = '';
+            document.getElementById('itemKhmer').value = '';
+            document.getElementById('itemEmoji').value = '🔤';
+            document.getElementById('itemSentEn').value = '';
+            document.getElementById('itemSentKm').value = '';
+            document.getElementById('phonicsModal').classList.add('active');
+        }
+
+        function openEditPhonicsModal(btn) {
+            document.getElementById('modalTitle').textContent = '✏️ កែប្រែមេរៀនប្រកបអង់គ្លេស';
+            document.getElementById('itemId').value = btn.getAttribute('data-id') || '';
+            document.getElementById('itemLevel').value = btn.getAttribute('data-level') || CURRENT_LEVEL;
+            document.getElementById('itemUnit').value = btn.getAttribute('data-unit') || '';
+            document.getElementById('itemPattern').value = btn.getAttribute('data-pattern') || '';
+            document.getElementById('itemWord').value = btn.getAttribute('data-word') || '';
+            document.getElementById('itemBlend').value = btn.getAttribute('data-blend') || '';
+            document.getElementById('itemIpa').value = btn.getAttribute('data-ipa') || '';
+            document.getElementById('itemKhmerPho').value = btn.getAttribute('data-khmerpho') || '';
+            document.getElementById('itemKhmer').value = btn.getAttribute('data-khmer') || '';
+            document.getElementById('itemEmoji').value = btn.getAttribute('data-emoji') || '🔤';
+            document.getElementById('itemSentEn').value = btn.getAttribute('data-senten') || '';
+            document.getElementById('itemSentKm').value = btn.getAttribute('data-sentkm') || '';
+            document.getElementById('phonicsModal').classList.add('active');
+        }
+
+        function closePhonicsModal() {
+            document.getElementById('phonicsModal').classList.remove('active');
+        }
+
+        function savePhonicsItem() {
+            const payload = {
+                id: document.getElementById('itemId').value,
+                phonicsLevel: document.getElementById('itemLevel').value,
+                unitName: document.getElementById('itemUnit').value,
+                soundPattern: document.getElementById('itemPattern').value,
+                englishWord: document.getElementById('itemWord').value,
+                blendingParts: document.getElementById('itemBlend').value,
+                ipaPhonetic: document.getElementById('itemIpa').value,
+                khmerPhonetic: document.getElementById('itemKhmerPho').value,
+                khmerTranslation: document.getElementById('itemKhmer').value,
+                emojiIcon: document.getElementById('itemEmoji').value,
+                exampleSentence: document.getElementById('itemSentEn').value,
+                exampleSentenceKhmer: document.getElementById('itemSentKm').value
+            };
+
+            fetch('/api/phonics/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('ជោគជ័យ!', data.message, 'success').then(() => window.location.reload());
+                } else {
+                    Swal.fire('កំហុស', data.message, 'error');
+                }
+            });
+        }
+
+        function toggleWordActive(id) {
+            fetch('/api/phonics/toggle-status?id=' + id, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) window.location.reload();
+                else Swal.fire('កំហុស', data.message, 'error');
+            });
+        }
+
+        function bulkToggleLevel(active) {
+            const unit = document.getElementById('unitFilterSelect').value || 'ALL';
+            fetch('/api/phonics/bulk-toggle?level=' + CURRENT_LEVEL + '&unit=' + encodeURIComponent(unit) + '&active=' + active, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('ជោគជ័យ!', data.message, 'success').then(() => window.location.reload());
+                }
+            });
+        }
+
+        function deletePhonicsWord(id) {
+            Swal.fire({
+                title: 'លុបពាក្យប្រកប?',
+                text: 'តើលោកគ្រូពិតជាចង់លុបពាក្យប្រកបនេះមែនទេ?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'បាទ លុបចេញ',
+                cancelButtonText: 'បោះបង់'
+            }).then(res => {
+                if (res.isConfirmed) {
+                    fetch('/api/phonics/delete?id=' + id, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) window.location.reload();
+                    });
+                }
+            });
+        }
+
+        function resetOxfordDefault() {
+            fetch('/api/phonics/reset-default?level=0', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('ជោគជ័យ!', data.message, 'success').then(() => window.location.reload());
+                }
+            });
+        }
+    </script>
+    <script src="/js/logout-confirm.js?v=20261113a"></script>
+    <script src="/js/mobile-nav.js?v=20261029h"></script>
+</body>
+</html>

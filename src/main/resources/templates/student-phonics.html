@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'រៀនប្រកបអង់គ្លេស ' + ${levelShortLabel} + ' - Oxford Phonics World'">រៀនប្រកបអង់គ្លេស - Oxford Phonics World</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Battambang:wght@400;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3730a3;
+            --secondary: #7209b7;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --card-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #eef2ff 0%, #e2e8f0 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 16px 20px;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background: white;
+            border-radius: var(--radius);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            padding: 7px 13px;
+            border-radius: 9px;
+            font-size: 0.86rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 55%, #6d28d9 100%);
+            border-radius: 20px;
+            padding: 24px 28px;
+            color: white;
+            box-shadow: 0 14px 30px rgba(67, 56, 202, 0.28);
+            margin-bottom: 18px;
+        }
+
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .hero-skills-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-skills-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .skill-stat-box {
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(6px);
+        }
+
+        /* 5 Levels Selector */
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 960px) {
+            .levels-grid {
+                grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+            }
+        }
+
+        .level-card {
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 12px 14px;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .level-card:hover {
+            border-color: #6366f1;
+            transform: translateY(-2px);
+        }
+
+        .level-card.active {
+            background: linear-gradient(135deg, #4361ee 0%, #3730a3 100%);
+            color: white;
+            border-color: #312e81;
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        .level-mini-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+
+        .level-card.active .level-mini-bar {
+            background: rgba(255,255,255,0.28);
+        }
+
+        .level-mini-fill {
+            height: 100%;
+            background: #10b981;
+            border-radius: 6px;
+        }
+
+        .level-card.active .level-mini-fill {
+            background: #34d399;
+        }
+
+        /* 5 Learning Mode Tabs */
+        .mode-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 4px;
+        }
+
+        .mode-tab-btn {
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: #334155;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .mode-tab-btn.active {
+            background: #4361ee;
+            color: white;
+            border-color: #4361ee;
+            box-shadow: 0 6px 16px rgba(67, 97, 238, 0.28);
+        }
+
+        .mode-pane {
+            display: none;
+        }
+        .mode-pane.active {
+            display: block;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: white;
+            border-radius: 14px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Phonics Word Cards Grid */
+        .phonics-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+            gap: 16px;
+        }
+
+        .phonics-card {
+            background: white;
+            border-radius: 18px;
+            border: 2px solid #e2e8f0;
+            padding: 18px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .phonics-card.is-mastered {
+            border-color: #10b981;
+            background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+        }
+
+        .card-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pattern-badge {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1.5px solid #fde68a;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .unit-tag {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 3px 9px;
+            border-radius: 8px;
+        }
+
+        .word-main-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .word-emoji {
+            width: 58px;
+            height: 58px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .word-en {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.15;
+        }
+
+        .word-ipa {
+            font-size: 0.88rem;
+            color: #6366f1;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        .word-km-meaning {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #059669;
+            margin-top: 3px;
+        }
+
+        /* Interactive Sound-by-Sound Blending Box */
+        .blending-box {
+            background: #f8fafc;
+            border: 1.5px dashed #94a3b8;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .blending-tiles-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .phoneme-tile {
+            background: #e0e7ff;
+            color: #312e81;
+            border: 2px solid #818cf8;
+            border-radius: 8px;
+            padding: 4px 11px;
+            font-size: 1.05rem;
+            font-weight: 800;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+        }
+
+        .phoneme-tile:hover, .phoneme-tile.speaking-now {
+            background: #4f46e5;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .khmer-phonetic-guide {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #4338ca;
+        }
+
+        /* Example Sentence Box */
+        .sentence-box {
+            background: #f1f5f9;
+            border-left: 4px solid #4361ee;
+            border-radius: 0 10px 10px 0;
+            padding: 8px 12px;
+            font-size: 0.86rem;
+        }
+
+        /* Audio & 4-Skills Action Buttons on Card */
+        .card-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .act-btn {
+            border: 1.5px solid #cbd5e1;
+            background: white;
+            border-radius: 9px;
+            padding: 7px 8px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .act-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .act-btn.done {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+        }
+
+        /* Interactive Practice Studio Card */
+        .studio-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: var(--card-shadow);
+            border: 2px solid #e2e8f0;
+            max-width: 760px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .quiz-option-btn {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #0f172a;
+            cursor: pointer;
+            transition: all 0.15s;
+            width: 100%;
+            text-align: center;
+        }
+
+        .quiz-option-btn:hover {
+            border-color: #4361ee;
+            background: #eef2ff;
+        }
+
+        .quiz-option-btn.correct {
+            background: #dcfce7;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .quiz-option-btn.wrong {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .letter-tile-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            border: 2px solid #6366f1;
+            background: #eef2ff;
+            color: #312e81;
+            font-size: 1.25rem;
+            font-weight: 800;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .letter-tile-btn:hover {
+            background: #4361ee;
+            color: white;
+        }
+
+        .mic-pulse-btn {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            font-size: 2.2rem;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+            margin: 14px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .mic-pulse-btn.listening {
+            animation: pulseMic 1s infinite alternate;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        @keyframes pulseMic {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+            100% { transform: scale(1.1); box-shadow: 0 0 0 18px rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Navigation Bar -->
+        <div class="top-navbar">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.6rem;">🎓</span>
+                <div>
+                    <div style="font-weight: 800; font-size: 1.05rem; color: #0f172a;" th:text="${student.name}">សុខ សៅ</div>
+                    <div style="font-size: 0.82rem; color: #64748b; font-weight: 700;">
+                        ថ្នាក់៖ <b style="color: #4361ee;" th:text="${student.className}">10A</b> • កូដ៖ <b th:text="${student.studentCode}">STU01</b>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="/test/take" class="nav-btn" style="background: #e0f2fe; color: #0284c7;">📝 ប្រឡង</a>
+                <a href="/lessons" class="nav-btn" style="background: #f3e8ff; color: #7e22ce;">📚 មេរៀន</a>
+                <a href="/test/vocabulary" class="nav-btn" style="background: #eef2ff; color: #3730a3;">🔤 វាក្យសព្ទ</a>
+                <a href="/test/leave" class="nav-btn" style="background: #d1fae5; color: #059669;">📋 សុំច្បាប់</a>
+                <a href="/test/logout" class="nav-btn" style="background: #fee2e2; color: #b91c1c;">🚪 ចាកចេញ</a>
+            </div>
+        </div>
+
+        <!-- Hero Banner with Overall & 4-Skills Progress -->
+        <div class="hero-banner">
+            <div class="hero-top">
+                <div>
+                    <div style="display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 800; margin-bottom: 6px;">
+                        🌟 ស្តង់ដារអន្តរជាតិ OXFORD PHONICS WORLD (LEVEL 1 – LEVEL 5)
+                    </div>
+                    <h2 style="margin: 0; font-size: 1.4rem; font-weight: 800;" th:text="${levelTitleKhmer}">
+                        កម្រិតទី១៖ អក្សរក្រម និងសូរសំឡេងមូលដ្ឋាន
+                    </h2>
+                </div>
+                <div style="text-align: right; background: rgba(0,0,0,0.22); padding: 12px 18px; border-radius: 14px;">
+                    <div style="font-size: 0.82rem; color: #c7d2fe; font-weight: 700;">ភាគរយសិក្សាសរុបទាំង ៥ កម្រិត</div>
+                    <div style="font-size: 1.65rem; font-weight: 800; color: #34d399;">
+                        <span id="overallPercentBadge" th:text="${overallPercent} + '%'">0%</span>
+                        <span style="font-size: 0.9rem; color: white; font-weight: 600;">
+                            (<span id="overallMasteredBadge" th:text="${overallMastered}">0</span>/<span th:text="${overallTotal}">208</span> ពាក្យ)
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Core Skills Progress Row -->
+            <div class="hero-skills-row">
+                <div class="skill-stat-box">
+                    <span style="font-size: 1.6rem;">🎧</span>
+                    <div>
+                        <div style="font-size: 0.8rem; color: #e0e7ff;">១. ការស្តាប់ (Listening)</div>
+                        <div style="font-size: 1.1rem; font-weight: 800;"><span id="statListening" th:text="${listeningDoneCount}">0</span> ពាក្យ</div>
+                    </div>
+                </div>
+                <div class="skill-stat-box">
+                    <span style="font-size: 1.6rem;">📖</span>
+                    <div>
+                        <div style="font-size: 0.8rem; color: #e0e7ff;">២. ការអានប្រកប (Reading)</div>
+                        <div style="font-size: 1.1rem; font-weight: 800;"><span id="statReading" th:text="${readingDoneCount}">0</span> ពាក្យ</div>
+                    </div>
+                </div>
+                <div class="skill-stat-box">
+                    <span style="font-size: 1.6rem;">🎙️</span>
+                    <div>
+                        <div style="font-size: 0.8rem; color: #e0e7ff;">៣. ការនិយាយ (Speaking)</div>
+                        <div style="font-size: 1.1rem; font-weight: 800;"><span id="statSpeaking" th:text="${speakingDoneCount}">0</span> ពាក្យ</div>
+                    </div>
+                </div>
+                <div class="skill-stat-box">
+                    <span style="font-size: 1.6rem;">✍️</span>
+                    <div>
+                        <div style="font-size: 0.8rem; color: #e0e7ff;">៤. ការសរសេរ (Writing)</div>
+                        <div style="font-size: 1.1rem; font-weight: 800;"><span id="statWriting" th:text="${writingDoneCount}">0</span> ពាក្យ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5 Levels Selector Cards -->
+        <div class="levels-grid">
+            <a th:href="@{/test/phonics(level=1)}" class="level-card" th:classappend="${selectedLevel == 1 ? 'active' : ''}">
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.9rem;">
+                    <span>🌱 Level 1</span>
+                    <span th:text="${level1Percent} + '%'">0%</span>
+                </div>
+                <div style="font-size: 0.78rem; opacity: 0.88; font-weight: 600;">The Alphabet (A–Z)</div>
+                <div class="level-mini-bar"><div class="level-mini-fill" th:style="'width:' + ${level1Percent} + '%;'"></div></div>
+            </a>
+            <a th:href="@{/test/phonics(level=2)}" class="level-card" th:classappend="${selectedLevel == 2 ? 'active' : ''}">
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.9rem;">
+                    <span>🔤 Level 2</span>
+                    <span th:text="${level2Percent} + '%'">0%</span>
+                </div>
+                <div style="font-size: 0.78rem; opacity: 0.88; font-weight: 600;">Short Vowels (CVC)</div>
+                <div class="level-mini-bar"><div class="level-mini-fill" th:style="'width:' + ${level2Percent} + '%;'"></div></div>
+            </a>
+            <a th:href="@{/test/phonics(level=3)}" class="level-card" th:classappend="${selectedLevel == 3 ? 'active' : ''}">
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.9rem;">
+                    <span>🚀 Level 3</span>
+                    <span th:text="${level3Percent} + '%'">0%</span>
+                </div>
+                <div style="font-size: 0.78rem; opacity: 0.88; font-weight: 600;">Long Vowels (Magic E)</div>
+                <div class="level-mini-bar"><div class="level-mini-fill" th:style="'width:' + ${level3Percent} + '%;'"></div></div>
+            </a>
+            <a th:href="@{/test/phonics(level=4)}" class="level-card" th:classappend="${selectedLevel == 4 ? 'active' : ''}">
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.9rem;">
+                    <span>🔥 Level 4</span>
+                    <span th:text="${level4Percent} + '%'">0%</span>
+                </div>
+                <div style="font-size: 0.78rem; opacity: 0.88; font-weight: 600;">Blends & Digraphs</div>
+                <div class="level-mini-bar"><div class="level-mini-fill" th:style="'width:' + ${level4Percent} + '%;'"></div></div>
+            </a>
+            <a th:href="@{/test/phonics(level=5)}" class="level-card" th:classappend="${selectedLevel == 5 ? 'active' : ''}">
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.9rem;">
+                    <span>👑 Level 5</span>
+                    <span th:text="${level5Percent} + '%'">0%</span>
+                </div>
+                <div style="font-size: 0.78rem; opacity: 0.88; font-weight: 600;">Advanced Fluency</div>
+                <div class="level-mini-bar"><div class="level-mini-fill" th:style="'width:' + ${level5Percent} + '%;'"></div></div>
+            </a>
+        </div>
+
+        <!-- 5 Interactive Learning Mode Tabs -->
+        <div class="mode-tabs">
+            <button type="button" class="mode-tab-btn active" id="tabBtnCards" onclick="switchMode('paneCards', 'tabBtnCards')">
+                <span>📖</span> <span>១. មេរៀនប្រកប & បំបែកសូរ (Phonics Cards)</span>
+            </button>
+            <button type="button" class="mode-tab-btn" id="tabBtnListen" onclick="startSkillLab('LISTENING')">
+                <span>🎧</span> <span>២. ហាត់ស្តាប់ (Listening Lab)</span>
+            </button>
+            <button type="button" class="mode-tab-btn" id="tabBtnRead" onclick="startSkillLab('READING')">
+                <span>📚</span> <span>៣. ហាត់អានប្រកប (Reading Lab)</span>
+            </button>
+            <button type="button" class="mode-tab-btn" id="tabBtnSpeak" onclick="startSkillLab('SPEAKING')">
+                <span>🎙️</span> <span>៤. ហាត់និយាយតាមមីក្រូហ្វូន (Speaking AI)</span>
+            </button>
+            <button type="button" class="mode-tab-btn" id="tabBtnWrite" onclick="startSkillLab('WRITING')">
+                <span>✍️</span> <span>៥. ហាត់សរសេរប្រកប (Spelling Lab)</span>
+            </button>
+        </div>
+
+        <!-- MODE 1: PHONICS BLENDING CARDS -->
+        <div id="paneCards" class="mode-pane active">
+            <div class="filter-bar">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <label style="font-weight: 800; font-size: 0.9rem;">ជ្រើសរើសមេរៀន (Unit)៖</label>
+                    <select id="stuUnitSelect" onchange="changeStudentUnit(this.value)" style="padding: 8px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-weight: 700; font-size: 0.9rem;">
+                        <option value="ALL" th:selected="${selectedUnit == 'ALL'}">📚 គ្រប់មេរៀនទាំងអស់ក្នុងកម្រិតនេះ</option>
+                        <option th:each="u : ${units}" th:value="${u}" th:text="${u}" th:selected="${selectedUnit == u}"></option>
+                    </select>
+                </div>
+                <input type="text" id="stuCardSearch" oninput="filterStudentCards()" placeholder="🔍 ស្វែងរកពាក្យអង់គ្លេស ឬប្រែខ្មែរ..."
+                       style="padding: 8px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; width: 250px; font-size: 0.9rem;">
+            </div>
+
+            <div class="phonics-cards-grid">
+                <div th:each="item : ${items}" class="phonics-card"
+                     th:id="'pcard_' + ${item.id}"
+                     th:classappend="${masteredIds.contains(item.id) ? 'is-mastered' : ''}">
+
+                    <div class="card-top-row">
+                        <span class="pattern-badge" th:text="'សូរ៖ ' + ${item.soundPattern}">សូរ៖ -at</span>
+                        <span class="unit-tag" th:text="${item.unitName}">Unit 1</span>
+                    </div>
+
+                    <div class="word-main-box">
+                        <div class="word-emoji" th:text="${item.emojiIcon}">🐱</div>
+                        <div style="flex: 1;">
+                            <div>
+                                <span class="word-en" th:text="${item.englishWord}">cat</span>
+                                <span class="word-ipa" th:text="${item.ipaPhonetic}">/kæt/</span>
+                            </div>
+                            <div class="word-km-meaning" th:text="${item.khmerTranslation}">សត្វឆ្មា</div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Sound-by-Sound Blending Bar -->
+                    <div class="blending-box">
+                        <div style="font-size: 0.78rem; color: #64748b; font-weight: 700; margin-bottom: 5px;">
+                            👆 ចុចលើតួអក្សរនីមួយៗដើម្បីស្តាប់ការប្រកប៖
+                        </div>
+                        <div class="blending-tiles-row" th:id="'blendRow_' + ${item.id}">
+                            <th:block th:if="${item.blendingParts != null}" th:each="part, pStat : ${#strings.arraySplit(item.blendingParts, '|')}">
+                                <span class="phoneme-tile" th:text="${part}"
+                                      th:data-sound="${part}"
+                                      onclick="speakPhoneme(this)">c</span>
+                                <span th:if="${!pStat.last}" style="font-weight: 800; color: #64748b;">+</span>
+                            </th:block>
+                            <span style="font-weight: 800; color: #059669; margin-left: 4px;">➔</span>
+                            <span class="phoneme-tile" style="background: #dcfce7; border-color: #10b981; color: #065f46;"
+                                  th:text="${item.englishWord}"
+                                  th:data-word="${item.cleanWord}"
+                                  th:data-id="${item.id}"
+                                  onclick="listenWordAndRecord(this.getAttribute('data-id'), this.getAttribute('data-word'))">cat</span>
+                        </div>
+                        <div class="khmer-phonetic-guide">
+                            🗣️ របៀបអាន៖ <span th:text="${item.khmerPhonetic}">ខ + អ៊ែ + ថ = ខែថ៏</span>
+                        </div>
+                    </div>
+
+                    <!-- Example Sentence -->
+                    <div class="sentence-box" th:if="${item.exampleSentence != null and !item.exampleSentence.isEmpty()}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+                            <b style="color: #0f172a;" th:text="${item.exampleSentence}">The cat sat on the mat.</b>
+                            <button type="button" th:data-sent="${item.exampleSentence}" onclick="speakSentence(this.getAttribute('data-sent'))"
+                                    style="background: #dbeafe; color: #1e40af; border: none; border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 0.78rem; font-weight: 800; flex-shrink: 0;">
+                                🔊 ប្រយោគ
+                            </button>
+                        </div>
+                        <div style="color: #475569; margin-top: 2px;" th:text="${item.exampleSentenceKhmer}">សត្វឆ្មាបានអង្គុយលើកន្ទេល។</div>
+                    </div>
+
+                    <!-- Interactive Action Buttons -->
+                    <div class="card-actions-grid">
+                        <button type="button" class="act-btn" th:id="'btnListen_' + ${item.id}"
+                                th:classappend="${listeningIds.contains(item.id) ? 'done' : ''}"
+                                th:data-id="${item.id}" th:data-word="${item.cleanWord}"
+                                onclick="listenWordAndRecord(this.getAttribute('data-id'), this.getAttribute('data-word'))">
+                            🎧 ស្តាប់ពាក្យ
+                        </button>
+                        <button type="button" class="act-btn" th:id="'btnBlend_' + ${item.id}"
+                                th:classappend="${readingIds.contains(item.id) ? 'done' : ''}"
+                                th:data-id="${item.id}" th:data-blend="${item.blendingParts}" th:data-word="${item.cleanWord}"
+                                onclick="slowBlendWord(this.getAttribute('data-id'), this.getAttribute('data-blend'), this.getAttribute('data-word'))">
+                            🐢 ហាត់ប្រកប
+                        </button>
+                        <button type="button" class="act-btn" th:id="'btnMast_' + ${item.id}"
+                                th:classappend="${masteredIds.contains(item.id) ? 'done' : ''}"
+                                th:data-id="${item.id}"
+                                onclick="toggleCardMastered(this.getAttribute('data-id'))">
+                            ⭐ <span th:text="${masteredIds.contains(item.id) ? 'ចេះស្ទាត់' : 'កត់ចំណាំ'}">កត់ចំណាំ</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODE 2-5: INTERACTIVE 4-SKILLS STUDIO (Listening, Reading, Speaking, Writing) -->
+        <div id="paneStudio" class="mode-pane">
+            <div class="studio-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <span id="studioModeBadge" style="background: #eef2ff; color: #3730a3; padding: 5px 14px; border-radius: 20px; font-weight: 800; font-size: 0.88rem;">
+                        🎧 វិញ្ញាសាហាត់ស្តាប់
+                    </span>
+                    <span id="studioProgressCounter" style="font-weight: 800; color: #64748b;">សំណួរទី 1 / 10</span>
+                </div>
+
+                <div id="studioBodyContent">
+                    <!-- Populated dynamically by JS for Listening, Reading, Speaking, Writing -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const SELECTED_LEVEL = /*[[${selectedLevel}]]*/ 1;
+        const SELECTED_UNIT = /*[[${selectedUnit}]]*/ 'ALL';
+
+        function switchMode(paneId, btnId) {
+            document.querySelectorAll('.mode-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.mode-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(paneId).classList.add('active');
+            document.getElementById(btnId).classList.add('active');
+        }
+
+        function changeStudentUnit(unitVal) {
+            window.location.href = '/test/phonics?level=' + SELECTED_LEVEL + '&unit=' + encodeURIComponent(unitVal);
+        }
+
+        function filterStudentCards() {
+            const q = (document.getElementById('stuCardSearch').value || '').toLowerCase().trim();
+            document.querySelectorAll('.phonics-card').forEach(card => {
+                card.style.display = (!q || card.textContent.toLowerCase().includes(q)) ? '' : 'none';
+            });
+        }
+
+        // Speech Synthesis Helpers
+        function speakRaw(text, rate = 0.85) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            u.rate = rate;
+            window.speechSynthesis.speak(u);
+        }
+
+        function speakPhoneme(tileEl) {
+            const sound = tileEl.getAttribute('data-sound') || tileEl.textContent;
+            tileEl.classList.add('speaking-now');
+            speakRaw(sound, 0.75);
+            setTimeout(() => tileEl.classList.remove('speaking-now'), 500);
+        }
+
+        function speakSentence(sentence) {
+            speakRaw(sentence, 0.85);
+        }
+
+        function listenWordAndRecord(itemId, word) {
+            speakRaw(word, 0.82);
+            recordSkillServer(itemId, 'LISTENING', true);
+            const btn = document.getElementById('btnListen_' + itemId);
+            if (btn) btn.classList.add('done');
+        }
+
+        function slowBlendWord(itemId, blendStr, fullWord) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const parts = (blendStr || fullWord).split('|').filter(Boolean);
+            const row = document.getElementById('blendRow_' + itemId);
+            const tiles = row ? row.querySelectorAll('.phoneme-tile') : [];
+
+            let delay = 0;
+            parts.forEach((p, idx) => {
+                setTimeout(() => {
+                    tiles.forEach(t => t.classList.remove('speaking-now'));
+                    if (tiles[idx]) tiles[idx].classList.add('speaking-now');
+                    const u = new SpeechSynthesisUtterance(p);
+                    u.lang = 'en-US';
+                    u.rate = 0.7;
+                    window.speechSynthesis.speak(u);
+                }, delay);
+                delay += 650;
+            });
+
+            setTimeout(() => {
+                tiles.forEach(t => t.classList.remove('speaking-now'));
+                if (tiles.length > 0) tiles[tiles.length - 1].classList.add('speaking-now');
+                const uFull = new SpeechSynthesisUtterance(fullWord);
+                uFull.lang = 'en-US';
+                uFull.rate = 0.85;
+                window.speechSynthesis.speak(uFull);
+                setTimeout(() => tiles.forEach(t => t.classList.remove('speaking-now')), 700);
+            }, delay + 150);
+
+            recordSkillServer(itemId, 'READING', true);
+            const btn = document.getElementById('btnBlend_' + itemId);
+            if (btn) btn.classList.add('done');
+        }
+
+        function toggleCardMastered(itemId) {
+            recordSkillServer(itemId, 'TOGGLE_MASTERED', true, function(data) {
+                const card = document.getElementById('pcard_' + itemId);
+                const btn = document.getElementById('btnMast_' + itemId);
+                if (card) card.classList.toggle('is-mastered', data.mastered);
+                if (btn) {
+                    btn.classList.toggle('done', data.mastered);
+                    btn.innerHTML = data.mastered ? '⭐ ចេះស្ទាត់' : '⭐ កត់ចំណាំ';
+                }
+            });
+        }
+
+        function recordSkillServer(itemId, skill, correct, callback) {
+            fetch('/api/student-portal/phonics/record-skill', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId: itemId, skill: skill, correct: correct })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const ovPct = document.getElementById('overallPercentBadge');
+                    const ovMast = document.getElementById('overallMasteredBadge');
+                    if (ovPct && data.overallPercent !== undefined) ovPct.textContent = data.overallPercent + '%';
+                    if (ovMast && data.overallMastered !== undefined) ovMast.textContent = data.overallMastered;
+                    if (callback) callback(data);
+                }
+            })
+            .catch(err => console.error(err));
+        }
+
+        // =====================================================================
+        // INTERACTIVE 4-SKILLS STUDIO (LISTENING, READING, SPEAKING, WRITING)
+        // =====================================================================
+        let labItems = [];
+        let labIndex = 0;
+        let currentLabSkill = 'LISTENING';
+        let currentTypedWord = '';
+
+        function startSkillLab(skillType) {
+            currentLabSkill = skillType;
+            const btnMap = {
+                'LISTENING': 'tabBtnListen',
+                'READING': 'tabBtnRead',
+                'SPEAKING': 'tabBtnSpeak',
+                'WRITING': 'tabBtnWrite'
+            };
+            switchMode('paneStudio', btnMap[skillType]);
+
+            const badgeMap = {
+                'LISTENING': '🎧 បន្ទប់ហាត់ស្តាប់សូរសំឡេង (Listening Lab)',
+                'READING': '📖 បន្ទប់ហាត់អាន និងប្រកបពាក្យ (Reading & Blending Lab)',
+                'SPEAKING': '🎙️ បន្ទប់ហាត់និយាយតាមមីក្រូហ្វូន (Speaking Pronunciation AI)',
+                'WRITING': '✍️ បន្ទប់ហាត់សរសេរប្រកបតួអក្សរ (Writing & Spelling Builder)'
+            };
+            document.getElementById('studioModeBadge').textContent = badgeMap[skillType];
+            document.getElementById('studioBodyContent').innerHTML = '<div style="padding:30px;">⏳ កំពុងរៀបចំលំហាត់...</div>';
+
+            fetch('/api/student-portal/phonics/practice-data?level=' + SELECTED_LEVEL + '&unit=' + encodeURIComponent(SELECTED_UNIT))
+            .then(r => r.json())
+            .then(list => {
+                labItems = list || [];
+                labIndex = 0;
+                if (labItems.length === 0) {
+                    document.getElementById('studioBodyContent').innerHTML = '<div style="padding:30px;">មិនមានទិន្នន័យពាក្យសម្រាប់ហាត់ទេ។</div>';
+                    return;
+                }
+                renderCurrentLabStep();
+            });
+        }
+
+        function renderCurrentLabStep() {
+            if (labIndex >= labItems.length) {
+                if (typeof confetti === 'function') confetti({ particleCount: 90, spread: 70 });
+                document.getElementById('studioBodyContent').innerHTML = `
+                    <div style="padding: 24px;">
+                        <div style="font-size: 3.5rem;">🏆</div>
+                        <h2 style="color: #059669; margin: 8px 0;">អបអរសាទរ! ប្អូនបានបញ្ចប់ការហាត់រៀនវគ្គនេះហើយ!</h2>
+                        <p style="color: #475569;">ប្អូនអាចហាត់ម្តងទៀត ឬជ្រើសរើសបំណិនផ្សេងទៀតដើម្បីបង្កើនភាគរយឱ្យដល់ 100%!</p>
+                        <button type="button" onclick="startSkillLab('${currentLabSkill}')" style="background:#4361ee; color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:800; cursor:pointer; margin-top:10px;">
+                            🔄 ហាត់ម្តងទៀត
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const item = labItems[labIndex];
+            document.getElementById('studioProgressCounter').textContent = `ពាក្យទី ${labIndex + 1} / ${labItems.length}`;
+
+            if (currentLabSkill === 'LISTENING') {
+                renderListeningLab(item);
+            } else if (currentLabSkill === 'READING') {
+                renderReadingLab(item);
+            } else if (currentLabSkill === 'SPEAKING') {
+                renderSpeakingLab(item);
+            } else if (currentLabSkill === 'WRITING') {
+                renderWritingLab(item);
+            }
+        }
+
+        // 1. LISTENING LAB
+        function renderListeningLab(item) {
+            const optsHtml = (item.wordOptions || []).map(opt => `
+                <button type="button" class="quiz-option-btn" onclick="checkQuizChoice(this, '${opt.replace(/'/g, "\\'")}', '${item.englishWord.replace(/'/g, "\\'")}', ${item.id}, 'LISTENING')">
+                    ${opt}
+                </button>
+            `).join('');
+
+            document.getElementById('studioBodyContent').innerHTML = `
+                <div style="margin: 14px 0;">
+                    <div style="font-size: 3rem; margin-bottom: 6px;">${item.emojiIcon || '🎧'}</div>
+                    <p style="font-weight: 700; color: #475569;">ចុចប៊ូតុងខាងក្រោមដើម្បីស្តាប់សំឡេង រួចជ្រើសរើសពាក្យអង់គ្លេសដែលត្រឹមត្រូវ៖</p>
+                    <button type="button" onclick="speakRaw('${item.cleanWord.replace(/'/g, "\\'")}', 0.8)"
+                            style="background: linear-gradient(135deg, #4361ee, #3730a3); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-size: 1.1rem; font-weight: 800; cursor: pointer; margin: 10px 0 18px;">
+                        🔊 ចុចស្តាប់សំឡេងពាក្យ (${item.khmerTranslation})
+                    </button>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+                        ${optsHtml}
+                    </div>
+                </div>
+            `;
+            setTimeout(() => speakRaw(item.cleanWord, 0.8), 250);
+        }
+
+        // 2. READING & BLENDING LAB
+        function renderReadingLab(item) {
+            const parts = (item.blendingParts || item.englishWord).split('|');
+            const tilesHtml = parts.map(p => `<span class="phoneme-tile" onclick="speakRaw('${p}', 0.75)">${p}</span>`).join(' <span style="font-weight:bold;">+</span> ');
+            const optsHtml = (item.meaningOptions || []).map(opt => `
+                <button type="button" class="quiz-option-btn" onclick="checkQuizChoice(this, '${opt.replace(/'/g, "\\'")}', '${item.khmerTranslation.replace(/'/g, "\\'")}', ${item.id}, 'READING')">
+                    ${opt}
+                </button>
+            `).join('');
+
+            document.getElementById('studioBodyContent').innerHTML = `
+                <div style="margin: 14px 0;">
+                    <div style="font-size: 0.9rem; color: #64748b; font-weight: 700;">ហាត់ប្រកបតាមតួអក្សរ រួចជ្រើសរើសអត្ថន័យភាសាខ្មែរ៖</div>
+                    <div style="margin: 14px 0; display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        ${tilesHtml}
+                        <span style="font-weight:800; color:#059669;">➔</span>
+                        <span style="font-size: 1.65rem; font-weight: 800; color: #0f172a; font-family: 'Poppins', sans-serif;">${item.englishWord}</span>
+                        <span style="color: #6366f1; font-weight: 700;">${item.ipaPhonetic || ''}</span>
+                    </div>
+                    <div style="color: #4338ca; font-weight: 800; margin-bottom: 14px;">🗣️ របៀបអាន៖ ${item.khmerPhonetic || ''}</div>
+                    <div style="background: #f1f5f9; padding: 10px 14px; border-radius: 10px; margin-bottom: 16px; font-weight: 600;">
+                        📖 ប្រយោគ៖ "${item.exampleSentence || ''}"
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        ${optsHtml}
+                    </div>
+                </div>
+            `;
+            setTimeout(() => speakRaw(item.cleanWord, 0.82), 250);
+        }
+
+        function checkQuizChoice(btn, chosen, correctAns, itemId, skill) {
+            const allBtns = btn.parentElement.querySelectorAll('.quiz-option-btn');
+            allBtns.forEach(b => b.disabled = true);
+            if (chosen === correctAns) {
+                btn.classList.add('correct');
+                recordSkillServer(itemId, skill, true);
+                setTimeout(() => {
+                    labIndex++;
+                    renderCurrentLabStep();
+                }, 750);
+            } else {
+                btn.classList.add('wrong');
+                allBtns.forEach(b => {
+                    if (b.textContent.trim() === correctAns) b.classList.add('correct');
+                });
+                setTimeout(() => {
+                    labIndex++;
+                    renderCurrentLabStep();
+                }, 1300);
+            }
+        }
+
+        // 3. SPEAKING & PRONUNCIATION AI STUDIO
+        function renderSpeakingLab(item) {
+            document.getElementById('studioBodyContent').innerHTML = `
+                <div style="margin: 12px 0;">
+                    <div style="font-size: 3rem;">${item.emojiIcon || '🎙️'}</div>
+                    <div style="font-size: 2rem; font-weight: 800; font-family: 'Poppins', sans-serif; color: #0f172a;">${item.englishWord}</div>
+                    <div style="color: #6366f1; font-weight: 800; margin-bottom: 4px;">${item.ipaPhonetic || ''} • របៀបអាន៖ ${item.khmerPhonetic || ''}</div>
+                    <div style="color: #059669; font-weight: 800; font-size: 1.1rem; margin-bottom: 12px;">ប្រែថា៖ ${item.khmerTranslation}</div>
+
+                    <button type="button" onclick="speakRaw('${item.cleanWord.replace(/'/g, "\\'")}', 0.8)"
+                            style="background: #eef2ff; color: #3730a3; border: 1.5px solid #c7d2fe; padding: 8px 18px; border-radius: 10px; font-weight: 800; cursor: pointer;">
+                        🔊 ១. ស្តាប់សំឡេងគំរូជាមុន
+                    </button>
+
+                    <button type="button" class="mic-pulse-btn" id="micRecordBtn" onclick="startSpeechRecognition('${item.cleanWord.replace(/'/g, "\\'")}', ${item.id})">
+                        🎤
+                    </button>
+                    <div id="speechFeedbackBox" style="font-weight: 800; color: #475569; min-height: 28px;">
+                        ចុចរូបមីក្រូហ្វូន 🎤 រួចអានពាក្យ "${item.englishWord}" ឱ្យឮច្បាស់ៗ
+                    </div>
+
+                    <div style="margin-top: 18px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" onclick="markSpeakingCompletedManual(${item.id})"
+                                style="background: #dcfce7; color: #166534; border: 1px solid #86efac; padding: 8px 16px; border-radius: 10px; font-weight: 800; cursor: pointer;">
+                            ✅ ខ្ញុំបានហាត់អានឮៗរួចហើយ (បន្តទៅមុខ)
+                        </button>
+                        <button type="button" onclick="labIndex++; renderCurrentLabStep();"
+                                style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                            រំលងពាក្យនេះ &rarr;
+                        </button>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => speakRaw(item.cleanWord, 0.8), 250);
+        }
+
+        function startSpeechRecognition(targetWord, itemId) {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const feedbackEl = document.getElementById('speechFeedbackBox');
+            const micBtn = document.getElementById('micRecordBtn');
+
+            if (!SpeechRec) {
+                feedbackEl.innerHTML = '<span style="color:#d97706;">⚠️ Browser នេះមិនគាំទ្រមីក្រូហ្វូនស្វ័យប្រវត្តិទេ សូមអានឮៗរួចចុចប៊ូតុងពណ៌បៃតងខាងក្រោម!</span>';
+                return;
+            }
+
+            const rec = new SpeechRec();
+            rec.lang = 'en-US';
+            rec.interimResults = false;
+            rec.maxAlternatives = 3;
+
+            micBtn.classList.add('listening');
+            feedbackEl.innerHTML = '<span style="color:#059669;">🎙️ កំពុងស្តាប់... សូមអានពាក្យ "' + targetWord + '" ឥឡូវនេះ!</span>';
+
+            rec.onresult = function(event) {
+                micBtn.classList.remove('listening');
+                const results = event.results[0];
+                let matched = false;
+                let heardText = '';
+                for (let i = 0; i < results.length; i++) {
+                    const transcript = results[i].transcript.trim().toLowerCase().replace(/[^a-z]/g, '');
+                    if (i === 0) heardText = results[i].transcript.trim();
+                    const cleanTarget = targetWord.toLowerCase().replace(/[^a-z]/g, '');
+                    if (transcript.includes(cleanTarget) || cleanTarget.includes(transcript)) {
+                        matched = true;
+                        break;
+                    }
+                }
+
+                if (matched) {
+                    feedbackEl.innerHTML = `<span style="color:#059669; font-size:1.1rem;">⭐⭐⭐ អស្ចារ្យណាស់! ប្អូនអាន "${heardText}" បានត្រឹមត្រូវច្បាស់ល្អ!</span>`;
+                    recordSkillServer(itemId, 'SPEAKING', true);
+                    setTimeout(() => {
+                        labIndex++;
+                        renderCurrentLabStep();
+                    }, 1200);
+                } else {
+                    feedbackEl.innerHTML = `<span style="color:#dc2626;">ឮថា "${heardText}" — សូមស្តាប់គំរូ រួចសាកល្បងអានម្តងទៀតណា៎!</span>`;
+                }
+            };
+
+            rec.onerror = function() {
+                micBtn.classList.remove('listening');
+                feedbackEl.innerHTML = '<span style="color:#d97706;">មិនអាចចាប់សំឡេងបានទេ សូមចុចមីក្រូហ្វូនសាកល្បងម្តងទៀត ឬចុចប៊ូតុងពណ៌បៃតងខាងក្រោម។</span>';
+            };
+
+            rec.start();
+        }
+
+        function markSpeakingCompletedManual(itemId) {
+            recordSkillServer(itemId, 'SPEAKING', true);
+            labIndex++;
+            renderCurrentLabStep();
+        }
+
+        // 4. WRITING & SPELLING BUILDER LAB
+        function renderWritingLab(item) {
+            currentTypedWord = '';
+            const clean = item.cleanWord.trim();
+            const chars = clean.split('');
+            // Shuffle letters
+            const shuffled = [...chars].sort(() => Math.random() - 0.5);
+
+            const tilesHtml = shuffled.map((ch, idx) => `
+                <button type="button" class="letter-tile-btn" id="ltile_${idx}" onclick="pickLetterTile('${ch}', 'ltile_${idx}', '${clean}', ${item.id})">
+                    ${ch}
+                </button>
+            `).join('');
+
+            document.getElementById('studioBodyContent').innerHTML = `
+                <div style="margin: 12px 0;">
+                    <div style="font-size: 2.8rem;">${item.emojiIcon || '✍️'}</div>
+                    <div style="font-size: 1.2rem; font-weight: 800; color: #059669; margin: 4px 0;">អត្ថន័យ៖ ${item.khmerTranslation}</div>
+                    <div style="color: #4338ca; font-weight: 700; margin-bottom: 10px;">សូរប្រកប៖ ${item.soundPattern} (${item.khmerPhonetic || ''})</div>
+
+                    <button type="button" onclick="speakRaw('${clean.replace(/'/g, "\\'")}', 0.8)"
+                            style="background: #eef2ff; color: #3730a3; border: 1.5px solid #c7d2fe; padding: 7px 16px; border-radius: 10px; font-weight: 800; cursor: pointer; margin-bottom: 14px;">
+                        🔊 ស្តាប់សំឡេងពាក្យម្តងទៀត
+                    </button>
+
+                    <div id="spellingAnswerBox" style="min-height: 54px; border: 2px dashed #6366f1; border-radius: 12px; padding: 10px; font-size: 1.6rem; font-weight: 800; font-family: 'Poppins', sans-serif; letter-spacing: 3px; color: #1e1b4b; margin-bottom: 14px; display: flex; align-items: center; justify-content: center;">
+                        _ _ _
+                    </div>
+
+                    <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+                        ${tilesHtml}
+                    </div>
+
+                    <div style="display: flex; justify-content: center; gap: 10px;">
+                        <button type="button" onclick="renderWritingLab(labItems[labIndex])"
+                                style="background: #fee2e2; color: #991b1b; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                            🔄 រៀបតួអក្សរឡើងវិញ
+                        </button>
+                        <button type="button" onclick="labIndex++; renderCurrentLabStep();"
+                                style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 7px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                            រំលង &rarr;
+                        </button>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => speakRaw(clean, 0.8), 250);
+        }
+
+        function pickLetterTile(ch, btnId, targetWord, itemId) {
+            const btn = document.getElementById(btnId);
+            if (btn) btn.style.visibility = 'hidden';
+            currentTypedWord += ch;
+            const box = document.getElementById('spellingAnswerBox');
+            box.textContent = currentTypedWord;
+
+            if (currentTypedWord.length === targetWord.length) {
+                if (currentTypedWord.toLowerCase() === targetWord.toLowerCase()) {
+                    box.style.background = '#dcfce7';
+                    box.style.borderColor = '#10b981';
+                    box.style.color = '#065f46';
+                    speakRaw(targetWord, 0.85);
+                    recordSkillServer(itemId, 'WRITING', true);
+                    setTimeout(() => {
+                        labIndex++;
+                        renderCurrentLabStep();
+                    }, 900);
+                } else {
+                    box.style.background = '#fee2e2';
+                    box.style.borderColor = '#ef4444';
+                    setTimeout(() => renderWritingLab(labItems[labIndex]), 900);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
