@@ -1,8 +1,10 @@
 package com.nubb.classroom.config;
 
 import com.nubb.classroom.model.Account;
+import com.nubb.classroom.model.ExternalLearner;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.repository.AccountRepository;
+import com.nubb.classroom.repository.ExternalLearnerRepository;
 import com.nubb.classroom.repository.StudentRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +26,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Autowired
     private StudentRepository studentRepository;
+
+    @Autowired(required = false)
+    private ExternalLearnerRepository externalLearnerRepository;
 
     @Autowired
     private TokenSecurityService tokenSecurityService;
@@ -79,7 +84,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
 
-        // 2. Auto-restore Student session from persistent cookie with cryptographic signature check
+        // 2. Auto-restore Student or External Learner session from persistent cookie with cryptographic signature check
         if (session.getAttribute("loggedInStudent") == null) {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
@@ -89,12 +94,69 @@ public class AuthInterceptor implements HandlerInterceptor {
                             Optional<Student> studentOpt = tokenSecurityService.validateStudentToken(c.getValue());
                             if (studentOpt.isPresent()) {
                                 session.setAttribute("loggedInStudent", studentOpt.get());
+                                session.removeAttribute("IS_EXTERNAL_LEARNER");
+                                session.removeAttribute("loggedInExternalLearner");
+                            }
+                        } catch (Exception ignored) {}
+                        break;
+                    } else if ("REMEMBER_EXTERNAL_LEARNER".equals(c.getName()) && c.getValue() != null && !c.getValue().isEmpty()) {
+                        try {
+                            Optional<ExternalLearner> extOpt = tokenSecurityService.validateExternalLearnerToken(c.getValue());
+                            if (extOpt.isPresent()) {
+                                ExternalLearner ext = extOpt.get();
+                                session.setAttribute("IS_EXTERNAL_LEARNER", true);
+                                session.setAttribute("loggedInExternalLearner", ext);
+                                session.setAttribute("EXT_ALLOW_PHONICS", !Boolean.FALSE.equals(ext.getAllowPhonics()));
+                                session.setAttribute("EXT_ALLOW_VOCAB", !Boolean.FALSE.equals(ext.getAllowVocabulary()));
+                                session.setAttribute("loggedInStudent", ext.toVirtualStudent());
                             }
                         } catch (Exception ignored) {}
                         break;
                     }
                 }
             }
+        }
+
+        // 2b. If an External Learner is logged in (and not a Teacher/Admin), keep status synced and restrict ONLY to Phonics & Vocabulary
+        if (Boolean.TRUE.equals(session.getAttribute("IS_EXTERNAL_LEARNER")) && session.getAttribute("ACCOUNT_ID") == null) {
+            ExternalLearner sessionExt = (ExternalLearner) session.getAttribute("loggedInExternalLearner");
+            ExternalLearner freshExt = null;
+            if (sessionExt != null && sessionExt.getId() != null && externalLearnerRepository != null) {
+                freshExt = externalLearnerRepository.findById(sessionExt.getId()).orElse(null);
+            }
+            if (freshExt == null || Boolean.FALSE.equals(freshExt.getActive())
+                    || (Boolean.FALSE.equals(freshExt.getAllowPhonics()) && Boolean.FALSE.equals(freshExt.getAllowVocabulary()))) {
+                session.invalidate();
+                ResponseCookie clr = ResponseCookie.from("REMEMBER_EXTERNAL_LEARNER", "")
+                        .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
+                response.addHeader(HttpHeaders.SET_COOKIE, clr.toString());
+                response.sendRedirect("/test?disabled=true");
+                return false;
+            }
+            boolean allowPhonics = !Boolean.FALSE.equals(freshExt.getAllowPhonics());
+            boolean allowVocab = !Boolean.FALSE.equals(freshExt.getAllowVocabulary());
+            session.setAttribute("loggedInExternalLearner", freshExt);
+            session.setAttribute("EXT_ALLOW_PHONICS", allowPhonics);
+            session.setAttribute("EXT_ALLOW_VOCAB", allowVocab);
+            session.setAttribute("loggedInStudent", freshExt.toVirtualStudent());
+
+            String defaultTarget = allowPhonics ? "/test/phonics" : "/test/vocabulary";
+
+            if (path.equals("/test") || path.equals("/test/login") || path.equals("/test/logout") || path.equals("/logout") || path.startsWith("/api/tts/")) {
+                return true;
+            }
+            if (allowPhonics && (path.startsWith("/test/phonics") || path.startsWith("/api/student-portal/phonics"))) {
+                session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+                return true;
+            }
+            if (allowVocab && (path.startsWith("/test/vocabulary") || path.startsWith("/api/student-portal/vocabulary"))) {
+                session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+                return true;
+            }
+
+            // Block External Learner from accessing exams (/test/take), lessons, leave requests, certificates, etc.
+            response.sendRedirect(defaultTarget);
+            return false;
         }
 
         // Friendly route aliases so teachers/students typing common variations never encounter 404

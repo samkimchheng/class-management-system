@@ -551,13 +551,25 @@
         <!-- Top Navbar -->
         <div class="top-navbar">
             <div>
-                <h3 style="margin: 0; font-size: 1.15rem; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                <h3 style="margin: 0; font-size: 1.15rem; color: #0f172a; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                     <span>👋 សួស្តី,</span>
                     <span th:text="${student.name}" style="color: var(--primary);">ឈ្មោះសិស្ស</span>
-                    <span style="font-size: 0.82rem; font-weight: 700; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 12px;" th:text="'ថ្នាក់ ' + ${student.className}">ថ្នាក់ 10E</span>
+                    <span th:if="${session.IS_EXTERNAL_LEARNER == true}" style="font-size: 0.82rem; font-weight: 800; background: #ccfbf1; color: #0f766e; padding: 3px 10px; border-radius: 12px;">🌟 អ្នករៀនភាសាអង់គ្លេសក្រៅថ្នាក់ (អនុញ្ញាតដោយ Admin)</span>
+                    <span th:unless="${session.IS_EXTERNAL_LEARNER == true}" style="font-size: 0.82rem; font-weight: 700; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 12px;" th:text="'ថ្នាក់ ' + ${student.className}">ថ្នាក់ 10E</span>
                 </h3>
             </div>
-            <div class="nav-links">
+            <div class="nav-links" th:if="${session.IS_EXTERNAL_LEARNER == true}">
+                <a th:if="${session.EXT_ALLOW_PHONICS == null or session.EXT_ALLOW_PHONICS}" href="/test/phonics" class="nav-btn" style="background: #dcfce7; color: #059669; border: 1px solid #86efac;">
+                    <span>🗣️</span> <span>រៀនប្រកប (Oxford Phonics L1–L5)</span>
+                </a>
+                <span class="nav-btn" style="background: #eef2ff; color: #3730a3; border: 1.5px solid #818cf8; cursor: default;">
+                    <span>🔤</span> <span>វាក្យសព្ទ (Vocab ថ្នាក់ទី១០-១២)</span>
+                </span>
+                <a href="/test/logout" class="nav-btn nav-btn-logout">
+                    <span>🚪</span> <span>ចាកចេញ</span>
+                </a>
+            </div>
+            <div class="nav-links" th:unless="${session.IS_EXTERNAL_LEARNER == true}">
                 <a href="/test/phonics" class="nav-btn" style="background: #dcfce7; color: #059669; border: 1px solid #86efac;">
                     <span>🗣️</span> <span>រៀនប្រកប (Oxford Phonics L1–L5)</span>
                 </a>
@@ -598,8 +610,35 @@
             </div>
         </div>
 
-        <!-- Admin Computer Training Center Hub (3 Links) -->
-        <div th:replace="~{fragments/admin-computer-links :: cardPanel}"></div>
+        <!-- Grade 10 / 11 / 12 Level Switcher -->
+        <div style="background: white; padding: 12px 16px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; box-shadow: var(--card-shadow);">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-weight: 800; color: #334155; font-size: 0.92rem;">🎓 ជ្រើសរើសកម្រិតវាក្យសព្ទ៖</span>
+                <a th:href="@{/test/vocabulary(grade=10)}"
+                   class="unit-pill" th:classappend="${selectedGrade == 10 ? 'active' : ''}"
+                   style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;">
+                    <span>📘 ថ្នាក់ទី១០ (Grade 10)</span>
+                </a>
+                <a th:href="@{/test/vocabulary(grade=11)}"
+                   class="unit-pill" th:classappend="${selectedGrade == 11 ? 'active' : ''}"
+                   style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;">
+                    <span>📗 ថ្នាក់ទី១១ (Grade 11)</span>
+                </a>
+                <a th:href="@{/test/vocabulary(grade=12)}"
+                   class="unit-pill" th:classappend="${selectedGrade == 12 ? 'active' : ''}"
+                   style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;">
+                    <span>📙 ថ្នាក់ទី១២ (Grade 12)</span>
+                </a>
+            </div>
+            <span style="font-size: 0.84rem; font-weight: 700; color: #be185d; background: #fdf2f8; padding: 5px 12px; border-radius: 10px; border: 1px solid #fbcfe8;">
+                👩‍🏫 សំឡេងអ្នកគ្រូបរទេស (ច្បាស់ល្អ)
+            </span>
+        </div>
+
+        <!-- Admin Computer Training Center Hub (Only for regular classroom students) -->
+        <th:block th:unless="${session.IS_EXTERNAL_LEARNER == true}">
+            <div th:replace="~{fragments/admin-computer-links :: cardPanel}"></div>
+        </th:block>
 
         <!-- Unit Scroll Bar -->
         <div class="unit-scroll-container">

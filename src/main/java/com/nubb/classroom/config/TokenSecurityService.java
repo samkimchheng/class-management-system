@@ -1,9 +1,12 @@
 package com.nubb.classroom.config;
 
 import com.nubb.classroom.model.Account;
+import com.nubb.classroom.model.ExternalLearner;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.repository.AccountRepository;
+import com.nubb.classroom.repository.ExternalLearnerRepository;
 import com.nubb.classroom.repository.StudentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -22,6 +25,9 @@ public class TokenSecurityService {
 
     private final AccountRepository accountRepository;
     private final StudentRepository studentRepository;
+
+    @Autowired(required = false)
+    private ExternalLearnerRepository externalLearnerRepository;
 
     public TokenSecurityService(AccountRepository accountRepository, StudentRepository studentRepository) {
         this.accountRepository = accountRepository;
@@ -129,6 +135,63 @@ public class TokenSecurityService {
                     receivedSignature.getBytes(StandardCharsets.UTF_8),
                     expectedSignature.getBytes(StandardCharsets.UTF_8))) {
                 return Optional.of(student);
+            }
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Generates a tamper-proof cryptographic token for an External English Learner.
+     */
+    public String generateExternalLearnerToken(ExternalLearner learner) {
+        long expiry = System.currentTimeMillis() + (30L * 24 * 60 * 60 * 1000L); // 30 days
+        String payload = "EXT_LEARNER:" + learner.getId() + ":" + expiry + ":" + learner.getLearnerCode();
+        String signature = sign(payload);
+        return learner.getId() + "." + expiry + "." + signature;
+    }
+
+    /**
+     * Validates an External Learner token and returns the ExternalLearner if authentic and active.
+     */
+    public Optional<ExternalLearner> validateExternalLearnerToken(String token) {
+        if (token == null || token.trim().isEmpty() || externalLearnerRepository == null) {
+            return Optional.empty();
+        }
+
+        String[] parts = token.split("\\.");
+        if (parts.length != 3) {
+            return Optional.empty();
+        }
+
+        try {
+            Long learnerId = Long.parseLong(parts[0]);
+            long expiry = Long.parseLong(parts[1]);
+            String receivedSignature = parts[2];
+
+            if (System.currentTimeMillis() > expiry) {
+                return Optional.empty();
+            }
+
+            Optional<ExternalLearner> learnerOpt = externalLearnerRepository.findById(learnerId);
+            if (learnerOpt.isEmpty()) {
+                return Optional.empty();
+            }
+
+            ExternalLearner learner = learnerOpt.get();
+            if (Boolean.FALSE.equals(learner.getActive())) {
+                return Optional.empty();
+            }
+
+            String payload = "EXT_LEARNER:" + learner.getId() + ":" + expiry + ":" + learner.getLearnerCode();
+            String expectedSignature = sign(payload);
+
+            if (MessageDigest.isEqual(
+                    receivedSignature.getBytes(StandardCharsets.UTF_8),
+                    expectedSignature.getBytes(StandardCharsets.UTF_8))) {
+                return Optional.of(learner);
             }
         } catch (Exception e) {
             return Optional.empty();

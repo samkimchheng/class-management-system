@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>គ្រប់គ្រងអ្នករៀនអង់គ្លេសក្រៅថ្នាក់ (Admin Only)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/mobile-responsive.css?v=20261029h">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+        * { box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif; }
+        body { margin: 0; background-color: #f1f5f9; color: var(--dark); display: flex; min-height: 100vh; }
+
+        .sidebar { width: 260px; background-color: #0f172a; color: white; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+        .sidebar-header { padding: 20px; background-color: #1e1b4b; text-align: center; border-bottom: 1px solid #312e81; }
+        .sidebar-header h2 { margin: 0; font-size: 1.2rem; color: #818cf8; }
+        .nav-menu { list-style: none; padding: 0; margin: 20px 0; flex-grow: 1; overflow-y: auto; }
+        .nav-link { display: flex; align-items: center; padding: 14px 22px; color: #94a3b8; text-decoration: none; transition: 0.2s; gap: 12px; font-weight: 600; }
+        .nav-link:hover, .nav-item.active .nav-link { background-color: #1e293b; color: #fff; border-left: 4px solid #6366f1; }
+
+        .main-content { flex-grow: 1; margin-left: 260px; display: flex; flex-direction: column; min-width: 0; }
+        .topbar { background: white; padding: 15px 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .content { padding: 24px 28px; }
+
+        .panel { background: white; padding: 22px 24px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); margin-bottom: 24px; border: 1px solid #e2e8f0; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 700; color: #334155; font-size: 0.9rem; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.94rem; outline: none; }
+        .form-control:focus { border-color: var(--primary); }
+
+        .btn { padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; vertical-align: middle; }
+        th { background-color: #f8fafc; font-weight: 800; color: #334155; white-space: nowrap; }
+
+        .alert-success { background: #dcfce7; color: #166534; padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-weight: 700; border: 1.5px solid #86efac; }
+        .alert-danger { background: #fee2e2; color: #991b1b; padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-weight: 700; border: 1.5px solid #fca5a5; }
+
+        .progress-bar-wrap { width: 100%; min-width: 110px; height: 9px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-top: 4px; }
+        .progress-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #4361ee, #10b981); }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>.swal2-popup { font-family: 'Kantumruy Pro', sans-serif !important; }</style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>អ្នកគ្រប់គ្រងប្រព័ន្ធ</h2>
+            <div style="margin-top: 10px; font-size: 0.92rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">Admin</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/admin" class="nav-link"><span>📊</span> <span>Dashboard ទូទៅ</span></a></li>
+            <li class="nav-item"><a href="/admin/accounts" class="nav-link"><span>👥</span> <span>គ្រប់គ្រងគណនីគ្រូ</span></a></li>
+            <li class="nav-item active"><a href="/admin/english-learners" class="nav-link"><span>🎓</span> <span>អ្នករៀនអង់គ្លេសក្រៅថ្នាក់</span></a></li>
+            <li class="nav-item"><a href="/phonics" class="nav-link"><span>🗣️</span> <span>គ្រប់គ្រងប្រកបអង់គ្លេស (Phonics)</span></a></li>
+            <li class="nav-item"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>គ្រប់គ្រងវាក្យសព្ទ (Vocab)</span></a></li>
+            <li class="nav-item"><a href="/admin/feedbacks" class="nav-link" style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="display: flex; align-items: center; gap: 10px;"><span>💬</span> <span>មតិកែលម្អពីគ្រូៗ</span></span>
+                <span th:if="${pendingFeedbacks > 0}" style="background: #ef4444; color: white; font-size: 0.75rem; padding: 2px 7px; border-radius: 10px; font-weight: bold;" th:text="${pendingFeedbacks}">1</span>
+            </a></li>
+            <li class="nav-item"><a href="/" target="_blank" class="nav-link"><span>🏫</span> <span>ចូលមើលទំព័រសាលា &nearr;</span></a></li>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div>
+                <h3 style="margin: 0; color: #0f172a;">🎓 គ្រប់គ្រងអ្នករៀនភាសាអង់គ្លេសក្រៅថ្នាក់ (Admin-Only External Learners)</h3>
+                <div style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">
+                    ដាច់ដោយឡែក ១០០% ពីសិស្សក្នុងថ្នាក់ • អនុញ្ញាតឱ្យចូលរៀនតែ 🗣️ ប្រកបអង់គ្លេស (Oxford Phonics L1–L5) និង 🔤 វាក្យសព្ទ (ថ្នាក់ទី១០-១២) ប៉ុណ្ណោះ
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <a href="/test" target="_blank" class="btn" style="background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7;">
+                    <span>🔗 ទំព័រចូលរៀន (/test) &nearr;</span>
+                </a>
+                <a href="/logout" class="btn-logout-header" style="background: #fee2e2; color: #b91c1c; text-decoration: none; font-weight: 700; padding: 7px 14px; border-radius: 8px;">🚪 ចាកចេញ</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <div th:if="${successMessage}" class="alert-success" th:text="${successMessage}"></div>
+            <div th:if="${error}" class="alert-danger" th:text="${error}"></div>
+
+            <!-- Add New External Learner Form (Admin Only) -->
+            <div class="panel" style="border-top: 4px solid #0d9488;">
+                <h3 style="margin: 0 0 14px 0; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                    <span>➕ បញ្ចូលអ្នករៀនក្រៅថ្នាក់ថ្មី (សម្រាប់តែ Admin ប៉ុណ្ណោះ)</span>
+                </h3>
+                <form th:action="@{/admin/english-learners/add}" method="post">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>ឈ្មោះអ្នករៀន (Full Name) *</label>
+                            <input type="text" name="fullName" class="form-control" placeholder="ឧ. សុខ ចាន់ធី" required>
+                        </div>
+                        <div class="form-group">
+                            <label>ភេទ (Gender)</label>
+                            <select name="gender" class="form-control">
+                                <option value="ប្រុស">ប្រុស</option>
+                                <option value="ស្រី">ស្រី</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>លេខកូដចូលរៀន (Login Code) *</label>
+                            <div style="display: flex; gap: 6px;">
+                                <input type="text" id="newLearnerCode" name="learnerCode" class="form-control" placeholder="ឧ. ENG001" required>
+                                <button type="button" onclick="generateRandomCode()" class="btn" style="background: #e0e7ff; color: #3730a3; white-space: nowrap;">🎲 កូដស្វ័យប្រវត្តិ</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>លេខទូរស័ព្ទ / Telegram</label>
+                            <input type="text" name="phone" class="form-control" placeholder="ឧ. 012 345 678">
+                        </div>
+                        <div class="form-group">
+                            <label>កំណត់សម្គាល់ (Note)</label>
+                            <input type="text" name="note" class="form-control" placeholder="ឧ. អ្នករៀនក្រៅម៉ោង / បុគ្គលិក...">
+                        </div>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px 16px; margin: 10px 0 16px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap;">
+                        <span style="font-weight: 800; color: #0f172a; font-size: 0.92rem;">🔒 កំណត់មុខងារអនុញ្ញាតឱ្យចូលរៀន (២ មុខងារដាច់ដោយឡែក)៖</span>
+                        <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: #0f766e; cursor: pointer;">
+                            <input type="checkbox" name="allowPhonics" value="true" checked style="width: 18px; height: 18px;">
+                            <span>🗣️ ចូលរៀនប្រកបអង់គ្លេស (Oxford Phonics L1–L5)</span>
+                        </label>
+                        <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: #4338ca; cursor: pointer;">
+                            <input type="checkbox" name="allowVocabulary" value="true" checked style="width: 18px; height: 18px;">
+                            <span>🔤 ចូលរៀនវាក្យសព្ទ (Vocab ថ្នាក់ទី១០-១២)</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 22px; font-size: 0.95rem;">
+                        💾 រក្សាទុកអ្នករៀនក្រៅថ្នាក់ថ្មី
+                    </button>
+                </form>
+            </div>
+
+            <!-- External Learners List & Progress Table -->
+            <div class="panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <h3 style="margin: 0; color: #0f172a;">📋 បញ្ជីអ្នករៀនក្រៅថ្នាក់ និងភាគរយការសិក្សា</h3>
+                        <span style="font-size: 0.86rem; color: #64748b;">អ្នករៀនទាំងនេះប្រើលេខកូដដើម្បីចូលរៀននៅទំព័រ <code>/test</code> ដោយមិនប៉ះពាល់ដល់បញ្ជីសិស្សក្នុងថ្នាក់ឡើយ</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" id="searchExtInput" oninput="filterExtTable()" placeholder="🔍 ស្វែងរកឈ្មោះ ឬកូដ..." class="form-control" style="width: 220px;">
+                        <div style="background: #f1f5f9; padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; border: 1px solid #cbd5e1;">
+                            សរុប៖ <b th:text="${totalLearners}">0</b> នាក់ | សកម្ម៖ <b style="color: #059669;" th:text="${activeLearners}">0</b> នាក់
+                        </div>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 45px; text-align: center;">ល.រ</th>
+                                <th>ឈ្មោះអ្នករៀន</th>
+                                <th>លេខកូដចូលរៀន</th>
+                                <th>ទូរស័ព្ទ / កំណត់សម្គាល់</th>
+                                <th style="text-align: center;">សិទ្ធិមុខងារទាំង ២</th>
+                                <th style="min-width: 190px;">🗣️ វឌ្ឍនភាពប្រកប (Phonics L1–L5)</th>
+                                <th style="min-width: 165px;">🔤 វឌ្ឍនភាពវាក្យសព្ទ (G10–G12)</th>
+                                <th style="text-align: center;">ស្ថានភាព</th>
+                                <th style="text-align: center; min-width: 190px;">សកម្មភាព (Admin)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r, stat : ${learnerRows}" class="ext-learner-row">
+                                <td style="text-align: center; font-weight: 800;" th:text="${stat.count}">1</td>
+                                <td>
+                                    <div style="font-weight: 800; color: #0f172a; font-size: 0.95rem;" th:text="${r.learner.fullName}">ឈ្មោះ</div>
+                                    <div style="font-size: 0.8rem; color: #64748b;" th:text="'ភេទ៖ ' + ${r.learner.gender}">ប្រុស</div>
+                                </td>
+                                <td>
+                                    <code style="background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.94rem;" th:text="${r.learner.learnerCode}">ENG001</code>
+                                </td>
+                                <td style="font-size: 0.85rem; color: #475569;">
+                                    <div th:if="${r.learner.phone != null and !r.learner.phone.isEmpty()}" th:text="'📞 ' + ${r.learner.phone}"></div>
+                                    <div th:if="${r.learner.note != null and !r.learner.note.isEmpty()}" style="color: #64748b;" th:text="${r.learner.note}"></div>
+                                    <div th:if="${r.learner.lastLoginAt != null}" style="color: #0284c7; font-size: 0.78rem; margin-top: 2px;"
+                                         th:text="'ចូលរៀនចុងក្រោយ៖ ' + ${#temporals.format(r.learner.lastLoginAt, 'dd/MM/yyyy HH:mm')}"></div>
+                                </td>
+                                <td style="text-align: center;">
+                                    <div style="display: flex; flex-direction: column; gap: 5px; align-items: center;">
+                                        <form th:action="@{/admin/english-learners/toggle-phonics/{id}(id=${r.learner.id})}" method="post" style="margin:0;">
+                                            <button type="submit" style="border: none; padding: 4px 10px; border-radius: 99px; font-weight: 700; font-size: 0.78rem; cursor: pointer;"
+                                                    th:styleappend="${r.learner.allowPhonics != false ? 'background:#ccfbf1; color:#0f766e;' : 'background:#f1f5f9; color:#94a3b8;'}">
+                                                <span th:text="${r.learner.allowPhonics != false ? '✅ 🗣️ ប្រកប L1–L5' : '❌ 🗣️ ប្រកប L1–L5'}"></span>
+                                            </button>
+                                        </form>
+                                        <form th:action="@{/admin/english-learners/toggle-vocab/{id}(id=${r.learner.id})}" method="post" style="margin:0;">
+                                            <button type="submit" style="border: none; padding: 4px 10px; border-radius: 99px; font-weight: 700; font-size: 0.78rem; cursor: pointer;"
+                                                    th:styleappend="${r.learner.allowVocabulary != false ? 'background:#e0e7ff; color:#3730a3;' : 'background:#f1f5f9; color:#94a3b8;'}">
+                                                <span th:text="${r.learner.allowVocabulary != false ? '✅ 🔤 វាក្យសព្ទ 10-12' : '❌ 🔤 វាក្យសព្ទ 10-12'}"></span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.84rem;">
+                                        <span style="color: #0f766e;" th:text="${r.phonicsMastered} + '/' + ${r.phonicsTotal} + ' ពាក្យ'">0/209</span>
+                                        <span style="color: #059669;" th:text="${r.phonicsPercent} + '%'">0%</span>
+                                    </div>
+                                    <div class="progress-bar-wrap">
+                                        <div class="progress-bar-fill" th:style="'width:' + ${r.phonicsPercent} + '%;'"></div>
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 600;">
+                                        🎧<span th:text="${r.phonicsListen}">0</span> •
+                                        📖<span th:text="${r.phonicsRead}">0</span> •
+                                        🎙️<span th:text="${r.phonicsSpeak}">0</span> •
+                                        ✍️<span th:text="${r.phonicsWrite}">0</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.84rem;">
+                                        <span style="color: #3730a3;" th:text="${r.vocabMastered} + '/' + ${r.vocabTotal} + ' ពាក្យ'">0/1057</span>
+                                        <span style="color: #4361ee;" th:text="${r.vocabPercent} + '%'">0%</span>
+                                    </div>
+                                    <div class="progress-bar-wrap">
+                                        <div class="progress-bar-fill" th:style="'width:' + ${r.vocabPercent} + '%;'"></div>
+                                    </div>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span th:if="${r.learner.active == null or r.learner.active}" style="background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 99px; font-size: 0.8rem; font-weight: 800;">🟢 សកម្ម</span>
+                                    <span th:if="${r.learner.active != null and !r.learner.active}" style="background: #fee2e2; color: #991b1c; padding: 4px 10px; border-radius: 99px; font-size: 0.8rem; font-weight: 800;">🔴 ផ្អាក</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn" style="background: #3b82f6; color: white; padding: 5px 10px; font-size: 0.8rem;"
+                                            th:data-id="${r.learner.id}"
+                                            th:data-name="${r.learner.fullName}"
+                                            th:data-gender="${r.learner.gender}"
+                                            th:data-code="${r.learner.learnerCode}"
+                                            th:data-phone="${r.learner.phone}"
+                                            th:data-note="${r.learner.note}"
+                                            th:data-phonics="${r.learner.allowPhonics != false}"
+                                            th:data-vocab="${r.learner.allowVocabulary != false}"
+                                            onclick="openEditLearnerModal(this)">
+                                        ✏️ កែប្រែ
+                                    </button>
+                                    <form th:action="@{/admin/english-learners/toggle-status/{id}(id=${r.learner.id})}" method="post" style="display:inline; margin:0;">
+                                        <button type="submit" class="btn" style="padding: 5px 10px; font-size: 0.8rem; color: white;"
+                                                th:styleappend="${r.learner.active == null or r.learner.active ? 'background:#f59e0b;' : 'background:#10b981;'}"
+                                                th:text="${r.learner.active == null or r.learner.active ? '🔒 ផ្អាក' : '🔓 បើក'}"></button>
+                                    </form>
+                                    <form th:action="@{/admin/english-learners/delete/{id}(id=${r.learner.id})}" method="post" style="display:inline; margin:0;"
+                                          onsubmit="return confirm('តើលោកគ្រូ Admin ពិតជាចង់លុបគណនីអ្នករៀនក្រៅថ្នាក់នេះមែនទេ?');">
+                                        <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">🗑️</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(learnerRows)}">
+                                <td colspan="9" style="text-align: center; padding: 30px; color: #64748b; font-weight: 600;">
+                                    មិនទាន់មានគណនីអ្នករៀនក្រៅថ្នាក់នៅឡើយទេ។ សូមបញ្ចូលនៅទម្រង់ខាងលើ!
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editLearnerModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:1000; align-items:center; justify-content:center; padding:16px;">
+        <div style="background:white; border-radius:16px; max-width:520px; width:100%; padding:22px 24px; box-shadow:0 20px 50px rgba(0,0,0,0.25);">
+            <h3 style="margin:0 0 14px 0;">✏️ កែប្រែព័ត៌មានអ្នករៀនក្រៅថ្នាក់</h3>
+            <form th:action="@{/admin/english-learners/edit}" method="post">
+                <input type="hidden" name="id" id="editId">
+                <div class="form-group">
+                    <label>ឈ្មោះអ្នករៀន *</label>
+                    <input type="text" name="fullName" id="editName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>ភេទ</label>
+                    <select name="gender" id="editGender" class="form-control">
+                        <option value="ប្រុស">ប្រុស</option>
+                        <option value="ស្រី">ស្រី</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>លេខកូដចូលរៀន *</label>
+                    <input type="text" name="learnerCode" id="editCode" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>លេខទូរស័ព្ទ / Telegram</label>
+                    <input type="text" name="phone" id="editPhone" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>កំណត់សម្គាល់</label>
+                    <input type="text" name="note" id="editNote" class="form-control">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px; margin:12px 0;">
+                    <label style="display:flex; align-items:center; gap:8px; font-weight:700; color:#0f766e;">
+                        <input type="checkbox" name="allowPhonics" id="editPhonics" value="true">
+                        <span>🗣️ អនុញ្ញាតឱ្យរៀនប្រកបអង់គ្លេស (Oxford Phonics L1–L5)</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-weight:700; color:#4338ca;">
+                        <input type="checkbox" name="allowVocabulary" id="editVocab" value="true">
+                        <span>🔤 អនុញ្ញាតឱ្យរៀនវាក្យសព្ទ (Vocab ថ្នាក់ទី១០-១២)</span>
+                    </label>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                    <button type="button" class="btn" style="background:#e2e8f0; color:#334155;" onclick="document.getElementById('editLearnerModal').style.display='none'">បោះបង់</button>
+                    <button type="submit" class="btn btn-primary">💾 រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function generateRandomCode() {
+            const num = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('newLearnerCode').value = 'ENG' + num;
+        }
+
+        function filterExtTable() {
+            const q = (document.getElementById('searchExtInput').value || '').toLowerCase().trim();
+            document.querySelectorAll('.ext-learner-row').forEach(r => {
+                r.style.display = (!q || r.textContent.toLowerCase().includes(q)) ? '' : 'none';
+            });
+        }
+
+        function openEditLearnerModal(btn) {
+            document.getElementById('editId').value = btn.getAttribute('data-id');
+            document.getElementById('editName').value = btn.getAttribute('data-name') || '';
+            document.getElementById('editGender').value = btn.getAttribute('data-gender') || 'ប្រុស';
+            document.getElementById('editCode').value = btn.getAttribute('data-code') || '';
+            document.getElementById('editPhone').value = btn.getAttribute('data-phone') || '';
+            document.getElementById('editNote').value = btn.getAttribute('data-note') || '';
+            document.getElementById('editPhonics').checked = btn.getAttribute('data-phonics') === 'true';
+            document.getElementById('editVocab').checked = btn.getAttribute('data-vocab') === 'true';
+            document.getElementById('editLearnerModal').style.display = 'flex';
+        }
+    </script>
+    <script src="/js/logout-confirm.js?v=20261113a"></script>
+    <script src="/js/mobile-nav.js?v=20261029h"></script>
+</body>
+</html>

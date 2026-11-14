@@ -789,6 +789,9 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a th:if="${session.ACCOUNT_ROLE == 'ADMIN'}" href="/admin/english-learners" class="btn-custom" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
+                        <span>🎓 អ្នករៀនក្រៅថ្នាក់ (Admin)</span>
+                    </a>
                     <a href="/phonics" class="btn-custom" style="color: white; border: 1px solid rgba(255,255,255,0.45); background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); box-shadow: 0 3px 10px rgba(13, 148, 136, 0.35);">
                         <span>🗣️ មេរៀនប្រកប (Oxford Phonics L1–L5)</span>
                     </a>

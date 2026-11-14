@@ -410,7 +410,7 @@ public class PhonicsController {
             return "redirect:/test?redirectTo=/test/phonics";
         }
 
-        if (student.getId() != null) {
+        if (student.getId() != null && student.getId() > 0) {
             student = studentRepository.findById(student.getId()).orElse(student);
             session.setAttribute("loggedInStudent", student);
         }

@@ -3,10 +3,12 @@ package com.nubb.classroom;
 import com.nubb.classroom.model.Account;
 import com.nubb.classroom.model.Attendance;
 import com.nubb.classroom.model.Classroom;
+import com.nubb.classroom.model.ExternalLearner;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.model.StudentParticipation;
 import com.nubb.classroom.repository.AccountRepository;
 import com.nubb.classroom.repository.ClassroomRepository;
+import com.nubb.classroom.repository.ExternalLearnerRepository;
 import com.nubb.classroom.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -46,6 +48,9 @@ public class WebController {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired(required = false)
+    private ExternalLearnerRepository externalLearnerRepository;
 
     @Autowired
     private TokenSecurityService tokenSecurityService;
@@ -2632,14 +2637,74 @@ return "scores";
             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         
         String cleanCode = studentCode != null ? studentCode.trim() : "";
+
+        // 1. Check if code belongs to an Admin-authorized External English Learner (separate from classroom students)
+        if (!cleanCode.isEmpty() && externalLearnerRepository != null) {
+            Optional<ExternalLearner> extOpt = externalLearnerRepository.findByLearnerCodeIgnoreCase(cleanCode);
+            if (extOpt.isPresent()) {
+                ExternalLearner ext = extOpt.get();
+                if (Boolean.FALSE.equals(ext.getActive())) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "គណនីអ្នករៀននេះត្រូវបានផ្អាកដំណើរការដោយ Admin!");
+                    return "redirect:/test";
+                }
+                boolean allowPhonics = !Boolean.FALSE.equals(ext.getAllowPhonics());
+                boolean allowVocab = !Boolean.FALSE.equals(ext.getAllowVocabulary());
+                if (!allowPhonics && !allowVocab) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "គណនីនេះមិនទាន់ត្រូវបានបើកសិទ្ធិចូលរៀនដោយ Admin នៅឡើយទេ!");
+                    return "redirect:/test";
+                }
+
+                ext.setLastLoginAt(java.time.LocalDateTime.now());
+                externalLearnerRepository.save(ext);
+
+                session.setAttribute("IS_EXTERNAL_LEARNER", true);
+                session.setAttribute("loggedInExternalLearner", ext);
+                session.setAttribute("EXT_ALLOW_PHONICS", allowPhonics);
+                session.setAttribute("EXT_ALLOW_VOCAB", allowVocab);
+                session.setAttribute("loggedInStudent", ext.toVirtualStudent());
+                session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+
+                boolean isHttps = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+                ResponseCookie clrStu = ResponseCookie.from("REMEMBER_STUDENT_ID", "")
+                        .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
+                response.addHeader(HttpHeaders.SET_COOKIE, clrStu.toString());
+
+                String extToken = tokenSecurityService.generateExternalLearnerToken(ext);
+                ResponseCookie extCookie = ResponseCookie.from("REMEMBER_EXTERNAL_LEARNER", extToken)
+                        .httpOnly(true)
+                        .secure(isHttps)
+                        .path("/")
+                        .maxAge(30L * 24 * 60 * 60)
+                        .sameSite("Lax")
+                        .build();
+                response.addHeader(HttpHeaders.SET_COOKIE, extCookie.toString());
+
+                if ("/test/vocabulary".equals(redirectTo) && allowVocab) {
+                    return "redirect:/test/vocabulary";
+                }
+                if ("/test/phonics".equals(redirectTo) && allowPhonics) {
+                    return "redirect:/test/phonics";
+                }
+                return allowPhonics ? "redirect:/test/phonics" : "redirect:/test/vocabulary";
+            }
+        }
+
+        // 2. Classroom Student Login
         java.util.Optional<Student> studentOpt = studentRepository.findAll().stream().filter(s -> s.getStudentCode() != null && s.getStudentCode().trim().equalsIgnoreCase(cleanCode)).max(java.util.Comparator.comparing(Student::getId, java.util.Comparator.nullsFirst(java.util.Comparator.naturalOrder())));
         if (studentOpt.isPresent()) {
             Student student = studentOpt.get();
+            session.removeAttribute("IS_EXTERNAL_LEARNER");
+            session.removeAttribute("loggedInExternalLearner");
+            session.removeAttribute("EXT_ALLOW_PHONICS");
+            session.removeAttribute("EXT_ALLOW_VOCAB");
             session.setAttribute("loggedInStudent", student);
             session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
 
             String studentToken = tokenSecurityService.generateStudentToken(student);
             boolean isHttps = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+            ResponseCookie clrExt = ResponseCookie.from("REMEMBER_EXTERNAL_LEARNER", "")
+                    .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
+            response.addHeader(HttpHeaders.SET_COOKIE, clrExt.toString());
             ResponseCookie cookie = ResponseCookie.from("REMEMBER_STUDENT_ID", studentToken)
                     .httpOnly(true)
                     .secure(isHttps)
@@ -2820,6 +2885,14 @@ return "scores";
                 .sameSite("Lax")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        ResponseCookie extCookie = ResponseCookie.from("REMEMBER_EXTERNAL_LEARNER", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, extCookie.toString());
 
         session.invalidate();
         return "redirect:/test";

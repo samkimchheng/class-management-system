@@ -595,6 +595,9 @@
                     </div>
                 </div>
                 <div class="hero-actions">
+                    <a th:if="${session.ACCOUNT_ROLE == 'ADMIN'}" href="/admin/english-learners" class="btn" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
+                        <span>🎓 អ្នករៀនក្រៅថ្នាក់ (Admin)</span>
+                    </a>
                     <button type="button" class="btn btn-white" onclick="openAddPhonicsModal()">
                         <i class="fas fa-plus-circle"></i> បន្ថែមពាក្យប្រកបថ្មី
                     </button>

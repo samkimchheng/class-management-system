@@ -508,12 +508,20 @@
                 <span style="font-size: 1.6rem;">🎓</span>
                 <div>
                     <div style="font-weight: 800; font-size: 1.05rem; color: #0f172a;" th:text="${student.name}">សុខ សៅ</div>
-                    <div style="font-size: 0.82rem; color: #64748b; font-weight: 700;">
+                    <div th:if="${session.IS_EXTERNAL_LEARNER == true}" style="font-size: 0.82rem; color: #0f766e; font-weight: 800;">
+                        🌟 អ្នករៀនភាសាអង់គ្លេសក្រៅថ្នាក់ (អនុញ្ញាតដោយ Admin) • កូដ៖ <b th:text="${student.studentCode}">ENG01</b>
+                    </div>
+                    <div th:unless="${session.IS_EXTERNAL_LEARNER == true}" style="font-size: 0.82rem; color: #64748b; font-weight: 700;">
                         ថ្នាក់៖ <b style="color: #4361ee;" th:text="${student.className}">10A</b> • កូដ៖ <b th:text="${student.studentCode}">STU01</b>
                     </div>
                 </div>
             </div>
-            <div class="nav-links">
+            <div class="nav-links" th:if="${session.IS_EXTERNAL_LEARNER == true}">
+                <span class="nav-btn" style="background: #dcfce7; color: #065f46; border: 1.5px solid #34d399; cursor: default;">🗣️ ប្រកបអង់គ្លេស (Oxford Phonics L1–L5)</span>
+                <a th:if="${session.EXT_ALLOW_VOCAB == null or session.EXT_ALLOW_VOCAB}" href="/test/vocabulary" class="nav-btn" style="background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe;">🔤 វាក្យសព្ទ (Vocab ថ្នាក់ទី១០-១២)</a>
+                <a href="/test/logout" class="nav-btn" style="background: #fee2e2; color: #b91c1c;">🚪 ចាកចេញ</a>
+            </div>
+            <div class="nav-links" th:unless="${session.IS_EXTERNAL_LEARNER == true}">
                 <a href="/test/take" class="nav-btn" style="background: #e0f2fe; color: #0284c7;">📝 ប្រឡង</a>
                 <a href="/lessons" class="nav-btn" style="background: #f3e8ff; color: #7e22ce;">📚 មេរៀន</a>
                 <a href="/test/vocabulary" class="nav-btn" style="background: #eef2ff; color: #3730a3;">🔤 វាក្យសព្ទ</a>

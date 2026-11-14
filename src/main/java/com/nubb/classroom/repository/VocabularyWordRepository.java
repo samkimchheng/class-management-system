@@ -20,5 +20,7 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
 
     long countByGradeLevel(Integer gradeLevel);
 
+    long countByGradeLevelAndActiveTrue(Integer gradeLevel);
+
     List<VocabularyWord> findByGradeLevelAndUnitNameIgnoreCase(Integer gradeLevel, String unitName);
 }

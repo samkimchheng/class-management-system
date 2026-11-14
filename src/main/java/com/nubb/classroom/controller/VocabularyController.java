@@ -327,8 +327,8 @@ public class VocabularyController {
             return "redirect:/test?redirectTo=/test/vocabulary";
         }
 
-        // Keep student fresh from DB
-        if (student.getId() != null) {
+        // Keep student fresh from DB (only for positive classroom student IDs)
+        if (student.getId() != null && student.getId() > 0) {
             student = studentRepository.findById(student.getId()).orElse(student);
             session.setAttribute("loggedInStudent", student);
         }
@@ -339,7 +339,13 @@ public class VocabularyController {
                 ? grade
                 : detectStudentGradeLevel(student);
 
-        ensureGradeSeeded(selectedGrade);
+        ensureGradeSeeded(10);
+        ensureGradeSeeded(11);
+        ensureGradeSeeded(12);
+
+        long grade10Total = vocabularyWordRepository.countByGradeLevelAndActiveTrue(10);
+        long grade11Total = vocabularyWordRepository.countByGradeLevelAndActiveTrue(11);
+        long grade12Total = vocabularyWordRepository.countByGradeLevelAndActiveTrue(12);
 
         List<VocabularyWord> allActiveWords = vocabularyWordRepository.findByGradeLevelAndActiveTrueOrderByWordNumberAsc(selectedGrade);
         List<String> units = buildSortedUnits(allActiveWords);
@@ -393,6 +399,9 @@ public class VocabularyController {
         model.addAttribute("student", student);
         model.addAttribute("selectedGrade", selectedGrade);
         model.addAttribute("gradeKhmer", toKhmerGrade(selectedGrade));
+        model.addAttribute("grade10Total", grade10Total);
+        model.addAttribute("grade11Total", grade11Total);
+        model.addAttribute("grade12Total", grade12Total);
         model.addAttribute("words", displayWords);
         model.addAttribute("units", units);
         model.addAttribute("selectedUnit", selectedUnit);
