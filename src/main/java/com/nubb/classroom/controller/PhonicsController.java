@@ -292,6 +292,7 @@ public class PhonicsController {
             Map<String, Object> cRow = new LinkedHashMap<>();
             cRow.put("className", clsName);
             cRow.put("studentCount", stuCount);
+            cRow.put("totalStudents", stuCount);
             cRow.put("enabledCount", enabledCount);
             cRow.put("allAllowed", stuCount > 0 && enabledCount == stuCount);
             cRow.put("activeLearners", activeCount);

@@ -250,6 +250,7 @@ public class VocabularyController {
             Map<String, Object> cRow = new LinkedHashMap<>();
             cRow.put("className", clsName);
             cRow.put("studentCount", stuCnt);
+            cRow.put("totalStudents", stuCnt);
             cRow.put("enabledCount", enCnt);
             cRow.put("allAllowed", stuCnt > 0 && enCnt == stuCnt);
             classAccessList.add(cRow);
