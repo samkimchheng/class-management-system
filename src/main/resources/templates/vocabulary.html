@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
     <title>គ្រប់គ្រងវាក្យសព្ទថ្នាក់ទី១០ (Grade 10 Vocabulary) - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
+            color-scheme: light only !important;
             --primary: #4361ee;
             --primary-dark: #3730a3;
             --primary-light: #e0e7ff;
@@ -30,11 +32,18 @@
         * {
             box-sizing: border-box;
             font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+            forced-color-adjust: none;
+        }
+
+        html, body {
+            color-scheme: light only !important;
+            background-color: #f1f5f9 !important;
+            color: var(--dark);
         }
 
         body {
             margin: 0;
-            background-color: #f1f5f9;
+            background-color: #f1f5f9 !important;
             color: var(--dark);
             display: flex;
             min-height: 100vh;
@@ -43,66 +52,75 @@
         /* Sidebar styles matching application standard */
         .sidebar {
             width: var(--sidebar-width);
-            background-color: #1e293b;
-            color: white;
+            background-color: #1e293b !important;
+            color: #ffffff !important;
             display: flex;
             flex-direction: column;
             position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
             height: 100vh;
             z-index: 100;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
             transition: all 0.3s;
         }
 
+        .sidebar-header,
         .sidebar-brand {
-            padding: 20px;
-            font-size: 1.15rem;
-            font-weight: 700;
+            padding: 22px 20px;
+            text-align: center;
             border-bottom: 1px solid #334155;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background-color: #0f172a;
+            background-color: #0f172a !important;
+            color: #ffffff !important;
         }
 
-        .sidebar-user {
-            padding: 12px 16px;
-            background-color: rgba(255, 255, 255, 0.05);
-            font-size: 0.85rem;
-            border-bottom: 1px solid #334155;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #38bdf8 !important;
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
         }
 
         .nav-menu {
             list-style: none;
-            padding: 10px 0;
+            padding: 0;
             margin: 0;
             overflow-y: auto;
             flex: 1;
         }
 
-        .nav-item a {
+        .nav-item {
+            border-bottom: 1px solid #334155;
+        }
+
+        .nav-item a,
+        .nav-link {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 10px 18px;
-            color: #94a3b8;
+            gap: 10px;
+            padding: 13px 18px;
+            color: #cbd5e1 !important;
             text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-left: 4px solid transparent;
             transition: all 0.2s;
         }
 
-        .nav-item a:hover {
-            color: white;
-            background-color: rgba(255, 255, 255, 0.05);
+        .nav-item a:hover,
+        .nav-link:hover {
+            color: #ffffff !important;
+            background-color: #334155 !important;
         }
 
-        .nav-item.active a {
-            color: white;
-            background-color: var(--primary);
-            font-weight: 600;
+        .nav-item.active a,
+        .nav-item.active .nav-link {
+            color: #ffffff !important;
+            background-color: #334155 !important;
+            border-left-color: #6366f1;
+            font-weight: 700;
         }
 
         .main-content {
@@ -111,70 +129,118 @@
             display: flex;
             flex-direction: column;
             min-width: 0;
+            background-color: #f1f5f9 !important;
         }
 
         .topbar {
-            background-color: white;
+            background-color: #ffffff !important;
             border-bottom: 1px solid var(--border);
-            padding: 14px 24px;
+            padding: 12px 22px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: nowrap;
+            gap: 12px;
             position: sticky;
             top: 0;
             z-index: 90;
         }
 
+        .topbar-left {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .topbar-right-vocab {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            flex-wrap: nowrap !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+        }
+
         .content {
-            padding: 22px 26px;
-            max-width: 1400px;
+            padding: 20px 24px;
+            max-width: 1440px;
             width: 100%;
             margin: 0 auto;
         }
 
         /* Hero Banner */
         .vocab-hero {
-            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%) !important;
             border-radius: 16px;
-            padding: 24px 28px;
-            color: white;
+            padding: 20px 24px;
+            color: #ffffff !important;
             box-shadow: 0 10px 25px rgba(67, 97, 238, 0.25);
-            margin-bottom: 22px;
+            margin-bottom: 20px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
+            flex-direction: column;
+            gap: 14px;
         }
 
         .vocab-hero-info {
             display: flex;
             align-items: center;
             gap: 16px;
+            color: #ffffff !important;
         }
 
         .vocab-hero-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.18);
+            width: 56px;
+            height: 56px;
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.1rem;
+            font-size: 2rem;
             flex-shrink: 0;
+            color: #ffffff !important;
         }
 
         .vocab-hero-title {
             margin: 0;
-            font-size: 1.55rem;
+            font-size: 1.45rem;
             font-weight: 800;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
         }
 
         .vocab-hero-sub {
             margin: 4px 0 0 0;
             font-size: 0.92rem;
-            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.95) !important;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.95) !important;
+            font-weight: 500;
+        }
+
+        .vocab-hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.18);
+            width: 100%;
+            scrollbar-width: thin;
+        }
+
+        .vocab-hero-actions .btn-custom {
+            white-space: nowrap !important;
+            flex-shrink: 0;
+            padding: 8px 14px;
+            font-size: 0.86rem;
         }
 
         /* KPI Cards */
@@ -467,31 +533,35 @@
             gap: 7px;
             transition: all 0.2s;
             text-decoration: none;
+            white-space: nowrap;
         }
 
         .btn-custom-primary {
-            background: var(--primary);
-            color: white;
+            background: var(--primary) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
         .btn-custom-primary:hover {
-            background: var(--primary-dark);
+            background: var(--primary-dark) !important;
         }
 
         .btn-custom-success {
-            background: var(--success);
-            color: white;
+            background: var(--success) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
         .btn-custom-success:hover {
-            background: #059669;
+            background: #059669 !important;
         }
 
         .btn-custom-warning {
-            background: var(--warning);
-            color: white;
+            background: var(--warning) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
 
         .btn-custom-outline {
-            background: white;
+            background: #ffffff;
             border: 1.5px solid #cbd5e1;
             color: #334155;
         }
@@ -722,11 +792,11 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <div class="sidebar-brand">
-            <span>🏫</span> <span>គ្រប់គ្រងថ្នាក់រៀន</span>
-        </div>
-        <div class="sidebar-user">
-            <span>សួស្តី, <b th:text="${teacherAccount.fullName}">សំ គឹមឆេង</b></span>
+        <div class="sidebar-header">
+            <h2>🏫 គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 8px; font-size: 0.95rem; color: #a5b4fc !important;">
+                សួស្តី, <b th:text="${teacherAccount.fullName}" style="color: #ffffff !important;">សំ គឹមឆេង</b>
+            </div>
         </div>
         <ul class="nav-menu">
             <li class="nav-item"><a href="/" class="nav-link"><span>📊</span> <span>ទំព័រដើម</span></a></li>
@@ -750,8 +820,8 @@
     
         <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
             <ul class="nav-menu" style="overflow-y: visible; flex: none;">
-                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);"><span>🔐</span> <span>ផ្ទាំង Admin</span></a></li>
-                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning) !important;"><span>🔐</span> <span>ផ្ទាំង Admin</span></a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger) !important;"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
             </ul>
         </div>
     </div>
@@ -760,15 +830,15 @@
     <div class="main-content">
         <!-- Topbar -->
         <div class="topbar">
-            <div class="topbar-left" style="font-weight: 700; font-size: 1.15rem; color: #0f172a;">
-                <span class="title-full" th:text="'🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី' + ${gradeKhmer} + ' (Grade ' + ${selectedGrade} + ' English Vocabulary)'">🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (Grade 10 English Vocabulary)</span>
+            <div class="topbar-left" style="font-weight: 700; font-size: 1.08rem; color: #0f172a !important; white-space: nowrap;">
+                <span class="title-full" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="'🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី' + ${gradeKhmer} + ' (Grade ' + ${selectedGrade} + ' English Vocabulary)'">🔤 គ្រប់គ្រងវាក្យសព្ទភាសាអង់គ្លេសថ្នាក់ទី១០ (Grade 10 English Vocabulary)</span>
                 <span class="title-short" th:text="'🔤 វាក្យសព្ទថ្នាក់ទី' + ${gradeKhmer}">🔤 វាក្យសព្ទថ្នាក់ទី១០</span>
             </div>
-            <div class="topbar-right-vocab" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <span class="unit-badge year-badge-vocab" style="background: #eef2ff; color: #3730a3; border-color: #c7d2fe;">
+            <div class="topbar-right-vocab" style="display: inline-flex; align-items: center; gap: 10px; flex-wrap: nowrap; white-space: nowrap; flex-shrink: 0;">
+                <span class="unit-badge year-badge-vocab" style="background: #eef2ff; color: #3730a3; border-color: #c7d2fe; white-space: nowrap;">
                     📅<span class="year-label-text"> ឆ្នាំសិក្សា៖</span> <b th:text="${teacherAccount.currentAcademicYear != null ? teacherAccount.currentAcademicYear : '២០២៦-២០២៧'}">២០២៦-២០២៧</b>
                 </span>
-                <span class="teacher-label-vocab" style="font-size: 0.9rem; color: #475569;">
+                <span class="teacher-label-vocab" style="font-size: 0.88rem; color: #475569; white-space: nowrap;">
                     គ្រូទទួលបន្ទុក៖ <b th:text="${teacherAccount.fullName}">សំ គឹមឆេង</b>
                 </span>
             
@@ -781,47 +851,47 @@
             <div class="vocab-hero">
                 <div class="vocab-hero-info">
                     <div class="vocab-hero-icon">🔤</div>
-                    <div>
-                        <h2 class="vocab-hero-title" th:text="'មជ្ឈមណ្ឌលគ្រប់គ្រងវាក្យសព្ទថ្នាក់ទី' + ${gradeKhmer} + ' (Grade ' + ${selectedGrade} + ' Vocab Hub)'">មជ្ឈមណ្ឌលគ្រប់គ្រងវាក្យសព្ទថ្នាក់ទី១០ (Grade 10 Vocab Hub)</h2>
-                        <p class="vocab-hero-sub" th:text="'គ្រប់គ្រងបញ្ជីវាក្យសព្ទស្តង់ដារ ' + ${totalWords} + ' ពាក្យ (' + (${units.isEmpty()} ? 'Units' : ${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(units[0])} + ' ដល់ ' + ${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(units[units.size()-1])}) + ') និងតាមដានការរៀនរបស់សិស្សគ្រប់ពេលវេលា'">
+                    <div style="min-width: 0;">
+                        <h2 class="vocab-hero-title" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;" th:text="'មជ្ឈមណ្ឌលគ្រប់គ្រងវាក្យសព្ទថ្នាក់ទី' + ${gradeKhmer} + ' (Grade ' + ${selectedGrade} + ' Vocab Hub)'">មជ្ឈមណ្ឌលគ្រប់គ្រងវាក្យសព្ទថ្នាក់ទី១០ (Grade 10 Vocab Hub)</h2>
+                        <p class="vocab-hero-sub" style="color: rgba(255,255,255,0.95) !important; -webkit-text-fill-color: rgba(255,255,255,0.95) !important;" th:text="'គ្រប់គ្រងបញ្ជីវាក្យសព្ទស្តង់ដារ ' + ${totalWords} + ' ពាក្យ (' + (${units.isEmpty()} ? 'Units' : ${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(units[0])} + ' ដល់ ' + ${T(com.nubb.classroom.controller.VocabularyController).formatUnitDisplayName(units[units.size()-1])}) + ') និងតាមដានការរៀនរបស់សិស្សគ្រប់ពេលវេលា'">
                             គ្រប់គ្រងបញ្ជីវាក្យសព្ទស្តង់ដារ ៤៦០ ពាក្យ (Unit 1 ដល់ Unit 31) និងតាមដានការរៀនរបស់សិស្សគ្រប់ពេលវេលា
                         </p>
                     </div>
                 </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <a th:if="${session.ACCOUNT_ROLE == 'ADMIN'}" href="/admin/english-learners" class="btn-custom" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
+                <div class="vocab-hero-actions">
+                    <a th:if="${session.ACCOUNT_ROLE == 'ADMIN'}" href="/admin/english-learners" class="btn-custom" style="background: #fef3c7 !important; color: #92400e !important; -webkit-text-fill-color: #92400e !important; border: 1px solid #fde68a; white-space: nowrap;">
                         <span>🎓 អ្នករៀនក្រៅថ្នាក់ (Admin)</span>
                     </a>
-                    <a href="/phonics" class="btn-custom" style="color: white; border: 1px solid rgba(255,255,255,0.45); background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); box-shadow: 0 3px 10px rgba(13, 148, 136, 0.35);">
+                    <a href="/phonics" class="btn-custom" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border: 1px solid rgba(255,255,255,0.45); background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important; box-shadow: 0 3px 10px rgba(13, 148, 136, 0.35); white-space: nowrap;">
                         <span>🗣️ មេរៀនប្រកប (Oxford Phonics L1–L5)</span>
                     </a>
-                    <a th:href="@{/test/vocabulary(grade=${selectedGrade})}" target="_blank" class="btn-custom btn-custom-outline" style="color: white; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.15);">
+                    <a th:href="@{/test/vocabulary(grade=${selectedGrade})}" target="_blank" class="btn-custom btn-custom-outline" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.18) !important; white-space: nowrap;">
                         <span>👁️ សាកល្បងមើលផ្ទាំងសិស្ស</span>
                     </a>
-                    <button type="button" onclick="openAddModal()" class="btn-custom btn-custom-success">
+                    <button type="button" onclick="openAddModal()" class="btn-custom btn-custom-success" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; white-space: nowrap;">
                         <span>➕ បន្ថែមពាក្យថ្មី</span>
                     </button>
-                    <button th:if="${isAdmin}" type="button" onclick="resetDefaultWords()" class="btn-custom btn-custom-warning" title="កំណត់ឡើងវិញនូវពាក្យស្តង់ដា">
+                    <button th:if="${isAdmin}" type="button" onclick="resetDefaultWords()" class="btn-custom btn-custom-warning" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; white-space: nowrap;" title="កំណត់ឡើងវិញនូវពាក្យស្តង់ដា">
                         <span>🔄 កំណត់ដើមឡើងវិញ</span>
                     </button>
                 </div>
             </div>
 
             <!-- ADMIN-ONLY ACCESS CONTROL PANEL (គ្រូណា / ថ្នាក់ណា / សិស្សណា) -->
-            <div th:if="${isAdmin}" class="data-card" style="margin-bottom: 18px; padding: 16px 20px; border: 2px solid #818cf8; background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%);">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 1.4rem;">🛡️</span>
-                        <div>
-                            <div style="font-weight: 800; color: #1e1b4b; font-size: 1rem;">ផ្ទាំងគ្រប់គ្រងសិទ្ធិចូលរៀន និងបង្រៀន (សម្រាប់តែ Admin ប៉ុណ្ណោះ)</div>
+            <div th:if="${isAdmin}" class="data-card" style="margin-bottom: 18px; padding: 16px 20px; border: 2px solid #818cf8; background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%) !important;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 12px; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                        <span style="font-size: 1.4rem; flex-shrink: 0;">🛡️</span>
+                        <div style="min-width: 0;">
+                            <div style="font-weight: 800; color: #1e1b4b; font-size: 0.98rem;">ផ្ទាំងគ្រប់គ្រងសិទ្ធិចូលរៀន និងបង្រៀន (សម្រាប់តែ Admin ប៉ុណ្ណោះ)</div>
                             <div style="font-size: 0.82rem; color: #4338ca;">កំណត់បិទ/បើកថា <b>គ្រូណា</b> មានសិទ្ធិចូលប្រើ និង <b>ថ្នាក់ណា / សិស្សណា</b> មានសិទ្ធិចូលរៀនប្រកប និងវាក្យសព្ទអង់គ្លេស (សិស្សមានសិទ្ធិសរុប៖ <b th:text="${totalAllowedStudentsCount} + '/' + ${allClassesStudentsCount}">0/0</b> នាក់)</div>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button type="button" onclick="toggleClassAccess('ALL', true)" class="btn-custom" style="background: #10b981; color: white; padding: 6px 12px; font-size: 0.82rem;">
+                    <div style="display: flex; gap: 8px; flex-wrap: nowrap; flex-shrink: 0;">
+                        <button type="button" onclick="toggleClassAccess('ALL', true)" class="btn-custom" style="background: #10b981 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; padding: 6px 12px; font-size: 0.82rem; white-space: nowrap;">
                             ✅ បើកសិស្សគ្រប់ថ្នាក់ទាំងអស់
                         </button>
-                        <button type="button" onclick="toggleClassAccess('ALL', false)" class="btn-custom" style="background: #ef4444; color: white; padding: 6px 12px; font-size: 0.82rem;">
+                        <button type="button" onclick="toggleClassAccess('ALL', false)" class="btn-custom" style="background: #ef4444 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; padding: 6px 12px; font-size: 0.82rem; white-space: nowrap;">
                             🔒 បិទសិស្សគ្រប់ថ្នាក់ទាំងអស់
                         </button>
                     </div>
