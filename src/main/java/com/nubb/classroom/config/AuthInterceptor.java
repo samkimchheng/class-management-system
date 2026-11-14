@@ -139,15 +139,23 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // Allow student portal API and test routes if loggedInStudent is present
+        // Allow student portal API and test routes if loggedInStudent is present (or teacher previewing vocabulary/phonics)
         if (path.startsWith("/test") || path.startsWith("/api/student-portal")) {
-            if (session.getAttribute("loggedInStudent") == null && !path.equals("/test/login") && !path.equals("/test")) {
+            boolean isTeacherPreview = session.getAttribute("ACCOUNT_ID") != null
+                    && (path.startsWith("/test/vocabulary") || path.startsWith("/test/phonics")
+                        || path.startsWith("/api/student-portal/phonics") || path.startsWith("/api/student-portal/vocabulary"));
+            if (session.getAttribute("loggedInStudent") == null && !isTeacherPreview && !path.equals("/test/login") && !path.equals("/test")) {
                 response.sendRedirect("/test");
                 return false;
             }
             if (session.getAttribute("loggedInStudent") != null) {
                 session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
             }
+            return true;
+        }
+
+        // Allow English female voice TTS audio endpoint for both students and teachers
+        if (path.startsWith("/api/tts/")) {
             return true;
         }
 

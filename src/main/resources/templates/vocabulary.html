@@ -1092,17 +1092,106 @@
             window.location.href = url.toString();
         }
 
-        // Web Speech API Native Text-to-Speech
-        function playAudio(text) {
+        // Clear Female English Voice Engine (Neural TTS + Browser Female Fallback)
+        let cachedFemaleVoice = null;
+        let currentFemaleAudio = null;
+
+        function selectBestFemaleEnglishVoice() {
+            if (!('speechSynthesis' in window)) return null;
+            const voices = window.speechSynthesis.getVoices() || [];
+            if (voices.length === 0) return null;
+            const enVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+            if (enVoices.length === 0) return voices[0];
+
+            const preferredFemaleKeywords = [
+                'aria', 'jenny', 'sonia', 'libby', 'michelle', 'ana', 'emma', 'ava',
+                'google uk english female', 'google us english',
+                'zira', 'hazel', 'susan', 'catherine', 'eva', 'heera',
+                'samantha', 'victoria', 'karen', 'moira', 'tessa', 'fiona', 'serena', 'allison', 'female'
+            ];
+            const maleKeywords = [
+                'david', 'mark', 'george', 'james', 'richard', 'daniel', 'alex',
+                'fred', 'guy', 'christopher', 'eric', 'ryan', 'steffan', 'roger', 'male'
+            ];
+
+            let bestVoice = null;
+            let bestScore = -999;
+            enVoices.forEach(v => {
+                const nameLower = (v.name || '').toLowerCase();
+                const langLower = (v.lang || '').toLowerCase();
+                let score = 0;
+                if (langLower === 'en-us' || langLower === 'en_us') score += 25;
+                else if (langLower === 'en-gb' || langLower === 'en_gb') score += 20;
+                if (nameLower.includes('natural') || nameLower.includes('online') || nameLower.includes('neural')) score += 35;
+                for (let i = 0; i < preferredFemaleKeywords.length; i++) {
+                    if (nameLower.includes(preferredFemaleKeywords[i])) {
+                        score += (60 - i);
+                        break;
+                    }
+                }
+                for (let i = 0; i < maleKeywords.length; i++) {
+                    if (nameLower.includes(maleKeywords[i])) {
+                        score -= 120;
+                        break;
+                    }
+                }
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestVoice = v;
+                }
+            });
+            cachedFemaleVoice = bestVoice || enVoices[0];
+            return cachedFemaleVoice;
+        }
+
+        if ('speechSynthesis' in window) {
+            selectBestFemaleEnglishVoice();
+            window.speechSynthesis.onvoiceschanged = () => selectBestFemaleEnglishVoice();
+        }
+
+        function speakWithBrowserFemaleVoice(text) {
             if (!('speechSynthesis' in window)) {
                 Swal.fire({ icon: 'warning', title: 'ឧបករណ៍មិនគាំទ្រសំឡេង Web Speech ទេ' });
                 return;
             }
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.9;
+            const voice = cachedFemaleVoice || selectBestFemaleEnglishVoice();
+            if (voice) {
+                utterance.voice = voice;
+                utterance.lang = voice.lang || 'en-US';
+            } else {
+                utterance.lang = 'en-US';
+            }
+            utterance.rate = 0.85;
+            utterance.pitch = 1.08;
             window.speechSynthesis.speak(utterance);
+        }
+
+        function playAudio(text) {
+            if (!text) return;
+            try {
+                if (currentFemaleAudio) {
+                    currentFemaleAudio.pause();
+                    currentFemaleAudio.currentTime = 0;
+                    currentFemaleAudio = null;
+                }
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+                const audio = new Audio('/api/tts/english?text=' + encodeURIComponent(text) + '&slow=false');
+                currentFemaleAudio = audio;
+                let fallbackTriggered = false;
+                const triggerFallback = () => {
+                    if (fallbackTriggered) return;
+                    fallbackTriggered = true;
+                    speakWithBrowserFemaleVoice(text);
+                };
+                audio.onerror = triggerFallback;
+                const p = audio.play();
+                if (p !== undefined) p.catch(triggerFallback);
+            } catch (e) {
+                speakWithBrowserFemaleVoice(text);
+            }
         }
 
         // Toggle active status

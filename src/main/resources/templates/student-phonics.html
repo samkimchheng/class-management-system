@@ -649,6 +649,10 @@
                         <option value="ALL" th:selected="${selectedUnit == 'ALL'}">📚 គ្រប់មេរៀនទាំងអស់ក្នុងកម្រិតនេះ</option>
                         <option th:each="u : ${units}" th:value="${u}" th:text="${u}" th:selected="${selectedUnit == u}"></option>
                     </select>
+                    <button type="button" id="voiceSpeedToggleBtn" onclick="toggleVoiceSpeedMode()"
+                            style="background: #fdf2f8; color: #be185d; border: 1.5px solid #fbcfe8; padding: 7px 13px; border-radius: 10px; font-weight: 800; font-size: 0.84rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <span>👩‍🏫 សំឡេងអ្នកគ្រូ (ច្បាស់ល្អ)៖ ធម្មតា</span>
+                    </button>
                 </div>
                 <input type="text" id="stuCardSearch" oninput="filterStudentCards()" placeholder="🔍 ស្វែងរកពាក្យអង់គ្លេស ឬប្រែខ្មែរ..."
                        style="padding: 8px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; width: 250px; font-size: 0.9rem;">
@@ -775,21 +779,191 @@
             });
         }
 
-        // Speech Synthesis Helpers
-        function speakRaw(text, rate = 0.85) {
-            if (!('speechSynthesis' in window)) return;
+        // =====================================================================
+        // CLEAR FEMALE ENGLISH VOICE ENGINE (WITH NEURAL TTS + FEMALE FALLBACK)
+        // =====================================================================
+        let cachedFemaleVoice = null;
+        let currentFemaleAudio = null;
+        let blendSequenceToken = 0;
+        window.__VOICE_SLOW_MODE__ = false;
+
+        function toggleVoiceSpeedMode() {
+            window.__VOICE_SLOW_MODE__ = !window.__VOICE_SLOW_MODE__;
+            const btn = document.getElementById('voiceSpeedToggleBtn');
+            if (btn) {
+                btn.innerHTML = window.__VOICE_SLOW_MODE__
+                    ? '<span>👩‍🏫 សំឡេងអ្នកគ្រូ៖ 🐢 អានយឺតៗច្បាស់ៗ</span>'
+                    : '<span>👩‍🏫 សំឡេងអ្នកគ្រូ (ច្បាស់ល្អ)៖ ធម្មតា</span>';
+                btn.style.background = window.__VOICE_SLOW_MODE__ ? '#fce7f3' : '#fdf2f8';
+            }
+        }
+
+        function selectBestFemaleEnglishVoice() {
+            if (!('speechSynthesis' in window)) return null;
+            const voices = window.speechSynthesis.getVoices() || [];
+            if (voices.length === 0) return null;
+
+            const enVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+            if (enVoices.length === 0) return voices[0];
+
+            const preferredFemaleKeywords = [
+                'aria', 'jenny', 'sonia', 'libby', 'michelle', 'ana', 'emma', 'ava',
+                'google uk english female', 'google us english',
+                'zira', 'hazel', 'susan', 'catherine', 'eva', 'heera',
+                'samantha', 'victoria', 'karen', 'moira', 'tessa', 'fiona', 'serena', 'allison', 'female'
+            ];
+            const maleKeywords = [
+                'david', 'mark', 'george', 'james', 'richard', 'daniel', 'alex',
+                'fred', 'guy', 'christopher', 'eric', 'ryan', 'steffan', 'roger', 'male'
+            ];
+
+            let bestVoice = null;
+            let bestScore = -999;
+
+            enVoices.forEach(v => {
+                const nameLower = (v.name || '').toLowerCase();
+                const langLower = (v.lang || '').toLowerCase();
+                let score = 0;
+
+                if (langLower === 'en-us' || langLower === 'en_us') score += 25;
+                else if (langLower === 'en-gb' || langLower === 'en_gb') score += 20;
+
+                if (nameLower.includes('natural') || nameLower.includes('online') || nameLower.includes('neural')) {
+                    score += 35;
+                }
+
+                for (let i = 0; i < preferredFemaleKeywords.length; i++) {
+                    if (nameLower.includes(preferredFemaleKeywords[i])) {
+                        score += (60 - i);
+                        break;
+                    }
+                }
+
+                for (let i = 0; i < maleKeywords.length; i++) {
+                    if (nameLower.includes(maleKeywords[i])) {
+                        score -= 120;
+                        break;
+                    }
+                }
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestVoice = v;
+                }
+            });
+
+            cachedFemaleVoice = bestVoice || enVoices[0];
+            return cachedFemaleVoice;
+        }
+
+        if ('speechSynthesis' in window) {
+            selectBestFemaleEnglishVoice();
+            window.speechSynthesis.onvoiceschanged = () => {
+                selectBestFemaleEnglishVoice();
+            };
+        }
+
+        function normalizePhonemeSoundForSpeech(raw) {
+            if (!raw) return '';
+            let s = String(raw).trim();
+            if (s.includes('/')) {
+                s = s.replace(/\/[^/]+\//g, '').trim();
+            }
+            if (s.startsWith('-') && s.length > 1) s = s.substring(1).trim();
+            if (s.endsWith('-') && s.length > 1) s = s.substring(0, s.length - 1).trim();
+            const map = {
+                'a_e': 'ay', 'i_e': 'eye', 'o_e': 'oh', 'u_e': 'you', 'e_e': 'ee',
+                'igh': 'eye', 'sh': 'shh', 'ch': 'chuh', 'th': 'thuh', 'ph': 'fff',
+                'wh': 'wuh', 'ck': 'kuh', 'qu': 'kwuh', 'kn': 'nuh', 'wr': 'ruh',
+                'ng': 'ing', 'nk': 'ink', 'tion': 'shun', 'ture': 'cher', 'le': 'ul'
+            };
+            const lower = s.toLowerCase();
+            return map[lower] || s.replace(/_/g, ' ');
+        }
+
+        function speakWithBrowserFemaleVoice(text, rate = 0.84, onDone) {
+            if (!('speechSynthesis' in window)) {
+                if (onDone) onDone();
+                return;
+            }
             window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(text);
-            u.lang = 'en-US';
-            u.rate = rate;
+            const u = new SpeechSynthesisUtterance(normalizePhonemeSoundForSpeech(text));
+            const voice = cachedFemaleVoice || selectBestFemaleEnglishVoice();
+            if (voice) {
+                u.voice = voice;
+                u.lang = voice.lang || 'en-US';
+            } else {
+                u.lang = 'en-US';
+            }
+            u.rate = window.__VOICE_SLOW_MODE__ ? Math.min(rate, 0.72) : rate;
+            u.pitch = 1.08; // Warm, clear female teacher tone
+            u.volume = 1.0;
+            if (onDone) {
+                u.onend = () => onDone();
+                u.onerror = () => onDone();
+            }
             window.speechSynthesis.speak(u);
+        }
+
+        function speakRaw(text, rate = 0.85, onDone) {
+            if (!text) {
+                if (onDone) onDone();
+                return;
+            }
+            blendSequenceToken++; // Cancel any running slow-blend chain if user clicked another sound
+            return playFemaleVoiceInternal(text, rate, onDone);
+        }
+
+        function playFemaleVoiceInternal(text, rate = 0.85, onDone) {
+            try {
+                if (currentFemaleAudio) {
+                    currentFemaleAudio.pause();
+                    currentFemaleAudio.currentTime = 0;
+                    currentFemaleAudio = null;
+                }
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+
+                const cleanText = normalizePhonemeSoundForSpeech(text);
+                const useSlow = (rate <= 0.76) || window.__VOICE_SLOW_MODE__;
+                const audioUrl = '/api/tts/english?text=' + encodeURIComponent(cleanText) + '&slow=' + (useSlow ? 'true' : 'false');
+                const audio = new Audio(audioUrl);
+                currentFemaleAudio = audio;
+                audio.playbackRate = window.__VOICE_SLOW_MODE__ ? 0.88 : (rate < 0.8 ? 0.92 : 1.0);
+
+                let fallbackTriggered = false;
+                const triggerFallback = () => {
+                    if (fallbackTriggered) return;
+                    fallbackTriggered = true;
+                    speakWithBrowserFemaleVoice(cleanText, rate, onDone);
+                };
+
+                audio.onended = () => {
+                    if (onDone) onDone();
+                };
+                audio.onerror = () => {
+                    triggerFallback();
+                };
+
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        triggerFallback();
+                    });
+                }
+            } catch (e) {
+                speakWithBrowserFemaleVoice(text, rate, onDone);
+            }
         }
 
         function speakPhoneme(tileEl) {
             const sound = tileEl.getAttribute('data-sound') || tileEl.textContent;
             tileEl.classList.add('speaking-now');
-            speakRaw(sound, 0.75);
-            setTimeout(() => tileEl.classList.remove('speaking-now'), 500);
+            speakRaw(sound, 0.74, () => {
+                tileEl.classList.remove('speaking-now');
+            });
+            setTimeout(() => tileEl.classList.remove('speaking-now'), 900);
         }
 
         function speakSentence(sentence) {
@@ -804,35 +978,32 @@
         }
 
         function slowBlendWord(itemId, blendStr, fullWord) {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
+            const myToken = ++blendSequenceToken;
             const parts = (blendStr || fullWord).split('|').filter(Boolean);
             const row = document.getElementById('blendRow_' + itemId);
             const tiles = row ? row.querySelectorAll('.phoneme-tile') : [];
 
-            let delay = 0;
-            parts.forEach((p, idx) => {
-                setTimeout(() => {
-                    tiles.forEach(t => t.classList.remove('speaking-now'));
-                    if (tiles[idx]) tiles[idx].classList.add('speaking-now');
-                    const u = new SpeechSynthesisUtterance(p);
-                    u.lang = 'en-US';
-                    u.rate = 0.7;
-                    window.speechSynthesis.speak(u);
-                }, delay);
-                delay += 650;
-            });
-
-            setTimeout(() => {
+            let idx = 0;
+            function playNextPart() {
+                if (myToken !== blendSequenceToken) return;
                 tiles.forEach(t => t.classList.remove('speaking-now'));
-                if (tiles.length > 0) tiles[tiles.length - 1].classList.add('speaking-now');
-                const uFull = new SpeechSynthesisUtterance(fullWord);
-                uFull.lang = 'en-US';
-                uFull.rate = 0.85;
-                window.speechSynthesis.speak(uFull);
-                setTimeout(() => tiles.forEach(t => t.classList.remove('speaking-now')), 700);
-            }, delay + 150);
 
+                if (idx < parts.length) {
+                    if (tiles[idx]) tiles[idx].classList.add('speaking-now');
+                    const partText = parts[idx];
+                    idx++;
+                    playFemaleVoiceInternal(partText, 0.72, () => {
+                        setTimeout(playNextPart, 140);
+                    });
+                } else {
+                    if (tiles.length > 0) tiles[tiles.length - 1].classList.add('speaking-now');
+                    playFemaleVoiceInternal(fullWord, 0.84, () => {
+                        setTimeout(() => tiles.forEach(t => t.classList.remove('speaking-now')), 400);
+                    });
+                }
+            }
+
+            playNextPart();
             recordSkillServer(itemId, 'READING', true);
             const btn = document.getElementById('btnBlend_' + itemId);
             if (btn) btn.classList.add('done');

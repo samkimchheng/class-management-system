@@ -1058,13 +1058,102 @@
             });
         }
 
-        function speakText(text) {
+        let cachedFemaleVoice = null;
+        let currentFemaleAudio = null;
+
+        function selectBestFemaleEnglishVoice() {
+            if (!('speechSynthesis' in window)) return null;
+            const voices = window.speechSynthesis.getVoices() || [];
+            if (voices.length === 0) return null;
+            const enVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+            if (enVoices.length === 0) return voices[0];
+
+            const preferredFemaleKeywords = [
+                'aria', 'jenny', 'sonia', 'libby', 'michelle', 'ana', 'emma', 'ava',
+                'google uk english female', 'google us english',
+                'zira', 'hazel', 'susan', 'catherine', 'eva', 'heera',
+                'samantha', 'victoria', 'karen', 'moira', 'tessa', 'fiona', 'serena', 'allison', 'female'
+            ];
+            const maleKeywords = [
+                'david', 'mark', 'george', 'james', 'richard', 'daniel', 'alex',
+                'fred', 'guy', 'christopher', 'eric', 'ryan', 'steffan', 'roger', 'male'
+            ];
+
+            let bestVoice = null;
+            let bestScore = -999;
+            enVoices.forEach(v => {
+                const nameLower = (v.name || '').toLowerCase();
+                const langLower = (v.lang || '').toLowerCase();
+                let score = 0;
+                if (langLower === 'en-us' || langLower === 'en_us') score += 25;
+                else if (langLower === 'en-gb' || langLower === 'en_gb') score += 20;
+                if (nameLower.includes('natural') || nameLower.includes('online') || nameLower.includes('neural')) score += 35;
+                for (let i = 0; i < preferredFemaleKeywords.length; i++) {
+                    if (nameLower.includes(preferredFemaleKeywords[i])) {
+                        score += (60 - i);
+                        break;
+                    }
+                }
+                for (let i = 0; i < maleKeywords.length; i++) {
+                    if (nameLower.includes(maleKeywords[i])) {
+                        score -= 120;
+                        break;
+                    }
+                }
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestVoice = v;
+                }
+            });
+            cachedFemaleVoice = bestVoice || enVoices[0];
+            return cachedFemaleVoice;
+        }
+
+        if ('speechSynthesis' in window) {
+            selectBestFemaleEnglishVoice();
+            window.speechSynthesis.onvoiceschanged = () => selectBestFemaleEnglishVoice();
+        }
+
+        function speakWithBrowserFemaleVoice(text) {
             if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(text);
-            u.lang = 'en-US';
-            u.rate = 0.85;
+            const voice = cachedFemaleVoice || selectBestFemaleEnglishVoice();
+            if (voice) {
+                u.voice = voice;
+                u.lang = voice.lang || 'en-US';
+            } else {
+                u.lang = 'en-US';
+            }
+            u.rate = 0.84;
+            u.pitch = 1.08;
             window.speechSynthesis.speak(u);
+        }
+
+        function speakText(text) {
+            if (!text) return;
+            try {
+                if (currentFemaleAudio) {
+                    currentFemaleAudio.pause();
+                    currentFemaleAudio.currentTime = 0;
+                    currentFemaleAudio = null;
+                }
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+                const audio = new Audio('/api/tts/english?text=' + encodeURIComponent(text) + '&slow=false');
+                currentFemaleAudio = audio;
+                let fallbackTriggered = false;
+                const triggerFallback = () => {
+                    if (fallbackTriggered) return;
+                    fallbackTriggered = true;
+                    speakWithBrowserFemaleVoice(text);
+                };
+                audio.onerror = triggerFallback;
+                const p = audio.play();
+                if (p !== undefined) p.catch(triggerFallback);
+            } catch (e) {
+                speakWithBrowserFemaleVoice(text);
+            }
         }
 
         function openAddPhonicsModal() {

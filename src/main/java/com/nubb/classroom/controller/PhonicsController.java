@@ -12,13 +12,23 @@ import com.nubb.classroom.repository.StudentRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Controller
@@ -837,5 +847,111 @@ public class PhonicsController {
         }
 
         return ResponseEntity.ok(result);
+    }
+
+    // In-memory cache for clear Female English TTS audio (avoids repeated external fetches)
+    private static final Map<String, byte[]> TTS_AUDIO_CACHE = new ConcurrentHashMap<>();
+
+    /**
+     * Streams clear, natural Female English TTS audio (MP3) for words, phonemes, and example sentences.
+     */
+    @GetMapping("/api/tts/english")
+    @ResponseBody
+    public ResponseEntity<byte[]> streamFemaleEnglishTts(
+            @RequestParam("text") String text,
+            @RequestParam(value = "slow", defaultValue = "false") boolean slow) {
+
+        if (text == null || text.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String cleaned = normalizePhonicsTtsText(text.trim());
+        if (cleaned.length() > 220) {
+            cleaned = cleaned.substring(0, 220);
+        }
+
+        String cacheKey = (slow ? "SLOW:" : "NORM:") + cleaned.toLowerCase(Locale.ROOT);
+        byte[] cachedBytes = TTS_AUDIO_CACHE.get(cacheKey);
+        if (cachedBytes != null && cachedBytes.length > 0) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.valueOf("audio/mpeg"))
+                    .cacheControl(CacheControl.maxAge(24, TimeUnit.HOURS).cachePublic())
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"tts.mp3\"")
+                    .body(cachedBytes);
+        }
+
+        try {
+            String encoded = URLEncoder.encode(cleaned, StandardCharsets.UTF_8);
+            String speed = slow ? "0.28" : "0.85";
+            String ttsUrl = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&ttsspeed=" + speed + "&q=" + encoded;
+
+            HttpURLConnection conn = (HttpURLConnection) URI.create(ttsUrl).toURL().openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(4000);
+            conn.setReadTimeout(5000);
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+            conn.setRequestProperty("Referer", "https://translate.google.com/");
+
+            int status = conn.getResponseCode();
+            if (status == HttpURLConnection.HTTP_OK) {
+                try (InputStream in = conn.getInputStream()) {
+                    byte[] audioBytes = in.readAllBytes();
+                    if (audioBytes.length > 100) {
+                        if (TTS_AUDIO_CACHE.size() > 1500) {
+                            TTS_AUDIO_CACHE.clear();
+                        }
+                        TTS_AUDIO_CACHE.put(cacheKey, audioBytes);
+                        return ResponseEntity.ok()
+                                .contentType(MediaType.valueOf("audio/mpeg"))
+                                .cacheControl(CacheControl.maxAge(24, TimeUnit.HOURS).cachePublic())
+                                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"tts.mp3\"")
+                                .body(audioBytes);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // Client will automatically fall back to Web Speech API Female Voice
+        }
+
+        return ResponseEntity.noContent().build();
+    }
+
+    private static String normalizePhonicsTtsText(String raw) {
+        String s = raw.trim();
+        // Strip leading/trailing hyphens or slashes from sound patterns like "-at" or "/æt/"
+        if (s.contains("/")) {
+            s = s.replaceAll("/[^/]+/", "").trim();
+        }
+        if (s.startsWith("-") && s.length() > 1) {
+            s = s.substring(1).trim();
+        }
+        if (s.endsWith("-") && s.length() > 1) {
+            s = s.substring(0, s.length() - 1).trim();
+        }
+        String lower = s.toLowerCase(Locale.ROOT);
+        switch (lower) {
+            case "a_e": return "ay";
+            case "i_e": return "eye";
+            case "o_e": return "oh";
+            case "u_e": return "you";
+            case "e_e": return "ee";
+            case "igh": return "eye";
+            case "sh": return "shh";
+            case "ch": return "chuh";
+            case "th": return "thuh";
+            case "ph": return "fff";
+            case "wh": return "wuh";
+            case "ck": return "kuh";
+            case "qu": return "kwuh";
+            case "kn": return "nuh";
+            case "wr": return "ruh";
+            case "ng": return "ing";
+            case "nk": return "ink";
+            case "tion": return "shun";
+            case "ture": return "cher";
+            case "le": return "ul";
+            default:
+                return s.replace("_", " ");
+        }
     }
 }
