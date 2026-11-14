@@ -36,6 +36,9 @@ public class Student {
 
     @Column(name = "academic_year", length = 50)
     private String academicYear;
+
+    @Column(name = "english_access_allowed")
+    private Boolean englishAccessAllowed = false;
     
     // Constructors, Getters, Setters
     public Student() {}
@@ -113,4 +116,12 @@ public class Student {
 
     public String getAcademicYear() { return academicYear; }
     public void setAcademicYear(String academicYear) { this.academicYear = academicYear; }
+
+    public Boolean getEnglishAccessAllowed() {
+        return englishAccessAllowed != null ? englishAccessAllowed : false;
+    }
+
+    public void setEnglishAccessAllowed(Boolean englishAccessAllowed) {
+        this.englishAccessAllowed = englishAccessAllowed;
+    }
 }

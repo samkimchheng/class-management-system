@@ -595,18 +595,97 @@
                     </div>
                 </div>
                 <div class="hero-actions">
-                    <a th:if="${session.ACCOUNT_ROLE == 'ADMIN'}" href="/admin/english-learners" class="btn" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
+                    <a th:if="${isAdmin}" href="/admin/english-learners" class="btn" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
                         <span>🎓 អ្នករៀនក្រៅថ្នាក់ (Admin)</span>
                     </a>
                     <button type="button" class="btn btn-white" onclick="openAddPhonicsModal()">
                         <i class="fas fa-plus-circle"></i> បន្ថែមពាក្យប្រកបថ្មី
                     </button>
-                    <button type="button" class="btn btn-glass" onclick="resetOxfordDefault()">
+                    <button th:if="${isAdmin}" type="button" class="btn btn-glass" onclick="resetOxfordDefault()">
                         <i class="fas fa-sync-alt"></i> បញ្ចូលស្តង់ដារ Oxford ទាំង ៥ កម្រិត
                     </button>
                     <a href="/test/phonics" target="_blank" class="btn btn-emerald">
                         <i class="fas fa-external-link-alt"></i> សាកល្បងផ្ទាំងសិស្សរៀន
                     </a>
+                </div>
+            </div>
+
+            <!-- Admin-Only Access Control Panel (គ្រូណា • ថ្នាក់ណា • សិស្សណា) -->
+            <div th:if="${isAdmin}" class="panel-card" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 2px solid #f59e0b; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; border-bottom: 1.5px solid rgba(245, 158, 11, 0.35); padding-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.5rem;">🛡️</span>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.08rem; font-weight: 800; color: #92400e;">
+                                គ្រប់គ្រងសិទ្ធិចូលប្រើប្រាស់ (សម្រាប់តែ Admin តែម្នាក់គត់) — បិទ/បើក គ្រូ • ថ្នាក់រៀន • សិស្សក្នុងថ្នាក់
+                            </h3>
+                            <div style="font-size: 0.84rem; color: #b45309; font-weight: 600;">
+                                កំណត់ថាគ្រូណា ថ្នាក់ណា និងសិស្សណាខ្លះដែលមានសិទ្ធិចូលរៀន ប្រកបអង់គ្លេស (Phonics) និងវាក្យសព្ទ (Vocab)
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn" style="background: #10b981; color: white; padding: 7px 14px; font-size: 0.84rem;" onclick="toggleClassAccess('ALL', true)">
+                            ✅ បើកសិទ្ធិសិស្សគ្រប់ថ្នាក់ទាំងអស់ (<span th:text="${allClassesStudentsCount}">0</span> នាក់)
+                        </button>
+                        <button type="button" class="btn" style="background: #ef4444; color: white; padding: 7px 14px; font-size: 0.84rem;" onclick="toggleClassAccess('ALL', false)">
+                            🔒 បិទសិទ្ធិសិស្សគ្រប់ថ្នាក់ទាំងអស់
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1. Teacher Access Control -->
+                <div style="margin-bottom: 14px;">
+                    <div style="font-size: 0.88rem; font-weight: 800; color: #78350f; margin-bottom: 8px;">
+                        👨‍🏫 ១. បិទ/បើកសិទ្ធិគ្រូបង្រៀន (គ្រូដែលបើកសិទ្ធិអាចបន្ថែម/កែ/លុបពាក្យរបស់គាត់បាន តែមិនអាចកែទិន្នន័យមេរៀនស្តង់ដារដែលមានស្រាប់បានទេ)៖
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <div th:each="t : ${allTeachers}"
+                             style="background: white; border: 1.5px solid #fcd34d; border-radius: 10px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.88rem; color: #0f172a;" th:text="${t.fullName}">ឈ្មោះគ្រូ</div>
+                                <div style="font-size: 0.76rem; color: #64748b;" th:text="${(t.subject != null and !t.subject.isEmpty() ? t.subject : 'គ្រូបង្រៀន') + ' (@' + t.username + ')'}">ភាសាអង់គ្លេស</div>
+                            </div>
+                            <button type="button"
+                                    th:onclick="'toggleTeacherAccess(' + ${t.id} + ')'"
+                                    th:style="${t.vocabularyPermission == true ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;'}"
+                                    style="padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; white-space: nowrap;">
+                                <span th:text="${t.vocabularyPermission == true ? '✅ បើកសិទ្ធិ' : '🔒 បិទសិទ្ធិ'}">🔒 បិទសិទ្ធិ</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Class Access Control -->
+                <div>
+                    <div style="font-size: 0.88rem; font-weight: 800; color: #78350f; margin-bottom: 8px;">
+                        🏫 ២. បិទ/បើកសិទ្ធិចូលរៀនតាមថ្នាក់នីមួយៗ (សិស្សមានសិទ្ធិសរុប៖ <span th:text="${totalAllowedStudentsCount}">0</span> / <span th:text="${allClassesStudentsCount}">0</span> នាក់)៖
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <div th:each="cls : ${classSummaryList}"
+                             style="background: white; border: 1.5px solid #fcd34d; border-radius: 10px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 10px;">
+                            <div>
+                                <span style="font-weight: 800; font-size: 0.88rem; color: #1e293b;" th:text="'ថ្នាក់ ' + ${cls.className}">ថ្នាក់ 10A</span>
+                                <span style="font-size: 0.78rem; color: #64748b; margin-left: 4px;" th:text="'(' + ${cls.enabledCount} + '/' + ${cls.studentCount} + ' នាក់)'">(0/45)</span>
+                            </div>
+                            <button type="button"
+                                    th:data-cls="${cls.className}"
+                                    th:data-next="${!cls.allAllowed}"
+                                    onclick="toggleClassAccess(this.getAttribute('data-cls'), this.getAttribute('data-next') === 'true')"
+                                    th:style="${cls.allAllowed ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;' : (cls.enabledCount > 0 ? 'background:#fef3c7; color:#92400e; border:1px solid #fde68a;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;')}"
+                                    style="padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; white-space: nowrap;">
+                                <span th:text="${cls.allAllowed ? '✅ បើកពេញថ្នាក់' : (cls.enabledCount > 0 ? '🔓 បើកខ្លះ (' + cls.enabledCount + ')' : '🔒 បិទថ្នាក់នេះ')}">🔒 បិទថ្នាក់នេះ</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teacher Curriculum Protection Notice Banner (For Non-Admin Teachers) -->
+            <div th:unless="${isAdmin}" style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; color: #1e3a8a;">
+                <span style="font-size: 1.5rem;">🛡️</span>
+                <div style="font-size: 0.9rem; line-height: 1.55;">
+                    <b>គោលការណ៍ការពារទិន្នន័យមេរៀនស្តង់ដារ៖</b> លោកគ្រូ/អ្នកគ្រូមានសិទ្ធិ <b>«➕ បន្ថែមពាក្យប្រកបថ្មី»</b> និងអាច <b>«✏️ កែប្រែ / 🗑️ លុប»</b> បានតែពាក្យដែលលោកគ្រូ/អ្នកគ្រូបានបន្ថែមផ្ទាល់ខ្លួនប៉ុណ្ណោះ។ ទិន្នន័យមេរៀនស្តង់ដារដែលមានស្រាប់ត្រូវបានការពារដោយ Admin ដើម្បីកុំឱ្យប៉ះពាល់ដល់អ្នករៀនក្រៅថ្នាក់ និងសិស្សថ្នាក់ដទៃ។
                 </div>
             </div>
 
@@ -712,6 +791,7 @@
                                     <th style="width: 50px; text-align: center;">ល.រ</th>
                                     <th>ថ្នាក់រៀន</th>
                                     <th style="text-align: center;">សិស្សសរុប</th>
+                                    <th style="text-align: center;">សិទ្ធិចូលរៀនតាមថ្នាក់ (Admin)</th>
                                     <th style="text-align: center;">សិស្សបានរៀន</th>
                                     <th style="text-align: center;">🎧 ស្តាប់ (%)</th>
                                     <th style="text-align: center;">📖 អាន (%)</th>
@@ -732,6 +812,20 @@
                                         </a>
                                     </td>
                                     <td style="text-align: center; font-weight: 700;" th:text="${cls.studentCount} + ' នាក់'">45 នាក់</td>
+                                    <td style="text-align: center;">
+                                        <button th:if="${isAdmin}" type="button"
+                                                th:data-cls="${cls.className}"
+                                                th:data-next="${!cls.allAllowed}"
+                                                onclick="toggleClassAccess(this.getAttribute('data-cls'), this.getAttribute('data-next') === 'true')"
+                                                th:style="${cls.allAllowed ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;' : (cls.enabledCount > 0 ? 'background:#fef3c7; color:#92400e; border:1px solid #fde68a;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;')}"
+                                                style="padding: 4px 10px; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer;">
+                                            <span th:text="${(cls.allAllowed ? '✅ បើកពេញថ្នាក់ (' : (cls.enabledCount > 0 ? '🔓 បើកខ្លះ (' : '🔒 បិទ (')) + cls.enabledCount + '/' + cls.studentCount + ')'}">🔒 បិទ (0/45)</span>
+                                        </button>
+                                        <span th:unless="${isAdmin}"
+                                              th:style="${cls.allAllowed ? 'background:#dcfce7; color:#166534;' : (cls.enabledCount > 0 ? 'background:#fef3c7; color:#92400e;' : 'background:#fee2e2; color:#991b1b;')}"
+                                              style="padding: 3px 10px; border-radius: 12px; font-weight: 800; font-size: 0.8rem;"
+                                              th:text="${(cls.allAllowed ? '🟢 បើក (' : (cls.enabledCount > 0 ? '🟡 បើកខ្លះ (' : '🔒 បិទ (')) + cls.enabledCount + '/' + cls.studentCount + ')'}">0/45</span>
+                                    </td>
                                     <td style="text-align: center;">
                                         <span style="background: #dcfce7; color: #166534; padding: 3px 10px; border-radius: 12px; font-weight: 800; font-size: 0.85rem;"
                                               th:text="${cls.activeLearners} + ' / ' + ${cls.studentCount}">10 / 45</span>
@@ -755,7 +849,7 @@
                                     </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(classSummaryList)}">
-                                    <td colspan="11" style="text-align: center; padding: 26px; color: #64748b;">មិនទាន់មានទិន្នន័យថ្នាក់រៀននៅឡើយទេ</td>
+                                    <td colspan="12" style="text-align: center; padding: 26px; color: #64748b;">មិនទាន់មានទិន្នន័យថ្នាក់រៀននៅឡើយទេ</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -787,6 +881,7 @@
                                     <th>ឈ្មោះសិស្ស</th>
                                     <th style="text-align: center;">កូដសិស្ស</th>
                                     <th style="text-align: center;">ថ្នាក់</th>
+                                    <th style="text-align: center;">សិទ្ធិចូលរៀន (Admin)</th>
                                     <th style="text-align: center;">L1</th>
                                     <th style="text-align: center;">L2</th>
                                     <th style="text-align: center;">L3</th>
@@ -807,6 +902,18 @@
                                     </td>
                                     <td style="text-align: center;">
                                         <span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.82rem;" th:text="${row.student.className}">10A</span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <button th:if="${isAdmin}" type="button"
+                                                th:onclick="'toggleStudentAccess(' + ${row.student.id} + ')'"
+                                                th:style="${row.student.englishAccessAllowed == true ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;'}"
+                                                style="padding: 4px 10px; border-radius: 12px; font-weight: 800; font-size: 0.78rem; cursor: pointer;">
+                                            <span th:text="${row.student.englishAccessAllowed == true ? '✅ បើកសិទ្ធិ' : '🔒 បិទសិទ្ធិ'}">🔒 បិទសិទ្ធិ</span>
+                                        </button>
+                                        <span th:unless="${isAdmin}"
+                                              th:style="${row.student.englishAccessAllowed == true ? 'background:#dcfce7; color:#166534;' : 'background:#fee2e2; color:#991b1b;'}"
+                                              style="padding: 3px 9px; border-radius: 12px; font-weight: 800; font-size: 0.78rem;"
+                                              th:text="${row.student.englishAccessAllowed == true ? '🟢 បើកសិទ្ធិ' : '🔒 បិទសិទ្ធិ'}">🔒 បិទសិទ្ធិ</span>
                                     </td>
                                     <td style="text-align: center; font-weight: 700;" th:text="${row.l1Percent} + '%'">0%</td>
                                     <td style="text-align: center; font-weight: 700;" th:text="${row.l2Percent} + '%'">0%</td>
@@ -830,7 +937,7 @@
                                         th:text="${row.lastActive != null ? #temporals.format(row.lastActive, 'dd/MM/yyyy HH:mm') : 'មិនទាន់ចូលរៀន'}">-</td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(studentProgressList)}">
-                                    <td colspan="13" style="text-align: center; padding: 28px; color: #64748b;">មិនមានទិន្នន័យសិស្សក្នុងថ្នាក់នេះទេ</td>
+                                    <td colspan="14" style="text-align: center; padding: 28px; color: #64748b;">មិនមានទិន្នន័យសិស្សក្នុងថ្នាក់នេះទេ</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -851,10 +958,10 @@
                             <input type="text" id="wordSearchInput" th:value="${searchQuery}" oninput="filterWordsTable()" class="form-control" style="width: 230px;" placeholder="🔍 ស្វែងរកពាក្យ ឬសូរប្រកប...">
                         </div>
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button type="button" class="btn" style="background: #dcfce7; color: #166534; border: 1px solid #86efac;" onclick="bulkToggleLevel(true)">
+                            <button th:if="${isAdmin}" type="button" class="btn" style="background: #dcfce7; color: #166534; border: 1px solid #86efac;" onclick="bulkToggleLevel(true)">
                                 🔓 បើកទាំងអស់ក្នុង Unit នេះ
                             </button>
-                            <button type="button" class="btn" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;" onclick="bulkToggleLevel(false)">
+                            <button th:if="${isAdmin}" type="button" class="btn" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;" onclick="bulkToggleLevel(false)">
                                 🔒 បិទទាំងអស់ក្នុង Unit នេះ
                             </button>
                             <button type="button" class="btn btn-primary" onclick="openAddPhonicsModal()">
@@ -894,6 +1001,7 @@
                                             <div>
                                                 <b style="font-size: 1.05rem; color: #0f172a; font-family: 'Poppins', sans-serif;" th:text="${w.englishWord}">cat</b>
                                                 <span style="color: #64748b; font-size: 0.82rem; margin-left: 4px;" th:text="${w.ipaPhonetic}">/kæt/</span>
+                                                <span th:if="${w.accountId != null}" style="background: #e0f2fe; color: #0369a1; font-size: 0.72rem; font-weight: 800; padding: 1px 6px; border-radius: 6px; margin-left: 4px;">👨‍🏫 បន្ថែមដោយគ្រូ</span>
                                             </div>
                                             <button type="button" th:data-word="${w.cleanWord}" onclick="speakText(this.getAttribute('data-word'))"
                                                     style="background: #e0e7ff; color: #4338ca; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;" title="ស្តាប់សំឡេងអាន">
@@ -917,33 +1025,45 @@
                                         <div style="color: #64748b; font-size: 0.82rem;" th:text="${w.exampleSentenceKhmer}">សត្វឆ្មាបានអង្គុយលើកន្ទេល។</div>
                                     </td>
                                     <td style="text-align: center;">
-                                        <button type="button" th:onclick="'toggleWordActive(' + ${w.id} + ')'"
+                                        <button th:if="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}"
+                                                type="button" th:onclick="'toggleWordActive(' + ${w.id} + ')'"
                                                 th:style="${w.active ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;'}"
                                                 style="padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; cursor: pointer;">
                                             <span th:text="${w.active ? '🟢 បើកបង្ហាញ' : '🔴 បិទ'}">🟢 បើកបង្ហាញ</span>
                                         </button>
+                                        <span th:unless="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}"
+                                              th:style="${w.active ? 'background:#dcfce7; color:#166534;' : 'background:#fee2e2; color:#991b1b;'}"
+                                              style="padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 0.78rem;"
+                                              th:text="${w.active ? '🟢 បើកបង្ហាញ' : '🔴 បិទ'}">🟢 បើកបង្ហាញ</span>
                                     </td>
                                     <td style="text-align: center;">
-                                        <button type="button" class="btn" style="background: #dbeafe; color: #1e40af; padding: 5px 10px; font-size: 0.82rem;"
-                                                th:data-id="${w.id}"
-                                                th:data-level="${w.phonicsLevel}"
-                                                th:data-unit="${w.unitName}"
-                                                th:data-pattern="${w.soundPattern}"
-                                                th:data-word="${w.englishWord}"
-                                                th:data-ipa="${w.ipaPhonetic}"
-                                                th:data-khmerpho="${w.khmerPhonetic}"
-                                                th:data-blend="${w.blendingParts}"
-                                                th:data-khmer="${w.khmerTranslation}"
-                                                th:data-emoji="${w.emojiIcon}"
-                                                th:data-senten="${w.exampleSentence}"
-                                                th:data-sentkm="${w.exampleSentenceKhmer}"
-                                                onclick="openEditPhonicsModal(this)">
-                                            ✏️ កែប្រែ
-                                        </button>
-                                        <button type="button" class="btn" style="background: #fee2e2; color: #b91c1c; padding: 5px 10px; font-size: 0.82rem;"
-                                                th:onclick="'deletePhonicsWord(' + ${w.id} + ')'">
-                                            🗑️
-                                        </button>
+                                        <div th:if="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}" style="display: inline-flex; gap: 5px;">
+                                            <button type="button" class="btn" style="background: #dbeafe; color: #1e40af; padding: 5px 10px; font-size: 0.82rem;"
+                                                    th:data-id="${w.id}"
+                                                    th:data-level="${w.phonicsLevel}"
+                                                    th:data-unit="${w.unitName}"
+                                                    th:data-pattern="${w.soundPattern}"
+                                                    th:data-word="${w.englishWord}"
+                                                    th:data-ipa="${w.ipaPhonetic}"
+                                                    th:data-khmerpho="${w.khmerPhonetic}"
+                                                    th:data-blend="${w.blendingParts}"
+                                                    th:data-khmer="${w.khmerTranslation}"
+                                                    th:data-emoji="${w.emojiIcon}"
+                                                    th:data-senten="${w.exampleSentence}"
+                                                    th:data-sentkm="${w.exampleSentenceKhmer}"
+                                                    onclick="openEditPhonicsModal(this)">
+                                                ✏️ កែប្រែ
+                                            </button>
+                                            <button type="button" class="btn" style="background: #fee2e2; color: #b91c1c; padding: 5px 10px; font-size: 0.82rem;"
+                                                    th:onclick="'deletePhonicsWord(' + ${w.id} + ')'">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                        <span th:unless="${isAdmin or (w.accountId != null and w.accountId == session.ACCOUNT_ID)}"
+                                              style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 3px 9px; border-radius: 8px; font-weight: 700; font-size: 0.76rem;"
+                                              title="ទិន្នន័យមេរៀនស្តង់ដារត្រូវបានការពារដោយ Admin">
+                                            🔒 មេរៀនស្តង់ដារ (Admin)
+                                        </span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -1263,6 +1383,7 @@
                     .then(r => r.json())
                     .then(data => {
                         if (data.success) window.location.reload();
+                        else Swal.fire('កំហុស', data.message, 'error');
                     });
                 }
             });
@@ -1274,6 +1395,46 @@
             .then(data => {
                 if (data.success) {
                     Swal.fire('ជោគជ័យ!', data.message, 'success').then(() => window.location.reload());
+                } else {
+                    Swal.fire('កំហុស', data.message, 'error');
+                }
+            });
+        }
+
+        function toggleTeacherAccess(targetAccountId) {
+            fetch('/api/english-access/toggle-teacher?targetAccountId=' + targetAccountId, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({ icon: 'success', title: 'ជោគជ័យ!', text: data.message, timer: 1200, showConfirmButton: false })
+                        .then(() => window.location.reload());
+                } else {
+                    Swal.fire('កំហុស', data.message, 'error');
+                }
+            });
+        }
+
+        function toggleClassAccess(className, allowed) {
+            fetch('/api/english-access/toggle-class?className=' + encodeURIComponent(className) + '&allowed=' + allowed, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({ icon: 'success', title: 'ជោគជ័យ!', text: data.message, timer: 1200, showConfirmButton: false })
+                        .then(() => window.location.reload());
+                } else {
+                    Swal.fire('កំហុស', data.message, 'error');
+                }
+            });
+        }
+
+        function toggleStudentAccess(studentId) {
+            fetch('/api/english-access/toggle-student?studentId=' + studentId, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    Swal.fire('កំហុស', data.message, 'error');
                 }
             });
         }

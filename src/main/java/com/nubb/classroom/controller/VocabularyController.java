@@ -163,11 +163,8 @@ public class VocabularyController {
             return "redirect:/login";
         }
 
-        // Strict access control: Only Sam Kimchheng or ADMIN or account with explicit permission from Admin
-        boolean allowed = "ADMIN".equalsIgnoreCase(teacher.getRole())
-                || Long.valueOf(97L).equals(teacher.getId())
-                || "samkimchheng".equalsIgnoreCase(teacher.getUsername())
-                || Boolean.TRUE.equals(teacher.getVocabularyPermission());
+        // Strict access control: ONLY ADMIN or teacher account explicitly granted permission by Admin
+        boolean allowed = PhonicsController.isAuthorizedForPhonics(teacher);
         session.setAttribute("VOCABULARY_PERMISSION", allowed);
 
         if (!allowed) {
@@ -213,7 +210,7 @@ public class VocabularyController {
         // Student Progress Tracking under teacher supervision
         // ----------------------------------------------------
         List<Student> allStudents;
-        boolean isAdmin = "ADMIN".equalsIgnoreCase(teacher.getRole());
+        boolean isAdmin = PhonicsController.isAdminAccount(teacher);
 
         if (isAdmin) {
             allStudents = studentRepository.findAll();
@@ -224,7 +221,7 @@ public class VocabularyController {
             }
         }
 
-        // Filter students matching the selected grade (10 or 11)
+        // Filter students matching the selected grade (10, 11, or 12)
         List<Student> gradeStudents = allStudents.stream()
                 .filter(s -> belongsToGrade(s.getClassName(), selectedGrade))
                 .sorted(Comparator.comparing(Student::getClassName).thenComparing(Student::getName))
@@ -238,6 +235,29 @@ public class VocabularyController {
                 .collect(Collectors.toList());
 
         String selectedClass = (className != null && !className.trim().isEmpty()) ? className.trim() : "ALL";
+
+        // Per-class access summary for Admin control panel
+        List<Map<String, Object>> classAccessList = new ArrayList<>();
+        Map<String, List<Student>> studentsByClass = allStudents.stream()
+                .filter(s -> s.getClassName() != null && !s.getClassName().trim().isEmpty())
+                .sorted(Comparator.comparing(Student::getClassName).thenComparing(Student::getName))
+                .collect(Collectors.groupingBy(s -> s.getClassName().trim(), LinkedHashMap::new, Collectors.toList()));
+        for (Map.Entry<String, List<Student>> entry : studentsByClass.entrySet()) {
+            String clsName = entry.getKey();
+            List<Student> clsStu = entry.getValue();
+            int stuCnt = clsStu.size();
+            int enCnt = (int) clsStu.stream().filter(s -> Boolean.TRUE.equals(s.getEnglishAccessAllowed())).count();
+            Map<String, Object> cRow = new LinkedHashMap<>();
+            cRow.put("className", clsName);
+            cRow.put("studentCount", stuCnt);
+            cRow.put("enabledCount", enCnt);
+            cRow.put("allAllowed", stuCnt > 0 && enCnt == stuCnt);
+            classAccessList.add(cRow);
+        }
+
+        int totalAllowedStudentsCount = (int) allStudents.stream()
+                .filter(s -> Boolean.TRUE.equals(s.getEnglishAccessAllowed()))
+                .count();
 
         // Build Student Progress Cards scoped to selectedGrade's words
         List<Map<String, Object>> studentProgressList = new ArrayList<>();
@@ -282,6 +302,15 @@ public class VocabularyController {
         // Sort by mastered count desc
         studentProgressList.sort((a, b) -> Long.compare((Long) b.get("masteredCount"), (Long) a.get("masteredCount")));
 
+        if (isAdmin) {
+            List<Account> allTeachers = accountRepository.findAll().stream()
+                    .filter(a -> !"ADMIN".equalsIgnoreCase(a.getRole()))
+                    .sorted(Comparator.comparing(a -> a.getFullName() != null ? a.getFullName() : ""))
+                    .collect(Collectors.toList());
+            model.addAttribute("allTeachers", allTeachers);
+        }
+
+        model.addAttribute("isAdmin", isAdmin);
         model.addAttribute("teacherAccount", teacher);
         model.addAttribute("selectedGrade", selectedGrade);
         model.addAttribute("gradeKhmer", toKhmerGrade(selectedGrade));
@@ -297,6 +326,9 @@ public class VocabularyController {
         model.addAttribute("totalUnits", units.size());
         model.addAttribute("classes", gradeClasses);
         model.addAttribute("selectedClass", selectedClass);
+        model.addAttribute("classAccessList", classAccessList);
+        model.addAttribute("allClassesStudentsCount", allStudents.size());
+        model.addAttribute("totalAllowedStudentsCount", totalAllowedStudentsCount);
         model.addAttribute("studentProgressList", studentProgressList);
         model.addAttribute("totalStudentsCount", studentProgressList.size());
         model.addAttribute("activePracticingStudents", activePracticingStudents);
@@ -331,6 +363,9 @@ public class VocabularyController {
         if (student.getId() != null && student.getId() > 0) {
             student = studentRepository.findById(student.getId()).orElse(student);
             session.setAttribute("loggedInStudent", student);
+            if (session.getAttribute("ACCOUNT_ID") == null && !Boolean.TRUE.equals(student.getEnglishAccessAllowed())) {
+                return "redirect:/test/take?englishDenied=true";
+            }
         }
         session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
 
@@ -419,17 +454,23 @@ public class VocabularyController {
     // ==========================================
     // 3. REST APIS FOR TEACHER
     // ==========================================
-    private boolean isAuthorizedForVocabulary() {
+    private Account getCurrentTeacherAccount() {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) return false;
-        Account acc = accountRepository.findById(accountId).orElse(null);
-        if (acc == null) return false;
-        boolean allowed = "ADMIN".equalsIgnoreCase(acc.getRole())
-                || Long.valueOf(97L).equals(acc.getId())
-                || "samkimchheng".equalsIgnoreCase(acc.getUsername())
-                || Boolean.TRUE.equals(acc.getVocabularyPermission());
+        if (accountId == null) return null;
+        return accountRepository.findById(accountId).orElse(null);
+    }
+
+    private boolean isAuthorizedForVocabulary() {
+        Account acc = getCurrentTeacherAccount();
+        boolean allowed = PhonicsController.isAuthorizedForPhonics(acc);
         session.setAttribute("VOCABULARY_PERMISSION", allowed);
         return allowed;
+    }
+
+    private boolean canModifyWord(Account acc, VocabularyWord word) {
+        if (acc == null || word == null) return false;
+        if (PhonicsController.isAdminAccount(acc)) return true;
+        return word.getAccountId() != null && word.getAccountId().equals(acc.getId());
     }
 
     private long countMasteredForGrade(Long studentId, int gradeLevel) {
@@ -448,10 +489,11 @@ public class VocabularyController {
         if (!isAuthorizedForVocabulary()) {
             return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
         }
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
+        Account acc = getCurrentTeacherAccount();
+        if (acc == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាគ្រូបង្រៀនជាមុនសិន!"));
         }
+        boolean isAdmin = PhonicsController.isAdminAccount(acc);
 
         try {
             Long id = payload.get("id") != null && !payload.get("id").toString().isEmpty()
@@ -473,7 +515,17 @@ public class VocabularyController {
 
             VocabularyWord word;
             if (id != null) {
-                word = vocabularyWordRepository.findById(id).orElse(new VocabularyWord());
+                Optional<VocabularyWord> existingOpt = vocabularyWordRepository.findById(id);
+                if (existingOpt.isEmpty()) {
+                    return ResponseEntity.status(404).body(Map.of("success", false, "message", "រកមិនឃើញពាក្យនេះទេ!"));
+                }
+                word = existingOpt.get();
+                if (!canModifyWord(acc, word)) {
+                    return ResponseEntity.status(403).body(Map.of(
+                            "success", false,
+                            "message", "🔒 លោកគ្រូ/អ្នកគ្រូគ្មានសិទ្ធិកែប្រែទិន្នន័យមេរៀនវាក្យសព្ទស្តង់ដារដែលមានស្រាប់នោះទេ (អាចកែប្រែបានតែពាក្យដែលខ្លួនបានបន្ថែមប៉ុណ្ណោះ)!"
+                    ));
+                }
                 if (word.getGradeLevel() == null) {
                     word.setGradeLevel(targetGrade);
                 }
@@ -482,6 +534,7 @@ public class VocabularyController {
                 word.setGradeLevel(targetGrade);
                 word.setWordNumber(wordNum != null ? wordNum : (int) (vocabularyWordRepository.countByGradeLevel(targetGrade) + 1));
                 word.setActive(true);
+                word.setAccountId(isAdmin ? null : acc.getId());
             }
 
             word.setEnglishWord(english.trim());
@@ -493,7 +546,6 @@ public class VocabularyController {
             word.setKhmerTranslation(khmer.trim());
             word.setUnitName(unit != null && !unit.trim().isEmpty() ? unit.trim().toLowerCase() : "unit 1");
             word.setExampleSentence(sentence != null ? sentence.trim() : null);
-            word.setAccountId(accountId);
 
             vocabularyWordRepository.save(word);
 
@@ -513,8 +565,8 @@ public class VocabularyController {
         if (!isAuthorizedForVocabulary()) {
             return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
         }
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
+        Account acc = getCurrentTeacherAccount();
+        if (acc == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
         }
 
@@ -524,6 +576,12 @@ public class VocabularyController {
         }
 
         VocabularyWord word = opt.get();
+        if (!canModifyWord(acc, word)) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "🔒 មានតែ Admin ប៉ុណ្ណោះដែលមានសិទ្ធិបិទ/បើកពាក្យមេរៀនស្តង់ដារដែលមានស្រាប់! លោកគ្រូ/អ្នកគ្រូអាចបិទ/បើកបានតែពាក្យដែលខ្លួនបានបន្ថែមប៉ុណ្ណោះ។"
+            ));
+        }
         word.setActive(!Boolean.TRUE.equals(word.getActive()));
         vocabularyWordRepository.save(word);
 
@@ -540,12 +598,9 @@ public class VocabularyController {
             @RequestParam String unit,
             @RequestParam boolean active,
             @RequestParam(required = false, defaultValue = "10") Integer grade) {
-        if (!isAuthorizedForVocabulary()) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
-        }
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
+        Account acc = getCurrentTeacherAccount();
+        if (!PhonicsController.isAdminAccount(acc)) {
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "🔒 មានតែ Admin តែម្នាក់គត់ដែលមានសិទ្ធិបិទ/បើកពាក្យស្តង់ដារទាំងអស់ក្នុងមេរៀនរួមគ្នា!"));
         }
 
         int targetGrade = normalizeGradeLevel(grade);
@@ -572,8 +627,8 @@ public class VocabularyController {
         if (!isAuthorizedForVocabulary()) {
             return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
         }
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
+        Account acc = getCurrentTeacherAccount();
+        if (acc == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
         }
 
@@ -581,20 +636,24 @@ public class VocabularyController {
         if (opt.isEmpty()) {
             return ResponseEntity.status(404).body(Map.of("success", false, "message", "រកមិនឃើញពាក្យនេះទេ!"));
         }
+        VocabularyWord word = opt.get();
+        if (!canModifyWord(acc, word)) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "🔒 លោកគ្រូ/អ្នកគ្រូគ្មានសិទ្ធិលុបទិន្នន័យមេរៀនវាក្យសព្ទស្តង់ដារដែលមានស្រាប់នោះទេ (អាចលុបបានតែពាក្យដែលខ្លួនបានបន្ថែមប៉ុណ្ណោះ)!"
+            ));
+        }
 
-        vocabularyWordRepository.delete(opt.get());
+        vocabularyWordRepository.delete(word);
         return ResponseEntity.ok(Map.of("success", true, "message", "បានលុបពាក្យដោយជោគជ័យ!"));
     }
 
     @PostMapping("/api/vocabulary/reset-default")
     @ResponseBody
     public ResponseEntity<?> resetDefaultVocabulary(@RequestParam(required = false, defaultValue = "10") Integer grade) {
-        if (!isAuthorizedForVocabulary()) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "គ្មានសិទ្ធិប្រើប្រាស់មុខងារវាក្យសព្ទទេ!"));
-        }
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
+        Account acc = getCurrentTeacherAccount();
+        if (!PhonicsController.isAdminAccount(acc)) {
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "🔒 មានតែ Admin តែម្នាក់គត់ដែលមានសិទ្ធិកំណត់មេរៀនវាក្យសព្ទស្តង់ដារឡើងវិញ!"));
         }
 
         int targetGrade = normalizeGradeLevel(grade);
@@ -619,6 +678,13 @@ public class VocabularyController {
         Student student = (Student) session.getAttribute("loggedInStudent");
         if (student == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាសិស្សជាមុនសិន!"));
+        }
+        if (student.getId() != null && student.getId() > 0 && session.getAttribute("ACCOUNT_ID") == null) {
+            student = studentRepository.findById(student.getId()).orElse(student);
+            session.setAttribute("loggedInStudent", student);
+            if (!Boolean.TRUE.equals(student.getEnglishAccessAllowed())) {
+                return ResponseEntity.status(403).body(Map.of("success", false, "message", "គណនីសិស្ស ឬថ្នាក់រៀនរបស់ប្អូនមិនទាន់ត្រូវបានបើកសិទ្ធិដោយ Admin នៅឡើយទេ!"));
+            }
         }
 
         Long wordId = payload.get("wordId") != null ? Long.parseLong(payload.get("wordId").toString()) : null;

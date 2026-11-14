@@ -193,8 +193,8 @@
             <li class="nav-item "><a href="/statistics" class="nav-link"><span>📈</span> <span>ស្ថិតិសិស្ស</span></a></li>
             <li class="nav-item "><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
             <li class="nav-item "><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
-            <li class="nav-item" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN' or session.ACCOUNT_ID == 97 or session.ACCOUNT_USERNAME == 'samkimchheng' or (teacherAccount != null and (teacherAccount.username == 'samkimchheng' or teacherAccount.id == 97 or teacherAccount.vocabularyPermission == true))}"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>វាក្យសព្ទ (Vocab)</span></a></li>
-            <li class="nav-item" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN' or session.ACCOUNT_ID == 97 or session.ACCOUNT_USERNAME == 'samkimchheng' or (teacherAccount != null and (teacherAccount.username == 'samkimchheng' or teacherAccount.id == 97 or teacherAccount.vocabularyPermission == true or (teacherAccount.subject != null and (teacherAccount.subject.toLowerCase().contains('english') or teacherAccount.subject.contains('អង់គ្លេស')))))}"><a href="/phonics" class="nav-link"><span>🗣️</span> <span>ប្រកបអង់គ្លេស (Phonics)</span></a></li>
+            <li class="nav-item" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>វាក្យសព្ទ (Vocab)</span></a></li>
+            <li class="nav-item" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/phonics" class="nav-link"><span>🗣️</span> <span>ប្រកបអង់គ្លេស (Phonics)</span></a></li>
             <li class="nav-item "><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
             <li class="nav-item "><a href="/daily-plan" class="nav-link"><span>📋</span> <span>សេវាប្រចាំថ្ងៃ</span></a></li>
             <li class="nav-item "><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
@@ -302,8 +302,8 @@
                 </div>
             </div>
 
-            <!-- Grade 10 English Vocabulary Hub Banner (Only for Sam Kimchheng / Admin / Authorized teachers) -->
-            <div class="table-container" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN' or session.ACCOUNT_ID == 97 or session.ACCOUNT_USERNAME == 'samkimchheng' or (teacherAccount != null and (teacherAccount.username == 'samkimchheng' or teacherAccount.id == 97 or teacherAccount.vocabularyPermission == true))}" style="margin-bottom: 20px; border-left: 5px solid #7c3aed; background: linear-gradient(to right, #faf5ff, #ffffff); padding: 18px 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+            <!-- Grade 10 English Vocabulary Hub Banner (Only for Admin / Authorized teachers) -->
+            <div class="table-container" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN'}" style="margin-bottom: 20px; border-left: 5px solid #7c3aed; background: linear-gradient(to right, #faf5ff, #ffffff); padding: 18px 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                     <div style="display: flex; align-items: center; gap: 14px;">
                         <div style="width: 50px; height: 50px; border-radius: 12px; background: #f3e8ff; color: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0;">

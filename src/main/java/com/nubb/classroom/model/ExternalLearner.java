@@ -55,6 +55,7 @@ public class ExternalLearner {
         s.setClassName("អ្នករៀនក្រៅថ្នាក់");
         s.setStudentCode(this.learnerCode);
         s.setStatus("កំពុងសិក្សា");
+        s.setEnglishAccessAllowed(true);
         return s;
     }
 

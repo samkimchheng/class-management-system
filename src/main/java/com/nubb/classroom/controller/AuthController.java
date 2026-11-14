@@ -107,9 +107,7 @@ public class AuthController {
             session.setAttribute("ACCOUNT_NAME", acc.getFullName());
             session.setAttribute("ACCOUNT_USERNAME", acc.getUsername());
             boolean canAccessVocab = Boolean.TRUE.equals(acc.getVocabularyPermission())
-                    || "ADMIN".equals(acc.getRole())
-                    || Long.valueOf(97L).equals(acc.getId())
-                    || "samkimchheng".equalsIgnoreCase(acc.getUsername());
+                    || "ADMIN".equalsIgnoreCase(acc.getRole());
             session.setAttribute("VOCABULARY_PERMISSION", canAccessVocab);
             if (acc.getCurrentAcademicYear() != null && !acc.getCurrentAcademicYear().trim().isEmpty()) {
                 session.setAttribute("CURRENT_ACADEMIC_YEAR", acc.getCurrentAcademicYear().trim());

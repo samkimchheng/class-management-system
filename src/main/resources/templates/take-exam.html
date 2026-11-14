@@ -421,8 +421,8 @@
                 <div style="margin:6px 0 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <span style="color: #64748b; font-size: 0.92rem;">ថ្នាក់ - <span th:text="${student.className}" id="studentClass" style="font-weight: bold; color: var(--primary);">10A</span></span>
                     <a href="/lessons" style="color: #0284c7; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #e0f2fe; padding: 3px 10px; border-radius: 6px;">📚 មើលមេរៀន</a>
-                    <a th:if="${student != null and (student.accountId == 97 or (student.className != null and (student.className.contains('10') or student.className.contains('១០') or student.className.contains('11') or student.className.contains('១១') or student.className.contains('12') or student.className.contains('១២'))))}" href="/test/vocabulary" style="color: #7c3aed; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #ede9fe; padding: 3px 10px; border-radius: 6px;">🔤 រៀនពាក្យ (Vocab)</a>
-                    <a href="/test/phonics" style="color: #0f766e; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #ccfbf1; padding: 3px 10px; border-radius: 6px;">🗣️ រៀនប្រកបអង់គ្លេស (Phonics)</a>
+                    <a th:if="${student != null and student.englishAccessAllowed == true}" href="/test/vocabulary" style="color: #7c3aed; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #ede9fe; padding: 3px 10px; border-radius: 6px;">🔤 រៀនពាក្យ (Vocab)</a>
+                    <a th:if="${student != null and student.englishAccessAllowed == true}" href="/test/phonics" style="color: #0f766e; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #ccfbf1; padding: 3px 10px; border-radius: 6px;">🗣️ រៀនប្រកបអង់គ្លេស (Phonics)</a>
                     <a href="/test/leave" style="color: #059669; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #d1fae5; padding: 3px 10px; border-radius: 6px;">📋 សុំច្បាប់</a>
                     <a href="/certificate" style="color: #b45309; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #fef3c7; padding: 3px 10px; border-radius: 6px;">🎓 វិញ្ញាបនបត្រ</a>
                     <a href="/test/logout" style="color: #b91c1c; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #fee2e2; padding: 3px 10px; border-radius: 6px;">🚪 ចាកចេញ</a>
@@ -452,6 +452,12 @@
             </div>
         </div>
 
+        <!-- Notice if English Access Denied -->
+        <div th:if="${param.englishDenied != null}" style="background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; color: #92400e; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.4rem;">🔒</span>
+            <span>គណនីសិស្ស ឬថ្នាក់រៀនរបស់ប្អូនមិនទាន់ត្រូវបានបើកសិទ្ធិឱ្យចូលរៀន «ប្រកបអង់គ្លេស និងវាក្យសព្ទ» ដោយ Admin នៅឡើយទេ!</span>
+        </div>
+
         <!-- Blocked If Absent Today Banner -->
         <div th:if="${isAbsentToday}" style="background: #fef2f2; border: 2px solid #ef4444; border-radius: 14px; padding: 25px 20px; text-align: center; margin-bottom: 22px; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.12);">
             <div style="font-size: 3.2rem; line-height: 1; margin-bottom: 10px;">🚫</div>
@@ -462,7 +468,8 @@
             </p>
             <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
                 <a href="/lessons" style="background: #0284c7; color: white; padding: 9px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.92rem;">📚 ចូលរៀនមេរៀន</a>
-                <a th:if="${student != null and (student.accountId == 97 or (student.className != null and (student.className.contains('10') or student.className.contains('១០') or student.className.contains('11') or student.className.contains('១១') or student.className.contains('12') or student.className.contains('១២'))))}" href="/test/vocabulary" style="background: #7c3aed; color: white; padding: 9px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.92rem;">🔤 រៀនពាក្យ (Vocab)</a>
+                <a th:if="${student != null and student.englishAccessAllowed == true}" href="/test/vocabulary" style="background: #7c3aed; color: white; padding: 9px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.92rem;">🔤 រៀនពាក្យ (Vocab)</a>
+                <a th:if="${student != null and student.englishAccessAllowed == true}" href="/test/phonics" style="background: #0f766e; color: white; padding: 9px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.92rem;">🗣️ រៀនប្រកបអង់គ្លេស</a>
                 <a href="/test/leave" style="background: #059669; color: white; padding: 9px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.92rem;">📋 សុំច្បាប់សម្រាក</a>
                 <a href="/test/logout" style="background: #ef4444; color: white; padding: 9px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.92rem;">🚪 ចាកចេញ</a>
             </div>
