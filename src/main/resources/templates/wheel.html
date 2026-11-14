@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>កង់បង្វិលចាប់ឈ្មោះសិស្ស - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Kantumruy+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029h}" href="../static/css/style.css?v=20261029h">
+    <style>
+        :root {
+            --wheel-primary: #4f46e5;
+            --wheel-primary-dark: #4338ca;
+            --wheel-accent: #06b6d4;
+            --wheel-success: #10b981;
+            --wheel-danger: #ef4444;
+            --wheel-amber: #f59e0b;
+        }
+
+        .wheel-layout {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 24px;
+            margin-top: 15px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .wheel-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hero / Controls Bar */
+        .wheel-hero-card {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+            color: #ffffff;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px -5px rgba(67, 56, 202, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .wheel-hero-info h2 {
+            margin: 0;
+            font-size: 1.55rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wheel-hero-info p {
+            margin: 6px 0 0;
+            font-size: 0.95rem;
+            color: #c7d2fe;
+        }
+
+        .wheel-class-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .wheel-class-selector label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+
+        .wheel-class-selector select {
+            background: #ffffff;
+            color: #0f172a;
+            font-weight: 800;
+            font-size: 1rem;
+            font-family: inherit;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Chips Bar */
+        .wheel-stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .wheel-stat-chip {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px 14px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #334155;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .wheel-stat-chip .chip-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            height: 24px;
+            padding: 0 6px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        .chip-all .chip-num { background: #e0e7ff; color: #3730a3; }
+        .chip-present .chip-num { background: #dcfce7; color: #065f46; }
+        .chip-absent .chip-num { background: #fee2e2; color: #991b1b; }
+        .chip-answered .chip-num { background: #fef3c7; color: #92400e; }
+
+        /* Wheel Card */
+        .wheel-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .wheel-stage-container {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            aspect-ratio: 1;
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 50%;
+            filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.22));
+            transition: transform 0.05s ease-out;
+        }
+
+        /* Needle Pointer (Fixed at top pointing down) */
+        .wheel-pointer {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 38px;
+            height: 48px;
+            z-index: 10;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+            transition: transform 0.08s ease;
+        }
+
+        .wheel-pointer svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Center Spin Button Overlay */
+        .wheel-center-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e2e8f0 100%);
+            border: 5px solid #4f46e5;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+            user-select: none;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .wheel-center-btn:hover {
+            transform: translate(-50%, -50%) scale(1.08);
+            border-color: #4338ca;
+            box-shadow: 0 12px 30px rgba(79, 70, 229, 0.45);
+        }
+
+        .wheel-center-btn:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        .wheel-center-btn .spin-icon {
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+
+        .wheel-center-btn .spin-text {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #1e1b4b;
+            margin-top: 2px;
+            letter-spacing: 0.3px;
+        }
+
+        .wheel-center-btn.spinning {
+            pointer-events: none;
+            animation: pulseBtn 1s infinite alternate;
+            opacity: 0.9;
+        }
+
+        @keyframes pulseBtn {
+            0% { transform: translate(-50%, -50%) scale(0.98); }
+            100% { transform: translate(-50%, -50%) scale(1.04); }
+        }
+
+        /* Wheel Control Bar */
+        .wheel-controls-panel {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .wheel-action-btns {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .btn-spin-large {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 32px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-spin-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 26px rgba(79, 70, 229, 0.45);
+        }
+
+        .btn-spin-large:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-reset-wheel {
+            background: #f8fafc;
+            color: #475569;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 14px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-reset-wheel:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            color: #0f172a;
+        }
+
+        /* Options Checkboxes Box */
+        .wheel-options-box {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            font-size: 0.92rem;
+            color: #334155;
+            font-weight: 700;
+        }
+
+        .wheel-options-box label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .wheel-options-box input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4f46e5;
+            cursor: pointer;
+        }
+
+        /* Tabs Card */
+        .participation-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .participation-tabs-header {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 16px;
+            font-family: inherit;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: #0f172a;
+        }
+
+        .tab-btn.active {
+            color: #4f46e5;
+            border-bottom-color: #4f46e5;
+        }
+
+        .tab-badge {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+
+        .tab-btn.active .tab-badge {
+            background: #4f46e5;
+            color: #ffffff;
+        }
+
+        .tab-content-pane {
+            display: none;
+        }
+
+        .tab-content-pane.active {
+            display: block;
+        }
+
+        /* Student Roster Table in Panel */
+        .roster-search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .roster-search-input {
+            flex: 1;
+            padding: 8px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .roster-search-input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        .roster-table-scroll {
+            max-height: 480px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .roster-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        .roster-table th {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            color: #0f172a;
+            font-weight: 800;
+            padding: 10px 8px;
+            border-bottom: 2px solid #cbd5e1;
+            z-index: 2;
+        }
+
+        .roster-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .roster-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .roster-table tr.is-absent {
+            background: #fff8f8;
+            opacity: 0.75;
+        }
+
+        .roster-table tr.is-excluded {
+            background: #f1f5f9;
+            opacity: 0.55;
+            text-decoration: line-through;
+        }
+
+        .count-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            border: 1.5px solid;
+        }
+
+        .count-zero {
+            background: #f1f5f9;
+            color: #64748b;
+            border-color: #cbd5e1;
+        }
+
+        .count-low {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #93c5fd;
+        }
+
+        .count-med {
+            background: #dcfce7;
+            color: #065f46;
+            border-color: #86efac;
+        }
+
+        .count-high {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fde68a;
+        }
+
+        .btn-quick-add {
+            background: #eef2ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-quick-add:hover {
+            background: #4f46e5;
+            color: #ffffff;
+        }
+
+        /* Winner Celebration Modal */
+        .winner-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .winner-modal-overlay.active {
+            display: flex;
+        }
+
+        .winner-modal-card {
+            background: #ffffff;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5);
+            border: 3px solid #cbd5e1;
+            padding: 32px 24px 28px;
+            text-align: center;
+            position: relative;
+            animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.6) translateY(40px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .winner-crown-icon {
+            font-size: 3.5rem;
+            line-height: 1;
+            animation: bounceCrown 0.8s infinite alternate ease-in-out;
+            margin-bottom: 4px;
+        }
+
+        @keyframes bounceCrown {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+
+        .winner-banner-tag {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.95rem;
+            padding: 5px 18px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+
+        .winner-student-name {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 6px 0;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        .winner-student-meta {
+            font-size: 1rem;
+            color: #475569;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .winner-stats-badge {
+            background: #eff6ff;
+            border: 1.5px solid #bfdbfe;
+            color: #1e40af;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            display: inline-block;
+            margin-bottom: 22px;
+        }
+
+        .winner-actions-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .winner-result-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .btn-result-choice {
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-result-choice:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+        }
+
+        .choice-excellent {
+            background: #fef3c7;
+            color: #78350f;
+            border-color: #f59e0b;
+        }
+
+        .choice-correct {
+            background: #dcfce7;
+            color: #065f46;
+            border-color: #10b981;
+        }
+
+        .choice-attempted {
+            background: #e0e7ff;
+            color: #3730a3;
+            border-color: #6366f1;
+        }
+
+        .choice-incorrect {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #ef4444;
+        }
+
+        .winner-footer-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-modal-skip {
+            flex: 1;
+            padding: 10px 16px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-modal-skip:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .winner-modal-close-x {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: #f1f5f9;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .winner-modal-close-x:hover {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* Confetti Canvas */
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        /* Log Table */
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .log-table th {
+            background: #f8fafc;
+            color: #0f172a;
+            font-weight: 800;
+            padding: 8px 10px;
+            border-bottom: 2px solid #cbd5e1;
+            text-align: left;
+        }
+
+        .log-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .badge-res {
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .badge-res-exc { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .badge-res-cor { background: #dcfce7; color: #065f46; border: 1px solid #86efac; }
+        .badge-res-att { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        .badge-res-inc { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        .btn-del-log {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn-del-log:hover {
+            background: #fee2e2;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div style="margin-top: 10px; font-size: 0.92rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b id="sidebarTeacherName" th:text="${teacherAccount != null ? teacherAccount.fullName : session.ACCOUNT_NAME}">គ្រូ</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item "><a href="/" class="nav-link"><span>🏠</span> <span>ទំព័រដើម</span></a></li>
+            <li class="nav-item "><a href="/profile" class="nav-link"><span>👤</span> <span>បំពេញព័ត៌មានផ្ទាល់ខ្លួន</span></a></li>
+            <li class="nav-item "><a href="/certificate" class="nav-link"><span>📜</span> <span>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span></a></li>
+            <li class="nav-item "><a href="/classrooms" class="nav-link"><span>🏫</span> <span>បញ្ជីថ្នាក់រៀនខ្ញុំ</span></a></li>
+            <li class="nav-item "><a href="/students" class="nav-link"><span>👥</span> <span>បញ្ជីឈ្មោះសិស្ស</span></a></li>
+            <li class="nav-item "><a href="/attendance" class="nav-link"><span>📅</span> <span>បញ្ជីអវត្តមាន</span></a></li>
+            <li class="nav-item active"><a href="/wheel" class="nav-link"><span>🎡</span> <span>កង់បង្វិលសិស្ស</span></a></li>
+            <li class="nav-item "><a href="/scores" class="nav-link"><span>📊</span> <span>បញ្ជីពិន្ទុ</span></a></li>
+            <li class="nav-item "><a href="/statistics" class="nav-link"><span>📈</span> <span>ស្ថិតិសិស្ស</span></a></li>
+            <li class="nav-item "><a href="/exams" class="nav-link"><span>📝</span> <span>វិញ្ញាសាប្រឡង</span></a></li>
+            <li class="nav-item "><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
+            <li class="nav-item" th:if="${session.VOCABULARY_PERMISSION == true or session.ACCOUNT_ROLE == 'ADMIN' or session.ACCOUNT_ID == 97 or session.ACCOUNT_USERNAME == 'samkimchheng' or (teacherAccount != null and (teacherAccount.username == 'samkimchheng' or teacherAccount.id == 97 or teacherAccount.vocabularyPermission == true))}"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>វាក្យសព្ទ (Vocab)</span></a></li>
+            <li class="nav-item "><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
+            <li class="nav-item "><a href="/daily-plan" class="nav-link"><span>📋</span> <span>សេវាប្រចាំថ្ងៃ</span></a></li>
+            <li class="nav-item "><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
+            <li class="nav-item "><a href="/feedback" class="nav-link"><span>💬</span> <span>មតិកែលម្អប្រព័ន្ធ</span></a></li>
+            <li class="nav-item"><a href="https://t.me/Kimchheng12" target="_blank" class="nav-link" style="color: #38bdf8;"><span>✈️</span> <span>ទាក់ទងខ្ញុំ (Telegram)</span></a></li>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}"><a href="/login" class="nav-link" style="color: var(--warning);"><span>🔒</span> <span>ផ្ទាំង Admin</span></a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: var(--danger);"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <h3>កង់បង្វិលចាប់ឈ្មោះសិស្សឆ្លើយសំណួរ</h3>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div class="academic-year-badge" style="display: inline-flex; align-items: center; gap: 8px; background: #eef2ff; color: #3730a3; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; border: 1px solid #c7d2fe;">
+                    <span>📅<span class="year-label-text"> ឆ្នាំសិក្សា៖</span></span>
+                    <select id="academicYearSelect" onchange="switchAcademicYear(this.value)" style="border: none; background: transparent; font-weight: bold; color: #1e1b4b; cursor: pointer; outline: none; font-size: 0.95rem; font-family: inherit;">
+                        <option th:each="yr : ${availableAcademicYears}" th:value="${yr}" th:text="${yr}" th:selected="${yr == currentAcademicYear}"></option>
+                        <option value="__NEW__">➕ បន្ថែមឆ្នាំសិក្សាថ្មី...</option>
+                    </select>
+                </div>
+                <a href="/logout" class="btn-logout-header" title="ចាកចេញពីប្រព័ន្ធ" style="background: #fee2e2; color: #b91c1c; text-decoration: none; font-weight: 700; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; border: 1px solid #fecaca; transition: all 0.2s; white-space: nowrap;"><span>🚪</span> <span>ចាកចេញ</span></a>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Hero Bar -->
+            <div class="wheel-hero-card">
+                <div class="wheel-hero-info">
+                    <h2><span>🎡</span> <span>កង់បង្វិលជ្រើសរើសសិស្ស (Lucky Wheel)</span></h2>
+                    <p>បង្វិលចាប់ឈ្មោះសិស្សឡើងឆ្លើយសំណួរដោយស្វ័យប្រវត្ត • មិនបង្វិលចំសិស្សអវត្តមាន • កត់ត្រាចំនួនដងឆ្លើយ</p>
+                </div>
+                <div class="wheel-class-selector">
+                    <label for="classSelect">🏫 ជ្រើសរើសថ្នាក់រៀន៖</label>
+                    <select id="classSelect" onchange="changeClass(this.value)">
+                        <option th:each="c : ${myClassrooms}" 
+                                th:value="${c.className}" 
+                                th:text="${c.className}" 
+                                th:selected="${selectedClass == c.className}">11A</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Stats Chips -->
+            <div class="wheel-stats-bar">
+                <div class="wheel-stat-chip chip-all">
+                    <span>👥 សិស្សសរុបក្នុងថ្នាក់៖</span>
+                    <span class="chip-num" th:text="${activeStudents != null ? activeStudents.size() : 0}">0</span>
+                </div>
+                <div class="wheel-stat-chip chip-present" title="សិស្សដែលមានវត្តមានជាក់ស្តែង និងអាចបង្វិលបាន">
+                    <span>🟢 មានវត្តមានថ្ងៃនេះ៖</span>
+                    <span class="chip-num" id="presentCountDisplay" th:text="${eligibleStudentsToday != null ? eligibleStudentsToday.size() : 0}">0</span>
+                </div>
+                <div class="wheel-stat-chip chip-absent" title="សិស្សដែលអវត្តមានថ្ងៃនេះ (បានដកចេញពីកង់ដោយស្វ័យប្រវត្តិ)">
+                    <span>🔴 អវត្តមានថ្ងៃនេះ (ដកចេញពីកង់)៖</span>
+                    <span class="chip-num" th:text="${absentStudentIds != null ? absentStudentIds.size() : 0}">0</span>
+                </div>
+                <div class="wheel-stat-chip chip-answered" title="សរុបចំនួនដងដែលសិស្សក្នុងថ្នាក់នេះបានឆ្លើយសំណួរ">
+                    <span>✋ សរុបដងឆ្លើយក្នុងថ្នាក់៖</span>
+                    <span class="chip-num" id="totalAnswersDisplay" th:text="${recentLogs != null ? recentLogs.size() : 0}">0</span>
+                </div>
+            </div>
+
+            <!-- Wheel & Participation Grid Layout -->
+            <div class="wheel-layout">
+                <!-- Left: The Lucky Wheel Card -->
+                <div class="wheel-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px;">
+                        <span style="font-weight: 800; color: #0f172a; font-size: 1.1rem; display: flex; align-items: center; gap: 6px;">
+                            <span>🎯</span> <span id="wheelRosterTitle" th:text="'កង់បង្វិលថ្នាក់ ' + ${selectedClass}">កង់បង្វិល</span>
+                        </span>
+                        <span id="activeWheelCount" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; font-weight: 800; font-size: 0.85rem; padding: 4px 12px; border-radius: 20px;">
+                            ០ នាក់ក្នុងកង់
+                        </span>
+                    </div>
+
+                    <!-- Stage Container -->
+                    <div class="wheel-stage-container">
+                        <!-- Top Pointer Needle -->
+                        <div class="wheel-pointer" id="wheelPointer">
+                            <svg viewBox="0 0 38 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 48L37.1865 12C38 10 36 0 19 0C2 0 0 10 0.813467 12L19 48Z" fill="#ef4444"/>
+                                <circle cx="19" cy="14" r="7" fill="#ffffff"/>
+                                <circle cx="19" cy="14" r="4" fill="#991b1b"/>
+                            </svg>
+                        </div>
+
+                        <!-- Canvas Wheel -->
+                        <canvas id="wheelCanvas" width="800" height="800"></canvas>
+
+                        <!-- Center Spin Button -->
+                        <div class="wheel-center-btn" id="centerSpinBtn" title="ចុចដើម្បីបង្វិលកង់ (ឬចុច Spacebar)">
+                            <span class="spin-icon">🎲</span>
+                            <span class="spin-text">SPIN</span>
+                        </div>
+                    </div>
+
+                    <!-- Controls and Options -->
+                    <div class="wheel-controls-panel">
+                        <div class="wheel-action-btns">
+                            <button type="button" class="btn-spin-large" id="mainSpinBtn" onclick="spinWheel()">
+                                <span>🎯</span> <span>បង្វិលកង់ (SPIN)</span>
+                            </button>
+                            <button type="button" class="btn-reset-wheel" onclick="resetWheelRoster()" title="ដាក់សិស្សទាំងអស់ចូលកង់បង្វិលឡើងវិញ">
+                                <span>🔄</span> <span>កំណត់កង់ឡើងវិញ</span>
+                            </button>
+                        </div>
+
+                        <div class="wheel-options-box">
+                            <label title="មិនបង្វិលចំសិស្សដែលបានកត់ត្រាអវត្តមាន (ច្បាប់/គ្មានច្បាប់) នៅថ្ងៃនេះឡើយ">
+                                <input type="checkbox" id="chkExcludeAbsent" checked onchange="toggleExcludeAbsent()">
+                                <span>🚫 លាក់សិស្សអវត្តមានថ្ងៃនេះ</span>
+                            </label>
+                            <label title="ដកឈ្មោះសិស្សដែលទើបឆ្លើយរួចចេញពីកង់ជាបណ្តោះអាសន្ន ដើម្បីកុំឱ្យបង្វិលចំដដែលៗ">
+                                <input type="checkbox" id="chkRemoveAfterSpin" checked>
+                                <span>✂️ ដកឈ្មោះសិស្សដែលទើបឆ្លើយរួច</span>
+                            </label>
+                            <label title="បើក/បិទសំឡេងកង់វិល និងសំឡេងអបអរ">
+                                <input type="checkbox" id="chkSound" checked>
+                                <span>🔊 បើកសំឡេង</span>
+                            </label>
+                        </div>
+                        <div style="font-size: 0.82rem; color: #64748b; text-align: center;">
+                            💡 គន្លឹះ៖ លោកគ្រូ-អ្នកគ្រូអាចចុច <b>Spacebar</b> លើក្តារចុចកុំព្យូទ័រ ដើម្បីបង្វិលកង់បានលឿន!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Student Participation & History Panel -->
+                <div class="participation-card">
+                    <!-- Tabs Header -->
+                    <div class="participation-tabs-header">
+                        <button type="button" class="tab-btn active" data-tab="rosterTab" onclick="switchTab('rosterTab')">
+                            <span>👥 បញ្ជីសិស្ស & ចំនួនដងឆ្លើយ</span>
+                            <span class="tab-badge" id="rosterBadgeCount" th:text="${activeStudents != null ? activeStudents.size() : 0}">0</span>
+                        </button>
+                        <button type="button" class="tab-btn" data-tab="historyTab" onclick="switchTab('historyTab')">
+                            <span>📜 ប្រវត្តិឆ្លើយសំណួរ</span>
+                            <span class="tab-badge" id="historyBadgeCount" th:text="${recentLogs != null ? recentLogs.size() : 0}">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Tab 1: Student Roster & Participation Counts -->
+                    <div id="rosterTab" class="tab-content-pane active">
+                        <div class="roster-search-box">
+                            <input type="text" class="roster-search-input" id="rosterSearch" placeholder="🔍 ស្វែងរកឈ្មោះសិស្ស..." oninput="filterRosterList()">
+                            <button type="button" class="btn btn-secondary" onclick="sortRosterByCount()" style="padding: 7px 12px; font-size: 0.85rem; font-weight: 700; white-space: nowrap;" title="តម្រៀបសិស្សតាមចំនួនដងឆ្លើយ">
+                                📊 តម្រៀបតាមដងឆ្លើយ
+                            </button>
+                        </div>
+
+                        <div class="roster-table-scroll">
+                            <table class="roster-table" id="rosterTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 36px; text-align: center;">កង់</th>
+                                        <th style="width: 40px; text-align: center;">ល.រ</th>
+                                        <th>ឈ្មោះសិស្ស</th>
+                                        <th style="width: 50px; text-align: center;">ភេទ</th>
+                                        <th style="width: 90px; text-align: center;">វត្តមានថ្ងៃនេះ</th>
+                                        <th style="width: 80px; text-align: center;" title="ចំនួនដងដែលសិស្សនេះបានឆ្លើយសំណួរ">ដងឆ្លើយ</th>
+                                        <th style="width: 65px; text-align: center;">+១</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rosterTableBody">
+                                    <!-- Dynamic rows loaded via Javascript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Recent History Log -->
+                    <div id="historyTab" class="tab-content-pane">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-weight: 700; font-size: 0.88rem; color: #64748b;">កំណត់ត្រាឆ្លើយសំណួរថ្មីៗ៖</span>
+                            <button type="button" onclick="confirmResetParticipation()" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+                                🗑️ កំណត់ស្ថិតិឡើងវិញ
+                            </button>
+                        </div>
+                        <div class="roster-table-scroll" style="max-height: 480px;">
+                            <table class="log-table" id="logTable">
+                                <thead>
+                                    <tr>
+                                        <th>ពេល</th>
+                                        <th>ឈ្មោះសិស្ស</th>
+                                        <th>លទ្ធផលឆ្លើយ</th>
+                                        <th style="text-align: center;">ពិន្ទុ</th>
+                                        <th style="width: 35px; text-align: center;">លុប</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logTableBody">
+                                    <tr th:each="log : ${recentLogs}" th:id="'logRow_' + ${log.id}">
+                                        <td style="color: #64748b; font-size: 0.82rem; white-space: nowrap;" th:text="${#temporals.format(log.createdAt, 'dd-MM hh:mm a')}">14-11 02:30 PM</td>
+                                        <td style="font-weight: 700; color: #0f172a;" th:text="${log.student != null ? log.student.name : 'សិស្ស'}">ឈ្មោះសិស្ស</td>
+                                        <td>
+                                            <span th:class="'badge-res ' + (${log.result == 'EXCELLENT' ? 'badge-res-exc' : (log.result == 'CORRECT' ? 'badge-res-cor' : (log.result == 'INCORRECT' ? 'badge-res-inc' : 'badge-res-att'))})"
+                                                  th:text="${log.resultKhmer}">ឆ្លើយត្រូវ</span>
+                                        </td>
+                                        <td style="text-align: center; font-weight: 800; color: #059669;" th:text="${log.points > 0 ? '+' + (log.points == log.points.intValue() ? log.points.intValue() : log.points) : '-'}">+1</td>
+                                        <td style="text-align: center;">
+                                            <button type="button" class="btn-del-log" th:onclick="'deleteLog(' + ${log.id} + ')'" title="លុបកំណត់ត្រានេះ">🗑️</button>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(recentLogs)}" id="emptyLogMsg">
+                                        <td colspan="5" style="text-align: center; color: #94a3b8; padding: 25px;">មិនទាន់មានកំណត់ត្រាឆ្លើយសំណួរក្នុងថ្នាក់នេះទេ</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Winner Celebration Modal -->
+    <div class="winner-modal-overlay" id="winnerModal">
+        <div class="winner-modal-card">
+            <button type="button" class="winner-modal-close-x" onclick="closeWinnerModal()" title="បិទផ្ទាំង">✕</button>
+            <div class="winner-crown-icon">👑</div>
+            <div class="winner-banner-tag">🎯 សិស្សត្រូវបានជ្រើសរើស!</div>
+            <div class="winner-student-name" id="winnerName">សុខា សុផល</div>
+            <div class="winner-student-meta" id="winnerMeta">ភេទ៖ ស្រី • ថ្នាក់ទី៖ 11A</div>
+            
+            <div class="winner-stats-badge" id="winnerStatsBadge">
+                📊 សិស្សនេះបានឆ្លើយចំនួន៖ <b>០ ដង</b> រួចមកហើយ
+            </div>
+
+            <div class="winner-actions-title">📝 កត់ត្រាលទ្ធផលនៃការឆ្លើយសំណួររបស់សិស្ស៖</div>
+            <div class="winner-result-buttons">
+                <button type="button" class="btn-result-choice choice-excellent" onclick="recordWinnerAnswer('EXCELLENT', 2)">
+                    <span>🌟</span> <span>ឆ្លើយបានល្អណាស់ (+២)</span>
+                </button>
+                <button type="button" class="btn-result-choice choice-correct" onclick="recordWinnerAnswer('CORRECT', 1)">
+                    <span>✅</span> <span>ឆ្លើយត្រូវ (+១)</span>
+                </button>
+                <button type="button" class="btn-result-choice choice-attempted" onclick="recordWinnerAnswer('ATTEMPTED', 0.5)">
+                    <span>👍</span> <span>បានចូលរួមឆ្លើយ (+០.៥)</span>
+                </button>
+                <button type="button" class="btn-result-choice choice-incorrect" onclick="recordWinnerAnswer('INCORRECT', 0)">
+                    <span>❌</span> <span>ឆ្លើយមិនទាន់ត្រូវ (០)</span>
+                </button>
+            </div>
+
+            <div class="winner-footer-btns">
+                <button type="button" class="btn-modal-skip" onclick="closeWinnerModal()">
+                    <span>⏩</span> <span>រំលង (មិនកត់ត្រាទិន្នន័យ)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas Confetti -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Raw Data Embed for Javascript -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const RAW_STUDENTS = /*[[${activeStudents}]]*/ [];
+        const ABSENT_STUDENT_IDS = new Set(/*[[${absentStudentIds}]]*/ []);
+        const INITIAL_COUNTS = /*[[${participationCounts}]]*/ {};
+        const SELECTED_CLASS = /*[[${selectedClass}]]*/ '11A';
+        /*]]>*/
+    </script>
+
+    <!-- Lucky Wheel Logic & Audio Synthesizer -->
+    <script>
+        // -------------------------------------------------------------
+        // 1. Data Store & Initialization
+        // -------------------------------------------------------------
+        let allStudents = [];
+        let participationCounts = { ...INITIAL_COUNTS };
+        let wheelRoster = []; // Current students on the wheel
+        let activeExcludedIds = new Set(); // Manually unchecked or removed after spin
+        let currentWinnerStudent = null;
+
+        // Initialize students model
+        if (Array.isArray(RAW_STUDENTS)) {
+            allStudents = RAW_STUDENTS.map(s => ({
+                id: s.id,
+                name: s.name,
+                gender: s.gender || '?',
+                className: s.className || SELECTED_CLASS,
+                studentCode: s.studentCode || '',
+                isAbsentToday: ABSENT_STUDENT_IDS.has(s.id)
+            }));
+        }
+
+        // Web Audio Synthesizer for rich sounds without any audio file dependencies
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTickSound() {
+            if (!document.getElementById('chkSound').checked) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(680, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.045);
+            } catch (e) {}
+        }
+
+        function playVictorySound() {
+            if (!document.getElementById('chkSound').checked) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, i) => {
+                    setTimeout(() => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 0.38);
+                    }, i * 90);
+                });
+            } catch (e) {}
+        }
+
+        // -------------------------------------------------------------
+        // 2. Wheel Canvas Rendering & Physics
+        // -------------------------------------------------------------
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        let currentAngle = 0; // In radians
+        let isSpinning = false;
+        let spinAnimId = null;
+
+        // Vibrant high-contrast slice color palette
+        const SLICE_COLORS = [
+            '#4f46e5', '#059669', '#d97706', '#dc2626', 
+            '#0891b2', '#7c3aed', '#ea580c', '#2563eb',
+            '#16a34a', '#db2777', '#0284c7', '#9333ea',
+            '#ca8a04', '#e11d48', '#0d9488', '#4338ca'
+        ];
+
+        function rebuildWheelRoster() {
+            const excludeAbsent = document.getElementById('chkExcludeAbsent').checked;
+            wheelRoster = allStudents.filter(s => {
+                if (excludeAbsent && s.isAbsentToday) return false;
+                if (activeExcludedIds.has(s.id)) return false;
+                return true;
+            });
+
+            document.getElementById('activeWheelCount').textContent = wheelRoster.length + ' នាក់ក្នុងកង់';
+            drawWheel();
+        }
+
+        function drawWheel() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = width / 2 - 20;
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (wheelRoster.length === 0) {
+                // Empty wheel state
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#f1f5f9';
+                ctx.fill();
+                ctx.lineWidth = 8;
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.stroke();
+
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 36px "Kantumruy Pro", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('មិនមានសិស្សក្នុងកង់ឡើយ', centerX, centerY - 20);
+                ctx.font = '24px "Kantumruy Pro", sans-serif';
+                ctx.fillText('សូមចុច «កំណត់កង់ឡើងវិញ»', centerX, centerY + 30);
+                ctx.restore();
+                return;
+            }
+
+            const numSlices = wheelRoster.length;
+            const arc = (2 * Math.PI) / numSlices;
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(currentAngle);
+
+            for (let i = 0; i < numSlices; i++) {
+                const angle = i * arc;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, radius, angle, angle + arc);
+                ctx.closePath();
+
+                // Fill Slice Color
+                ctx.fillStyle = SLICE_COLORS[i % SLICE_COLORS.length];
+                ctx.fill();
+
+                // Slice Separator Line
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                // Draw Text
+                ctx.save();
+                ctx.rotate(angle + arc / 2);
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff';
+
+                // Scale font size based on number of students
+                let fontSize = 28;
+                if (numSlices > 30) fontSize = 20;
+                else if (numSlices > 20) fontSize = 23;
+                else if (numSlices > 10) fontSize = 26;
+
+                ctx.font = `bold ${fontSize}px "Kantumruy Pro", "Battambang", sans-serif`;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+
+                // Truncate long names cleanly if needed
+                let name = wheelRoster[i].name;
+                if (name.length > 18) name = name.substring(0, 16) + '...';
+
+                ctx.fillText(name, radius - 35, 0);
+                ctx.restore();
+            }
+
+            // Outer decorative ring
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+            ctx.lineWidth = 14;
+            ctx.strokeStyle = '#312e81';
+            ctx.stroke();
+
+            // Decorative Golden Dots on Rim
+            const numDots = Math.max(numSlices * 2, 24);
+            for (let d = 0; d < numDots; d++) {
+                const dotAngle = (d * 2 * Math.PI) / numDots;
+                const dotX = Math.cos(dotAngle) * (radius - 1);
+                const dotY = Math.sin(dotAngle) * (radius - 1);
+                ctx.beginPath();
+                ctx.arc(dotX, dotY, 4.5, 0, 2 * Math.PI);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        // Spin Physics Animation
+        function spinWheel() {
+            if (isSpinning) return;
+            if (wheelRoster.length === 0) {
+                alert('មិនមានសិស្សក្នុងកង់ឡើយ! សូមចុច «កំណត់កង់ឡើងវិញ» ឬជ្រើសរើសសិស្សចូលកង់។');
+                return;
+            }
+
+            if (wheelRoster.length === 1) {
+                selectWinner(wheelRoster[0]);
+                return;
+            }
+
+            isSpinning = true;
+            document.getElementById('mainSpinBtn').disabled = true;
+            document.getElementById('centerSpinBtn').classList.add('spinning');
+
+            // Sound unlock on user gesture
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            // Physics calculation:
+            // Pointer needle is at top (3 * PI / 2 or -PI / 2)
+            const numSlices = wheelRoster.length;
+            const arc = (2 * Math.PI) / numSlices;
+
+            // Pick a completely random winner index
+            const targetIndex = Math.floor(Math.random() * numSlices);
+            
+            // In canvas rotation:
+            // Top needle is at 1.5 * PI (270 deg)
+            // A slice i spans from angle i*arc to (i+1)*arc
+            // So slice center is at (i + 0.5)*arc
+            // To align slice center with top needle (1.5 * PI), currentAngle mod 2PI must equal:
+            // 1.5 * PI - (targetIndex + 0.5) * arc
+            const targetSliceAngle = (targetIndex + 0.5) * arc;
+            const targetModAngle = (1.5 * Math.PI - targetSliceAngle + 4 * Math.PI) % (2 * Math.PI);
+
+            // Add 6 to 10 full rotations for suspense
+            const fullRotations = 7 + Math.floor(Math.random() * 4);
+            const startAngle = currentAngle % (2 * Math.PI);
+            
+            // Total change in angle
+            let deltaAngle = (fullRotations * 2 * Math.PI) + (targetModAngle - (startAngle % (2 * Math.PI)));
+            if (deltaAngle < fullRotations * 2 * Math.PI) {
+                deltaAngle += 2 * Math.PI;
+            }
+
+            const startTime = performance.now();
+            const duration = 5200; // 5.2 seconds smooth spin
+            let lastTickSlice = -1;
+
+            function animateSpin(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Cubic bezier decelerating easing curve
+                // t = progress, easeOutCubic: 1 - Math.pow(1 - t, 3)
+                // easeOutQuart: 1 - Math.pow(1 - t, 4) for extra realistic slow-down
+                const easeOut = 1 - Math.pow(1 - progress, 4);
+
+                currentAngle = startAngle + deltaAngle * easeOut;
+                drawWheel();
+
+                // Needle tick detection
+                const effectiveAngle = (1.5 * Math.PI - (currentAngle % (2 * Math.PI)) + 4 * Math.PI) % (2 * Math.PI);
+                const currentSlice = Math.floor(effectiveAngle / arc) % numSlices;
+                if (currentSlice !== lastTickSlice) {
+                    playTickSound();
+                    lastTickSlice = currentSlice;
+                    // Jiggle pointer
+                    const pointer = document.getElementById('wheelPointer');
+                    pointer.style.transform = 'translateX(-50%) rotate(-12deg)';
+                    setTimeout(() => { pointer.style.transform = 'translateX(-50%) rotate(0deg)'; }, 40);
+                }
+
+                if (progress < 1) {
+                    spinAnimId = requestAnimationFrame(animateSpin);
+                } else {
+                    isSpinning = false;
+                    document.getElementById('mainSpinBtn').disabled = false;
+                    document.getElementById('centerSpinBtn').classList.remove('spinning');
+
+                    const winner = wheelRoster[targetIndex];
+                    selectWinner(winner);
+                }
+            }
+
+            spinAnimId = requestAnimationFrame(animateSpin);
+        }
+
+        // -------------------------------------------------------------
+        // 3. Winner Selection & Celebration
+        // -------------------------------------------------------------
+        function selectWinner(student) {
+            currentWinnerStudent = student;
+            playVictorySound();
+            launchConfetti();
+
+            const modal = document.getElementById('winnerModal');
+            document.getElementById('winnerName').textContent = student.name;
+            document.getElementById('winnerMeta').textContent = `ភេទ៖ ${student.gender} • ថ្នាក់ទី៖ ${student.className}`;
+            
+            const currentCount = participationCounts[student.id] || 0;
+            document.getElementById('winnerStatsBadge').innerHTML = `📊 សិស្សនេះបានឆ្លើយចំនួន៖ <b>${currentCount} ដង</b> រួចមកហើយ`;
+
+            modal.classList.add('active');
+
+            // If check Remove After Spin is active, temporarily remove from wheel roster
+            if (document.getElementById('chkRemoveAfterSpin').checked) {
+                activeExcludedIds.add(student.id);
+                rebuildWheelRoster();
+                updateRosterTableUI();
+            }
+        }
+
+        function closeWinnerModal() {
+            document.getElementById('winnerModal').classList.remove('active');
+        }
+
+        // Record Answer Ajax Call
+        function recordWinnerAnswer(result, points) {
+            if (!currentWinnerStudent) return;
+            const studentId = currentWinnerStudent.id;
+            const className = SELECTED_CLASS;
+
+            const formData = new URLSearchParams();
+            formData.append('studentId', studentId);
+            formData.append('className', className);
+            formData.append('result', result);
+            formData.append('points', points);
+
+            fetch('/api/wheel/record-participation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Update count
+                    participationCounts[studentId] = data.newCount;
+                    updateRosterTableUI();
+
+                    // Prepend to history table
+                    appendLogToTable({
+                        id: data.id,
+                        studentName: data.studentName,
+                        result: data.result,
+                        resultKhmer: data.resultKhmer,
+                        points: data.points,
+                        time: data.time || 'ទើបតែឆ្លើយ'
+                    });
+
+                    // Update total answered count chip
+                    const currentTotal = parseInt(document.getElementById('totalAnswersDisplay').textContent) || 0;
+                    document.getElementById('totalAnswersDisplay').textContent = currentTotal + 1;
+                    document.getElementById('historyBadgeCount').textContent = currentTotal + 1;
+
+                    closeWinnerModal();
+                } else {
+                    alert('កំហុស៖ ' + (data.message || 'មិនអាចកត់ត្រាបាន!'));
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('កំហុសបណ្តាញ សូមព្យាយាមម្តងទៀត!');
+            });
+        }
+
+        // Direct Quick Add Button from Roster Table
+        function quickAddAnswer(studentId, studentName) {
+            const formData = new URLSearchParams();
+            formData.append('studentId', studentId);
+            formData.append('className', SELECTED_CLASS);
+            formData.append('result', 'CORRECT');
+            formData.append('points', 1);
+
+            fetch('/api/wheel/record-participation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    participationCounts[studentId] = data.newCount;
+                    updateRosterTableUI();
+
+                    appendLogToTable({
+                        id: data.id,
+                        studentName: data.studentName,
+                        result: data.result,
+                        resultKhmer: data.resultKhmer,
+                        points: data.points,
+                        time: 'ទើបតែឆ្លើយ'
+                    });
+
+                    const currentTotal = parseInt(document.getElementById('totalAnswersDisplay').textContent) || 0;
+                    document.getElementById('totalAnswersDisplay').textContent = currentTotal + 1;
+                    document.getElementById('historyBadgeCount').textContent = currentTotal + 1;
+                }
+            });
+        }
+
+        function deleteLog(logId) {
+            if (!confirm('តើលោកគ្រូ-អ្នកគ្រូចង់លុបកំណត់ត្រាឆ្លើយសំណួរនេះមែនទេ?')) return;
+            fetch('/api/wheel/delete-participation/' + logId, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const row = document.getElementById('logRow_' + logId);
+                    if (row) row.remove();
+                    if (data.studentId && data.newCount !== undefined) {
+                        participationCounts[data.studentId] = data.newCount;
+                        updateRosterTableUI();
+                    }
+                    const currentTotal = Math.max(0, (parseInt(document.getElementById('totalAnswersDisplay').textContent) || 1) - 1);
+                    document.getElementById('totalAnswersDisplay').textContent = currentTotal;
+                    document.getElementById('historyBadgeCount').textContent = currentTotal;
+                }
+            });
+        }
+
+        function confirmResetParticipation() {
+            if (!confirm('⚠️ តើលោកគ្រូ-អ្នកគ្រូពិតជាចង់កំណត់ (Reset) ស្ថិតិឆ្លើយសំណួររបស់ថ្នាក់ ' + SELECTED_CLASS + ' ឡើងវិញមែនទេ?')) return;
+            
+            const formData = new URLSearchParams();
+            formData.append('className', SELECTED_CLASS);
+
+            fetch('/api/wheel/reset-participation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    participationCounts = {};
+                    updateRosterTableUI();
+                    document.getElementById('logTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 25px;">មិនទាន់មានកំណត់ត្រាឆ្លើយសំណួរក្នុងថ្នាក់នេះទេ</td></tr>';
+                    document.getElementById('totalAnswersDisplay').textContent = '0';
+                    document.getElementById('historyBadgeCount').textContent = '0';
+                    alert('បានកំណត់ស្ថិតិឡើងវិញរួចរាល់!');
+                }
+            });
+        }
+
+        function appendLogToTable(log) {
+            const emptyMsg = document.getElementById('emptyLogMsg');
+            if (emptyMsg) emptyMsg.remove();
+
+            const tbody = document.getElementById('logTableBody');
+            const tr = document.createElement('tr');
+            tr.id = 'logRow_' + log.id;
+
+            let badgeClass = 'badge-res-cor';
+            if (log.result === 'EXCELLENT') badgeClass = 'badge-res-exc';
+            else if (log.result === 'INCORRECT') badgeClass = 'badge-res-inc';
+            else if (log.result === 'ATTEMPTED') badgeClass = 'badge-res-att';
+
+            tr.innerHTML = `
+                <td style="color: #64748b; font-size: 0.82rem; white-space: nowrap;">${log.time}</td>
+                <td style="font-weight: 700; color: #0f172a;">${log.studentName}</td>
+                <td><span class="badge-res ${badgeClass}">${log.resultKhmer}</span></td>
+                <td style="text-align: center; font-weight: 800; color: #059669;">${log.points > 0 ? '+' + log.points : '-'}</td>
+                <td style="text-align: center;"><button type="button" class="btn-del-log" onclick="deleteLog(${log.id})" title="លុប">🗑️</button></td>
+            `;
+            tbody.insertBefore(tr, tbody.firstChild);
+        }
+
+        // -------------------------------------------------------------
+        // 4. Roster Table UI & Filtering
+        // -------------------------------------------------------------
+        const khmerNums = ['០','១','២','៣','៤','៥','៦','៧','៨','៩'];
+        function toKhmerNum(n) {
+            return String(n).split('').map(d => khmerNums[parseInt(d)] !== undefined ? khmerNums[parseInt(d)] : d).join('');
+        }
+
+        function updateRosterTableUI() {
+            const tbody = document.getElementById('rosterTableBody');
+            tbody.innerHTML = '';
+
+            const excludeAbsent = document.getElementById('chkExcludeAbsent').checked;
+            const searchKeyword = (document.getElementById('rosterSearch').value || '').trim().toLowerCase();
+
+            allStudents.forEach((student, idx) => {
+                if (searchKeyword && !student.name.toLowerCase().includes(searchKeyword)) {
+                    return;
+                }
+
+                const isAbsent = student.isAbsentToday;
+                const isExcluded = activeExcludedIds.has(student.id) || (excludeAbsent && isAbsent);
+                const count = participationCounts[student.id] || 0;
+
+                let countClass = 'count-zero';
+                if (count >= 4) countClass = 'count-high';
+                else if (count >= 2) countClass = 'count-med';
+                else if (count === 1) countClass = 'count-low';
+
+                const tr = document.createElement('tr');
+                if (isAbsent) tr.classList.add('is-absent');
+                if (isExcluded) tr.classList.add('is-excluded');
+
+                tr.innerHTML = `
+                    <td style="text-align: center;">
+                        <input type="checkbox" ${!isExcluded ? 'checked' : ''} onchange="toggleStudentWheelInclusion(${student.id}, this.checked)" title="ដាក់ចូល / ដកចេញពីកង់បង្វិល" style="width: 16px; height: 16px; accent-color: #4f46e5; cursor: pointer;">
+                    </td>
+                    <td style="text-align: center; font-weight: bold; color: #64748b;">${toKhmerNum(idx + 1)}</td>
+                    <td>
+                        <span style="font-weight: 700; color: #0f172a;">${student.name}</span>
+                    </td>
+                    <td style="text-align: center; color: #475569;">${student.gender}</td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        ${isAbsent 
+                            ? '<span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 8px; font-size: 0.78rem; font-weight: 800;">🔴 អវត្តមាន</span>' 
+                            : '<span style="background: #dcfce7; color: #065f46; padding: 2px 8px; border-radius: 8px; font-size: 0.78rem; font-weight: 800;">🟢 វត្តមាន</span>'}
+                    </td>
+                    <td style="text-align: center;">
+                        <span class="count-pill ${countClass}">${toKhmerNum(count)} ដង</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <button type="button" class="btn-quick-add" onclick="quickAddAnswer(${student.id}, '${student.name}')" title="បូក ១ ដងដោយផ្ទាល់">+១</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleStudentWheelInclusion(studentId, isChecked) {
+            if (isChecked) {
+                activeExcludedIds.delete(studentId);
+            } else {
+                activeExcludedIds.add(studentId);
+            }
+            rebuildWheelRoster();
+            updateRosterTableUI();
+        }
+
+        function toggleExcludeAbsent() {
+            rebuildWheelRoster();
+            updateRosterTableUI();
+        }
+
+        function resetWheelRoster() {
+            activeExcludedIds.clear();
+            rebuildWheelRoster();
+            updateRosterTableUI();
+        }
+
+        function filterRosterList() {
+            updateRosterTableUI();
+        }
+
+        let rosterSortAsc = true;
+        function sortRosterByCount() {
+            allStudents.sort((a, b) => {
+                const countA = participationCounts[a.id] || 0;
+                const countB = participationCounts[b.id] || 0;
+                return rosterSortAsc ? (countA - countB) : (countB - countA);
+            });
+            rosterSortAsc = !rosterSortAsc;
+            updateRosterTableUI();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
+            });
+            document.querySelectorAll('.tab-content-pane').forEach(pane => {
+                pane.classList.toggle('active', pane.id === tabId);
+            });
+        }
+
+        function changeClass(className) {
+            window.location.href = '/wheel?className=' + encodeURIComponent(className);
+        }
+
+        // Center Spin button click
+        document.getElementById('centerSpinBtn').addEventListener('click', spinWheel);
+
+        // Keyboard Spacebar shortcut
+        window.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                spinWheel();
+            }
+        });
+
+        // -------------------------------------------------------------
+        // 5. Confetti Particles System
+        // -------------------------------------------------------------
+        const confettiCanvas = document.getElementById('confettiCanvas');
+        const cCtx = confettiCanvas.getContext('2d');
+        let confettiParticles = [];
+        let confettiAnimId = null;
+
+        function resizeConfetti() {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeConfetti);
+        resizeConfetti();
+
+        function launchConfetti() {
+            confettiParticles = [];
+            const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff'];
+            for (let i = 0; i < 160; i++) {
+                confettiParticles.push({
+                    x: window.innerWidth / 2 + (Math.random() - 0.5) * 200,
+                    y: window.innerHeight / 2 - 100,
+                    w: Math.random() * 12 + 6,
+                    h: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    vx: (Math.random() - 0.5) * 16,
+                    vy: (Math.random() - 0.9) * 18,
+                    rotation: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 10,
+                    opacity: 1
+                });
+            }
+
+            if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            let alive = 0;
+
+            for (let p of confettiParticles) {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.35; // gravity
+                p.vx *= 0.985;
+                p.rotation += p.rotSpeed;
+                p.opacity -= 0.006;
+
+                if (p.opacity > 0 && p.y < window.innerHeight) {
+                    alive++;
+                    cCtx.save();
+                    cCtx.translate(p.x, p.y);
+                    cCtx.rotate((p.rotation * Math.PI) / 180);
+                    cCtx.globalAlpha = Math.max(0, p.opacity);
+                    cCtx.fillStyle = p.color;
+                    cCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                    cCtx.restore();
+                }
+            }
+
+            if (alive > 0) {
+                confettiAnimId = requestAnimationFrame(animateConfetti);
+            } else {
+                cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            }
+        }
+
+        // Initialize Wheel & Roster on load
+        rebuildWheelRoster();
+        updateRosterTableUI();
+    </script>
+    <script src="/js/academic-year.js"></script>
+    <script src="/js/logout-confirm.js?v=20261113a"></script>
+    <script src="/js/mobile-nav.js?v=20261029h"></script>
+</body>
+</html>

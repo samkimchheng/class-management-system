@@ -4,6 +4,7 @@ import com.nubb.classroom.model.Account;
 import com.nubb.classroom.model.Attendance;
 import com.nubb.classroom.model.Classroom;
 import com.nubb.classroom.model.Student;
+import com.nubb.classroom.model.StudentParticipation;
 import com.nubb.classroom.repository.AccountRepository;
 import com.nubb.classroom.repository.ClassroomRepository;
 import com.nubb.classroom.repository.StudentRepository;
@@ -307,6 +308,9 @@ public class WebController {
 
     @Autowired
     private com.nubb.classroom.repository.ScheduleRepository scheduleRepository;
+
+    @Autowired
+    private com.nubb.classroom.repository.StudentParticipationRepository studentParticipationRepository;
 
     @Autowired
     private javax.sql.DataSource dataSource;
@@ -1877,6 +1881,7 @@ public class WebController {
             if (existingInClass != null && !existingInClass.isEmpty()) {
                 for (Student s : existingInClass) {
                     try { leaveRequestRepository.deleteByStudent(s); } catch (Exception ignored) {}
+                    try { studentParticipationRepository.deleteByStudent(s); } catch (Exception ignored) {}
                     try { attendanceRepository.deleteByStudent(s); } catch (Exception ignored) {}
                     try { scoreRepository.deleteByStudentId(s.getId()); } catch (Exception ignored) {}
                 }
@@ -2007,6 +2012,7 @@ public class WebController {
             return "redirect:/students";
         }
         try { leaveRequestRepository.deleteByStudent(student); } catch (Exception ignored) {}
+        try { studentParticipationRepository.deleteByStudent(student); } catch (Exception ignored) {}
         attendanceRepository.deleteByStudent(student);
         scoreRepository.deleteByStudentId(id);
         studentRepository.delete(student);
@@ -2081,6 +2087,7 @@ public class WebController {
                 int count = students.size();
                 for (Student s : students) {
                     try { leaveRequestRepository.deleteByStudent(s); } catch (Exception ignored) {}
+                    try { studentParticipationRepository.deleteByStudent(s); } catch (Exception ignored) {}
                     try { attendanceRepository.deleteByStudent(s); } catch (Exception ignored) {}
                     try { scoreRepository.deleteByStudentId(s.getId()); } catch (Exception ignored) {}
                     try { certificateRecordRepository.deleteAll(certificateRecordRepository.findAllByStudentId(s.getId())); } catch (Exception ignored) {}
@@ -3169,5 +3176,175 @@ return "scores";
         public String getFailPercentFormatted() {
             return String.format(java.util.Locale.US, "%.1f%%", total > 0 ? (fail * 100.0) / total : 0.0);
         }
+    }
+
+    // =========================================================================
+    // Lucky Wheel / Student Random Picker (កង់បង្វិលចាប់ឈ្មោះសិស្សឆ្លើយសំណួរ)
+    // =========================================================================
+
+    @GetMapping("/wheel")
+    public String luckyWheel(
+            @RequestParam(required = false) String className,
+            Model model) {
+
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return "redirect:/login";
+        }
+
+        String currentYear = getCurrentAcademicYear();
+        List<Classroom> myClassrooms = classroomRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
+        if (myClassrooms == null) myClassrooms = new ArrayList<>();
+
+        if ((className == null || className.trim().isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className)) && !myClassrooms.isEmpty()) {
+            className = myClassrooms.get(0).getClassName();
+        } else if (className != null) {
+            className = className.trim();
+        }
+
+        boolean isKhmerSorted = isKhmerSortActive(accountId, null);
+        List<Student> allStudentsInClass = new ArrayList<>();
+        if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
+            allStudentsInClass = getOrderedStudentsForTeacher(accountId, className, currentYear, isKhmerSorted);
+        } else if (!myClassrooms.isEmpty()) {
+            allStudentsInClass = getOrderedStudentsForTeacher(accountId, myClassrooms.get(0).getClassName(), currentYear, isKhmerSorted);
+            className = myClassrooms.get(0).getClassName();
+        }
+
+        // Active studying students only (exclude dropped out and transferred)
+        List<Student> activeStudents = allStudentsInClass.stream()
+                .filter(Student::isStudying)
+                .collect(Collectors.toList());
+
+        // Check today's absences
+        LocalDate today = LocalDate.now();
+        List<Attendance> absentToday = Collections.emptyList();
+        if (className != null && !className.isEmpty()) {
+            absentToday = attendanceRepository.findByDateAndPresentFalseAndStudentClassNameAndStudentAccountId(today, className, accountId);
+        }
+        Set<Long> absentStudentIds = absentToday.stream()
+                .map(a -> a.getStudent().getId())
+                .collect(Collectors.toSet());
+
+        // Eligible students for today (active AND present today)
+        List<Student> eligibleStudentsToday = activeStudents.stream()
+                .filter(s -> !absentStudentIds.contains(s.getId()))
+                .collect(Collectors.toList());
+
+        // Map of student participation counts
+        Map<Long, Long> participationCounts = new HashMap<>();
+        if (className != null && !className.isEmpty()) {
+            List<Object[]> counts = studentParticipationRepository.countParticipationByClass(accountId, currentYear, className);
+            for (Object[] row : counts) {
+                if (row != null && row.length >= 2 && row[0] != null && row[1] != null) {
+                    participationCounts.put((Long) row[0], ((Number) row[1]).longValue());
+                }
+            }
+        }
+
+        // Recent participation logs in this class
+        List<StudentParticipation> recentLogs = Collections.emptyList();
+        if (className != null && !className.isEmpty()) {
+            recentLogs = studentParticipationRepository.findByAccountIdAndAcademicYearAndClassNameOrderByCreatedAtDesc(accountId, currentYear, className);
+        }
+
+        Account teacherAccount = accountRepository.findById(accountId).orElse(null);
+
+        model.addAttribute("teacherAccount", teacherAccount);
+        model.addAttribute("selectedClass", className);
+        model.addAttribute("myClassrooms", myClassrooms);
+        model.addAttribute("allStudents", allStudentsInClass);
+        model.addAttribute("activeStudents", activeStudents);
+        model.addAttribute("eligibleStudentsToday", eligibleStudentsToday);
+        model.addAttribute("absentStudentIds", absentStudentIds);
+        model.addAttribute("participationCounts", participationCounts);
+        model.addAttribute("recentLogs", recentLogs);
+        model.addAttribute("currentAcademicYear", currentYear);
+        model.addAttribute("availableAcademicYears", getAvailableAcademicYears());
+        model.addAttribute("todayDateKhmer", toKhmerNumber(today.getDayOfMonth()) + " " + getKhmerMonthName(today.getMonthValue()) + " " + toKhmerNumber(today.getYear()));
+
+        return "wheel";
+    }
+
+    private String getKhmerMonthName(int m) {
+        String[] khMonths = {"", "មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"};
+        if (m >= 1 && m <= 12) return khMonths[m];
+        return "";
+    }
+
+    @PostMapping("/api/wheel/record-participation")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> recordParticipation(
+            @RequestParam Long studentId,
+            @RequestParam(required = false) String className,
+            @RequestParam(required = false, defaultValue = "CORRECT") String result,
+            @RequestParam(required = false, defaultValue = "1") double points,
+            @RequestParam(required = false) String note) {
+
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "សូមចូលប្រើប្រាស់ជាមុនសិន!"));
+        }
+
+        Student student = studentRepository.findById(studentId).orElse(null);
+        if (student == null) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "រកមិនឃើញសិស្សនេះទេ!"));
+        }
+
+        String currentYear = getCurrentAcademicYear();
+        String cName = (className != null && !className.trim().isEmpty()) ? className.trim() : student.getClassName();
+
+        StudentParticipation sp = new StudentParticipation(accountId, student, cName, currentYear, result, points, note);
+        studentParticipationRepository.save(sp);
+
+        long newCount = studentParticipationRepository.countByStudentIdAndAcademicYear(studentId, currentYear);
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        resp.put("id", sp.getId());
+        resp.put("studentId", studentId);
+        resp.put("studentName", student.getName());
+        resp.put("newCount", newCount);
+        resp.put("result", sp.getResult());
+        resp.put("resultKhmer", sp.getResultKhmer());
+        resp.put("points", sp.getPoints());
+        resp.put("time", sp.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("hh:mm a", java.util.Locale.ENGLISH)));
+
+        return ResponseEntity.ok(resp);
+    }
+
+    @PostMapping("/api/wheel/delete-participation/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteParticipation(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
+        }
+
+        Optional<StudentParticipation> opt = studentParticipationRepository.findById(id);
+        if (opt.isPresent()) {
+            StudentParticipation sp = opt.get();
+            if (Objects.equals(sp.getAccountId(), accountId)) {
+                Long studentId = sp.getStudent().getId();
+                studentParticipationRepository.delete(sp);
+                String currentYear = getCurrentAcademicYear();
+                long newCount = studentParticipationRepository.countByStudentIdAndAcademicYear(studentId, currentYear);
+                return ResponseEntity.ok(Map.of("success", true, "studentId", studentId, "newCount", newCount));
+            }
+        }
+        return ResponseEntity.badRequest().body(Map.of("success", false, "message", "រកមិនឃើញកំណត់ត្រានេះទេ!"));
+    }
+
+    @PostMapping("/api/wheel/reset-participation")
+    @ResponseBody
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<Map<String, Object>> resetParticipation(@RequestParam String className) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
+        }
+        String currentYear = getCurrentAcademicYear();
+        studentParticipationRepository.deleteByAccountIdAndAcademicYearAndClassName(accountId, currentYear, className);
+        return ResponseEntity.ok(Map.of("success", true, "message", "បានកំណត់ស្ថិតិឆ្លើយសំណួរឡើងវិញដោយជោគជ័យ!"));
     }
 }
