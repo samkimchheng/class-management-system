@@ -773,11 +773,12 @@ public class PhonicsController {
         if (cleanCls.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "សូមជ្រើសរើសថ្នាក់រៀន!"));
         }
+        String normClean = com.nubb.classroom.controller.LessonController.normalizeClass(cleanCls);
         List<Student> all = studentRepository.findAll();
         List<Student> matched = new ArrayList<>();
         for (Student s : all) {
             if ("ALL".equalsIgnoreCase(cleanCls)
-                    || (s.getClassName() != null && s.getClassName().trim().equalsIgnoreCase(cleanCls))) {
+                    || (s.getClassName() != null && (s.getClassName().trim().equalsIgnoreCase(cleanCls) || com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(normClean)))) {
                 s.setEnglishAccessAllowed(allowed);
                 matched.add(s);
             }

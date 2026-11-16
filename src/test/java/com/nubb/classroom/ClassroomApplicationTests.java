@@ -1420,4 +1420,49 @@ class ClassroomApplicationTests {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/login"));
     }
+
+    @Test
+    void testAttendanceSaveAndDashboardDisplayFor10F() throws Exception {
+        Account teacher = accountRepository.findByUsername("samkimchheng").orElse(null);
+        if (teacher == null) {
+            teacher = accountRepository.findAll().stream().filter(a -> "TEACHER".equalsIgnoreCase(a.getRole()) || "ADMIN".equalsIgnoreCase(a.getRole())).findFirst().orElse(null);
+        }
+        assertNotNull(teacher, "Teacher must exist");
+
+        // 1. Post to /attendance/save with class 10F and day 16
+        mockMvc.perform(post("/attendance/save")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole())
+                .param("month", "ខែវិច្ឆិកា ២០២៦")
+                .param("className", "១០F")
+                .param("attendanceData", "147_16_UNEXCUSED", "148_16_PERMISSION"))
+                .andExpect(status().is3xxRedirection());
+
+        // 2. Perform GET / with className=១០F and date=2026-11-16
+        var res = mockMvc.perform(get("/")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", teacher.getRole())
+                .param("className", "១០F")
+                .param("date", "2026-11-16"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var modelMap = res.getModelAndView().getModel();
+        System.out.println("DEBUG MODEL MAP: " + modelMap);
+        System.out.println("hasTeachingToday: " + modelMap.get("hasTeachingToday"));
+        System.out.println("recentAbsents: " + modelMap.get("recentAbsents"));
+        System.out.println("absentToday: " + modelMap.get("absentToday"));
+        System.out.println("presentToday: " + modelMap.get("presentToday"));
+        System.out.println("totalStudents: " + modelMap.get("totalStudents"));
+
+        Long absentToday = (Long) modelMap.get("absentToday");
+        assertEquals(2L, absentToday, "absentToday must be 2");
+    }
+
+    @Test
+    @org.springframework.transaction.annotation.Transactional
+    void testInspectRealDatabaseAttendance() {
+        var allAtts = attendanceRepository.findAll();
+        assertNotNull(allAtts);
+    }
 }

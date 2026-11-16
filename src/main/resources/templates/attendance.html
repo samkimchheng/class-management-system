@@ -111,6 +111,25 @@
             font-weight: 800;
         }
 
+        /* Today's Column Highlight */
+        .today-col-header {
+            background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%) !important;
+            color: #78350f !important;
+            border-left: 2.5px solid #d97706 !important;
+            border-right: 2.5px solid #d97706 !important;
+            border-top: 3px solid #d97706 !important;
+            position: relative;
+            box-shadow: inset 0 -3px 0 #d97706;
+        }
+        .today-col-cell {
+            background-color: #fffbeb !important;
+            border-left: 2.5px solid #f59e0b !important;
+            border-right: 2.5px solid #f59e0b !important;
+        }
+        .today-col-cell .att-select {
+            box-shadow: 0 0 0 1.5px #f59e0b;
+        }
+
         .print-header { display: none; }
 
         @media print {
@@ -695,7 +714,14 @@
                             <th style="min-width: 60px; text-align: center; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0; white-space: nowrap;">ភេទ</th>
                             <th style="min-width: 85px; text-align: center; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0; white-space: nowrap;">ថ្នាក់ទី</th>
                             <!-- Days 1 to 31 -->
-                            <th th:each="i : ${#numbers.sequence(1, 31)}" th:text="${i}" th:attr="data-day=${i}" class="day-cell" style="min-width: 76px; text-align: center; padding: 8px 2px; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">1</th>
+                            <th th:each="i : ${#numbers.sequence(1, 31)}"
+                                th:attr="data-day=${i}"
+                                class="day-cell"
+                                th:classappend="${isCurrentMonth and i == todayDay ? ' today-col-header' : ''}"
+                                style="min-width: 76px; text-align: center; padding: 6px 2px; font-size: 1.05rem; font-weight: 800; color: #0f172a; background-color: #e2e8f0;">
+                                <div th:if="${isCurrentMonth and i == todayDay}" style="font-size: 0.70rem; color: #b45309; line-height: 1; margin-bottom: 2px;">⭐ ថ្ងៃនេះ</div>
+                                <span th:text="${i}">1</span>
+                            </th>
                             
                             <!-- Totals divided into ច្បាប់ / គ្មានច្បាប់ / សរុប -->
                             <th style="min-width: 80px; text-align: center; background: #fef08a; color: #451a03; font-size: 1.02rem; font-weight: 800; white-space: nowrap; border-left: 2px solid #cbd5e1;" title="សរុបអវត្តមានមានច្បាប់">🟡 ច្បាប់</th>
@@ -719,7 +745,11 @@
                             <td style="text-align: center; white-space: nowrap;" th:text="${student.gender}">ភេទ</td>
                             <td style="text-align: center; white-space: nowrap; font-weight: 600;" th:text="${student.className}">ថ្នាក់ទី</td>
                             <!-- Days 1 to 31 -->
-                            <td th:each="i : ${#numbers.sequence(1, 31)}" th:attr="data-day=${i}" class="day-cell" style="text-align: center; padding: 2px;"
+                            <td th:each="i : ${#numbers.sequence(1, 31)}"
+                                th:attr="data-day=${i}"
+                                class="day-cell"
+                                th:classappend="${isCurrentMonth and i == todayDay ? ' today-col-cell' : ''}"
+                                style="text-align: center; padding: 2px;"
                                 th:title="${leaveReasonTooltips != null ? leaveReasonTooltips.get(student.id + '_' + i) : ''}">
                                 <select name="attendanceData" 
                                         class="att-select"
@@ -971,6 +1001,14 @@
                         }
                     });
                 });
+            }
+
+            // Auto-scroll to today's column if highlighted
+            const todayHeader = document.querySelector('th.today-col-header');
+            if (todayHeader) {
+                setTimeout(function() {
+                    todayHeader.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }, 300);
             }
         });
     </script>

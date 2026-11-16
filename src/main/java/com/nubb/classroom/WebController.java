@@ -1461,6 +1461,13 @@ public class WebController {
         long transferredCount = (students != null) ? students.stream().filter(Student::isTransferred).count() : 0;
         long totalStudentCount = (students != null) ? students.size() : 0;
 
+        LocalDate todayNow = LocalDate.now();
+        int todayDay = todayNow.getDayOfMonth();
+        int[] curMonthYear = parseMonthAndYear(month);
+        boolean isCurrentMonth = (curMonthYear[0] == todayNow.getMonthValue() && curMonthYear[1] == todayNow.getYear());
+        model.addAttribute("todayDay", todayDay);
+        model.addAttribute("isCurrentMonth", isCurrentMonth);
+
         model.addAttribute("leaveRequests", teacherLeaveRequests);
         model.addAttribute("pendingLeaveCount", pendingLeaveCount);
         model.addAttribute("studyingCount", studyingCount);
@@ -1658,6 +1665,7 @@ public class WebController {
     }
 
     @PostMapping("/attendance/save")
+    @org.springframework.transaction.annotation.Transactional
     public String saveAttendance(
             @RequestParam("month") String month,
             @RequestParam(value = "className", required = false) String className,
