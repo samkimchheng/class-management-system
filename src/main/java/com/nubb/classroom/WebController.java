@@ -628,11 +628,17 @@ public class WebController {
                 if (students == null || students.isEmpty()) {
                     List<Student> allTeacherStudents = (accountId != null)
                             ? studentRepository.findByAccountId(accountId)
-                            : studentRepository.findAll();
+                            : Collections.emptyList();
                     String targetNorm = com.nubb.classroom.controller.LessonController.normalizeClass(className);
-                    if (allTeacherStudents != null && !targetNorm.isEmpty()) {
+                    if (allTeacherStudents != null && !allTeacherStudents.isEmpty() && !targetNorm.isEmpty()) {
                         students = allTeacherStudents.stream()
-                                .filter(s -> s != null && com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(targetNorm))
+                                .filter(s -> s != null && s.getClassName() != null && com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(targetNorm))
+                                .collect(Collectors.toList());
+                    }
+                    if (students == null || students.isEmpty()) {
+                        students = studentRepository.findAll().stream()
+                                .filter(s -> s != null && s.getClassName() != null && !targetNorm.isEmpty() &&
+                                        com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(targetNorm))
                                 .collect(Collectors.toList());
                     }
                 }
@@ -691,17 +697,6 @@ public class WebController {
                     }
                 } catch (Exception ignored) {}
 
-                List<com.nubb.classroom.model.Attendance> abs;
-                if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-                    abs = (accountId != null)
-                            ? attendanceRepository.findByDateAndPresentFalseAndStudentClassNameAndStudentAccountId(targetDate, className, accountId)
-                            : attendanceRepository.findByDateAndPresentFalseAndStudentClassName(targetDate, className);
-                } else {
-                    abs = (accountId != null)
-                            ? attendanceRepository.findByDateAndPresentFalseAndStudentAccountId(targetDate, accountId)
-                            : attendanceRepository.findByDateAndPresentFalse(targetDate);
-                }
-
                 Map<Long, com.nubb.classroom.model.Attendance> absentByStudentId = new java.util.LinkedHashMap<>();
                 if (dayAtts != null) {
                     for (com.nubb.classroom.model.Attendance a : dayAtts) {
@@ -710,14 +705,26 @@ public class WebController {
                         }
                     }
                 }
-                if (abs != null) {
-                    for (com.nubb.classroom.model.Attendance a : abs) {
-                        if (a != null && a.getStudent() != null && a.getStudent().getId() != null
-                                && (studentIds.isEmpty() || studentIds.contains(a.getStudent().getId()))) {
-                            absentByStudentId.putIfAbsent(a.getStudent().getId(), a);
+
+                // Extra safety: query all unexcused/permission absences on targetDate
+                try {
+                    List<com.nubb.classroom.model.Attendance> allAbsentOnDate = attendanceRepository.findByDateAndPresentFalse(targetDate);
+                    if (allAbsentOnDate != null) {
+                        for (com.nubb.classroom.model.Attendance a : allAbsentOnDate) {
+                            if (a != null && a.getStudent() != null && a.getStudent().getId() != null) {
+                                boolean matches = studentIds.isEmpty() || studentIds.contains(a.getStudent().getId());
+                                if (!matches && className != null && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
+                                    String aClass = a.getStudent().getClassName();
+                                    matches = com.nubb.classroom.controller.LessonController.normalizeClass(aClass)
+                                            .equals(com.nubb.classroom.controller.LessonController.normalizeClass(className));
+                                }
+                                if (matches) {
+                                    absentByStudentId.putIfAbsent(a.getStudent().getId(), a);
+                                }
+                            }
                         }
                     }
-                }
+                } catch (Exception ignored) {}
 
                 if (allLeaveReqs != null) {
                     final java.time.LocalDate checkDate = targetDate;
@@ -1711,7 +1718,13 @@ public class WebController {
                 String targetNorm = com.nubb.classroom.controller.LessonController.normalizeClass(safeClass);
                 if (allTeacherStudents != null && !targetNorm.isEmpty()) {
                     students = allTeacherStudents.stream()
-                            .filter(s -> s != null && com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(targetNorm))
+                            .filter(s -> s != null && s.getClassName() != null && com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(targetNorm))
+                            .collect(Collectors.toList());
+                }
+                if (students == null || students.isEmpty()) {
+                    students = studentRepository.findAll().stream()
+                            .filter(s -> s != null && s.getClassName() != null && !targetNorm.isEmpty() &&
+                                    com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(targetNorm))
                             .collect(Collectors.toList());
                 }
             }
@@ -1907,16 +1920,37 @@ public class WebController {
     public List<Student> getOrderedStudentsForTeacher(Long accountId, String className, String currentYear, boolean sortKhmer) {
         if (accountId == null) return new ArrayList<>();
         Long effId = accountId;
-        List<Student> students;
+        List<Student> students = null;
         if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
             students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, effId, currentYear);
+            if (students == null || students.isEmpty()) {
+                students = studentRepository.findByClassNameAndAccountId(className, effId);
+            }
+            if (students == null || students.isEmpty()) {
+                students = studentRepository.findByClassName(className);
+            }
+            if (students == null || students.isEmpty()) {
+                String targetNorm = com.nubb.classroom.controller.LessonController.normalizeClass(className);
+                if (!targetNorm.isEmpty()) {
+                    students = studentRepository.findAll().stream()
+                            .filter(s -> s != null && s.getClassName() != null &&
+                                    com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(targetNorm))
+                            .collect(Collectors.toList());
+                }
+            }
         } else {
             students = studentRepository.findByAccountIdAndAcademicYear(effId, currentYear);
+            if (students == null || students.isEmpty()) {
+                students = studentRepository.findByAccountId(effId);
+            }
+            if (students == null || students.isEmpty()) {
+                students = studentRepository.findAll();
+            }
         }
         if (sortKhmer && students != null) {
             students = sortStudentsByClassAndKhmerAlphabet(students);
         }
-        return students;
+        return students != null ? students : new ArrayList<>();
     }
 
     @GetMapping("/students")
@@ -1940,31 +1974,122 @@ public class WebController {
         return "students";
     }
 
+    public String generateNextStudentCode(String className, Long accountId, String academicYear) {
+        String targetClass = (className != null && !className.trim().isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className.trim()))
+                ? className.trim()
+                : "១០F";
+        String rawNorm = com.nubb.classroom.controller.LessonController.normalizeClass(targetClass);
+        final String normClass = rawNorm.isEmpty() ? "10F" : rawNorm;
+
+        List<Student> classStudents = null;
+        if (accountId != null) {
+            classStudents = studentRepository.findByClassNameAndAccountIdAndAcademicYear(targetClass, accountId, academicYear);
+            if (classStudents == null || classStudents.isEmpty()) {
+                classStudents = studentRepository.findByClassNameAndAccountId(targetClass, accountId);
+            }
+        }
+        if (classStudents == null || classStudents.isEmpty()) {
+            classStudents = studentRepository.findByClassName(targetClass);
+        }
+        if (classStudents == null || classStudents.isEmpty()) {
+            List<Student> all = (accountId != null) ? studentRepository.findByAccountId(accountId) : Collections.emptyList();
+            if (all.isEmpty()) {
+                all = studentRepository.findAll();
+            }
+            classStudents = all.stream()
+                    .filter(s -> s != null && s.getClassName() != null &&
+                            com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(normClass))
+                    .collect(Collectors.toList());
+        }
+        if (classStudents == null || classStudents.isEmpty()) {
+            classStudents = studentRepository.findAll().stream()
+                    .filter(s -> s != null && s.getStudentCode() != null &&
+                            s.getStudentCode().toUpperCase().startsWith(normClass.toUpperCase()))
+                    .collect(Collectors.toList());
+        }
+
+        int maxRoll = 0;
+        java.util.regex.Pattern numPattern = java.util.regex.Pattern.compile("(\\d+)$");
+        for (Student s : classStudents) {
+            if (s == null || s.getStudentCode() == null) continue;
+            String code = s.getStudentCode().trim();
+            java.util.regex.Matcher m = numPattern.matcher(code);
+            if (m.find()) {
+                try {
+                    int roll = Integer.parseInt(m.group(1));
+                    if (roll > maxRoll && roll < 10000) {
+                        maxRoll = roll;
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        int nextRoll = maxRoll + 1;
+        return String.format("%s-%02d", normClass, nextRoll);
+    }
+
+    @GetMapping("/api/students/next-code")
+    @ResponseBody
+    public Map<String, Object> getNextStudentCodeApi(
+            @RequestParam(value = "className", required = false) String className) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        String currentYear = getCurrentAcademicYear();
+        String nextCode = generateNextStudentCode(className, accountId, currentYear);
+        return Map.of("success", true, "studentCode", nextCode);
+    }
+
     @GetMapping("/student/add")
-    public String addStudentForm(Model model) {
+    public String addStudentForm(
+            @RequestParam(value = "className", required = false) String className,
+            Model model) {
+        Long accId = (Long) session.getAttribute("ACCOUNT_ID");
+        String currentYear = getCurrentAcademicYear();
+
         Student st = new Student();
-        st.setAcademicYear(getCurrentAcademicYear());
+        st.setAcademicYear(currentYear);
+
+        String targetClass = className;
+        if (targetClass == null || targetClass.trim().isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(targetClass.trim())) {
+            List<Classroom> myCls = getMyClassrooms(session);
+            if (myCls != null && !myCls.isEmpty()) {
+                targetClass = myCls.get(0).getClassName();
+            } else {
+                targetClass = "១០F";
+            }
+        } else {
+            targetClass = targetClass.trim();
+        }
+        st.setClassName(targetClass);
+        st.setStudentCode(generateNextStudentCode(targetClass, accId, currentYear));
+
         model.addAttribute("student", st);
+        model.addAttribute("selectedClass", targetClass);
         return "add-student";
     }
 
     @PostMapping("/student/add")
-    public String addStudentSubmit(Student student) {
+    public String addStudentSubmit(Student student, RedirectAttributes redirectAttributes) {
         Long accId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accId == null) {
             return "redirect:/login";
         }
         student.setAccountId(accId);
-        if (student.getStudentCode() == null || student.getStudentCode().trim().isEmpty()) {
-            student.setStudentCode("STU-" + (1000 + studentRepository.count() + 1));
-        } else {
-            student.setStudentCode(student.getStudentCode().trim());
-        }
         if (student.getAcademicYear() == null || student.getAcademicYear().trim().isEmpty()) {
             student.setAcademicYear(getCurrentAcademicYear());
         }
+        if (student.getStudentCode() == null || student.getStudentCode().trim().isEmpty()) {
+            student.setStudentCode(generateNextStudentCode(student.getClassName(), accId, student.getAcademicYear()));
+        } else {
+            student.setStudentCode(student.getStudentCode().trim());
+        }
+        if (student.getStatus() == null || student.getStatus().trim().isEmpty()) {
+            student.setStatus("កំពុងសិក្សា");
+        }
         studentRepository.save(student);
-        return "redirect:/students";
+
+        String targetClass = student.getClassName() != null ? student.getClassName() : "";
+        redirectAttributes.addFlashAttribute("successMessage", "✅ បានបន្ថែមសិស្ស " + student.getName() + " (កូដ៖ " + student.getStudentCode() + ") ទៅក្នុង " + targetClass + " ដោយជោគជ័យ!");
+        return "redirect:/students" + (!targetClass.isEmpty() ? "?className=" + URLEncoder.encode(targetClass, StandardCharsets.UTF_8) : "");
     }
 
     @PostMapping("/api/students/import-batch")

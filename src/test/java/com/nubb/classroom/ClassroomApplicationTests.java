@@ -1460,6 +1460,44 @@ class ClassroomApplicationTests {
     }
 
     @Test
+    void testNextStudentCodeGenerationAndAdd() throws Exception {
+        Account teacher = accountRepository.findByUsername("samkimchheng").orElse(null);
+        assertNotNull(teacher);
+
+        // 1. Next student code for 10F (has 47 students) should be 10F-48
+        String next10F = webController.generateNextStudentCode("១០F", teacher.getId(), "២០២៦-២០២៧");
+        assertEquals("10F-48", next10F);
+
+        String next10FAsASCII = webController.generateNextStudentCode("10F", teacher.getId(), "២០២៦-២០២៧");
+        assertEquals("10F-48", next10FAsASCII);
+
+        // 2. Next code API endpoint
+        var mvcResult = mockMvc.perform(get("/api/students/next-code")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .param("className", "10F"))
+                .andExpect(status().isOk())
+                .andReturn();
+        String json = mvcResult.getResponse().getContentAsString();
+        assertTrue(json.contains("\"studentCode\":\"10F-48\""), "Expected 10F-48 in JSON response");
+
+        // 3. Form load
+        mockMvc.perform(get("/student/add")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .param("className", "10F"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("selectedClass", "10F"));
+
+        // 4. Form submit with auto-assigned code
+        mockMvc.perform(post("/student/add")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .param("name", "សិស្ស តេស្តថ្មី")
+                .param("className", "១០F")
+                .param("studentCode", "10F-48")
+                .param("gender", "ប្រុស"))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
     @org.springframework.transaction.annotation.Transactional
     void testStudentCodeMatching() {
         var allStudents = studentRepository.findAll();

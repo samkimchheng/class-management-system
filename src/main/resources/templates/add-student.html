@@ -8,7 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/style.css?v=20261029h}" href="../../static/css/style.css?v=20261029h">
 </head>
 <body>
-        <!-- Sidebar -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
@@ -62,117 +62,158 @@
         </div>
 
         <div class="content">
-            <div class="table-container" style="max-width: 600px; margin: 0 auto;">
+            <div class="table-container" style="max-width: 620px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border-radius: 12px; padding: 24px;">
                 <form th:action="@{/student/add}" th:object="${student}" method="post">
-                    <div style="margin-bottom: 15px; background: #e0e7ff; color: #3730a3; padding: 10px 14px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                        <span>📅<span class="year-label-text"> ឆ្នាំសិក្សា៖</span></span>
-                        <span th:text="${currentAcademicYear}">២០២៦-២០២៧</span>
+                    <div style="margin-bottom: 20px; background: #e0e7ff; color: #3730a3; padding: 12px 16px; border-radius: 8px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <span>📅<span class="year-label-text"> ឆ្នាំសិក្សា៖</span> <b th:text="${currentAcademicYear}">២០២៦-២០២៧</b></span>
                         <input type="hidden" name="academicYear" th:value="${currentAcademicYear}">
+                        <span style="font-size: 0.85rem; color: #4338ca; background: #c7d2fe; padding: 2px 8px; border-radius: 4px;">សិស្សថ្មី</span>
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">ឈ្មោះសិស្ស</label>
-                        <input type="text" th:field="*{name}" class="form-control" style="width: 100%;" required>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">លេខកូដសិស្ស (សម្រាប់ប្រឡង)</label>
-                        <input type="text" th:field="*{studentCode}" class="form-control" style="width: 100%;" required>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">ភេទ</label>
-                        <select th:field="*{gender}" class="form-control" style="width: 100%;">
 
-                            <option value="ប្រុស">ប្រុស</option>
-
-                            <option value="ស្រី">ស្រី</option>
-                        </select>
-                    </div>
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">ថ្នាក់ទី</label>
-                        <select th:field="*{className}" class="form-control" style="width: 100%;">
-                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}"></option>
+                        <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">ឈ្មោះសិស្ស <span style="color: #ef4444;">*</span></label>
+                        <input type="text" th:field="*{name}" id="studentName" class="form-control" style="width: 100%; font-size: 1rem; padding: 9px 12px;" required placeholder="ឧ. រឿង ចាន់ណារ៉ា" autofocus>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">ថ្នាក់ទី <span style="color: #ef4444;">*</span></label>
+                        <select th:field="*{className}" id="studentClassName" class="form-control" style="width: 100%; font-size: 1rem; padding: 9px 12px; font-weight: 600;">
+                            <option th:each="c : ${myClassrooms}" th:value="${c.className}" th:text="${c.className}" th:selected="${selectedClass == c.className or student.className == c.className}"></option>
                             <option th:if="${#lists.isEmpty(myClassrooms)}" value="១០E">១០E</option>
                             <option th:if="${#lists.isEmpty(myClassrooms)}" value="១០F">១០F</option>
                             <option th:if="${#lists.isEmpty(myClassrooms)}" value="១០G">១០G</option>
                             <option th:if="${#lists.isEmpty(myClassrooms)}" value="១១F">១១F</option>
+                            <option th:if="${#lists.isEmpty(myClassrooms)}" value="១១G">១១G</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label style="font-weight: bold; margin: 0; color: #1e293b;">លេខកូដសិស្ស (សម្រាប់ប្រឡង និងចូលរៀន) <span style="color: #ef4444;">*</span></label>
+                            <button type="button" id="btnRefreshCode" style="background: none; border: none; color: #2563eb; cursor: pointer; font-size: 0.82rem; font-weight: 700; padding: 0; display: inline-flex; align-items: center; gap: 4px;" title="គណនាលេខកូដស្វ័យប្រវត្តិតាមលំដាប់ឡើងវិញ">
+                                🔄 បង្កើតកូដឡើងវិញ
+                            </button>
+                        </div>
+                        <input type="text" th:field="*{studentCode}" id="studentCode" class="form-control" style="width: 100%; font-weight: 700; color: #1e1b4b; background: #ffffff; font-size: 1.05rem; letter-spacing: 0.5px;" required>
+                        <small style="display: block; margin-top: 6px; color: #475569; font-size: 0.83rem; line-height: 1.4;">
+                            ⚡ ប្រព័ន្ធបង្កើតកូដបន្តពីកូដសិស្សចុងក្រោយក្នុងថ្នាក់ដោយស្វ័យប្រវត្តិ (ឧ. 10F-48) ហើយលោកគ្រូ-អ្នកគ្រូក៏អាចកែប្រែដោយផ្ទាល់បាន។
+                        </small>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">ភេទ <span style="color: #ef4444;">*</span></label>
+                        <select th:field="*{gender}" class="form-control" style="width: 100%; font-size: 1rem; padding: 9px 12px;">
+                            <option value="ប្រុស">ប្រុស</option>
+                            <option value="ស្រី">ស្រី</option>
                         </select>
                     </div>
                     
-                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">ភូមិ</label>
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">ភូមិ</label>
                             <input type="text" th:field="*{village}" class="form-control" style="width: 100%;">
                         </div>
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">ឃុំ</label>
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">ឃុំ / សង្កាត់</label>
                             <input type="text" th:field="*{commune}" class="form-control" style="width: 100%;">
                         </div>
                     </div>
                     
-                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">ស្រុក</label>
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">ស្រុក / ក្រុង / ខណ្ឌ</label>
                             <input type="text" th:field="*{district}" class="form-control" style="width: 100%;">
                         </div>
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">ខេត្ត</label>
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">ខេត្ត / រាជធានី</label>
                             <input type="text" th:field="*{province}" class="form-control" style="width: 100%;">
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">ឈ្មោះឪពុក</label>
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">ឈ្មោះឪពុក</label>
                             <input type="text" th:field="*{fatherName}" class="form-control" style="width: 100%;">
                         </div>
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">មុខរបរ (ឪពុក)</label>
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">មុខរបរ (ឪពុក)</label>
                             <input type="text" th:field="*{fatherOccupation}" class="form-control" style="width: 100%;">
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">ឈ្មោះម្តាយ</label>
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">ឈ្មោះម្តាយ</label>
                             <input type="text" th:field="*{motherName}" class="form-control" style="width: 100%;">
                         </div>
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">មុខរបរ (ម្តាយ)</label>
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">មុខរបរ (ម្តាយ)</label>
                             <input type="text" th:field="*{motherOccupation}" class="form-control" style="width: 100%;">
                         </div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">ស្ថានភាព</label>
+                        <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #1e293b;">ស្ថានភាព</label>
                         <select th:field="*{status}" class="form-control" style="width: 100%;">
-
                             <option value="កំពុងសិក្សា">កំពុងសិក្សា</option>
-
                             <option value="បោះបង់ការសិក្សា">បោះបង់ការសិក្សា</option>
-
                             <option value="ផ្ទេរការសិក្សា">ផ្ទេរការសិក្សា</option>
                         </select>
                     </div>
-                    <div style="margin-top: 20px;">
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">រក្សាទុក</button>
+                    <div style="margin-top: 25px;">
+                        <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.05rem; padding: 12px; font-weight: bold; border-radius: 8px;">💾 រក្សាទុកទិន្នន័យសិស្ស</button>
                     </div>
-                    <div style="margin-top: 10px; text-align: center;">
-                        <a href="/students" style="color: var(--danger); text-decoration: none;">ត្រឡប់ក្រោយ</a>
+                    <div style="margin-top: 12px; text-align: center;">
+                        <a th:href="@{/students(className=${selectedClass != null ? selectedClass : ''})}" style="color: var(--danger); text-decoration: none; font-weight: 600;">&larr; ត្រឡប់ទៅបញ្ជីឈ្មោះសិស្ស</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const classSelect = document.getElementById('studentClassName');
+            const codeInput = document.getElementById('studentCode');
+            const refreshBtn = document.getElementById('btnRefreshCode');
+
+            async function updateNextCode(className) {
+                if (!className || className.trim() === '') return;
+                try {
+                    const res = await fetch('/api/students/next-code?className=' + encodeURIComponent(className.trim()));
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.studentCode && codeInput) {
+                            codeInput.value = data.studentCode;
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error fetching next student code:', err);
+                }
+            }
+
+            if (classSelect) {
+                classSelect.addEventListener('change', function() {
+                    updateNextCode(this.value);
+                });
+            }
+
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    const cls = classSelect ? classSelect.value : '';
+                    updateNextCode(cls);
+                });
+            }
+
+            // Auto-fetch next code if input is empty on load
+            if (codeInput && (!codeInput.value || codeInput.value.trim() === '')) {
+                const cls = classSelect ? classSelect.value : '';
+                updateNextCode(cls);
+            }
+        });
+    </script>
     <script src="/js/academic-year.js"></script>
     <script src="/js/logout-confirm.js?v=20261113a"></script>
     <script src="/js/mobile-nav.js?v=20261029h"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
