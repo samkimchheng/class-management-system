@@ -959,6 +959,19 @@
                 }
             } catch(e) {}
             filterAttendanceStatus(savedStatusFilter);
+
+            // Optimize attendance form submission: disable empty selects so only marked attendance is sent
+            const attForm = document.querySelector('form[action$="/attendance/save"]');
+            if (attForm) {
+                attForm.addEventListener('submit', function() {
+                    const allAttSelects = attForm.querySelectorAll('select.att-select');
+                    allAttSelects.forEach(sel => {
+                        if (!sel.value || sel.value.trim() === '') {
+                            sel.disabled = true;
+                        }
+                    });
+                });
+            }
         });
     </script>
     <script src="/js/academic-year.js"></script>

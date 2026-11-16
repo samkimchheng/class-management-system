@@ -668,6 +668,29 @@ public class WebController {
                     } catch (Exception ignored) {}
                 }
 
+                // Fallback / complement: check all attendance on targetDate matching these students or normalized class
+                try {
+                    List<com.nubb.classroom.model.Attendance> allAttOnDate = attendanceRepository.findByDate(targetDate);
+                    if (allAttOnDate != null) {
+                        for (com.nubb.classroom.model.Attendance a : allAttOnDate) {
+                            if (a != null && a.getStudent() != null) {
+                                boolean matches = studentIds.contains(a.getStudent().getId());
+                                if (!matches && className != null && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
+                                    String aClass = a.getStudent().getClassName();
+                                    matches = com.nubb.classroom.controller.LessonController.normalizeClass(aClass)
+                                            .equals(com.nubb.classroom.controller.LessonController.normalizeClass(className));
+                                }
+                                if (matches) {
+                                    if (dayAtts == null) dayAtts = new java.util.ArrayList<>();
+                                    if (!dayAtts.contains(a)) {
+                                        dayAtts.add(a);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+
                 List<com.nubb.classroom.model.Attendance> abs;
                 if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
                     abs = (accountId != null)
@@ -1662,11 +1685,41 @@ public class WebController {
         LocalDate end = start.with(TemporalAdjusters.lastDayOfMonth());
 
         String currentYear = getCurrentAcademicYear();
-        List<Student> students;
+        List<Student> students = null;
         if (!safeClass.equals("ថ្នាក់រៀនទាំងអស់")) {
-            students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(safeClass, accountId, currentYear);
+            if (accountId != null) {
+                students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(safeClass, accountId, currentYear);
+                if (students == null || students.isEmpty()) {
+                    students = studentRepository.findByClassNameAndAccountId(safeClass, accountId);
+                }
+            }
+            if (students == null || students.isEmpty()) {
+                students = studentRepository.findByClassName(safeClass);
+            }
+            if (students == null || students.isEmpty()) {
+                List<Student> allTeacherStudents = (accountId != null)
+                        ? studentRepository.findByAccountId(accountId)
+                        : studentRepository.findAll();
+                String targetNorm = com.nubb.classroom.controller.LessonController.normalizeClass(safeClass);
+                if (allTeacherStudents != null && !targetNorm.isEmpty()) {
+                    students = allTeacherStudents.stream()
+                            .filter(s -> s != null && com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(targetNorm))
+                            .collect(Collectors.toList());
+                }
+            }
         } else {
-            students = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
+            if (accountId != null) {
+                students = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
+                if (students == null || students.isEmpty()) {
+                    students = studentRepository.findByAccountId(accountId);
+                }
+            }
+            if (students == null || students.isEmpty()) {
+                students = studentRepository.findAll();
+            }
+        }
+        if (students == null) {
+            students = new ArrayList<>();
         }
 
         if (students != null && !students.isEmpty()) {
