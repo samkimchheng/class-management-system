@@ -463,6 +463,26 @@ public class WebController {
         if (targetDate == null) {
             targetDate = java.time.LocalDate.now();
         }
+
+        boolean hasClassFilter = (classNameFilter != null && !classNameFilter.trim().isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(classNameFilter.trim()));
+
+        // If attendance or absence was already recorded in database for this date, teaching definitely occurred!
+        if (accountId != null && attendanceRepository != null) {
+            try {
+                boolean hasAtt;
+                if (hasClassFilter) {
+                    hasAtt = !attendanceRepository.findByDateAndPresentFalseAndStudentClassNameAndStudentAccountId(targetDate, classNameFilter.trim(), accountId).isEmpty()
+                          || !attendanceRepository.findByDateAndPresentTrueAndStudentClassNameAndStudentAccountId(targetDate, classNameFilter.trim(), accountId).isEmpty();
+                } else {
+                    hasAtt = !attendanceRepository.findByDateAndPresentFalseAndStudentAccountId(targetDate, accountId).isEmpty()
+                          || !attendanceRepository.findByDateAndPresentTrueAndStudentAccountId(targetDate, accountId).isEmpty();
+                }
+                if (hasAtt) {
+                    return true;
+                }
+            } catch (Exception ignored) {}
+        }
+
         java.time.DayOfWeek dow = targetDate.getDayOfWeek();
         if (dow == java.time.DayOfWeek.SUNDAY) {
             if (reasonRef != null) reasonRef.set("ថ្ងៃអាទិត្យ (ថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍)");
@@ -505,8 +525,6 @@ public class WebController {
         List<com.nubb.classroom.model.Schedule> dayBlocks = validBlocks.stream()
                 .filter(s -> (s.getBlockIndex() % 6) == targetCol)
                 .collect(Collectors.toList());
-
-        boolean hasClassFilter = (classNameFilter != null && !classNameFilter.trim().isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(classNameFilter.trim()));
 
         if (hasClassFilter) {
             String targetClass = classNameFilter.trim();
@@ -596,18 +614,45 @@ public class WebController {
             List<com.nubb.classroom.model.Attendance> recentAbsents = new java.util.ArrayList<>();
 
             String currentYear = getCurrentAcademicYear();
-            List<Student> students;
+            List<Student> students = null;
             if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
-                students = (accountId != null)
-                        ? studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear)
-                        : studentRepository.findAll();
+                if (accountId != null) {
+                    students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, currentYear);
+                    if (students == null || students.isEmpty()) {
+                        students = studentRepository.findByClassNameAndAccountId(className, accountId);
+                    }
+                }
+                if (students == null || students.isEmpty()) {
+                    students = studentRepository.findByClassName(className);
+                }
+                if (students == null || students.isEmpty()) {
+                    List<Student> allTeacherStudents = (accountId != null)
+                            ? studentRepository.findByAccountId(accountId)
+                            : studentRepository.findAll();
+                    String targetNorm = com.nubb.classroom.controller.LessonController.normalizeClass(className);
+                    if (allTeacherStudents != null && !targetNorm.isEmpty()) {
+                        students = allTeacherStudents.stream()
+                                .filter(s -> s != null && com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(targetNorm))
+                                .collect(Collectors.toList());
+                    }
+                }
             } else {
-                students = (accountId != null)
-                        ? studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear)
-                        : studentRepository.findAll();
+                if (accountId != null) {
+                    students = studentRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
+                    if (students == null || students.isEmpty()) {
+                        students = studentRepository.findByAccountId(accountId);
+                    }
+                }
+                if (students == null || students.isEmpty()) {
+                    students = studentRepository.findAll();
+                }
+            }
+            if (students == null) {
+                students = new java.util.ArrayList<>();
             }
 
             List<com.nubb.classroom.model.LeaveRequest> allLeaveReqs = getLeaveRequestsForTeacher(accountId, className);
+            List<com.nubb.classroom.model.Attendance> dayAtts = new java.util.ArrayList<>();
 
             if (students != null) {
                 totalStudents = students.size();
@@ -616,6 +661,12 @@ public class WebController {
                         .filter(s -> s != null && s.getId() != null)
                         .map(Student::getId)
                         .collect(Collectors.toSet());
+
+                if (!students.isEmpty()) {
+                    try {
+                        dayAtts = attendanceRepository.findByStudentInAndDateBetween(students, targetDate, targetDate);
+                    } catch (Exception ignored) {}
+                }
 
                 List<com.nubb.classroom.model.Attendance> abs;
                 if (className != null && !className.isEmpty() && !className.equals("ថ្នាក់រៀនទាំងអស់")) {
@@ -629,10 +680,17 @@ public class WebController {
                 }
 
                 Map<Long, com.nubb.classroom.model.Attendance> absentByStudentId = new java.util.LinkedHashMap<>();
+                if (dayAtts != null) {
+                    for (com.nubb.classroom.model.Attendance a : dayAtts) {
+                        if (a != null && !a.isPresent() && a.getStudent() != null && a.getStudent().getId() != null) {
+                            absentByStudentId.putIfAbsent(a.getStudent().getId(), a);
+                        }
+                    }
+                }
                 if (abs != null) {
                     for (com.nubb.classroom.model.Attendance a : abs) {
                         if (a != null && a.getStudent() != null && a.getStudent().getId() != null
-                                && studentIds.contains(a.getStudent().getId())) {
+                                && (studentIds.isEmpty() || studentIds.contains(a.getStudent().getId()))) {
                             absentByStudentId.putIfAbsent(a.getStudent().getId(), a);
                         }
                     }
@@ -643,7 +701,7 @@ public class WebController {
                     for (com.nubb.classroom.model.LeaveRequest lr : allLeaveReqs) {
                         if (lr != null && !lr.isRejected()
                                 && lr.getStudent() != null && lr.getStudent().getId() != null
-                                && studentIds.contains(lr.getStudent().getId())
+                                && (studentIds.isEmpty() || studentIds.contains(lr.getStudent().getId()))
                                 && lr.getStartDate() != null && lr.getEndDate() != null
                                 && !checkDate.isBefore(lr.getStartDate()) && !checkDate.isAfter(lr.getEndDate())) {
                             absentByStudentId.computeIfAbsent(lr.getStudent().getId(),
@@ -670,7 +728,10 @@ public class WebController {
             boolean hasTeachingToday = checkTeacherHasTeaching(accountId, className, targetDate, nonTeachingReasonRef);
             String nonTeachingReason = nonTeachingReasonRef.get();
 
-            if (!hasTeachingToday) {
+            boolean hasRecordedAttendanceData = (dayAtts != null && !dayAtts.isEmpty()) || !recentAbsents.isEmpty();
+            if (hasRecordedAttendanceData) {
+                hasTeachingToday = true;
+            } else if (!hasTeachingToday) {
                 presentToday = 0;
                 presentFemale = 0;
                 absentToday = 0;
