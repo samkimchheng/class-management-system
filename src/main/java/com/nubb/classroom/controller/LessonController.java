@@ -180,7 +180,10 @@ public class LessonController {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         Student student = (Student) session.getAttribute("loggedInStudent");
         String activeMode = (String) session.getAttribute("ACTIVE_USER_MODE");
-        boolean useStudentMode = (student != null) && !(accountId != null && "TEACHER".equals(activeMode));
+        boolean useStudentMode = (student != null);
+        if (useStudentMode) {
+            session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+        }
 
         List<Lesson> lessons = new ArrayList<>();
         if (useStudentMode) {
@@ -476,6 +479,9 @@ public class LessonController {
             @RequestParam(required = false) List<String> tsAudioUrl,
             @RequestParam(required = false) List<MultipartFile> tsAudioFile) {
 
+        if (session.getAttribute("loggedInStudent") != null) {
+            return ResponseEntity.status(403).body(Map.of("error", "សិស្សមិនមានសិទ្ធិកែប្រែ ឬបង្កើតមេរៀនទេ"));
+        }
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "សូមចូលប្រើប្រាស់ប្រព័ន្ធជាមុនសិន"));
@@ -563,6 +569,9 @@ public class LessonController {
     @ResponseBody
     @Transactional
     public ResponseEntity<?> deleteLesson(@PathVariable Long id) {
+        if (session.getAttribute("loggedInStudent") != null) {
+            return ResponseEntity.status(403).body(Map.of("error", "សិស្សមិនមានសិទ្ធិលុបមេរៀនទេ"));
+        }
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "សូមចូលប្រើប្រាស់ប្រព័ន្ធ"));
@@ -643,7 +652,10 @@ public class LessonController {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         Student student = (Student) session.getAttribute("loggedInStudent");
         String activeMode = (String) session.getAttribute("ACTIVE_USER_MODE");
-        boolean useStudentMode = (student != null) && !(accountId != null && "TEACHER".equals(activeMode));
+        boolean useStudentMode = (student != null);
+        if (useStudentMode) {
+            session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+        }
         if (useStudentMode) {
             return "STUDENT_" + student.getId();
         }

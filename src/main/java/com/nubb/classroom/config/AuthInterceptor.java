@@ -45,7 +45,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         // 1. Auto-restore Teacher/Admin session from persistent cookie with cryptographic signature check
-        if (session.getAttribute("ACCOUNT_ID") == null) {
+        if (session.getAttribute("ACCOUNT_ID") == null && session.getAttribute("loggedInStudent") == null) {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie c : cookies) {
@@ -185,10 +185,41 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // If a student is logged in and visits root "/", redirect to their student portal /test/take
-        if ("/".equals(path) && session.getAttribute("loggedInStudent") != null && session.getAttribute("ACCOUNT_ID") == null) {
-            response.sendRedirect("/test/take");
-            return false;
+        // If a student is logged in, strictly enforce student boundary and prevent access to teacher management views
+        if (session.getAttribute("loggedInStudent") != null) {
+            session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+            // If student visits root "/", redirect to their student portal /test/take
+            if ("/".equals(path)) {
+                response.sendRedirect("/test/take");
+                return false;
+            }
+            // Allow ONLY student-accessible endpoints
+            boolean isAllowedStudentRoute = path.startsWith("/test")
+                    || path.startsWith("/api/student-portal")
+                    || path.startsWith("/lessons")
+                    || path.startsWith("/api/lessons/progress")
+                    || path.startsWith("/api/lessons/") && path.endsWith("/transcripts")
+                    || path.equals("/certificate")
+                    || path.startsWith("/certificate/view")
+                    || path.startsWith("/certificate/verify")
+                    || path.startsWith("/api/certificate/verify")
+                    || path.startsWith("/api/tts")
+                    || path.equals("/logout")
+                    || path.equals("/test/logout")
+                    || path.startsWith("/css")
+                    || path.startsWith("/js")
+                    || path.startsWith("/images")
+                    || path.startsWith("/uploads")
+                    || path.startsWith("/docs");
+            if (!isAllowedStudentRoute) {
+                if (path.startsWith("/api/")) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+                    return false;
+                }
+                // If student tries to access admin or teacher dashboard pages (/students, /attendance, /scores, etc.), redirect to student portal
+                response.sendRedirect("/test/take");
+                return false;
+            }
         }
 
         // Admin paths require ADMIN role
@@ -237,6 +268,9 @@ public class AuthInterceptor implements HandlerInterceptor {
                 response.sendRedirect("/login");
                 return false;
             }
+            if (session.getAttribute("loggedInStudent") != null) {
+                session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+            }
             return true;
         }
 
@@ -252,8 +286,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         // When navigating teacher-only dashboard routes (not /certificate which is shared), mark active mode as TEACHER
-        if (!path.startsWith("/certificate") && !path.startsWith("/api/certificate")) {
-            session.setAttribute("ACTIVE_USER_MODE", "TEACHER");
+        if (!path.startsWith("/certificate") && !path.startsWith("/api/certificate") && !path.startsWith("/lessons") && !path.startsWith("/api/lessons")) {
+            if (session.getAttribute("loggedInStudent") == null) {
+                session.setAttribute("ACTIVE_USER_MODE", "TEACHER");
+            }
         }
 
         // Verify account is still active and keep VOCABULARY_PERMISSION synced with DB

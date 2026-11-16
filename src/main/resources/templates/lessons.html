@@ -399,9 +399,9 @@
         }
     </style>
 </head>
-<body th:classappend="${isStudent ? 'is-student' : ''}">
+<body th:classappend="${(isStudent or session.loggedInStudent != null) ? 'is-student' : ''}">
         <!-- Sidebar -->
-    <div class="sidebar" th:if="${!isStudent}">
+    <div class="sidebar" th:if="${!isStudent and session.loggedInStudent == null}">
         <div class="sidebar-header">
             <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
             <div style="margin-top: 10px; font-size: 0.92rem; color: #a5b4fc; text-align: center;">
@@ -438,7 +438,7 @@
 
     <div class="main-content">
         <!-- Teacher Topbar -->
-        <div class="topbar" th:if="${!isStudent}">
+        <div class="topbar" th:if="${!isStudent and session.loggedInStudent == null}">
             <div class="topbar-left">
                 <h3>មើលមេរៀន</h3>
             </div>
@@ -449,7 +449,7 @@
         </div>
 
         <!-- Student Clean Header (No គ្រប់គ្រងថ្នាក់រៀន) -->
-        <div th:if="${isStudent}" style="background: white; padding: 18px 24px; border-radius: 12px; box-shadow: var(--shadow-md); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; border: 1px solid var(--border);">
+        <div th:if="${isStudent or session.loggedInStudent != null}" style="background: white; padding: 18px 24px; border-radius: 12px; box-shadow: var(--shadow-md); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; border: 1px solid var(--border);">
             <div>
                 <h2 style="margin: 0; color: var(--dark); font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">
                     📚 មើលមេរៀន (Study Lessons)
@@ -485,7 +485,7 @@
             <div th:replace="~{fragments/admin-computer-links :: cardPanel}"></div>
 
             <!-- Teacher Navigation Tabs (Lessons vs Student Progress Tracking) -->
-            <div th:if="${!isStudent}" class="lesson-tabs">
+            <div th:if="${!isStudent and session.loggedInStudent == null}" class="lesson-tabs">
                 <button type="button" class="lesson-tab-btn"
                         th:classappend="${activeTab != 'progress' ? 'active' : ''}"
                         onclick="switchLessonTab('lessonsTab', this)">
@@ -502,9 +502,9 @@
                 </button>
             </div>
 
-            <div id="lessonsTab" class="lesson-tab-pane" th:classappend="${isStudent or activeTab != 'progress' ? 'active' : ''}">
+            <div id="lessonsTab" class="lesson-tab-pane" th:classappend="${(isStudent or session.loggedInStudent != null) or activeTab != 'progress' ? 'active' : ''}">
             <!-- Action Header & Filter (Teachers ONLY: Students do NOT see class and subject dropdown buttons) -->
-            <div th:if="${!isStudent}" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+            <div th:if="${!isStudent and session.loggedInStudent == null}" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
                 <form id="filterForm" action="/lessons" method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
                     <select name="className" class="form-control" style="width: auto;" onchange="document.getElementById('filterForm').submit()">
                         <option value="ថ្នាក់រៀនទាំងអស់" th:selected="${selectedClass == null or selectedClass == 'ថ្នាក់រៀនទាំងអស់'}">-- ថ្នាក់រៀនទាំងអស់ --</option>
@@ -536,7 +536,7 @@
             </div>
 
             <!-- Student Course Completion & Certificate Banner -->
-            <div th:if="${isStudent}">
+            <div th:if="${isStudent or session.loggedInStudent != null}">
                 <!-- Case A: 100% Completed! -->
                 <div th:if="${isAllCompleted}" style="background: linear-gradient(135deg, #0b1d3a, #0284c7); color: white; padding: 25px 30px; border-radius: 14px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(2, 132, 199, 0.35); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border: 2px solid #38bdf8;">
                     <div style="display: flex; align-items: center; gap: 20px;">
@@ -580,7 +580,7 @@
             </div>
 
             <!-- Student Step-by-Step Lesson Stepper Tracker -->
-            <div th:if="${isStudent and !#lists.isEmpty(lessons)}" id="studentLessonStepper" style="background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+            <div th:if="${(isStudent or session.loggedInStudent != null) and !#lists.isEmpty(lessons)}" id="studentLessonStepper" style="background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <span style="font-weight: 800; color: #0f172a; font-size: clamp(0.88rem, 2.8vw, 1.05rem); white-space: nowrap;">
@@ -621,7 +621,7 @@
                         </div>
                         
                         <!-- Teacher Controls -->
-                        <div th:if="${!isStudent}" style="display: flex; gap: 8px;">
+                        <div th:if="${!isStudent and session.loggedInStudent == null}" style="display: flex; gap: 8px;">
                             <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" 
                                     th:data-id="${lesson.id}"
                                     th:data-title="${lesson.title}"
@@ -785,7 +785,7 @@
             </div> <!-- End #lessonsTab -->
 
             <!-- TAB 2: STUDENT LESSON PROGRESS TRACKING (TEACHERS ONLY) -->
-            <div th:if="${!isStudent}" id="progressTab" class="lesson-tab-pane" th:classappend="${activeTab == 'progress' ? 'active' : ''}">
+            <div th:if="${!isStudent and session.loggedInStudent == null}" id="progressTab" class="lesson-tab-pane" th:classappend="${activeTab == 'progress' ? 'active' : ''}">
                 <!-- KPI Summary -->
                 <div class="progress-kpi-grid">
                     <div class="progress-kpi-card">

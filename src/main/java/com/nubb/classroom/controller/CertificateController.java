@@ -82,8 +82,8 @@ public class CertificateController {
             Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
             String accountName = (String) session.getAttribute("ACCOUNT_NAME");
 
-            // Auto-restore teacher account from persistent cookie if session missing
-            if (accountId == null && request != null && request.getCookies() != null) {
+            // Auto-restore teacher account from persistent cookie if session missing AND no student is logged in
+            if (accountId == null && session.getAttribute("loggedInStudent") == null && request != null && request.getCookies() != null) {
                 for (Cookie c : request.getCookies()) {
                     if ("REMEMBER_ACCOUNT_ID".equals(c.getName()) && c.getValue() != null && !c.getValue().isEmpty()) {
                         try {
@@ -103,9 +103,10 @@ public class CertificateController {
             }
 
             Student loggedInStudent = (Student) session.getAttribute("loggedInStudent");
-            String activeMode = (String) session.getAttribute("ACTIVE_USER_MODE");
-            boolean isStudent = (loggedInStudent != null) && !(accountId != null && "TEACHER".equals(activeMode));
-            if (!isStudent) { loggedInStudent = null; }
+            boolean isStudent = (loggedInStudent != null);
+            if (isStudent) {
+                session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+            }
             boolean isTeacher = (accountId != null && !isStudent);
             Account currentTeacherAcc = (accountId != null) ? accountRepository.findById(accountId).orElse(null) : null;
 

@@ -696,6 +696,8 @@ class ClassroomApplicationTests {
                 .filter(s -> s.getClassName() != null && s.getClassName().contains("10"))
                 .findFirst()
                 .orElse(students.get(0));
+        testStudent.setVocabularyAccessAllowed(true);
+        testStudent = studentRepository.save(testStudent);
 
         mockMvc.perform(get("/test/vocabulary")
                 .sessionAttr("loggedInStudent", testStudent)
@@ -734,16 +736,21 @@ class ClassroomApplicationTests {
                 .sessionAttr("loggedInStudent", testStudent))
                 .andExpect(status().isOk());
 
-        // 7. Verify Teacher Word status toggle API
+        // 7. Verify Admin Word status toggle API
+        Account admin = accountRepository.findAll().stream()
+                .filter(a -> "ADMIN".equalsIgnoreCase(a.getRole()))
+                .findFirst().orElse(kimchheng);
         mockMvc.perform(post("/api/vocabulary/toggle-status")
                 .param("id", testWordId.toString())
-                .sessionAttr("ACCOUNT_ID", kimchheng.getId()))
+                .sessionAttr("ACCOUNT_ID", admin.getId())
+                .sessionAttr("ACCOUNT_ROLE", admin.getRole()))
                 .andExpect(status().isOk());
 
         // Toggle back to true
         mockMvc.perform(post("/api/vocabulary/toggle-status")
                 .param("id", testWordId.toString())
-                .sessionAttr("ACCOUNT_ID", kimchheng.getId()))
+                .sessionAttr("ACCOUNT_ID", admin.getId())
+                .sessionAttr("ACCOUNT_ROLE", admin.getRole()))
                 .andExpect(status().isOk());
 
         // 7b. Verify Teacher Grade 11 Vocabulary Management View & Grade 11 Student Portal
@@ -762,6 +769,8 @@ class ClassroomApplicationTests {
                 .findFirst()
                 .orElse(null);
         if (g11Student != null) {
+            g11Student.setVocabularyAccessAllowed(true);
+            g11Student = studentRepository.save(g11Student);
             mockMvc.perform(get("/test/vocabulary")
                     .sessionAttr("loggedInStudent", g11Student)
                     .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
@@ -882,6 +891,7 @@ class ClassroomApplicationTests {
             tempG12Student.setClassName("12A");
             tempG12Student.setStudentCode("TEST-G12-VOCAB-001");
             tempG12Student.setAccountId(somuny.getId());
+            tempG12Student.setVocabularyAccessAllowed(true);
             tempG12Student = studentRepository.save(tempG12Student);
 
             mockMvc.perform(get("/test/vocabulary")
@@ -1464,37 +1474,48 @@ class ClassroomApplicationTests {
         Account teacher = accountRepository.findByUsername("samkimchheng").orElse(null);
         assertNotNull(teacher);
 
-        // 1. Next student code for 10F (has 47 students) should be 10F-48
-        String next10F = webController.generateNextStudentCode("១០F", teacher.getId(), "២០២៦-២០២៧");
-        assertEquals("10F-48", next10F);
+        // Ensure clean state before running
+        studentRepository.findAll().stream()
+                .filter(s -> "សិស្ស តេស្តថ្មី".equals(s.getName()) || "10F-48".equals(s.getStudentCode()))
+                .forEach(studentRepository::delete);
 
-        String next10FAsASCII = webController.generateNextStudentCode("10F", teacher.getId(), "២០២៦-២០២៧");
-        assertEquals("10F-48", next10FAsASCII);
+        try {
+            // 1. Next student code for 10F (has 47 students) should be 10F-48
+            String next10F = webController.generateNextStudentCode("១០F", teacher.getId(), "២០២៦-២០២៧");
+            assertEquals("10F-48", next10F);
 
-        // 2. Next code API endpoint
-        var mvcResult = mockMvc.perform(get("/api/students/next-code")
-                .sessionAttr("ACCOUNT_ID", teacher.getId())
-                .param("className", "10F"))
-                .andExpect(status().isOk())
-                .andReturn();
-        String json = mvcResult.getResponse().getContentAsString();
-        assertTrue(json.contains("\"studentCode\":\"10F-48\""), "Expected 10F-48 in JSON response");
+            String next10FAsASCII = webController.generateNextStudentCode("10F", teacher.getId(), "២០២៦-២០២៧");
+            assertEquals("10F-48", next10FAsASCII);
 
-        // 3. Form load
-        mockMvc.perform(get("/student/add")
-                .sessionAttr("ACCOUNT_ID", teacher.getId())
-                .param("className", "10F"))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("selectedClass", "10F"));
+            // 2. Next code API endpoint
+            var mvcResult = mockMvc.perform(get("/api/students/next-code")
+                    .sessionAttr("ACCOUNT_ID", teacher.getId())
+                    .param("className", "10F"))
+                    .andExpect(status().isOk())
+                    .andReturn();
+            String json = mvcResult.getResponse().getContentAsString();
+            assertTrue(json.contains("\"studentCode\":\"10F-48\""), "Expected 10F-48 in JSON response");
 
-        // 4. Form submit with auto-assigned code
-        mockMvc.perform(post("/student/add")
-                .sessionAttr("ACCOUNT_ID", teacher.getId())
-                .param("name", "សិស្ស តេស្តថ្មី")
-                .param("className", "១០F")
-                .param("studentCode", "10F-48")
-                .param("gender", "ប្រុស"))
-                .andExpect(status().is3xxRedirection());
+            // 3. Form load
+            mockMvc.perform(get("/student/add")
+                    .sessionAttr("ACCOUNT_ID", teacher.getId())
+                    .param("className", "10F"))
+                    .andExpect(status().isOk())
+                    .andExpect(model().attribute("selectedClass", "10F"));
+
+            // 4. Form submit with auto-assigned code
+            mockMvc.perform(post("/student/add")
+                    .sessionAttr("ACCOUNT_ID", teacher.getId())
+                    .param("name", "សិស្ស តេស្តថ្មី")
+                    .param("className", "១០F")
+                    .param("studentCode", "10F-48")
+                    .param("gender", "ប្រុស"))
+                    .andExpect(status().is3xxRedirection());
+        } finally {
+            studentRepository.findAll().stream()
+                    .filter(s -> "សិស្ស តេស្តថ្មី".equals(s.getName()) || "10F-48".equals(s.getStudentCode()))
+                    .forEach(studentRepository::delete);
+        }
     }
 
     @Test
@@ -1621,5 +1642,51 @@ class ClassroomApplicationTests {
                 .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/test/take?vocabDenied=true"));
+    }
+
+    @Test
+    void testStudentLessonsNeverRendersTeacherSidebarOrAdminControls() throws Exception {
+        Student stu = studentRepository.findAll().stream().findFirst().orElseGet(() -> {
+            Student s = new Student();
+            s.setName("Test Student");
+            s.setStudentCode("TEST-STU-01");
+            s.setClassName("10F");
+            s.setGender("ប្រុស");
+            return studentRepository.save(s);
+        });
+
+        // 1. When a student visits /lessons, it MUST render in student mode without teacher sidebar or edit buttons
+        mockMvc.perform(get("/lessons")
+                .sessionAttr("loggedInStudent", stu))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("isStudent", true))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.containsString("📚 មើលមេរៀន (Study Lessons)")))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("<div class=\"sidebar\""))))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("➕ បង្កើតមេរៀនថ្មី"))))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("📊 តាមដានការរៀនរបស់សិស្ស"))))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("✏️ កែប្រែ"))));
+
+        // 2. Student is blocked with 403 Forbidden when calling lesson modification APIs
+        mockMvc.perform(post("/api/lessons/save")
+                .sessionAttr("loggedInStudent", stu)
+                .param("title", "Hacked Lesson")
+                .param("className", "10F")
+                .param("subjectName", "English"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/api/lessons/delete/1")
+                .sessionAttr("loggedInStudent", stu))
+                .andExpect(status().isForbidden());
+
+        // 3. Student trying to access teacher-only routes (/students, /attendance) is redirected to student portal
+        mockMvc.perform(get("/students")
+                .sessionAttr("loggedInStudent", stu))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/test/take"));
+
+        mockMvc.perform(get("/attendance")
+                .sessionAttr("loggedInStudent", stu))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/test/take"));
     }
 }

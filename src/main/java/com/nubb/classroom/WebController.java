@@ -3009,6 +3009,12 @@ return "scores";
                 ext.setLastLoginAt(java.time.LocalDateTime.now());
                 externalLearnerRepository.save(ext);
 
+                session.removeAttribute("ACCOUNT_ID");
+                session.removeAttribute("ACCOUNT_ROLE");
+                session.removeAttribute("ACCOUNT_NAME");
+                session.removeAttribute("ACCOUNT_USERNAME");
+                session.removeAttribute("VOCABULARY_PERMISSION");
+                session.removeAttribute("CURRENT_ACADEMIC_YEAR");
                 session.setAttribute("IS_EXTERNAL_LEARNER", true);
                 session.setAttribute("loggedInExternalLearner", ext);
                 session.setAttribute("EXT_ALLOW_PHONICS", allowPhonics);
@@ -3020,6 +3026,9 @@ return "scores";
                 ResponseCookie clrStu = ResponseCookie.from("REMEMBER_STUDENT_ID", "")
                         .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
                 response.addHeader(HttpHeaders.SET_COOKIE, clrStu.toString());
+                ResponseCookie clrAcc = ResponseCookie.from("REMEMBER_ACCOUNT_ID", "")
+                        .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
+                response.addHeader(HttpHeaders.SET_COOKIE, clrAcc.toString());
 
                 String extToken = tokenSecurityService.generateExternalLearnerToken(ext);
                 ResponseCookie extCookie = ResponseCookie.from("REMEMBER_EXTERNAL_LEARNER", extToken)
@@ -3050,6 +3059,12 @@ return "scores";
             session.removeAttribute("loggedInExternalLearner");
             session.removeAttribute("EXT_ALLOW_PHONICS");
             session.removeAttribute("EXT_ALLOW_VOCAB");
+            session.removeAttribute("ACCOUNT_ID");
+            session.removeAttribute("ACCOUNT_ROLE");
+            session.removeAttribute("ACCOUNT_NAME");
+            session.removeAttribute("ACCOUNT_USERNAME");
+            session.removeAttribute("VOCABULARY_PERMISSION");
+            session.removeAttribute("CURRENT_ACADEMIC_YEAR");
             session.setAttribute("loggedInStudent", student);
             session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
 
@@ -3058,6 +3073,9 @@ return "scores";
             ResponseCookie clrExt = ResponseCookie.from("REMEMBER_EXTERNAL_LEARNER", "")
                     .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
             response.addHeader(HttpHeaders.SET_COOKIE, clrExt.toString());
+            ResponseCookie clrAcc = ResponseCookie.from("REMEMBER_ACCOUNT_ID", "")
+                    .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
+            response.addHeader(HttpHeaders.SET_COOKIE, clrAcc.toString());
             ResponseCookie cookie = ResponseCookie.from("REMEMBER_STUDENT_ID", studentToken)
                     .httpOnly(true)
                     .secure(isHttps)
