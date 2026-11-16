@@ -647,10 +647,10 @@
                         <span style="font-size: 1.5rem; flex-shrink: 0;">🛡️</span>
                         <div style="min-width: 0;">
                             <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: #92400e;">
-                                គ្រប់គ្រងសិទ្ធិចូលប្រើប្រាស់ (សម្រាប់តែ Admin តែម្នាក់គត់) — បិទ/បើក គ្រូ • ថ្នាក់រៀន • សិស្សក្នុងថ្នាក់
+                                ផ្ទាំងគ្រប់គ្រងសិទ្ធិចូលរៀនប្រកបអង់គ្លេស (សម្រាប់តែ Admin តែម្នាក់គត់) — បិទ/បើក គ្រូ • ថ្នាក់រៀន • សិស្សក្នុងថ្នាក់
                             </h3>
                             <div style="font-size: 0.83rem; color: #b45309; font-weight: 600;">
-                                កំណត់ថាគ្រូណា ថ្នាក់ណា និងសិស្សណាខ្លះដែលមានសិទ្ធិចូលរៀន ប្រកបអង់គ្លេស (Phonics) និងវាក្យសព្ទ (Vocab)
+                                កំណត់ថាគ្រូណា ថ្នាក់ណា និងសិស្សណាខ្លះដែលមានសិទ្ធិចូលរៀន <b>ប្រកបអង់គ្លេស (Oxford Phonics)</b>
                             </div>
                         </div>
                     </div>
@@ -936,14 +936,14 @@
                                     <td style="text-align: center;">
                                         <button th:if="${isAdmin}" type="button"
                                                 th:onclick="'toggleStudentAccess(' + ${row.student.id} + ')'"
-                                                th:style="${row.student.englishAccessAllowed == true ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;'}"
+                                                th:style="${row.student.phonicsAccessAllowed == true ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;'}"
                                                 style="padding: 4px 10px; border-radius: 12px; font-weight: 800; font-size: 0.78rem; cursor: pointer;">
-                                            <span th:text="${row.student.englishAccessAllowed == true ? '✅ បើកសិទ្ធិ' : '🔒 បិទសិទ្ធិ'}">🔒 បិទសិទ្ធិ</span>
+                                            <span th:text="${row.student.phonicsAccessAllowed == true ? '✅ បើកសិទ្ធិ' : '🔒 បិទសិទ្ធិ'}">🔒 បិទសិទ្ធិ</span>
                                         </button>
                                         <span th:unless="${isAdmin}"
-                                              th:style="${row.student.englishAccessAllowed == true ? 'background:#dcfce7; color:#166534;' : 'background:#fee2e2; color:#991b1b;'}"
+                                              th:style="${row.student.phonicsAccessAllowed == true ? 'background:#dcfce7; color:#166534;' : 'background:#fee2e2; color:#991b1b;'}"
                                               style="padding: 3px 9px; border-radius: 12px; font-weight: 800; font-size: 0.78rem;"
-                                              th:text="${row.student.englishAccessAllowed == true ? '🟢 បើកសិទ្ធិ' : '🔒 បិទសិទ្ធិ'}">🔒 បិទសិទ្ធិ</span>
+                                              th:text="${row.student.phonicsAccessAllowed == true ? '🟢 បើកសិទ្ធិ' : '🔒 បិទសិទ្ធិ'}">🔒 បិទសិទ្ធិ</span>
                                     </td>
                                     <td style="text-align: center; font-weight: 700;" th:text="${row.l1Percent} + '%'">0%</td>
                                     <td style="text-align: center; font-weight: 700;" th:text="${row.l2Percent} + '%'">0%</td>
@@ -1445,7 +1445,7 @@
         }
 
         function toggleClassAccess(className, allowed) {
-            fetch('/api/english-access/toggle-class?className=' + encodeURIComponent(className) + '&allowed=' + allowed, { method: 'POST' })
+            fetch('/api/phonics-access/toggle-class?className=' + encodeURIComponent(className) + '&allowed=' + allowed + '&type=phonics', { method: 'POST' })
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
@@ -1458,7 +1458,7 @@
         }
 
         function toggleStudentAccess(studentId) {
-            fetch('/api/english-access/toggle-student?studentId=' + studentId, { method: 'POST' })
+            fetch('/api/phonics-access/toggle-student?studentId=' + studentId + '&type=phonics', { method: 'POST' })
             .then(r => r.json())
             .then(data => {
                 if (data.success) {

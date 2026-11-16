@@ -883,8 +883,8 @@
                     <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
                         <span style="font-size: 1.4rem; flex-shrink: 0;">🛡️</span>
                         <div style="min-width: 0;">
-                            <div style="font-weight: 800; color: #1e1b4b; font-size: 0.98rem;">ផ្ទាំងគ្រប់គ្រងសិទ្ធិចូលរៀន និងបង្រៀន (សម្រាប់តែ Admin ប៉ុណ្ណោះ)</div>
-                            <div style="font-size: 0.82rem; color: #4338ca;">កំណត់បិទ/បើកថា <b>គ្រូណា</b> មានសិទ្ធិចូលប្រើ និង <b>ថ្នាក់ណា / សិស្សណា</b> មានសិទ្ធិចូលរៀនប្រកប និងវាក្យសព្ទអង់គ្លេស (សិស្សមានសិទ្ធិសរុប៖ <b th:text="${totalAllowedStudentsCount} + '/' + ${allClassesStudentsCount}">0/0</b> នាក់)</div>
+                            <div style="font-weight: 800; color: #1e1b4b; font-size: 0.98rem;">ផ្ទាំងគ្រប់គ្រងសិទ្ធិចូលរៀនវាក្យសព្ទ (សម្រាប់តែ Admin ប៉ុណ្ណោះ)</div>
+                            <div style="font-size: 0.82rem; color: #4338ca;">កំណត់បិទ/បើកថា <b>គ្រូណា</b> មានសិទ្ធិចូលប្រើ និង <b>ថ្នាក់ណា / សិស្សណា</b> មានសិទ្ធិចូលរៀន<b>វាក្យសព្ទអង់គ្លេស (Vocabulary)</b> (សិស្សមានសិទ្ធិសរុប៖ <b th:text="${totalAllowedStudentsCount} + '/' + ${allClassesStudentsCount}">0/0</b> នាក់)</div>
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: nowrap; flex-shrink: 0;">
@@ -914,7 +914,7 @@
 
                 <!-- 2. គ្រប់គ្រងសិទ្ធិសិស្សតាមថ្នាក់ (Classes Access) -->
                 <div style="padding: 10px 14px; background: white; border-radius: 10px; border: 1px solid #c7d2fe;">
-                    <div style="font-weight: 700; font-size: 0.86rem; color: #312e81; margin-bottom: 8px;">🏫 ២. បិទ/បើកសិទ្ធិសិស្សតាមថ្នាក់រៀន (ចុចលើថ្នាក់ដើម្បីបើក ឬបិទសិស្សទាំងអស់ក្នុងថ្នាក់នោះ ឬចូលទៅផ្ទាំង «តាមដានការរៀនរបស់សិស្ស» ដើម្បីបិទ/បើកសិស្សម្នាក់ៗ)៖</div>
+                    <div style="font-weight: 700; font-size: 0.86rem; color: #312e81; margin-bottom: 8px;">🏫 ២. បិទ/បើកសិទ្ធិរៀនវាក្យសព្ទតាមថ្នាក់រៀន (ចុចលើថ្នាក់ដើម្បីបើក ឬបិទសិទ្ធិវាក្យសព្ទសម្រាប់សិស្សទាំងអស់ក្នុងថ្នាក់នោះ ឬចូលទៅផ្ទាំង «តាមដានការរៀនរបស់សិស្ស» ដើម្បីបិទ/បើកសិស្សម្នាក់ៗ)៖</div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button th:each="cs : ${classAccessList}" type="button"
                                 th:data-cls="${cs.className}"
@@ -1176,13 +1176,13 @@
                                 <td style="text-align: center;">
                                     <button th:if="${isAdmin}" type="button"
                                             th:attr="onclick='toggleStudentAccess(' + ${sp.student.id} + ')'"
-                                            th:style="${sp.student.englishAccessAllowed == true ? 'background:#ecfdf5; color:#047857; border:1px solid #34d399;' : 'background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;'}"
+                                            th:style="${sp.student.vocabularyAccessAllowed == true ? 'background:#ecfdf5; color:#047857; border:1px solid #34d399;' : 'background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;'}"
                                             style="padding: 4px 10px; border-radius: 999px; font-family: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
-                                        <span th:text="${sp.student.englishAccessAllowed == true ? '✅ អនុញ្ញាត' : '🔒 បិទសិទ្ធិ'}">✅ អនុញ្ញាត</span>
+                                        <span th:text="${sp.student.vocabularyAccessAllowed == true ? '✅ អនុញ្ញាត' : '🔒 បិទសិទ្ធិ'}">✅ អនុញ្ញាត</span>
                                     </button>
                                     <span th:unless="${isAdmin}"
-                                          th:text="${sp.student.englishAccessAllowed == true ? '✅ អនុញ្ញាត' : '🔒 បិទសិទ្ធិ'}"
-                                          th:style="${sp.student.englishAccessAllowed == true ? 'color:#047857; font-weight:700; font-size:0.8rem;' : 'color:#b91c1c; font-weight:700; font-size:0.8rem;'}">✅ អនុញ្ញាត</span>
+                                          th:text="${sp.student.vocabularyAccessAllowed == true ? '✅ អនុញ្ញាត' : '🔒 បិទសិទ្ធិ'}"
+                                          th:style="${sp.student.vocabularyAccessAllowed == true ? 'color:#047857; font-weight:700; font-size:0.8rem;' : 'color:#b91c1c; font-weight:700; font-size:0.8rem;'}">✅ អនុញ្ញាត</span>
                                 </td>
                                 <td>
                                     <div>
@@ -1581,8 +1581,8 @@
         function toggleClassAccess(className, allowed) {
             const label = className === 'ALL' ? 'គ្រប់ថ្នាក់ទាំងអស់' : ('ថ្នាក់ ' + className);
             Swal.fire({
-                title: (allowed ? 'បើកសិទ្ធិចូលរៀនសម្រាប់ ' : 'បិទសិទ្ធិចូលរៀនសម្រាប់ ') + label + '?',
-                text: 'កំណត់សិទ្ធិសិស្សក្នុង ' + label + ' ឱ្យចូលរៀន ប្រកបអង់គ្លេស និង វាក្យសព្ទ។',
+                title: (allowed ? 'បើកសិទ្ធិចូលរៀនវាក្យសព្ទសម្រាប់ ' : 'បិទសិទ្ធិចូលរៀនវាក្យសព្ទសម្រាប់ ') + label + '?',
+                text: 'កំណត់សិទ្ធិសិស្សក្នុង ' + label + ' ឱ្យចូលរៀន «វាក្យសព្ទ (Vocabulary)»។ (មិនប៉ះពាល់ដល់សិទ្ធិប្រកបអង់គ្លេស Phonics ឡើយ)',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'យល់ព្រម',
@@ -1592,7 +1592,8 @@
                     const formData = new URLSearchParams();
                     formData.append('className', className);
                     formData.append('allowed', allowed);
-                    fetch('/api/english-access/toggle-class', {
+                    formData.append('type', 'vocabulary');
+                    fetch('/api/vocabulary-access/toggle-class', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                         body: formData
@@ -1613,7 +1614,8 @@
         function toggleStudentAccess(studentId) {
             const formData = new URLSearchParams();
             formData.append('studentId', studentId);
-            fetch('/api/english-access/toggle-student', {
+            formData.append('type', 'vocabulary');
+            fetch('/api/vocabulary-access/toggle-student', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: formData

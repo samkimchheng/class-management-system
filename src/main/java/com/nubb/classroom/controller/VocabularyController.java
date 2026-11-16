@@ -246,7 +246,7 @@ public class VocabularyController {
             String clsName = entry.getKey();
             List<Student> clsStu = entry.getValue();
             int stuCnt = clsStu.size();
-            int enCnt = (int) clsStu.stream().filter(s -> Boolean.TRUE.equals(s.getEnglishAccessAllowed())).count();
+            int enCnt = (int) clsStu.stream().filter(s -> Boolean.TRUE.equals(s.getVocabularyAccessAllowed())).count();
             Map<String, Object> cRow = new LinkedHashMap<>();
             cRow.put("className", clsName);
             cRow.put("studentCount", stuCnt);
@@ -257,7 +257,7 @@ public class VocabularyController {
         }
 
         int totalAllowedStudentsCount = (int) allStudents.stream()
-                .filter(s -> Boolean.TRUE.equals(s.getEnglishAccessAllowed()))
+                .filter(s -> Boolean.TRUE.equals(s.getVocabularyAccessAllowed()))
                 .count();
 
         // Build Student Progress Cards scoped to selectedGrade's words
@@ -364,8 +364,8 @@ public class VocabularyController {
         if (student.getId() != null && student.getId() > 0) {
             student = studentRepository.findById(student.getId()).orElse(student);
             session.setAttribute("loggedInStudent", student);
-            if (session.getAttribute("ACCOUNT_ID") == null && !Boolean.TRUE.equals(student.getEnglishAccessAllowed())) {
-                return "redirect:/test/take?englishDenied=true";
+            if (session.getAttribute("ACCOUNT_ID") == null && !Boolean.TRUE.equals(student.getVocabularyAccessAllowed())) {
+                return "redirect:/test/take?vocabDenied=true";
             }
         }
         session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
@@ -683,7 +683,7 @@ public class VocabularyController {
         if (student.getId() != null && student.getId() > 0 && session.getAttribute("ACCOUNT_ID") == null) {
             student = studentRepository.findById(student.getId()).orElse(student);
             session.setAttribute("loggedInStudent", student);
-            if (!Boolean.TRUE.equals(student.getEnglishAccessAllowed())) {
+            if (!Boolean.TRUE.equals(student.getVocabularyAccessAllowed())) {
                 return ResponseEntity.status(403).body(Map.of("success", false, "message", "គណនីសិស្ស ឬថ្នាក់រៀនរបស់ប្អូនមិនទាន់ត្រូវបានបើកសិទ្ធិដោយ Admin នៅឡើយទេ!"));
             }
         }

@@ -1493,4 +1493,95 @@ class ClassroomApplicationTests {
             assertEquals("10F-47", matched.get().getStudentCode());
         }
     }
+
+    @Test
+    @org.springframework.transaction.annotation.Transactional
+    void testSeparatedVocabularyAndPhonicsPermissions() throws Exception {
+        // Find or create admin account
+        Account admin = accountRepository.findAll().stream()
+                .filter(a -> "ADMIN".equalsIgnoreCase(a.getRole()))
+                .findFirst().orElseGet(() -> {
+                    Account a = new Account("testadmin", "123", "ADMIN", "Administrator");
+                    return accountRepository.save(a);
+                });
+
+        // 1. Initially toggle class 10F Vocabulary = TRUE, Phonics = FALSE
+        mockMvc.perform(post("/api/vocabulary-access/toggle-class")
+                .sessionAttr("ACCOUNT_ID", admin.getId())
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN")
+                .param("className", "10F")
+                .param("allowed", "true")
+                .param("type", "vocabulary"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/phonics-access/toggle-class")
+                .sessionAttr("ACCOUNT_ID", admin.getId())
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN")
+                .param("className", "10F")
+                .param("allowed", "false")
+                .param("type", "phonics"))
+                .andExpect(status().isOk());
+
+        // Verify students in 10F
+        List<Student> students10F = studentRepository.findAll().stream()
+                .filter(s -> s.getClassName() != null && (s.getClassName().contains("10F") || s.getClassName().contains("១០F")))
+                .toList();
+        assertFalse(students10F.isEmpty(), "students10F should not be empty");
+        for (Student s : students10F) {
+            assertTrue(s.getVocabularyAccessAllowed(), "Vocabulary must be allowed for 10F");
+            assertFalse(s.getPhonicsAccessAllowed(), "Phonics must NOT be allowed when only vocabulary was toggled");
+        }
+
+        // Test student 10F-01 logging in and accessing vocabulary -> OK
+        Student s1 = students10F.get(0);
+        mockMvc.perform(get("/test/vocabulary")
+                .sessionAttr("loggedInStudent", s1)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isOk());
+
+        // Test student 10F-01 attempting to access phonics -> REDIRECT with phonicsDenied=true
+        mockMvc.perform(get("/test/phonics")
+                .sessionAttr("loggedInStudent", s1)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/test/take?phonicsDenied=true"));
+
+        // 2. Now Admin enables Phonics for 10F
+        mockMvc.perform(post("/api/phonics-access/toggle-class")
+                .sessionAttr("ACCOUNT_ID", admin.getId())
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN")
+                .param("className", "10F")
+                .param("allowed", "true")
+                .param("type", "phonics"))
+                .andExpect(status().isOk());
+
+        Student s1Updated = studentRepository.findById(s1.getId()).orElseThrow();
+        assertTrue(s1Updated.getVocabularyAccessAllowed(), "Vocabulary still allowed");
+        assertTrue(s1Updated.getPhonicsAccessAllowed(), "Phonics now allowed");
+
+        // Now student 10F-01 CAN access phonics -> OK
+        mockMvc.perform(get("/test/phonics")
+                .sessionAttr("loggedInStudent", s1Updated)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().isOk());
+
+        // 3. Admin disables Vocabulary for 10F, but leaves Phonics enabled
+        mockMvc.perform(post("/api/vocabulary-access/toggle-class")
+                .sessionAttr("ACCOUNT_ID", admin.getId())
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN")
+                .param("className", "10F")
+                .param("allowed", "false")
+                .param("type", "vocabulary"))
+                .andExpect(status().isOk());
+
+        Student s1NoVocab = studentRepository.findById(s1.getId()).orElseThrow();
+        assertFalse(s1NoVocab.getVocabularyAccessAllowed(), "Vocabulary now disabled");
+        assertTrue(s1NoVocab.getPhonicsAccessAllowed(), "Phonics remains enabled independently");
+
+        mockMvc.perform(get("/test/vocabulary")
+                .sessionAttr("loggedInStudent", s1NoVocab)
+                .sessionAttr("ACTIVE_USER_MODE", "STUDENT"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/test/take?vocabDenied=true"));
+    }
 }

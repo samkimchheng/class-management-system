@@ -39,6 +39,12 @@ public class Student {
 
     @Column(name = "english_access_allowed")
     private Boolean englishAccessAllowed = false;
+
+    @Column(name = "vocabulary_access_allowed")
+    private Boolean vocabularyAccessAllowed = false;
+
+    @Column(name = "phonics_access_allowed")
+    private Boolean phonicsAccessAllowed = false;
     
     // Constructors, Getters, Setters
     public Student() {}
@@ -117,8 +123,26 @@ public class Student {
     public String getAcademicYear() { return academicYear; }
     public void setAcademicYear(String academicYear) { this.academicYear = academicYear; }
 
+    public Boolean getVocabularyAccessAllowed() {
+        return vocabularyAccessAllowed != null ? vocabularyAccessAllowed : false;
+    }
+
+    public void setVocabularyAccessAllowed(Boolean vocabularyAccessAllowed) {
+        this.vocabularyAccessAllowed = vocabularyAccessAllowed;
+    }
+
+    public Boolean getPhonicsAccessAllowed() {
+        return phonicsAccessAllowed != null ? phonicsAccessAllowed : false;
+    }
+
+    public void setPhonicsAccessAllowed(Boolean phonicsAccessAllowed) {
+        this.phonicsAccessAllowed = phonicsAccessAllowed;
+    }
+
     public Boolean getEnglishAccessAllowed() {
-        return englishAccessAllowed != null ? englishAccessAllowed : false;
+        return (vocabularyAccessAllowed != null && vocabularyAccessAllowed)
+                || (phonicsAccessAllowed != null && phonicsAccessAllowed)
+                || (englishAccessAllowed != null && englishAccessAllowed);
     }
 
     public void setEnglishAccessAllowed(Boolean englishAccessAllowed) {

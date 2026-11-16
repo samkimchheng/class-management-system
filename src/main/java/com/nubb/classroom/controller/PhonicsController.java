@@ -268,7 +268,7 @@ public class PhonicsController {
             long sumListening = 0, sumReading = 0, sumSpeaking = 0, sumWriting = 0;
 
             for (Student s : clsStudents) {
-                if (Boolean.TRUE.equals(s.getEnglishAccessAllowed())) {
+                if (Boolean.TRUE.equals(s.getPhonicsAccessAllowed())) {
                     enabledCount++;
                 }
                 List<StudentPhonicsProgress> pList = progressByStudent.getOrDefault(s.getId(), Collections.emptyList());
@@ -375,7 +375,7 @@ public class PhonicsController {
         studentProgressList.sort((a, b) -> Long.compare((Long) b.get("overallMastered"), (Long) a.get("overallMastered")));
 
         int totalAllowedStudentsCount = (int) allStudents.stream()
-                .filter(s -> Boolean.TRUE.equals(s.getEnglishAccessAllowed()))
+                .filter(s -> Boolean.TRUE.equals(s.getPhonicsAccessAllowed()))
                 .count();
 
         if (isAdmin) {
@@ -441,8 +441,8 @@ public class PhonicsController {
         if (student.getId() != null && student.getId() > 0) {
             student = studentRepository.findById(student.getId()).orElse(student);
             session.setAttribute("loggedInStudent", student);
-            if (session.getAttribute("ACCOUNT_ID") == null && !Boolean.TRUE.equals(student.getEnglishAccessAllowed())) {
-                return "redirect:/test/take?englishDenied=true";
+            if (session.getAttribute("ACCOUNT_ID") == null && !Boolean.TRUE.equals(student.getPhonicsAccessAllowed())) {
+                return "redirect:/test/take?phonicsDenied=true";
             }
         }
         session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
@@ -760,11 +760,13 @@ public class PhonicsController {
         ));
     }
 
-    @PostMapping("/api/english-access/toggle-class")
+    @PostMapping(value = {"/api/english-access/toggle-class", "/api/phonics-access/toggle-class", "/api/vocabulary-access/toggle-class"})
     @ResponseBody
     public ResponseEntity<?> toggleClassEnglishAccess(
             @RequestParam String className,
-            @RequestParam boolean allowed) {
+            @RequestParam boolean allowed,
+            @RequestParam(required = false) String type,
+            jakarta.servlet.http.HttpServletRequest request) {
         Account curr = getCurrentTeacherAccount();
         if (!isAdminAccount(curr)) {
             return ResponseEntity.status(403).body(Map.of("success", false, "message", "🔒 មានតែ Admin តែម្នាក់គត់ដែលមានសិទ្ធិបិទ/បើកសិទ្ធិថ្នាក់រៀន!"));
@@ -773,34 +775,59 @@ public class PhonicsController {
         if (cleanCls.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "សូមជ្រើសរើសថ្នាក់រៀន!"));
         }
+
+        String targetType = type != null ? type.trim().toLowerCase() : "";
+        if (targetType.isEmpty()) {
+            String uri = request != null ? request.getRequestURI() : "";
+            if (uri.contains("vocabulary")) {
+                targetType = "vocabulary";
+            } else if (uri.contains("phonics")) {
+                targetType = "phonics";
+            } else {
+                targetType = "both";
+            }
+        }
+
         String normClean = com.nubb.classroom.controller.LessonController.normalizeClass(cleanCls);
         List<Student> all = studentRepository.findAll();
         List<Student> matched = new ArrayList<>();
         for (Student s : all) {
             if ("ALL".equalsIgnoreCase(cleanCls)
                     || (s.getClassName() != null && (s.getClassName().trim().equalsIgnoreCase(cleanCls) || com.nubb.classroom.controller.LessonController.normalizeClass(s.getClassName()).equals(normClean)))) {
-                s.setEnglishAccessAllowed(allowed);
+                if ("vocabulary".equals(targetType)) {
+                    s.setVocabularyAccessAllowed(allowed);
+                } else if ("phonics".equals(targetType)) {
+                    s.setPhonicsAccessAllowed(allowed);
+                } else {
+                    s.setVocabularyAccessAllowed(allowed);
+                    s.setPhonicsAccessAllowed(allowed);
+                    s.setEnglishAccessAllowed(allowed);
+                }
                 matched.add(s);
             }
         }
         if (!matched.isEmpty()) {
             studentRepository.saveAll(matched);
         }
+        String typeLabel = "vocabulary".equals(targetType) ? "វាក្យសព្ទ (Vocabulary)" : ("phonics".equals(targetType) ? "ប្រកបអង់គ្លេស (Phonics)" : "វាក្យសព្ទ និង ប្រកបអង់គ្លេស");
         String label = "ALL".equalsIgnoreCase(cleanCls) ? "គ្រប់ថ្នាក់ទាំងអស់" : ("ថ្នាក់ " + cleanCls);
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "allowed", allowed,
+                "type", targetType,
                 "className", cleanCls,
                 "updatedCount", matched.size(),
-                "message", (allowed ? "✅ បានបើកសិទ្ធិឱ្យចូលរៀន" : "🔒 បានបិទសិទ្ធិចូលរៀន") + " សម្រាប់ " + label + " (សិស្ស " + matched.size() + " នាក់)!"
+                "message", (allowed ? "✅ បានបើកសិទ្ធិឱ្យចូលរៀន " : "🔒 បានបិទសិទ្ធិចូលរៀន ") + typeLabel + " សម្រាប់ " + label + " (សិស្ស " + matched.size() + " នាក់)!"
         ));
     }
 
-    @PostMapping("/api/english-access/toggle-student")
+    @PostMapping(value = {"/api/english-access/toggle-student", "/api/phonics-access/toggle-student", "/api/vocabulary-access/toggle-student"})
     @ResponseBody
     public ResponseEntity<?> toggleStudentEnglishAccess(
             @RequestParam Long studentId,
-            @RequestParam(required = false) Boolean allowed) {
+            @RequestParam(required = false) Boolean allowed,
+            @RequestParam(required = false) String type,
+            jakarta.servlet.http.HttpServletRequest request) {
         Account curr = getCurrentTeacherAccount();
         if (!isAdminAccount(curr)) {
             return ResponseEntity.status(403).body(Map.of("success", false, "message", "🔒 មានតែ Admin តែម្នាក់គត់ដែលមានសិទ្ធិបិទ/បើកសិទ្ធិសិស្សម្នាក់ៗ!"));
@@ -809,14 +836,43 @@ public class PhonicsController {
         if (s == null) {
             return ResponseEntity.status(404).body(Map.of("success", false, "message", "រកមិនឃើញទិន្នន័យសិស្សនេះទេ!"));
         }
-        boolean next = (allowed != null) ? allowed : !Boolean.TRUE.equals(s.getEnglishAccessAllowed());
-        s.setEnglishAccessAllowed(next);
+
+        String targetType = type != null ? type.trim().toLowerCase() : "";
+        if (targetType.isEmpty()) {
+            String uri = request != null ? request.getRequestURI() : "";
+            if (uri.contains("vocabulary")) {
+                targetType = "vocabulary";
+            } else if (uri.contains("phonics")) {
+                targetType = "phonics";
+            } else {
+                targetType = "both";
+            }
+        }
+
+        boolean next;
+        String typeLabel;
+        if ("vocabulary".equals(targetType)) {
+            next = (allowed != null) ? allowed : !Boolean.TRUE.equals(s.getVocabularyAccessAllowed());
+            s.setVocabularyAccessAllowed(next);
+            typeLabel = "វាក្យសព្ទ (Vocabulary)";
+        } else if ("phonics".equals(targetType)) {
+            next = (allowed != null) ? allowed : !Boolean.TRUE.equals(s.getPhonicsAccessAllowed());
+            s.setPhonicsAccessAllowed(next);
+            typeLabel = "ប្រកបអង់គ្លេស (Phonics)";
+        } else {
+            next = (allowed != null) ? allowed : !Boolean.TRUE.equals(s.getEnglishAccessAllowed());
+            s.setVocabularyAccessAllowed(next);
+            s.setPhonicsAccessAllowed(next);
+            s.setEnglishAccessAllowed(next);
+            typeLabel = "វាក្យសព្ទ និង ប្រកបអង់គ្លេស";
+        }
         studentRepository.save(s);
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "allowed", next,
+                "type", targetType,
                 "studentId", s.getId(),
-                "message", (next ? "✅ បានបើកសិទ្ធិចូលរៀន" : "🔒 បានបិទសិទ្ធិចូលរៀន") + " សម្រាប់សិស្ស «" + s.getName() + "» (" + s.getClassName() + ")!"
+                "message", (next ? "✅ បានបើកសិទ្ធិចូលរៀន " : "🔒 បានបិទសិទ្ធិចូលរៀន ") + typeLabel + " សម្រាប់សិស្ស «" + s.getName() + "» (" + s.getClassName() + ")!"
         ));
     }
 
@@ -833,7 +889,7 @@ public class PhonicsController {
         if (student.getId() != null && student.getId() > 0 && session.getAttribute("ACCOUNT_ID") == null) {
             student = studentRepository.findById(student.getId()).orElse(student);
             session.setAttribute("loggedInStudent", student);
-            if (!Boolean.TRUE.equals(student.getEnglishAccessAllowed())) {
+            if (!Boolean.TRUE.equals(student.getPhonicsAccessAllowed())) {
                 return ResponseEntity.status(403).body(Map.of("success", false, "message", "គណនីសិស្ស ឬថ្នាក់រៀនរបស់ប្អូនមិនទាន់ត្រូវបានបើកសិទ្ធិដោយ Admin នៅឡើយទេ!"));
             }
         }

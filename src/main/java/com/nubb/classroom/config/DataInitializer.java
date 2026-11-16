@@ -49,6 +49,10 @@ public class DataInitializer {
         try { stmt.execute("UPDATE \"ACCOUNT\" SET \"VOCABULARY_PERMISSION\" = TRUE WHERE \"ROLE\" = 'ADMIN' OR (\"USERNAME\" = 'samkimchheng' AND \"VOCABULARY_PERMISSION\" IS NULL)"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS students ADD COLUMN IF NOT EXISTS english_access_allowed BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS \"STUDENTS\" ADD COLUMN IF NOT EXISTS \"ENGLISH_ACCESS_ALLOWED\" BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS students ADD COLUMN IF NOT EXISTS vocabulary_access_allowed BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"STUDENTS\" ADD COLUMN IF NOT EXISTS \"VOCABULARY_ACCESS_ALLOWED\" BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS students ADD COLUMN IF NOT EXISTS phonics_access_allowed BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
+        try { stmt.execute("ALTER TABLE IF EXISTS \"STUDENTS\" ADD COLUMN IF NOT EXISTS \"PHONICS_ACCESS_ALLOWED\" BOOLEAN DEFAULT FALSE"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS exam ALTER COLUMN class_name SET DATA TYPE VARCHAR(1000)"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS exam ADD COLUMN IF NOT EXISTS reading_passage TEXT"); } catch (Exception ignored) {}
         try { stmt.execute("ALTER TABLE IF EXISTS \"EXAM\" ADD COLUMN IF NOT EXISTS \"READING_PASSAGE\" TEXT"); } catch (Exception ignored) {}

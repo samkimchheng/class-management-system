@@ -2942,9 +2942,16 @@ return "scores";
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-            if ("/test/vocabulary".equals(redirectTo) || "/test/phonics".equals(redirectTo)) {
-                if (!Boolean.TRUE.equals(student.getEnglishAccessAllowed())) {
-                    redirectAttributes.addFlashAttribute("errorMessage", "🔒 គណនីសិស្ស ឬថ្នាក់រៀនរបស់ប្អូនមិនទាន់ត្រូវបានបើកសិទ្ធិឱ្យចូលរៀន ប្រកបអង់គ្លេស និងវាក្យសព្ទ ដោយ Admin នៅឡើយទេ!");
+            if ("/test/vocabulary".equals(redirectTo)) {
+                if (!Boolean.TRUE.equals(student.getVocabularyAccessAllowed())) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "🔒 គណនីសិស្ស ឬថ្នាក់រៀនរបស់ប្អូនមិនទាន់ត្រូវបានបើកសិទ្ធិឱ្យចូលរៀន «វាក្យសព្ទ (Vocabulary)» ដោយ Admin នៅឡើយទេ!");
+                    return "redirect:/test";
+                }
+                return "redirect:" + redirectTo;
+            }
+            if ("/test/phonics".equals(redirectTo)) {
+                if (!Boolean.TRUE.equals(student.getPhonicsAccessAllowed())) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "🔒 គណនីសិស្ស ឬថ្នាក់រៀនរបស់ប្អូនមិនទាន់ត្រូវបានបើកសិទ្ធិឱ្យចូលរៀន «ប្រកបអង់គ្លេស (Oxford Phonics)» ដោយ Admin នៅឡើយទេ!");
                     return "redirect:/test";
                 }
                 return "redirect:" + redirectTo;
