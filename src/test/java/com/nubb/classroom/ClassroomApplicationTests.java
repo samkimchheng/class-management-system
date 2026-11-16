@@ -1335,13 +1335,17 @@ class ClassroomApplicationTests {
 
         List<Student> kimStudents = studentRepository.findByAccountId(kimchheng.getId());
         assertFalse(kimStudents.isEmpty());
-        Student stu = kimStudents.stream()
-                .filter(s -> !LessonController.resolveLessonsForStudent(lessonRepository, s).isEmpty())
-                .findFirst()
-                .orElse(kimStudents.get(0));
+        Student stu = kimStudents.get(0);
         List<Lesson> stuLessons = LessonController.resolveLessonsForStudent(lessonRepository, stu);
-        assertFalse(stuLessons.isEmpty());
-        Lesson targetLesson = stuLessons.get(0);
+        Lesson targetLesson;
+        boolean createdTemp = false;
+        if (stuLessons.isEmpty()) {
+            targetLesson = new Lesson(kimchheng.getId(), "Unit Progress Test", stu.getClassName(), "ភាសាអង់គ្លេស", "Test Content", "ខ្លឹមសារ", null);
+            targetLesson = lessonRepository.save(targetLesson);
+            createdTemp = true;
+        } else {
+            targetLesson = stuLessons.get(0);
+        }
 
         String userKey = "STUDENT_" + stu.getId();
         var existingOpt = lessonProgressRepository.findByLessonIdAndUserKey(targetLesson.getId(), userKey);
@@ -1380,15 +1384,20 @@ class ClassroomApplicationTests {
                     .andExpect(status().isOk())
                     .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("id=\"progressTab\""))));
         } finally {
-            var afterOpt = lessonProgressRepository.findByLessonIdAndUserKey(targetLesson.getId(), userKey);
-            if (afterOpt.isPresent()) {
-                if (origPct == -1) {
-                    lessonProgressRepository.delete(afterOpt.get());
-                } else {
-                    var lp = afterOpt.get();
-                    lp.setProgressPercentage(origPct);
-                    lp.setCompleted(origDone);
-                    lessonProgressRepository.save(lp);
+            if (createdTemp) {
+                lessonProgressRepository.deleteByLessonId(targetLesson.getId());
+                lessonRepository.delete(targetLesson);
+            } else {
+                var afterOpt = lessonProgressRepository.findByLessonIdAndUserKey(targetLesson.getId(), userKey);
+                if (afterOpt.isPresent()) {
+                    if (origPct == -1) {
+                        lessonProgressRepository.delete(afterOpt.get());
+                    } else {
+                        var lp = afterOpt.get();
+                        lp.setProgressPercentage(origPct);
+                        lp.setCompleted(origDone);
+                        lessonProgressRepository.save(lp);
+                    }
                 }
             }
         }
@@ -1688,5 +1697,26 @@ class ClassroomApplicationTests {
                 .sessionAttr("loggedInStudent", stu))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/test/take"));
+    }
+
+    @Test
+    void testOldGrade10And11LessonsDeletedAndNeverResurrectedOnUpdate() {
+        // 1. Verify standard lesson seeder does NOT resurrect any lessons
+        int countBefore = lessonRepository.findAll().size();
+        com.nubb.classroom.config.StandardLessonSeeder seeder = new com.nubb.classroom.config.StandardLessonSeeder();
+        seeder.seedLessonsForAllTeachers();
+        int countAfter = lessonRepository.findAll().size();
+        assertEquals(countBefore, countAfter, "Seeder must never resurrect lessons");
+
+        // 2. Verify all old Grade 10 & Grade 11 pre-seeded lessons are deleted
+        List<Lesson> allLessons = lessonRepository.findAll();
+        System.out.println("DEBUG ALL LESSONS (" + allLessons.size() + "):");
+        for (Lesson l : allLessons) {
+            System.out.println("  ID=" + l.getId() + ", Title=" + l.getTitle() + ", Class=" + l.getClassName());
+        }
+        List<Lesson> remainingOld = allLessons.stream()
+                .filter(l -> l.getTitle() != null && (l.getTitle().startsWith("Unit1 : MY PERSONAL") || l.getTitle().startsWith("Grade 11 Unit 1")))
+                .toList();
+        assertTrue(remainingOld.isEmpty(), "Old Grade 10 and 11 lessons must be deleted: " + remainingOld);
     }
 }

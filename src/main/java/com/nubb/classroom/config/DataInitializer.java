@@ -147,6 +147,54 @@ public class DataInitializer {
         try { stmt.execute("UPDATE question SET account_id = 97 WHERE account_id IS NULL OR account_id = 1"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE \"QUESTION\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL OR \"ACCOUNT_ID\" = 1"); } catch (Exception ignored) {}
 
+        // One-time cleanup of old Grade 10 & 11 lessons requested by user
+        try {
+            stmt.execute("CREATE TABLE IF NOT EXISTS system_config (config_key VARCHAR(100) PRIMARY KEY, config_value VARCHAR(255))");
+            stmt.execute("CREATE TABLE IF NOT EXISTS \"SYSTEM_CONFIG\" (\"CONFIG_KEY\" VARCHAR(100) PRIMARY KEY, \"CONFIG_VALUE\" VARCHAR(255))");
+            boolean alreadyCleaned = false;
+            try (ResultSet rs = stmt.executeQuery("SELECT config_value FROM system_config WHERE config_key = 'CLEANED_OLD_GRADE10_11_LESSONS_V2'")) {
+                if (rs.next()) {
+                    alreadyCleaned = "true".equalsIgnoreCase(rs.getString(1));
+                }
+            } catch (Exception ignored) {}
+            if (!alreadyCleaned) {
+                try (ResultSet rs = stmt.executeQuery("SELECT \"CONFIG_VALUE\" FROM \"SYSTEM_CONFIG\" WHERE \"CONFIG_KEY\" = 'CLEANED_OLD_GRADE10_11_LESSONS_V2'")) {
+                    if (rs.next()) {
+                        alreadyCleaned = "true".equalsIgnoreCase(rs.getString(1));
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            if (!alreadyCleaned) {
+                try {
+                    stmt.execute("DELETE FROM lesson_transcripts WHERE lesson_id IN (SELECT id FROM lessons WHERE class_name LIKE '%10%' OR class_name LIKE '%១០%' OR class_name LIKE '%11%' OR class_name LIKE '%១១%' OR title LIKE 'Unit%' OR title LIKE 'Grade 10%' OR title LIKE 'Grade 11%')");
+                } catch (Exception ignored) {}
+                try {
+                    stmt.execute("DELETE FROM \"LESSON_TRANSCRIPTS\" WHERE \"LESSON_ID\" IN (SELECT \"ID\" FROM \"LESSONS\" WHERE \"CLASS_NAME\" LIKE '%10%' OR \"CLASS_NAME\" LIKE '%១០%' OR \"CLASS_NAME\" LIKE '%11%' OR \"CLASS_NAME\" LIKE '%១១%' OR \"TITLE\" LIKE 'Unit%' OR \"TITLE\" LIKE 'Grade 10%' OR \"TITLE\" LIKE 'Grade 11%')");
+                } catch (Exception ignored) {}
+                try {
+                    stmt.execute("DELETE FROM lesson_progress WHERE lesson_id IN (SELECT id FROM lessons WHERE class_name LIKE '%10%' OR class_name LIKE '%១០%' OR class_name LIKE '%11%' OR class_name LIKE '%១១%' OR title LIKE 'Unit%' OR title LIKE 'Grade 10%' OR title LIKE 'Grade 11%')");
+                } catch (Exception ignored) {}
+                try {
+                    stmt.execute("DELETE FROM \"LESSON_PROGRESS\" WHERE \"LESSON_ID\" IN (SELECT \"ID\" FROM \"LESSONS\" WHERE \"CLASS_NAME\" LIKE '%10%' OR \"CLASS_NAME\" LIKE '%១០%' OR \"CLASS_NAME\" LIKE '%11%' OR \"CLASS_NAME\" LIKE '%១១%' OR \"TITLE\" LIKE 'Unit%' OR \"TITLE\" LIKE 'Grade 10%' OR \"TITLE\" LIKE 'Grade 11%')");
+                } catch (Exception ignored) {}
+                try {
+                    stmt.execute("DELETE FROM lessons WHERE class_name LIKE '%10%' OR class_name LIKE '%១០%' OR class_name LIKE '%11%' OR class_name LIKE '%១១%' OR title LIKE 'Unit%' OR title LIKE 'Grade 10%' OR title LIKE 'Grade 11%'");
+                } catch (Exception ignored) {}
+                try {
+                    stmt.execute("DELETE FROM \"LESSONS\" WHERE \"CLASS_NAME\" LIKE '%10%' OR \"CLASS_NAME\" LIKE '%១០%' OR \"CLASS_NAME\" LIKE '%11%' OR \"CLASS_NAME\" LIKE '%១១%' OR \"TITLE\" LIKE 'Unit%' OR \"TITLE\" LIKE 'Grade 10%' OR \"TITLE\" LIKE 'Grade 11%'");
+                } catch (Exception ignored) {}
+
+                try { stmt.execute("MERGE INTO system_config (config_key, config_value) KEY(config_key) VALUES ('CLEANED_OLD_GRADE10_11_LESSONS_V2', 'true')"); } catch (Exception ignored) {}
+                try { stmt.execute("INSERT INTO system_config (config_key, config_value) VALUES ('CLEANED_OLD_GRADE10_11_LESSONS_V2', 'true') ON CONFLICT (config_key) DO UPDATE SET config_value = 'true'"); } catch (Exception ignored) {}
+                try { stmt.execute("MERGE INTO \"SYSTEM_CONFIG\" (\"CONFIG_KEY\", \"CONFIG_VALUE\") KEY(\"CONFIG_KEY\") VALUES ('CLEANED_OLD_GRADE10_11_LESSONS_V2', 'true')"); } catch (Exception ignored) {}
+                try { stmt.execute("INSERT INTO \"SYSTEM_CONFIG\" (\"CONFIG_KEY\", \"CONFIG_VALUE\") VALUES ('CLEANED_OLD_GRADE10_11_LESSONS_V2', 'true') ON CONFLICT (\"CONFIG_KEY\") DO UPDATE SET \"CONFIG_VALUE\" = 'true'"); } catch (Exception ignored) {}
+                System.out.println(">>> [DataInitializer] Successfully deleted old Grade 10 & Grade 11 lessons as requested by user.");
+            }
+        } catch (Exception e) {
+            System.err.println(">>> [DataInitializer] Notice cleaning old lessons: " + e.getMessage());
+        }
+
         String createCertTable = "CREATE TABLE IF NOT EXISTS \"PUBLIC\".\"CERTIFICATE_RECORDS\"(" +
                 "\"ID\" BIGINT GENERATED BY DEFAULT AS IDENTITY NOT NULL PRIMARY KEY, " +
                 "\"STUDENT_ID\" BIGINT NOT NULL, " +
@@ -455,9 +503,9 @@ public class DataInitializer {
                 }
             }
 
-            // 2c. Ensure standard English audio lessons (Unit 1 to Unit 5) and transcripts exist for all teachers
+            // 2c. Lessons are created and managed directly by each teacher (auto-seeding disabled permanently)
             try {
-                standardLessonSeeder.seedLessonsForAllTeachers();
+                // standardLessonSeeder.seedLessonsForAllTeachers();
             } catch (Exception e) {
                 System.err.println(">>> [DataInitializer] Notice seeding standard lessons: " + e.getMessage());
             }

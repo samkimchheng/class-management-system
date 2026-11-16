@@ -26,45 +26,13 @@ public class StandardLessonSeeder {
 
     @Transactional
     public void seedLessonsForAllTeachers() {
-        // ONLY seed and maintain official MoEYS Grade 10 & 11 English lessons for Sam Kimchheng (Account 97)
-        Long kimchhengId = 97L;
-        try {
-            Account kAcc = accountRepository.findByUsername("samkimchheng").orElse(null);
-            if (kAcc != null && kAcc.getId() != null) {
-                kimchhengId = kAcc.getId();
-            }
-        } catch (Exception ignored) {}
-
-        seedLessonsForTeacher(kimchhengId);
-
-        // Strictly protect each teacher's privacy: clean up any mistakenly cloned English lessons from non-97 teachers
-        try {
-            List<Lesson> nonKimchhengLessons = lessonRepository.findAll().stream()
-                    .filter(l -> l.getAccountId() != null && !Objects.equals(l.getAccountId(), 97L))
-                    .collect(java.util.stream.Collectors.toList());
-            for (Lesson l : nonKimchhengLessons) {
-                if (l.getTitle() != null && (l.getTitle().startsWith("Unit") || l.getTitle().startsWith("Grade 11"))) {
-                    lessonTranscriptRepository.deleteByLessonId(l.getId());
-                    lessonRepository.delete(l);
-                }
-            }
-        } catch (Exception ignored) {}
+        // Disabled: Teachers manage their own lessons directly in the system.
+        // Lessons deleted by teachers must never be re-seeded or resurrected upon system updates/restarts.
     }
 
     @Transactional
     public void seedLessonsForTeacher(Long accountId) {
-        if (accountId == null || !accountId.equals(97L)) return;
-        List<Lesson> existing = lessonRepository.findByAccountIdOrderByIdAsc(accountId);
-
-        // ----------------------------------------------------
-        // GRADE 10 LESSONS (Units 1 to 5 with full Audio and Transcripts)
-        // ----------------------------------------------------
-        seedOrUpdateGrade10Lessons(accountId, existing);
-
-        // ----------------------------------------------------
-        // GRADE 11 LESSONS (Units 1 to 5 for 11F, 11G)
-        // ----------------------------------------------------
-        seedOrUpdateGrade11Lessons(accountId, existing);
+        // Disabled: Teachers manage their own lessons directly in the system.
     }
 
     private void seedOrUpdateGrade10Lessons(Long accountId, List<Lesson> existing) {
