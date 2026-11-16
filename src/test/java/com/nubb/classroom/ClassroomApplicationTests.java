@@ -52,6 +52,9 @@ class ClassroomApplicationTests {
     private LessonRepository lessonRepository;
 
     @Autowired
+    private com.nubb.classroom.repository.LessonTranscriptRepository lessonTranscriptRepository;
+
+    @Autowired
     private com.nubb.classroom.repository.LessonProgressRepository lessonProgressRepository;
 
     @Autowired
@@ -1759,5 +1762,67 @@ class ClassroomApplicationTests {
         assertTrue(json.contains("Transcript 1: Circuit Diagram"));
         assertTrue(json.contains("imageUrl"));
         assertTrue(json.contains(".png"));
+    }
+
+    @Test
+    void testMoveAndReorderTranscripts() throws Exception {
+        Account teacher = accountRepository.findAll().stream().findFirst().orElse(null);
+        assertNotNull(teacher);
+
+        // 1. Create a lesson with 3 transcripts
+        mockMvc.perform(post("/api/lessons/save")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", "TEACHER")
+                .param("title", "Lesson Reorder Test")
+                .param("className", "10F")
+                .param("subjectName", "ភាសាអង់គ្លេស")
+                .param("tsTitle", "Transcript 1: Intro")
+                .param("tsTitle", "Transcript 2: Vocabulary")
+                .param("tsTitle", "Transcript 3: Practice"))
+                .andExpect(status().isOk());
+
+        Lesson created = lessonRepository.findAll().stream()
+                .filter(l -> "Lesson Reorder Test".equals(l.getTitle()))
+                .findFirst().orElse(null);
+        assertNotNull(created);
+
+        List<com.nubb.classroom.model.LessonTranscript> list =
+                lessonTranscriptRepository.findByLessonIdOrderByOrderIndexAsc(created.getId());
+        assertEquals(3, list.size());
+        assertEquals("Transcript 1: Intro", list.get(0).getTitle());
+        assertEquals("Transcript 2: Vocabulary", list.get(1).getTitle());
+        assertEquals("Transcript 3: Practice", list.get(2).getTitle());
+
+        Long vocabId = list.get(1).getId();
+
+        // 2. Move Vocabulary UP (should swap with Intro)
+        mockMvc.perform(post("/api/lessons/" + created.getId() + "/transcripts/" + vocabId + "/move")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", "TEACHER")
+                .param("direction", "up"))
+                .andExpect(status().isOk());
+
+        List<com.nubb.classroom.model.LessonTranscript> reordered =
+                lessonTranscriptRepository.findByLessonIdOrderByOrderIndexAsc(created.getId());
+        assertEquals(3, reordered.size());
+        assertEquals("Transcript 2: Vocabulary", reordered.get(0).getTitle());
+        assertEquals("Transcript 1: Intro", reordered.get(1).getTitle());
+        assertEquals("Transcript 3: Practice", reordered.get(2).getTitle());
+        assertEquals(1, reordered.get(0).getOrderIndex());
+        assertEquals(2, reordered.get(1).getOrderIndex());
+        assertEquals(3, reordered.get(2).getOrderIndex());
+
+        // 3. Move Vocabulary DOWN (should move back to index 1)
+        mockMvc.perform(post("/api/lessons/" + created.getId() + "/transcripts/" + vocabId + "/move")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", "TEACHER")
+                .param("direction", "down"))
+                .andExpect(status().isOk());
+
+        List<com.nubb.classroom.model.LessonTranscript> restored =
+                lessonTranscriptRepository.findByLessonIdOrderByOrderIndexAsc(created.getId());
+        assertEquals("Transcript 1: Intro", restored.get(0).getTitle());
+        assertEquals("Transcript 2: Vocabulary", restored.get(1).getTitle());
+        assertEquals("Transcript 3: Practice", restored.get(2).getTitle());
     }
 }

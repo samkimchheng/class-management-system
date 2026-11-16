@@ -473,6 +473,7 @@ public class LessonController {
             @RequestParam(required = false) String khmerContent,
             @RequestParam(required = false) String audioUrl,
             @RequestParam(required = false) MultipartFile audioFile,
+            @RequestParam(required = false) List<String> tsExistingId,
             @RequestParam(required = false) List<String> tsTitle,
             @RequestParam(required = false) List<String> tsContent,
             @RequestParam(required = false) List<String> tsKhmerContent,
@@ -532,6 +533,12 @@ public class LessonController {
         // Save nested transcripts if any
         if (tsTitle != null && !tsTitle.isEmpty()) {
             List<LessonTranscript> existingTs = lessonTranscriptRepository.findByLessonIdOrderByOrderIndexAsc(lesson.getId());
+            Map<Long, LessonTranscript> existingMap = new HashMap<>();
+            for (LessonTranscript t : existingTs) {
+                if (t.getId() != null) {
+                    existingMap.put(t.getId(), t);
+                }
+            }
             lessonTranscriptRepository.deleteByLessonId(lesson.getId());
 
             for (int i = 0; i < tsTitle.size(); i++) {
@@ -543,13 +550,27 @@ public class LessonController {
                 String tAudioUrl = (tsAudioUrl != null && i < tsAudioUrl.size()) ? tsAudioUrl.get(i) : "";
                 String tImageUrl = (tsImageUrl != null && i < tsImageUrl.size()) ? tsImageUrl.get(i) : "";
 
+                // Match existing transcript by passed ID, otherwise fallback by index
+                LessonTranscript matchedExisting = null;
+                if (tsExistingId != null && i < tsExistingId.size()) {
+                    String exIdStr = tsExistingId.get(i);
+                    if (exIdStr != null && !exIdStr.trim().isEmpty()) {
+                        try {
+                            matchedExisting = existingMap.get(Long.parseLong(exIdStr.trim()));
+                        } catch (Exception ignored) {}
+                    }
+                }
+                if (matchedExisting == null && i < existingTs.size()) {
+                    matchedExisting = existingTs.get(i);
+                }
+
                 // Preserve existing audioUrl & imageUrl if not re-uploaded/changed
-                if (i < existingTs.size()) {
+                if (matchedExisting != null) {
                     if (tAudioUrl == null || tAudioUrl.trim().isEmpty()) {
-                        tAudioUrl = existingTs.get(i).getAudioUrl();
+                        tAudioUrl = matchedExisting.getAudioUrl();
                     }
                     if (tImageUrl == null || tImageUrl.trim().isEmpty()) {
-                        tImageUrl = existingTs.get(i).getImageUrl();
+                        tImageUrl = matchedExisting.getImageUrl();
                     }
                 }
 
@@ -582,6 +603,69 @@ public class LessonController {
 
         lessonRepository.flush();
         return ResponseEntity.ok(Map.of("success", true, "message", "រក្សាទុកមេរៀន និង Transcripts ជោគជ័យ"));
+    }
+
+    @PostMapping("/api/lessons/{lessonId}/transcripts/{transcriptId}/move")
+    @ResponseBody
+    @Transactional
+    public ResponseEntity<?> moveTranscript(
+            @PathVariable Long lessonId,
+            @PathVariable Long transcriptId,
+            @RequestParam String direction) {
+
+        if (session.getAttribute("loggedInStudent") != null) {
+            return ResponseEntity.status(403).body(Map.of("error", "សិស្សមិនមានសិទ្ធិកែប្រែលំដាប់អត្ថបទស្តាប់ទេ"));
+        }
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "សូមចូលប្រើប្រាស់ប្រព័ន្ធជាមុនសិន"));
+        }
+
+        Optional<Lesson> optLesson = lessonRepository.findById(lessonId);
+        if (optLesson.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "រកមិនឃើញមេរៀននេះទេ"));
+        }
+        Lesson lesson = optLesson.get();
+        String role = (String) session.getAttribute("ACCOUNT_ROLE");
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+        if (!isAdmin && !Objects.equals(lesson.getAccountId(), accountId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "លោកគ្រូ-អ្នកគ្រូគ្មានសិទ្ធិកែប្រែមេរៀនរបស់អ្នកដទៃទេ"));
+        }
+
+        List<LessonTranscript> list = lessonTranscriptRepository.findByLessonIdOrderByOrderIndexAsc(lessonId);
+        int targetIdx = -1;
+        for (int i = 0; i < list.size(); i++) {
+            if (Objects.equals(list.get(i).getId(), transcriptId)) {
+                targetIdx = i;
+                break;
+            }
+        }
+
+        if (targetIdx == -1) {
+            return ResponseEntity.status(404).body(Map.of("error", "រកមិនឃើញអត្ថបទស្តាប់នេះទេ"));
+        }
+
+        if ("up".equalsIgnoreCase(direction) && targetIdx > 0) {
+            LessonTranscript current = list.get(targetIdx);
+            LessonTranscript prev = list.get(targetIdx - 1);
+            list.set(targetIdx - 1, current);
+            list.set(targetIdx, prev);
+        } else if ("down".equalsIgnoreCase(direction) && targetIdx < list.size() - 1) {
+            LessonTranscript current = list.get(targetIdx);
+            LessonTranscript next = list.get(targetIdx + 1);
+            list.set(targetIdx + 1, current);
+            list.set(targetIdx, next);
+        } else {
+            return ResponseEntity.ok(Map.of("success", true, "message", "គ្មានការផ្លាស់ប្តូរទីតាំង"));
+        }
+
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).setOrderIndex(i + 1);
+            lessonTranscriptRepository.save(list.get(i));
+        }
+        lessonTranscriptRepository.flush();
+
+        return ResponseEntity.ok(Map.of("success", true, "message", "ផ្លាស់ប្តូរទីតាំងអត្ថបទស្តាប់ជោគជ័យ"));
     }
 
     @PostMapping("/api/lessons/delete/{id}")

@@ -701,10 +701,29 @@
                             <span style="white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis;">Transcripts / អត្ថបទស្ដាប់ (<span th:text="${#lists.size(transcriptsMap.get(lesson.id))}">3</span> អត្ថបទ):</span>
                         </h4>
 
-                        <div th:each="ts, stat : ${transcriptsMap.get(lesson.id)}" class="transcript-item">
-                            <div style="font-weight: bold; color: var(--primary); font-size: 1.05rem; margin-bottom: 8px;">
-                                <span>អត្ថបទទី <span th:text="${stat.count}">1</span>: </span>
-                                <span th:text="${ts.title}">ចំណងជើង Transcript</span>
+                        <div th:each="ts, stat : ${transcriptsMap.get(lesson.id)}" class="transcript-item" th:id="'transcript-card-item-' + ${ts.id}">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                                <div style="font-weight: bold; color: var(--primary); font-size: 1.05rem;">
+                                    <span>អត្ថបទទី <span th:text="${stat.count}">1</span>: </span>
+                                    <span th:text="${ts.title}">ចំណងជើង Transcript</span>
+                                </div>
+                                <!-- Teacher quick reorder buttons -->
+                                <div th:if="${!isStudent and session.loggedInStudent == null}" style="display: inline-flex; gap: 5px; align-items: center;">
+                                    <button type="button" 
+                                            th:if="${!stat.first}"
+                                            style="background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; border-radius: 5px; padding: 3px 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: all 0.2s;"
+                                            th:onclick="'moveTranscriptDirect(' + ${lesson.id} + ', ' + ${ts.id} + ', \'up\')'"
+                                            title="រំកិលអត្ថបទស្ដាប់នេះឡើងលើ">
+                                        ⬆️ ឡើងលើ
+                                    </button>
+                                    <button type="button" 
+                                            th:if="${!stat.last}"
+                                            style="background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; border-radius: 5px; padding: 3px 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: all 0.2s;"
+                                            th:onclick="'moveTranscriptDirect(' + ${lesson.id} + ', ' + ${ts.id} + ', \'down\')'"
+                                            title="រំកិលអត្ថបទស្ដាប់នេះចុះក្រោម">
+                                        ⬇️ ចុះក្រោម
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Audio Player for this Transcript (with direct src & multiple fallbacks) -->
@@ -1066,9 +1085,8 @@
             document.getElementById('lessonModal').style.display = 'none';
         }
 
-        function addTranscriptRow(defaultTitle = '', defaultContent = '', defaultKhmer = '', defaultAudioUrl = '', defaultImageUrl = '') {
+        function createTranscriptElement(defaultTitle = '', defaultContent = '', defaultKhmer = '', defaultAudioUrl = '', defaultImageUrl = '', defaultId = '') {
             transcriptCount++;
-            const container = document.getElementById('transcriptsList');
             const div = document.createElement('div');
             div.className = 'ts-box';
             div.id = 'ts-box-' + transcriptCount;
@@ -1078,14 +1096,24 @@
             const khmerVal = defaultKhmer || '';
             const audioUrlVal = defaultAudioUrl || '';
             const imageUrlVal = defaultImageUrl || '';
+            const existingIdVal = defaultId || '';
 
             const contentId = 'ts-content-input-' + transcriptCount;
             const khmerId = 'ts-khmer-input-' + transcriptCount;
 
             div.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <strong style="color: var(--primary);">អត្ថបទស្ដាប់ #${transcriptCount}</strong>
-                    <button type="button" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.8rem;" onclick="removeTranscriptRow('${div.id}')">🗑️ លុប</button>
+                <input type="hidden" name="tsExistingId" value="${escapeHtml(existingIdVal)}">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1rem; color: #64748b;" title="អូស ឬរៀបលំដាប់">☰</span>
+                        <strong class="ts-box-title" style="color: var(--primary); font-size: 0.95rem;">អត្ថបទស្ដាប់ #${transcriptCount}</strong>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        <button type="button" class="btn-move-ts-up" title="រំកិលឡើងលើ (Move Up)" style="background: #0284c7; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.8rem;" onclick="moveTranscriptBox('${div.id}', 'up')">⬆️ ឡើងលើ</button>
+                        <button type="button" class="btn-move-ts-down" title="រំកិលចុះក្រោម (Move Down)" style="background: #0284c7; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.8rem;" onclick="moveTranscriptBox('${div.id}', 'down')">⬇️ ចុះក្រោម</button>
+                        <button type="button" title="បញ្ចូលអត្ថបទថ្មីមួយទៀតនៅខាងលើនេះ (Insert Above)" style="background: #10b981; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.8rem;" onclick="insertTranscriptAbove('${div.id}')">➕ បញ្ចូលពីលើនេះ</button>
+                        <button type="button" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.8rem;" onclick="removeTranscriptRow('${div.id}')" title="លុបអត្ថបទស្ដាប់នេះ">🗑️ លុប</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label style="font-size: 0.85rem; font-weight: bold;">ចំណងជើងអត្ថបទ (Title):</label>
@@ -1132,7 +1160,117 @@
                     </div>
                 </div>
             `;
+            return div;
+        }
+
+        function addTranscriptRow(defaultTitle = '', defaultContent = '', defaultKhmer = '', defaultAudioUrl = '', defaultImageUrl = '', defaultId = '') {
+            const container = document.getElementById('transcriptsList');
+            const div = createTranscriptElement(defaultTitle, defaultContent, defaultKhmer, defaultAudioUrl, defaultImageUrl, defaultId);
             container.appendChild(div);
+            renumberTranscripts();
+        }
+
+        function insertTranscriptAbove(boxId) {
+            const targetBox = document.getElementById(boxId);
+            if (!targetBox) return;
+            const container = document.getElementById('transcriptsList');
+            const newDiv = createTranscriptElement('', '', '', '', '', '');
+            container.insertBefore(newDiv, targetBox);
+            renumberTranscripts();
+            newDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            highlightBoxBriefly(newDiv);
+            const titleInput = newDiv.querySelector('input[name="tsTitle"]');
+            if (titleInput) {
+                titleInput.focus();
+                titleInput.select();
+            }
+        }
+
+        function moveTranscriptBox(boxId, direction) {
+            const box = document.getElementById(boxId);
+            if (!box) return;
+            const container = document.getElementById('transcriptsList');
+            if (direction === 'up') {
+                const prev = box.previousElementSibling;
+                if (prev && prev.classList.contains('ts-box')) {
+                    container.insertBefore(box, prev);
+                    renumberTranscripts();
+                    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    highlightBoxBriefly(box);
+                }
+            } else if (direction === 'down') {
+                const next = box.nextElementSibling;
+                if (next && next.classList.contains('ts-box')) {
+                    container.insertBefore(next, box);
+                    renumberTranscripts();
+                    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    highlightBoxBriefly(box);
+                }
+            }
+        }
+
+        function removeTranscriptRow(boxId) {
+            const box = document.getElementById(boxId);
+            if (box) {
+                box.remove();
+                renumberTranscripts();
+            }
+        }
+
+        function renumberTranscripts() {
+            const container = document.getElementById('transcriptsList');
+            if (!container) return;
+            const boxes = container.querySelectorAll('.ts-box');
+            boxes.forEach((box, index) => {
+                const num = index + 1;
+                const titleSpan = box.querySelector('.ts-box-title');
+                if (titleSpan) {
+                    titleSpan.innerText = `អត្ថបទស្ដាប់ #${num}`;
+                }
+                const upBtn = box.querySelector('.btn-move-ts-up');
+                const downBtn = box.querySelector('.btn-move-ts-down');
+                if (upBtn) {
+                    upBtn.disabled = (index === 0);
+                    upBtn.style.opacity = (index === 0) ? '0.4' : '1';
+                    upBtn.style.cursor = (index === 0) ? 'not-allowed' : 'pointer';
+                }
+                if (downBtn) {
+                    downBtn.disabled = (index === boxes.length - 1);
+                    downBtn.style.opacity = (index === boxes.length - 1) ? '0.4' : '1';
+                    downBtn.style.cursor = (index === boxes.length - 1) ? 'not-allowed' : 'pointer';
+                }
+            });
+        }
+
+        function highlightBoxBriefly(element) {
+            if (!element) return;
+            element.style.transition = 'box-shadow 0.3s, background-color 0.3s';
+            const oldBg = element.style.backgroundColor;
+            element.style.backgroundColor = '#ecfdf5';
+            element.style.boxShadow = '0 0 0 2px #10b981';
+            setTimeout(() => {
+                element.style.backgroundColor = oldBg || '';
+                element.style.boxShadow = '';
+            }, 800);
+        }
+
+        async function moveTranscriptDirect(lessonId, transcriptId, direction) {
+            try {
+                const formData = new FormData();
+                formData.append('direction', direction);
+                const res = await fetch(`/api/lessons/${lessonId}/transcripts/${transcriptId}/move`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    window.location.reload();
+                } else {
+                    Swal.fire('បរាជ័យ', data.error || 'មិនអាចផ្លាស់ប្តូរទីតាំងបានទេ', 'error');
+                }
+            } catch(e) {
+                Swal.fire('កំហុស', 'មានបញ្ហាក្នុងការភ្ជាប់ Server', 'error');
+            }
         }
 
         function previewTsImage(input, boxId) {
@@ -1191,11 +1329,6 @@
             }
         }
 
-        function removeTranscriptRow(boxId) {
-            const box = document.getElementById(boxId);
-            if (box) box.remove();
-        }
-
         async function editLesson(btn) {
             const lessonId = btn.getAttribute('data-id');
             document.getElementById('modalTitle').innerText = 'កែប្រែមេរៀន និង Transcripts';
@@ -1223,7 +1356,7 @@
                     document.getElementById('transcriptsList').innerHTML = '';
                     if (list && list.length > 0) {
                         list.forEach(ts => {
-                            addTranscriptRow(ts.title, ts.content, ts.khmerContent, ts.audioUrl, ts.imageUrl);
+                            addTranscriptRow(ts.title, ts.content, ts.khmerContent, ts.audioUrl, ts.imageUrl, ts.id);
                         });
                     } else {
                         addTranscriptRow('Transcript 1');
