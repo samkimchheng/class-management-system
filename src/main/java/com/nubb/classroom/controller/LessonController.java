@@ -477,7 +477,9 @@ public class LessonController {
             @RequestParam(required = false) List<String> tsContent,
             @RequestParam(required = false) List<String> tsKhmerContent,
             @RequestParam(required = false) List<String> tsAudioUrl,
-            @RequestParam(required = false) List<MultipartFile> tsAudioFile) {
+            @RequestParam(required = false) List<MultipartFile> tsAudioFile,
+            @RequestParam(required = false) List<String> tsImageUrl,
+            @RequestParam(required = false) List<MultipartFile> tsImageFile) {
 
         if (session.getAttribute("loggedInStudent") != null) {
             return ResponseEntity.status(403).body(Map.of("error", "សិស្សមិនមានសិទ្ធិកែប្រែ ឬបង្កើតមេរៀនទេ"));
@@ -539,13 +541,19 @@ public class LessonController {
                 String tContent = (tsContent != null && i < tsContent.size()) ? tsContent.get(i) : "";
                 String tKhmerContent = (tsKhmerContent != null && i < tsKhmerContent.size()) ? tsKhmerContent.get(i) : "";
                 String tAudioUrl = (tsAudioUrl != null && i < tsAudioUrl.size()) ? tsAudioUrl.get(i) : "";
-                
-                // Preserve existing audioUrl if not re-uploaded/changed
-                if ((tAudioUrl == null || tAudioUrl.trim().isEmpty()) && i < existingTs.size()) {
-                    tAudioUrl = existingTs.get(i).getAudioUrl();
+                String tImageUrl = (tsImageUrl != null && i < tsImageUrl.size()) ? tsImageUrl.get(i) : "";
+
+                // Preserve existing audioUrl & imageUrl if not re-uploaded/changed
+                if (i < existingTs.size()) {
+                    if (tAudioUrl == null || tAudioUrl.trim().isEmpty()) {
+                        tAudioUrl = existingTs.get(i).getAudioUrl();
+                    }
+                    if (tImageUrl == null || tImageUrl.trim().isEmpty()) {
+                        tImageUrl = existingTs.get(i).getImageUrl();
+                    }
                 }
 
-                // Check for new uploaded file for this transcript
+                // Check for new uploaded MP3 file for this transcript
                 if (tsAudioFile != null && i < tsAudioFile.size()) {
                     MultipartFile f = tsAudioFile.get(i);
                     if (f != null && !f.isEmpty()) {
@@ -556,7 +564,18 @@ public class LessonController {
                     }
                 }
 
-                LessonTranscript lt = new LessonTranscript(lesson.getId(), tTitle.trim(), tContent, tKhmerContent, tAudioUrl, i + 1);
+                // Check for new uploaded Image file for this transcript
+                if (tsImageFile != null && i < tsImageFile.size()) {
+                    MultipartFile imgF = tsImageFile.get(i);
+                    if (imgF != null && !imgF.isEmpty()) {
+                        String uploadedImg = saveImageFile(imgF);
+                        if (uploadedImg != null) {
+                            tImageUrl = uploadedImg;
+                        }
+                    }
+                }
+
+                LessonTranscript lt = new LessonTranscript(lesson.getId(), tTitle.trim(), tContent, tKhmerContent, tAudioUrl, tImageUrl, i + 1);
                 lessonTranscriptRepository.save(lt);
             }
         }
@@ -643,6 +662,24 @@ public class LessonController {
             Path filePath = Paths.get(uploadDir + filename);
             Files.write(filePath, file.getBytes());
             return "/uploads/audio/" + filename;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private String saveImageFile(MultipartFile file) {
+        try {
+            String uploadDir = "./uploads/images/";
+            File dir = new File(uploadDir);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            String orig = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image.jpg";
+            String cleanName = orig.replaceAll("[^a-zA-Z0-9.-]", "_");
+            String filename = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + "_" + cleanName;
+            Path filePath = Paths.get(uploadDir + filename);
+            Files.write(filePath, file.getBytes());
+            return "/uploads/images/" + filename;
         } catch (IOException e) {
             return null;
         }

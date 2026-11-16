@@ -717,6 +717,20 @@
                                 </audio>
                             </div>
 
+                            <!-- Image for this Transcript (if present) -->
+                            <div th:if="${ts.imageUrl != null and !ts.imageUrl.isEmpty()}" style="margin: 10px 0 14px 0; text-align: center;">
+                                <div style="display: inline-block; max-width: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #cbd5e1; background: #ffffff;">
+                                    <img th:src="${ts.imageUrl}" 
+                                         alt="រូបភាពមេរៀន / Transcript Image" 
+                                         style="max-width: 100%; max-height: 480px; object-fit: contain; display: block; margin: 0 auto; cursor: pointer; transition: transform 0.2s;"
+                                         onclick="previewFullImage(this.src, this.alt)"
+                                         title="ចុចដើម្បីពង្រីកមើលរូបភាពពេញ (Click to view full image)">
+                                </div>
+                                <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    <span>🔍 ចុចលើរូបភាពដើម្បីពង្រីកធំ</span>
+                                </div>
+                            </div>
+
                             <!-- Script / Content Text for this Transcript -->
                             <div th:if="${ts.content != null and !ts.content.isEmpty()}">
                                 <div th:id="'ts-content-text-' + ${ts.id}" style="background: #f8fafc; padding: 12px; border-radius: 6px; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; border: 1px solid #e2e8f0;" th:text="${ts.content}">
@@ -1052,7 +1066,7 @@
             document.getElementById('lessonModal').style.display = 'none';
         }
 
-        function addTranscriptRow(defaultTitle = '', defaultContent = '', defaultKhmer = '', defaultAudioUrl = '') {
+        function addTranscriptRow(defaultTitle = '', defaultContent = '', defaultKhmer = '', defaultAudioUrl = '', defaultImageUrl = '') {
             transcriptCount++;
             const container = document.getElementById('transcriptsList');
             const div = document.createElement('div');
@@ -1063,6 +1077,7 @@
             const contentVal = defaultContent || '';
             const khmerVal = defaultKhmer || '';
             const audioUrlVal = defaultAudioUrl || '';
+            const imageUrlVal = defaultImageUrl || '';
 
             const contentId = 'ts-content-input-' + transcriptCount;
             const khmerId = 'ts-khmer-input-' + transcriptCount;
@@ -1098,8 +1113,82 @@
                     </div>
                 </div>
                 ${audioUrlVal ? `<div style="margin-top: 8px;"><audio src="${escapeHtml(audioUrlVal)}" controls style="width: 100%; height: 34px; border-radius: 6px;"></audio></div>` : ''}
+
+                <!-- Image Upload / Link for Transcript -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 0.85rem; font-weight: bold; color: #1e293b;">🖼️ Upload រូបភាពអម Transcript (JPG, PNG, WebP):</label>
+                        <input type="file" name="tsImageFile" class="form-control" accept="image/*" onchange="previewTsImage(this, '${div.id}')">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 0.85rem; font-weight: bold; color: #1e293b;">ឬ Link រូបភាព (Image URL / Path):</label>
+                        <input type="text" name="tsImageUrl" id="${div.id}-img-url" class="form-control" placeholder="https://example.com/image.jpg ឬ /uploads/images/..." value="${escapeHtml(imageUrlVal)}" oninput="previewTsImageUrl(this.value, '${div.id}')">
+                    </div>
+                </div>
+                <div id="${div.id}-img-preview" style="margin-top: 8px; ${imageUrlVal ? '' : 'display: none;'}">
+                    <div style="position: relative; display: inline-block;">
+                        <img id="${div.id}-preview-img" src="${escapeHtml(imageUrlVal || '')}" style="max-width: 240px; max-height: 150px; border-radius: 8px; border: 1px solid #cbd5e1; object-fit: contain; background: #f8fafc; padding: 2px;">
+                        <button type="button" onclick="clearTsImage('${div.id}')" style="position: absolute; top: 4px; right: 4px; background: rgba(239,68,68,0.9); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" title="លុបរូបភាព">✕</button>
+                    </div>
+                </div>
             `;
             container.appendChild(div);
+        }
+
+        function previewTsImage(input, boxId) {
+            const previewContainer = document.getElementById(boxId + '-img-preview');
+            const previewImg = document.getElementById(boxId + '-preview-img');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (previewImg) previewImg.src = e.target.result;
+                    if (previewContainer) previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function previewTsImageUrl(url, boxId) {
+            const previewContainer = document.getElementById(boxId + '-img-preview');
+            const previewImg = document.getElementById(boxId + '-preview-img');
+            if (url && url.trim().length > 0) {
+                if (previewImg) previewImg.src = url.trim();
+                if (previewContainer) previewContainer.style.display = 'block';
+            } else {
+                const fileInput = document.querySelector('#' + boxId + ' input[name="tsImageFile"]');
+                if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                    if (previewContainer) previewContainer.style.display = 'none';
+                }
+            }
+        }
+
+        function clearTsImage(boxId) {
+            const urlInput = document.getElementById(boxId + '-img-url');
+            if (urlInput) urlInput.value = '';
+            const fileInput = document.querySelector('#' + boxId + ' input[name="tsImageFile"]');
+            if (fileInput) fileInput.value = '';
+            const previewContainer = document.getElementById(boxId + '-img-preview');
+            if (previewContainer) previewContainer.style.display = 'none';
+            const previewImg = document.getElementById(boxId + '-preview-img');
+            if (previewImg) previewImg.src = '';
+        }
+
+        function previewFullImage(src, alt) {
+            if (!src) return;
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    imageUrl: src,
+                    imageAlt: alt || 'រូបភាពមេរៀន',
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    width: 'auto',
+                    maxWidth: '92vw',
+                    padding: '1em',
+                    background: '#ffffff'
+                });
+            } else {
+                window.open(src, '_blank');
+            }
         }
 
         function removeTranscriptRow(boxId) {
@@ -1134,7 +1223,7 @@
                     document.getElementById('transcriptsList').innerHTML = '';
                     if (list && list.length > 0) {
                         list.forEach(ts => {
-                            addTranscriptRow(ts.title, ts.content, ts.khmerContent, ts.audioUrl);
+                            addTranscriptRow(ts.title, ts.content, ts.khmerContent, ts.audioUrl, ts.imageUrl);
                         });
                     } else {
                         addTranscriptRow('Transcript 1');

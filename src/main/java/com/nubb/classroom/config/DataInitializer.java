@@ -121,7 +121,9 @@ public class DataInitializer {
             "ALTER TABLE IF EXISTS certificate_records ADD COLUMN IF NOT EXISTS account_id BIGINT",
             "ALTER TABLE IF EXISTS \"CERTIFICATE_RECORDS\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
             "ALTER TABLE IF EXISTS leave_requests ADD COLUMN IF NOT EXISTS account_id BIGINT",
-            "ALTER TABLE IF EXISTS \"LEAVE_REQUESTS\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT"
+            "ALTER TABLE IF EXISTS \"LEAVE_REQUESTS\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
+            "ALTER TABLE IF EXISTS lesson_transcripts ADD COLUMN IF NOT EXISTS image_url VARCHAR(1000)",
+            "ALTER TABLE IF EXISTS \"LESSON_TRANSCRIPTS\" ADD COLUMN IF NOT EXISTS \"IMAGE_URL\" VARCHAR(1000)"
         };
         for (String q : accountIdCols) {
             try { stmt.execute(q); } catch (Exception ignored) {}

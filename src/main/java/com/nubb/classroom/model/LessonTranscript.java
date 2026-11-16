@@ -23,16 +23,24 @@ public class LessonTranscript {
 
     private String audioUrl;
 
+    @Column(length = 1000)
+    private String imageUrl;
+
     private int orderIndex;
 
     public LessonTranscript() {}
 
     public LessonTranscript(Long lessonId, String title, String content, String khmerContent, String audioUrl, int orderIndex) {
+        this(lessonId, title, content, khmerContent, audioUrl, null, orderIndex);
+    }
+
+    public LessonTranscript(Long lessonId, String title, String content, String khmerContent, String audioUrl, String imageUrl, int orderIndex) {
         this.lessonId = lessonId;
         this.title = title;
         this.content = content;
         this.khmerContent = khmerContent;
         this.audioUrl = audioUrl;
+        this.imageUrl = imageUrl;
         this.orderIndex = orderIndex;
     }
 
@@ -82,6 +90,14 @@ public class LessonTranscript {
 
     public void setAudioUrl(String audioUrl) {
         this.audioUrl = audioUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public int getOrderIndex() {

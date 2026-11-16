@@ -1719,4 +1719,45 @@ class ClassroomApplicationTests {
                 .toList();
         assertTrue(remainingOld.isEmpty(), "Old Grade 10 and 11 lessons must be deleted: " + remainingOld);
     }
+
+    @Test
+    void testSaveLessonWithTranscriptImage() throws Exception {
+        Account teacher = accountRepository.findAll().stream().findFirst().orElse(null);
+        assertNotNull(teacher);
+
+        org.springframework.mock.web.MockMultipartFile mockImg = new org.springframework.mock.web.MockMultipartFile(
+                "tsImageFile",
+                "test-diagram.png",
+                "image/png",
+                "fake-image-bytes".getBytes()
+        );
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/api/lessons/save")
+                .file(mockImg)
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", "TEACHER")
+                .param("title", "Lesson with Transcript Image")
+                .param("className", "10F")
+                .param("subjectName", "រូបវិទ្យា")
+                .param("tsTitle", "Transcript 1: Circuit Diagram")
+                .param("tsContent", "Electric circuit diagram explanation")
+                .param("tsKhmerContent", "ការពន្យល់ដ្យាក្រាមសៀគ្វីអគ្គិសនី")
+                .param("tsImageUrl", "/uploads/images/custom-circuit.png"))
+                .andExpect(status().isOk());
+
+        Lesson created = lessonRepository.findAll().stream()
+                .filter(l -> "Lesson with Transcript Image".equals(l.getTitle()))
+                .findFirst().orElse(null);
+        assertNotNull(created);
+
+        // Fetch transcripts via API
+        String json = mockMvc.perform(get("/api/lessons/" + created.getId() + "/transcripts")
+                .sessionAttr("ACCOUNT_ID", teacher.getId()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertTrue(json.contains("Transcript 1: Circuit Diagram"));
+        assertTrue(json.contains("imageUrl"));
+        assertTrue(json.contains(".png"));
+    }
 }
