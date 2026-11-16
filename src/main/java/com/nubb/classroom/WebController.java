@@ -2744,8 +2744,113 @@ return "scores";
 
     // --- STUDENT EXAM PORTAL ---
 
+    public static String normalizeStudentCode(String code) {
+        if (code == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (char c : code.toCharArray()) {
+            if (c >= '\u17E0' && c <= '\u17E9') {
+                sb.append((char) ('0' + (c - '\u17E0')));
+            } else {
+                sb.append(c);
+            }
+        }
+        String s = sb.toString().trim().toUpperCase();
+        s = s.replace("ថ្នាក់ទី", "").replace("ថ្នាក់", "").trim();
+        s = s.replaceAll("\\s+", "");
+        return s;
+    }
+
+    public static Optional<Student> findMatchingStudent(List<Student> allStudents, String rawCode) {
+        if (rawCode == null || rawCode.trim().isEmpty() || allStudents == null || allStudents.isEmpty()) {
+            return Optional.empty();
+        }
+        String cleanCode = rawCode.trim();
+        String normInput = normalizeStudentCode(cleanCode);
+        String normNoHyphen = normInput.replace("-", "").replace("_", "");
+
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("^([0-9]{1,2}[A-Z]+)[-_]?([0-9]+)$");
+        java.util.regex.Matcher inputMatcher = pattern.matcher(normInput);
+        String inputPrefix = null;
+        Integer inputRoll = null;
+        if (inputMatcher.matches()) {
+            inputPrefix = inputMatcher.group(1);
+            try {
+                inputRoll = Integer.parseInt(inputMatcher.group(2));
+            } catch (Exception ignored) {}
+        }
+
+        final String fInputPrefix = inputPrefix;
+        final Integer fInputRoll = inputRoll;
+
+        List<Student> matched = new ArrayList<>();
+        for (Student s : allStudents) {
+            if (s.getStudentCode() == null || s.getStudentCode().trim().isEmpty()) {
+                continue;
+            }
+            String dbCode = s.getStudentCode().trim();
+            String normDb = normalizeStudentCode(dbCode);
+            String normDbNoHyphen = normDb.replace("-", "").replace("_", "");
+
+            boolean isMatch = false;
+            // 1. Exact match (case-insensitive)
+            if (dbCode.equalsIgnoreCase(cleanCode)) {
+                isMatch = true;
+            }
+            // 2. Normalized match (handles Khmer digits and spaces)
+            else if (normDb.equalsIgnoreCase(normInput)) {
+                isMatch = true;
+            }
+            // 3. Hyphen-stripped match (e.g. 10F01 == 10F-01)
+            else if (normDbNoHyphen.equalsIgnoreCase(normNoHyphen)) {
+                isMatch = true;
+            }
+            // 4. Structured prefix + roll match (e.g. 10F-1 == 10F-01)
+            else if (fInputPrefix != null && fInputRoll != null) {
+                java.util.regex.Matcher dbMatcher = pattern.matcher(normDb);
+                if (dbMatcher.matches()) {
+                    String dbPrefix = dbMatcher.group(1);
+                    try {
+                        int dbRoll = Integer.parseInt(dbMatcher.group(2));
+                        if (fInputPrefix.equalsIgnoreCase(dbPrefix) && fInputRoll == dbRoll) {
+                            isMatch = true;
+                        }
+                    } catch (Exception ignored) {}
+                }
+            }
+
+            if (isMatch) {
+                matched.add(s);
+            }
+        }
+
+        if (matched.isEmpty()) {
+            return Optional.empty();
+        }
+
+        java.util.Comparator<Student> comparator = java.util.Comparator
+                .comparing((Student s) -> "២០២៦-២០២៧".equals(s.getAcademicYear()) ? 1 : 0)
+                .thenComparing((Student s) -> "កំពុងសិក្សា".equalsIgnoreCase(s.getStatus()) ? 1 : 0)
+                .thenComparing((Student s) -> cleanCode.equalsIgnoreCase(s.getStudentCode()) ? 1 : 0)
+                .thenComparing((Student s) -> normInput.equalsIgnoreCase(normalizeStudentCode(s.getStudentCode())) ? 1 : 0)
+                .thenComparing(Student::getId, java.util.Comparator.nullsFirst(java.util.Comparator.naturalOrder()));
+
+        return matched.stream().max(comparator);
+    }
+
     @GetMapping("/test")
-    public String studentLogin() {
+    public String studentLogin(
+            @org.springframework.web.bind.annotation.RequestParam(value = "redirectTo", required = false) String redirectTo,
+            jakarta.servlet.http.HttpSession session,
+            Model model) {
+        Student student = (Student) session.getAttribute("loggedInStudent");
+        if (student != null) {
+            if (student.getId() != null && student.getId() > 0) {
+                student = studentRepository.findById(student.getId()).orElse(student);
+                session.setAttribute("loggedInStudent", student);
+            }
+            model.addAttribute("currentStudent", student);
+        }
+        model.addAttribute("redirectTo", redirectTo);
         return "student-login";
     }
 
@@ -2811,8 +2916,9 @@ return "scores";
             }
         }
 
-        // 2. Classroom Student Login
-        java.util.Optional<Student> studentOpt = studentRepository.findAll().stream().filter(s -> s.getStudentCode() != null && s.getStudentCode().trim().equalsIgnoreCase(cleanCode)).max(java.util.Comparator.comparing(Student::getId, java.util.Comparator.nullsFirst(java.util.Comparator.naturalOrder())));
+        // 2. Classroom Student Login (with intelligent, unambiguous matching)
+        List<Student> allStudents = studentRepository.findAll();
+        Optional<Student> studentOpt = findMatchingStudent(allStudents, cleanCode);
         if (studentOpt.isPresent()) {
             Student student = studentOpt.get();
             session.removeAttribute("IS_EXTERNAL_LEARNER");
@@ -2848,8 +2954,21 @@ return "scores";
             }
             return "redirect:/test/take";
         }
-        redirectAttributes.addFlashAttribute("errorMessage", "លេខកូដមិនត្រឹមត្រូវ សូមពិនិត្យម្តងទៀត!");
-        return "redirect:/test";
+
+        // 3. Login failed: clear old student session & cookies so it NEVER bleeds or leaves stale account logged in!
+        session.removeAttribute("loggedInStudent");
+        session.removeAttribute("loggedInExternalLearner");
+        session.removeAttribute("IS_EXTERNAL_LEARNER");
+        session.removeAttribute("ACTIVE_USER_MODE");
+        ResponseCookie clrStu = ResponseCookie.from("REMEMBER_STUDENT_ID", "")
+                .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
+        response.addHeader(HttpHeaders.SET_COOKIE, clrStu.toString());
+        ResponseCookie clrExt = ResponseCookie.from("REMEMBER_EXTERNAL_LEARNER", "")
+                .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
+        response.addHeader(HttpHeaders.SET_COOKIE, clrExt.toString());
+
+        redirectAttributes.addFlashAttribute("errorMessage", "លេខកូដ «" + cleanCode + "» មិនត្រឹមត្រូវ សូមពិនិត្យម្តងទៀត!");
+        return "redirect:/test" + (redirectTo != null && !redirectTo.isEmpty() ? "?redirectTo=" + redirectTo : "");
     }
 
     @GetMapping("/test/take")

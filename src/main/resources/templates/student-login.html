@@ -109,10 +109,33 @@
             សូមបញ្ចូលលេខកូដសិស្ស ឬលេខកូដអ្នករៀន (កំណត់ដោយ Admin) ដើម្បីចូលរៀនប្រកបអង់គ្លេស រៀនវាក្យសព្ទ ឬប្រឡង។
         </p>
 
+        <!-- Currently Logged-in Student Indicator (Prevents Accidental Account Overlaps on Shared Devices) -->
+        <div th:if="${currentStudent != null}" style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; text-align: left; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.08);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 0.82rem; color: #166534; font-weight: 700;">🟢 គណនីកំពុងចូលប្រើប្រាស់៖</span>
+                <a href="/test/logout" style="color: #dc2626; text-decoration: none; font-size: 0.8rem; font-weight: 700; background: #fee2e2; border: 1px solid #fecaca; padding: 3px 10px; border-radius: 6px; transition: all 0.2s;">
+                    🚪 ចាកចេញ (ប្តូរគណនី)
+                </a>
+            </div>
+            <div style="font-weight: 800; color: #0f172a; font-size: 1.12rem;" th:text="${currentStudent.name}">ឈ្មោះសិស្ស</div>
+            <div style="font-size: 0.88rem; color: #475569; margin-top: 3px;">
+                ថ្នាក់៖ <b th:text="${currentStudent.className}">10F</b> | លេខកូដ៖ <b style="font-family: monospace; color: #2563eb;" th:text="${currentStudent.studentCode}">10F-01</b>
+            </div>
+            <div style="margin-top: 10px;">
+                <a th:href="${redirectTo != null and !redirectTo.isEmpty() ? redirectTo : '/test/take'}" style="display: block; text-align: center; background: #16a34a; color: white; padding: 9px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.92rem; box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);">
+                    👉 ចុចទីនេះដើម្បីបន្តទៅកាន់ផ្ទាំងសិក្សា
+                </a>
+            </div>
+        </div>
+
         <div class="error-msg" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
         <form th:action="@{/test/login}" method="post">
-            <input type="text" name="studentCode" class="form-control" placeholder="បញ្ចូលលេខកូដសិស្ស..." required autofocus autocomplete="off">
+            <input type="hidden" name="redirectTo" th:if="${redirectTo != null and !redirectTo.isEmpty()}" th:value="${redirectTo}">
+            <div style="text-align: left; font-size: 0.86rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                🔑 បញ្ចូលលេខកូដសិស្ស (ឧទាហរណ៍៖ 10F-01 ឬ 10F-1 ឬ ១០F-០១)៖
+            </div>
+            <input type="text" name="studentCode" class="form-control" placeholder="បញ្ចូលលេខកូដសិស្ស (ឧ. 10F-01)..." required autofocus autocomplete="off">
             <button type="submit" name="redirectTo" value="/test/take" class="btn-primary">
                 📝 ចូលគណនីសិស្ស (ប្រឡង & មេរៀន)
             </button>

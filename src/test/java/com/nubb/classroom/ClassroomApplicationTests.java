@@ -1461,8 +1461,36 @@ class ClassroomApplicationTests {
 
     @Test
     @org.springframework.transaction.annotation.Transactional
-    void testInspectRealDatabaseAttendance() {
-        var allAtts = attendanceRepository.findAll();
-        assertNotNull(allAtts);
+    void testStudentCodeMatching() {
+        var allStudents = studentRepository.findAll();
+        assertNotNull(allStudents);
+
+        // Test variations for student 10F-01 (id 147: រឿង ចាន់ណារ៉ា)
+        String[] testCodesFor10F01 = {
+            "10F-01", "10f-01", "10F-1", "10f-1",
+            "10F01", "10f01", "10F1", "10f1",
+            "10F 01", "10F 1", "10f 1",
+            "១០F-០១", "១០F-01", "10F-០១", "១០F-១",
+            "១០F០១", "១០F១", "ថ្នាក់ 10F-01", "ថ្នាក់១០F-០១"
+        };
+
+        for (String input : testCodesFor10F01) {
+            java.util.Optional<Student> matched = com.nubb.classroom.WebController.findMatchingStudent(allStudents, input);
+            assertTrue(matched.isPresent(), "Input [" + input + "] should match a student");
+            assertEquals(147L, matched.get().getId(), "Input [" + input + "] should match student 147 (10F-01)");
+            assertEquals("10F-01", matched.get().getStudentCode());
+        }
+
+        // Test student 10F-47 (id 193: សាន់ យំ)
+        String[] testCodesFor10F47 = {
+            "10F-47", "10f-47", "10F47", "10f47",
+            "១០F-៤៧", "១០f-៤៧", "ថ្នាក់១០F-៤៧"
+        };
+        for (String input : testCodesFor10F47) {
+            java.util.Optional<Student> matched = com.nubb.classroom.WebController.findMatchingStudent(allStudents, input);
+            assertTrue(matched.isPresent(), "Input [" + input + "] should match student 10F-47");
+            assertEquals(193L, matched.get().getId());
+            assertEquals("10F-47", matched.get().getStudentCode());
+        }
     }
 }
