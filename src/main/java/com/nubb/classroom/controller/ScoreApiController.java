@@ -89,17 +89,41 @@ public class ScoreApiController {
             List<Score> existingScores = scoreRepository.findByStudentIdAndMonthAndSubjectNameAndAccountIdAndAcademicYear(
                     s.getStudentId(), payload.getMonth(), payload.getSubjectName(), accountId, academicYear);
             
+            double maxTotal = computeDefaultMaxScore(actualClassName, payload.getSubjectName(), accountId);
+            Optional<ScoreRule> ruleOpt = scoreRuleRepository.findByAccountIdAndClassNameAndSubjectName(accountId, actualClassName, payload.getSubjectName());
+            if (ruleOpt.isPresent()) {
+                ScoreRule r = ruleOpt.get();
+                double ruleTotal = r.getMaxMonthlyScore() + r.getMaxAttendanceScore() + r.getMaxAssignmentScore();
+                if (ruleTotal > 0) maxTotal = ruleTotal;
+            }
+
+            double m = s.getMonthlyScore();
+            double att = s.getAttendanceScore();
+            double asg = s.getAssignmentScore();
+            double tot = m + att + asg;
+
+            if (tot > maxTotal) {
+                if (m > maxTotal) {
+                    m = Math.round((m / 100.0) * maxTotal * 100.0) / 100.0;
+                    tot = Math.min(maxTotal, m + att + asg);
+                } else {
+                    tot = maxTotal;
+                }
+            } else if (m > maxTotal) {
+                m = Math.round((m / 100.0) * maxTotal * 100.0) / 100.0;
+                tot = Math.min(maxTotal, m + att + asg);
+            }
+
             Score score = (!existingScores.isEmpty()) ? existingScores.get(0) : new Score();
             score.setStudentId(s.getStudentId());
             score.setMonth(payload.getMonth());
             score.setClassName(actualClassName);
             score.setSubjectName(payload.getSubjectName());
-            score.setMonthlyScore(s.getMonthlyScore());
-            score.setAttendanceScore(s.getAttendanceScore());
-            score.setAssignmentScore(s.getAssignmentScore());
+            score.setMonthlyScore(m);
+            score.setAttendanceScore(att);
+            score.setAssignmentScore(asg);
             score.setAcademicYear(academicYear);
-            
-            score.setTotal(s.getMonthlyScore() + s.getAttendanceScore() + s.getAssignmentScore());
+            score.setTotal(tot);
             
             score.setAccountId(accountId); 
             scoreRepository.save(score);

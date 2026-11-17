@@ -2533,6 +2533,9 @@ return "scores";
 
         // Helper to get max total score for subject
         java.util.function.BiFunction<String, String, Double> getMaxTotal = (cls, subj) -> {
+            // Track standard default rule (English/French=50, Math/Khmer track defaults=125/75, etc.) MUST take priority over global 100 rule!
+            double trackDefault = computeDefaultMaxScoreForClass(cls, subj, accountId, currentYear);
+
             // 1. Explicit custom rule for this specific classroom
             if (cls != null && !cls.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(cls)) {
                 List<com.nubb.classroom.model.ScoreRule> rules = scoreRuleRepository.findRules(cls, subj, accountId);
@@ -2541,21 +2544,22 @@ return "scores";
                     double max = r.getMaxMonthlyScore() + r.getMaxAttendanceScore() + r.getMaxAssignmentScore();
                     if (max > 0) return max;
                 }
-                // 2. Track standard default rule (125, 75, 50) MUST take priority over global 100 rule!
-                double trackDefault = computeDefaultMaxScoreForClass(cls, subj, accountId, currentYear);
                 if (trackDefault != 100.0) {
                     return trackDefault;
                 }
             }
-            // 3. Fallback to global rule for "ថ្នាក់រៀនទាំងអស់" if available
+            if (trackDefault != 100.0) {
+                return trackDefault;
+            }
+            // 2. Fallback to global rule for "ថ្នាក់រៀនទាំងអស់" if available
             List<com.nubb.classroom.model.ScoreRule> globalRules = scoreRuleRepository.findRules("ថ្នាក់រៀនទាំងអស់", subj, accountId);
             if (globalRules != null && !globalRules.isEmpty()) {
                 com.nubb.classroom.model.ScoreRule r = globalRules.get(0);
                 double max = r.getMaxMonthlyScore() + r.getMaxAttendanceScore() + r.getMaxAssignmentScore();
                 if (max > 0) return max;
             }
-            // 4. Default for class or 100.0
-            return computeDefaultMaxScoreForClass(cls, subj, accountId, currentYear);
+            // 3. Default for class or 100.0
+            return trackDefault;
         };
 
         // Group scores by subject for the summary table
@@ -2577,7 +2581,15 @@ return "scores";
             }
 
             double maxTotal = getMaxTotal.apply(studentCls, subj);
-            double percentage = (score.getTotal() / maxTotal) * 100.0;
+            double effectiveScore = score.getTotal();
+            if (effectiveScore > maxTotal) {
+                if (score.getMonthlyScore() > maxTotal) {
+                    effectiveScore = Math.round((effectiveScore / 100.0) * maxTotal * 100.0) / 100.0;
+                } else {
+                    effectiveScore = maxTotal;
+                }
+            }
+            double percentage = (effectiveScore / maxTotal) * 100.0;
             
             boolean isFemale = false;
             if (st != null && "ស្រី".equals(st.getGender())) {
@@ -3450,6 +3462,9 @@ return "scores";
 
         // Helper to get max score for a subject
         java.util.function.BiFunction<String, String, Double> getMaxTotal = (cls, subj) -> {
+            // Track standard default rule (English/French=50, Math/Khmer track defaults=125/75, etc.) MUST take priority over global 100 rule!
+            double trackDefault = computeDefaultMaxScoreForClass(cls, subj, accountId, currentYear);
+
             // 1. Explicit custom rule for this specific classroom
             if (cls != null && !cls.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(cls)) {
                 List<com.nubb.classroom.model.ScoreRule> rules = scoreRuleRepository.findRules(cls, subj, accountId);
@@ -3458,16 +3473,15 @@ return "scores";
                     double max = r.getMaxMonthlyScore() + r.getMaxAttendanceScore() + r.getMaxAssignmentScore();
                     if (max > 0) return max;
                 }
+                if (trackDefault != 100.0) {
+                    return trackDefault;
+                }
             }
-
-            // 2. Track/subject standard default rule (English/French=50, Math/Khmer track defaults=125/75, etc.)
-            // MUST take priority over generic global 100 rule!
-            double trackDefault = computeDefaultMaxScoreForClass(cls, subj, accountId, currentYear);
             if (trackDefault != 100.0) {
                 return trackDefault;
             }
 
-            // 3. Fallback to global rule for "ថ្នាក់រៀនទាំងអស់" if available
+            // 2. Fallback to global rule for "ថ្នាក់រៀនទាំងអស់" if available
             List<com.nubb.classroom.model.ScoreRule> globalRules = scoreRuleRepository.findRules("ថ្នាក់រៀនទាំងអស់", subj, accountId);
             if (globalRules != null && !globalRules.isEmpty()) {
                 com.nubb.classroom.model.ScoreRule r = globalRules.get(0);
@@ -3497,11 +3511,19 @@ return "scores";
                 java.util.List<String> breakdowns = new java.util.ArrayList<>();
 
                 for (com.nubb.classroom.model.Score s : studentScores) {
-                    totalScore += s.getTotal();
                     double maxT = getMaxTotal.apply(student.getClassName(), s.getSubjectName());
-                    sumPercentage += (s.getTotal() / maxT) * 100.0;
+                    double eff = s.getTotal();
+                    if (eff > maxT) {
+                        if (s.getMonthlyScore() > maxT) {
+                            eff = Math.round((eff / 100.0) * maxT * 100.0) / 100.0;
+                        } else {
+                            eff = maxT;
+                        }
+                    }
+                    totalScore += eff;
+                    sumPercentage += (eff / maxT) * 100.0;
 
-                    String scoreFormatted = (s.getTotal() == Math.floor(s.getTotal())) ? String.valueOf((long) s.getTotal()) : String.format("%.1f", s.getTotal());
+                    String scoreFormatted = (eff == Math.floor(eff)) ? String.valueOf((long) eff) : String.format("%.1f", eff);
                     breakdowns.add(s.getSubjectName() + "៖ " + scoreFormatted);
                 }
 
@@ -3544,6 +3566,17 @@ return "scores";
                     totalScore = s.getTotal();
 
                     double maxT = getMaxTotal.apply(student.getClassName(), subjectName);
+                    if (totalScore > maxT) {
+                        if (monthlyScore != null && monthlyScore > maxT) {
+                            monthlyScore = Math.round((monthlyScore / 100.0) * maxT * 100.0) / 100.0;
+                            totalScore = Math.min(maxT, monthlyScore + (attendanceScore != null ? attendanceScore : 0.0) + (assignmentScore != null ? assignmentScore : 0.0));
+                        } else {
+                            totalScore = maxT;
+                        }
+                    } else if (monthlyScore != null && monthlyScore > maxT) {
+                        monthlyScore = Math.round((monthlyScore / 100.0) * maxT * 100.0) / 100.0;
+                    }
+
                     double pct = (totalScore / maxT) * 100.0;
                     if (pct >= 90.0) grade = "A (ល្អណាស់)";
                     else if (pct >= 80.0) grade = "B (ល្អ)";

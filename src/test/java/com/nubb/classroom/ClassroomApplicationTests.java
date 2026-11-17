@@ -1887,4 +1887,100 @@ class ClassroomApplicationTests {
         assertEquals(50.0, studentRow.getTotalScore());
         assertEquals("A (ល្អណាស់)", studentRow.getGrade(), "A score of 50 out of 50 in English MUST be Grade A (not E)!");
     }
+
+    @Test
+    void testEnglishScoreSixtySixCappedToFiftyInGrade11GReport() throws Exception {
+        Account teacher = accountRepository.findAll().stream()
+                .filter(a -> a.getTeachingClasses() != null && (a.getTeachingClasses().contains("១១G") || a.getTeachingClasses().contains("11G")))
+                .findFirst().orElse(null);
+        if (teacher == null) {
+            teacher = new Account();
+            teacher.setUsername("teacher_11g_test");
+            teacher.setFullName("Teacher 11G Test");
+            teacher.setRole("TEACHER");
+            teacher.setTeachingClasses("១១G");
+            teacher = accountRepository.save(teacher);
+        }
+
+        org.springframework.mock.web.MockHttpSession session = new org.springframework.mock.web.MockHttpSession();
+        session.setAttribute("ACCOUNT_ID", teacher.getId());
+        session.setAttribute("ACCOUNT_ROLE", teacher.getRole());
+        session.setAttribute("ACCOUNT_USERNAME", teacher.getUsername());
+
+        // Find or create student in 11G
+        final Long tId = teacher.getId();
+        Student student = studentRepository.findAll().stream()
+                .filter(s -> "១១G".equals(s.getClassName()) && tId.equals(s.getAccountId()))
+                .findFirst().orElse(null);
+        if (student == null) {
+            student = new Student();
+            student.setName("Student 11G Test");
+            student.setClassName("១១G");
+            student.setAccountId(teacher.getId());
+            student.setGender("ប្រុស");
+            student.setAcademicYear("២០២៦-២០២៧");
+            student = studentRepository.save(student);
+        }
+
+        String month = "វិច្ឆិកា";
+        String subject = "ភាសាអង់គ្លេស";
+
+        // Suppose database had an old score totaling 66 (e.g. 50 monthly + 8 attendance + 8 assignment = 66)
+        Score score = new Score();
+        score.setStudentId(student.getId());
+        score.setAccountId(teacher.getId());
+        score.setClassName("១១G");
+        score.setSubjectName(subject);
+        score.setMonth(month);
+        score.setAcademicYear("២០២៦-២០២៧");
+        score.setMonthlyScore(50.0);
+        score.setAttendanceScore(8.0);
+        score.setAssignmentScore(8.0);
+        score.setTotal(66.0); // raw total 66
+        scoreRepository.save(score);
+
+        // 1. Single subject report: English in 11G
+        org.springframework.test.web.servlet.MvcResult result = mockMvc.perform(get("/report")
+                .session(session)
+                .param("className", "១១G")
+                .param("subjectName", subject)
+                .param("month", month))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("reportRows"))
+                .andExpect(model().attribute("selectedMaxScore", 50.0))
+                .andReturn();
+
+        @SuppressWarnings("unchecked")
+        List<WebController.ReportRow> rows = (List<WebController.ReportRow>) result.getModelAndView().getModel().get("reportRows");
+        assertNotNull(rows);
+
+        final Long sId = student.getId();
+        WebController.ReportRow studentRow = rows.stream()
+                .filter(r -> r.getStudent().getId().equals(sId))
+                .findFirst().orElse(null);
+        assertNotNull(studentRow);
+        // Total score in report must be capped at max (50.0), NOT 66.0!
+        assertEquals(50.0, studentRow.getTotalScore(), "In Grade 11G, English total score must not exceed max full score 50.0!");
+        assertEquals("A (ល្អណាស់)", studentRow.getGrade());
+
+        // 2. All subjects report: verify English breakdown does not show 66
+        org.springframework.test.web.servlet.MvcResult allSubjResult = mockMvc.perform(get("/report")
+                .session(session)
+                .param("className", "១១G")
+                .param("subjectName", "គ្រប់មុខវិជ្ជា")
+                .param("month", month))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("reportRows"))
+                .andReturn();
+
+        @SuppressWarnings("unchecked")
+        List<WebController.ReportRow> allRows = (List<WebController.ReportRow>) allSubjResult.getModelAndView().getModel().get("reportRows");
+        assertNotNull(allRows);
+        WebController.ReportRow allStudentRow = allRows.stream()
+                .filter(r -> r.getStudent().getId().equals(sId))
+                .findFirst().orElse(null);
+        assertNotNull(allStudentRow);
+        assertFalse(allStudentRow.getSubjectBreakdown().contains("ភាសាអង់គ្លេស៖ 66"), "Breakdown must not show English as 66 points!");
+        assertTrue(allStudentRow.getSubjectBreakdown().contains("ភាសាអង់គ្លេស៖ 50"), "Breakdown must show English capped at 50 points!");
+    }
 }

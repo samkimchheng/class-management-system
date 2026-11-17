@@ -492,7 +492,9 @@
                         if (val < 0) { val = 0; input.value = 0; }
                         
                         // Limit to max if input exceeds max
-                        let maxVal = parseFloat(input.getAttribute('max')) || 100;
+                        let maxAttr = input.getAttribute('max');
+                        let maxVal = (maxAttr !== null && maxAttr !== '') ? parseFloat(maxAttr) : 100;
+                        if (isNaN(maxVal)) maxVal = 100;
                         if (val > maxVal) { val = maxVal; input.value = maxVal; }
                         
                         total += val;
@@ -506,12 +508,17 @@
                     return;
                 }
 
-                totalCell.textContent = total;
+                let maxTotal = parseFloat(currentScoreRule.maxMonthlyScore || 0) + parseFloat(currentScoreRule.maxAttendanceScore || 0) + parseFloat(currentScoreRule.maxAssignmentScore || 0);
+                if (maxTotal <= 0) maxTotal = 50;
+                if (total > maxTotal) {
+                    total = maxTotal;
+                }
+                totalCell.textContent = (total === Math.floor(total)) ? total : total.toFixed(1);
                 row.style.backgroundColor = '#f0fdf4'; 
                 
                 let gradeHTML = '';
-                let maxTotal = parseFloat(currentScoreRule.maxMonthlyScore) + parseFloat(currentScoreRule.maxAttendanceScore) + parseFloat(currentScoreRule.maxAssignmentScore);
-                if (maxTotal <= 0) maxTotal = 100; 
+
+
                 let percentage = (total / maxTotal) * 100;
                 
                 if (percentage >= 90) {
