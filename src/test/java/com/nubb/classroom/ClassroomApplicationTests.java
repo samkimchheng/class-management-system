@@ -1766,13 +1766,20 @@ class ClassroomApplicationTests {
 
     @Test
     void testMoveAndReorderTranscripts() throws Exception {
-        Account teacher = accountRepository.findAll().stream().findFirst().orElse(null);
+        Account teacher = accountRepository.findAll().stream()
+                .filter(a -> a.getId() != null)
+                .findFirst().orElse(null);
         assertNotNull(teacher);
+
+        org.springframework.mock.web.MockHttpSession session = new org.springframework.mock.web.MockHttpSession();
+        session.setAttribute("ACCOUNT_ID", teacher.getId());
+        session.setAttribute("ACCOUNT_ROLE", teacher.getRole());
+        session.setAttribute("ACCOUNT_NAME", teacher.getFullName());
+        session.setAttribute("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧");
 
         // 1. Create a lesson with 3 transcripts
         mockMvc.perform(post("/api/lessons/save")
-                .sessionAttr("ACCOUNT_ID", teacher.getId())
-                .sessionAttr("ACCOUNT_ROLE", "TEACHER")
+                .session(session)
                 .param("title", "Lesson Reorder Test")
                 .param("className", "10F")
                 .param("subjectName", "ភាសាអង់គ្លេស")
@@ -1797,8 +1804,7 @@ class ClassroomApplicationTests {
 
         // 2. Move Vocabulary UP (should swap with Intro)
         mockMvc.perform(post("/api/lessons/" + created.getId() + "/transcripts/" + vocabId + "/move")
-                .sessionAttr("ACCOUNT_ID", teacher.getId())
-                .sessionAttr("ACCOUNT_ROLE", "TEACHER")
+                .session(session)
                 .param("direction", "up"))
                 .andExpect(status().isOk());
 
@@ -1814,8 +1820,7 @@ class ClassroomApplicationTests {
 
         // 3. Move Vocabulary DOWN (should move back to index 1)
         mockMvc.perform(post("/api/lessons/" + created.getId() + "/transcripts/" + vocabId + "/move")
-                .sessionAttr("ACCOUNT_ID", teacher.getId())
-                .sessionAttr("ACCOUNT_ROLE", "TEACHER")
+                .session(session)
                 .param("direction", "down"))
                 .andExpect(status().isOk());
 
@@ -1824,5 +1829,62 @@ class ClassroomApplicationTests {
         assertEquals("Transcript 1: Intro", restored.get(0).getTitle());
         assertEquals("Transcript 2: Vocabulary", restored.get(1).getTitle());
         assertEquals("Transcript 3: Practice", restored.get(2).getTitle());
+    }
+
+    @Test
+    void testEnglishScoreFiftyIsGradeAInReports() throws Exception {
+        Student student = studentRepository.findAll().stream()
+                .filter(s -> s.getAccountId() != null)
+                .findFirst().orElse(null);
+        assertNotNull(student);
+
+        Long accountId = student.getAccountId();
+        Account teacher = accountRepository.findById(accountId).orElse(null);
+        assertNotNull(teacher);
+
+        org.springframework.mock.web.MockHttpSession session = new org.springframework.mock.web.MockHttpSession();
+        session.setAttribute("ACCOUNT_ID", teacher.getId());
+        session.setAttribute("ACCOUNT_ROLE", teacher.getRole());
+        session.setAttribute("ACCOUNT_NAME", teacher.getFullName());
+        session.setAttribute("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧");
+
+        String month = "វិច្ឆិកា";
+        String subject = "ភាសាអង់គ្លេស";
+
+        // Save score of 50 for English
+        Score score = new Score();
+        score.setStudentId(student.getId());
+        score.setAccountId(teacher.getId());
+        score.setClassName(student.getClassName());
+        score.setSubjectName(subject);
+        score.setMonth(month);
+        score.setAcademicYear("២០២៦-២០២៧");
+        score.setMonthlyScore(50.0);
+        score.setAttendanceScore(0.0);
+        score.setAssignmentScore(0.0);
+        score.setTotal(50.0);
+        scoreRepository.save(score);
+
+        // Request report
+        org.springframework.test.web.servlet.MvcResult result = mockMvc.perform(get("/report")
+                .session(session)
+                .param("className", student.getClassName())
+                .param("subjectName", subject)
+                .param("month", month))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("reportRows"))
+                .andExpect(model().attribute("selectedMaxScore", 50.0))
+                .andReturn();
+
+        @SuppressWarnings("unchecked")
+        List<WebController.ReportRow> rows = (List<WebController.ReportRow>) result.getModelAndView().getModel().get("reportRows");
+        assertNotNull(rows);
+
+        WebController.ReportRow studentRow = rows.stream()
+                .filter(r -> r.getStudent().getId().equals(student.getId()))
+                .findFirst().orElse(null);
+        assertNotNull(studentRow);
+        assertEquals(50.0, studentRow.getTotalScore());
+        assertEquals("A (ល្អណាស់)", studentRow.getGrade(), "A score of 50 out of 50 in English MUST be Grade A (not E)!");
     }
 }

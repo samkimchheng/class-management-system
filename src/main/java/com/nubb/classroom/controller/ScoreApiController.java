@@ -150,6 +150,11 @@ public class ScoreApiController {
     }
     
         private double computeDefaultMaxScore(String className, String subjectName, Long accountId) {
+        String sub = (subjectName != null) ? subjectName.trim() : "";
+        if (com.nubb.classroom.WebController.isSameSubject("ភាសាអង់គ្លេស", sub) || com.nubb.classroom.WebController.isSameSubject("ភាសាបារាំង", sub)) {
+            return 50.0;
+        }
+
         if (className == null || className.trim().isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className)) {
             return 100.0;
         }
@@ -167,8 +172,6 @@ public class ScoreApiController {
             dummy.setClassName(className);
             track = dummy.getTrack();
         }
-
-        String sub = (subjectName != null) ? subjectName.trim() : "";
 
         if ("វិទ្យាសាស្ត្រ".equals(track)) {
             if ("គណិតវិទ្យា".equals(sub)) {

@@ -2411,6 +2411,11 @@ return "scores";
     }
 
     private double computeDefaultMaxScoreForClass(String className, String subjectName, Long accountId, String academicYear) {
+        String sub = (subjectName != null) ? subjectName.trim() : "";
+        if (isSameSubject("ភាសាអង់គ្លេស", sub) || isSameSubject("ភាសាបារាំង", sub)) {
+            return 50.0;
+        }
+
         if (className == null || className.trim().isEmpty() || "ថ្នាក់រៀនទាំងអស់".equals(className) || accountId == null) {
             return 100.0;
         }
@@ -2423,8 +2428,6 @@ return "scores";
             dummy.setClassName(className);
             track = dummy.getTrack();
         }
-
-        String sub = (subjectName != null) ? subjectName.trim() : "";
 
         if ("វិទ្យាសាស្ត្រ".equals(track)) {
             if (isSameSubject("គណិតវិទ្យា", sub)) {
@@ -3447,21 +3450,32 @@ return "scores";
 
         // Helper to get max score for a subject
         java.util.function.BiFunction<String, String, Double> getMaxTotal = (cls, subj) -> {
-            com.nubb.classroom.model.ScoreRule rule = null;
-            List<com.nubb.classroom.model.ScoreRule> rules = scoreRuleRepository.findRules(cls, subj, accountId);
-            if (rules != null && !rules.isEmpty()) {
-                rule = rules.get(0);
-            } else {
-                List<com.nubb.classroom.model.ScoreRule> globalRules = scoreRuleRepository.findRules("ថ្នាក់រៀនទាំងអស់", subj, accountId);
-                if (globalRules != null && !globalRules.isEmpty()) {
-                    rule = globalRules.get(0);
+            // 1. Explicit custom rule for this specific classroom
+            if (cls != null && !cls.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(cls)) {
+                List<com.nubb.classroom.model.ScoreRule> rules = scoreRuleRepository.findRules(cls, subj, accountId);
+                if (rules != null && !rules.isEmpty()) {
+                    com.nubb.classroom.model.ScoreRule r = rules.get(0);
+                    double max = r.getMaxMonthlyScore() + r.getMaxAttendanceScore() + r.getMaxAssignmentScore();
+                    if (max > 0) return max;
                 }
             }
-            if (rule != null) {
-                double max = rule.getMaxMonthlyScore() + rule.getMaxAttendanceScore() + rule.getMaxAssignmentScore();
+
+            // 2. Track/subject standard default rule (English/French=50, Math/Khmer track defaults=125/75, etc.)
+            // MUST take priority over generic global 100 rule!
+            double trackDefault = computeDefaultMaxScoreForClass(cls, subj, accountId, currentYear);
+            if (trackDefault != 100.0) {
+                return trackDefault;
+            }
+
+            // 3. Fallback to global rule for "ថ្នាក់រៀនទាំងអស់" if available
+            List<com.nubb.classroom.model.ScoreRule> globalRules = scoreRuleRepository.findRules("ថ្នាក់រៀនទាំងអស់", subj, accountId);
+            if (globalRules != null && !globalRules.isEmpty()) {
+                com.nubb.classroom.model.ScoreRule r = globalRules.get(0);
+                double max = r.getMaxMonthlyScore() + r.getMaxAttendanceScore() + r.getMaxAssignmentScore();
                 if (max > 0) return max;
             }
-            return 100.0;
+
+            return trackDefault;
         };
 
         boolean isAllSubjects = "គ្រប់មុខវិជ្ជា".equals(subjectName);
@@ -3579,6 +3593,12 @@ return "scores";
             }
             row.setRank(currentRank);
         }
+
+        Double selectedMaxScore = null;
+        if (!isAllSubjects && subjectName != null && !subjectName.isEmpty()) {
+            selectedMaxScore = getMaxTotal.apply(className, subjectName);
+        }
+        model.addAttribute("selectedMaxScore", selectedMaxScore);
 
         model.addAttribute("reportRows", reportRows);
         model.addAttribute("selectedClass", className);

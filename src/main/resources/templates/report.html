@@ -178,7 +178,7 @@
                     <div id="pdfHeader" style="display: none; text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #0f172a;">
                         <div style="font-size: 1.25rem; font-weight: bold; margin-bottom: 4px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
                         <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 12px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
-                        <h3 th:text="'របាយការណ៍' + (${isAllSubjects} ? 'សរុបគ្រប់មុខវិជ្ជា' : 'មុខវិជ្ជា៖ ' + ${selectedSubject}) + ' ប្រចាំខែ៖ ' + (${selectedMonth} ?: 'តេស្តដើមឆ្នាំ') + ' - ' + (${selectedClass} ?: 'ថ្នាក់រៀនទាំងអស់')" style="font-size: 1.35rem; font-weight: bold; color: #1e3a8a; margin: 0 0 6px 0;">របាយការណ៍សរុប</h3>
+                        <h3 th:text="'របាយការណ៍' + (${isAllSubjects} ? 'សរុបគ្រប់មុខវិជ្ជា' : 'មុខវិជ្ជា៖ ' + ${selectedSubject} + (${selectedMaxScore != null} ? ' (ពិន្ទុពេញ ' + (${selectedMaxScore == selectedMaxScore.longValue() ? selectedMaxScore.longValue() : selectedMaxScore}) + ')' : '')) + ' ប្រចាំខែ៖ ' + (${selectedMonth} ?: 'តេស្តដើមឆ្នាំ') + ' - ' + (${selectedClass} ?: 'ថ្នាក់រៀនទាំងអស់')" style="font-size: 1.35rem; font-weight: bold; color: #1e3a8a; margin: 0 0 6px 0;">របាយការណ៍សរុប</h3>
                         <div style="font-size: 0.95rem; color: #475569;" th:text="'ឆ្នាំសិក្សា៖ ' + (${currentAcademicYear} ?: '២០២៦-២០២៧')">ឆ្នាំសិក្សា៖ ២០២៦-២០២៧</div>
                     </div>
                 
@@ -194,7 +194,7 @@
                                 <th style="text-align: center; white-space: nowrap;">ពិន្ទុប្រចាំខែ</th>
                                 <th style="text-align: center; white-space: nowrap;">ពិន្ទុវត្តមាន</th>
                                 <th style="text-align: center; white-space: nowrap;">កិច្ចការស្រាវជ្រាវ</th>
-                                <th style="text-align: center; white-space: nowrap;">ពិន្ទុសរុប</th>
+                                <th style="text-align: center; white-space: nowrap;">ពិន្ទុសរុប <span th:if="${selectedMaxScore != null}" th:text="'(ពេញ ' + ${selectedMaxScore == selectedMaxScore.longValue() ? selectedMaxScore.longValue() : selectedMaxScore} + ')'" style="font-size: 0.82rem; color: #475569; font-weight: normal;"></span></th>
                                 <th style="text-align: center; white-space: nowrap;">និទ្ទេស</th>
                                 <th style="text-align: center; white-space: nowrap;">ចំណាត់ថ្នាក់</th>
                                 <th class="col-att-nowrap" style="text-align: center; color: #065f46; font-weight: 800; white-space: nowrap; min-width: 75px;">វត្តមាន</th>
