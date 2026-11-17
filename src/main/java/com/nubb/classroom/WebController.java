@@ -4,6 +4,7 @@ import com.nubb.classroom.model.Account;
 import com.nubb.classroom.model.Attendance;
 import com.nubb.classroom.model.Classroom;
 import com.nubb.classroom.model.ExternalLearner;
+import com.nubb.classroom.model.Score;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.model.StudentParticipation;
 import com.nubb.classroom.repository.AccountRepository;
@@ -2860,7 +2861,348 @@ return "scores";
         
         model.addAttribute("myClassrooms", classroomRepository.findByAccountIdAndAcademicYear(accountId, currentYear));
         model.addAttribute("subjectsList", getSubjectList(accountId));
-        
+
+        // =========================================================================
+        // Multi-Month Attendance, Scores & Per-Class Trend Analytics
+        // =========================================================================
+        int[] years = parseAcademicYearNumbers(currentYear);
+        LocalDate yrStart = LocalDate.of(years[0], 10, 1);
+        LocalDate yrEnd = LocalDate.of(years[1], 9, 30);
+
+        List<Attendance> allAttendanceRecords;
+        if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
+            allAttendanceRecords = attendanceRepository.findByAccountIdAndClassNameAndDateBetween(accountId, className, yrStart, yrEnd);
+        } else {
+            allAttendanceRecords = attendanceRepository.findByAccountIdAndDateBetween(accountId, yrStart, yrEnd);
+        }
+        if (allAttendanceRecords == null) allAttendanceRecords = Collections.emptyList();
+
+        List<Score> allTeacherScores;
+        if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className)) {
+            allTeacherScores = scoreRepository.findByAccountIdAndClassNameAndAcademicYear(accountId, className, currentYear);
+        } else {
+            allTeacherScores = scoreRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
+        }
+        if (allTeacherScores == null) allTeacherScores = Collections.emptyList();
+
+        List<Classroom> myTeacherClassrooms = classroomRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
+        if (myTeacherClassrooms == null || myTeacherClassrooms.isEmpty()) {
+            myTeacherClassrooms = classroomRepository.findByAccountId(accountId);
+        }
+        if (myTeacherClassrooms == null) myTeacherClassrooms = Collections.emptyList();
+
+        List<String> schoolMonths = getMonthsForAcademicYear(currentYear);
+        List<MonthlyAttendanceStat> monthlyAttendanceStats = new ArrayList<>();
+        List<MonthlyScoreStat> monthlyScoreStats = new ArrayList<>();
+
+        double prevAttRate = -1.0;
+        int sumYearlyPresent = 0;
+        int sumYearlyPermission = 0;
+        int sumYearlyUnexcused = 0;
+
+        for (String mStr : schoolMonths) {
+            if ("ប្រចាំឆ្នាំ".equals(mStr) || "ឆមាសទី១".equals(mStr) || "ឆមាសទី២".equals(mStr) || "តេស្តដើមឆ្នាំ".equals(mStr)) {
+                continue;
+            }
+            int[] my = parseMonthAndYear(mStr);
+            int mNum = my[0];
+            int yr = my[1];
+            LocalDate mStart = LocalDate.of(yr, mNum, 1);
+            LocalDate mEnd = mStart.with(TemporalAdjusters.lastDayOfMonth());
+
+            List<Attendance> mAtts = allAttendanceRecords.stream()
+                    .filter(a -> a.getDate() != null && !a.getDate().isBefore(mStart) && !a.getDate().isAfter(mEnd))
+                    .toList();
+
+            int permCount = 0;
+            int unexcCount = 0;
+            int presCount = 0;
+            for (Attendance a : mAtts) {
+                if (a.isPresent() || "PRESENT".equalsIgnoreCase(a.getAbsenceType())) {
+                    presCount++;
+                } else if (a.isPermission()) {
+                    permCount++;
+                } else {
+                    unexcCount++;
+                }
+            }
+            int totAbsent = permCount + unexcCount;
+            double attRate = 100.0;
+            if ((presCount + totAbsent) > 0) {
+                attRate = (presCount * 100.0) / (presCount + totAbsent);
+            } else if (totAbsent > 0) {
+                int n = (enrolledStudents != null && !enrolledStudents.isEmpty()) ? enrolledStudents.size() : 1;
+                int days = (int) mAtts.stream().map(Attendance::getDate).distinct().count();
+                int exp = Math.max(n * Math.max(days, 1), totAbsent);
+                presCount = Math.max(0, exp - totAbsent);
+                attRate = (exp > 0) ? (presCount * 100.0) / exp : 100.0;
+            }
+
+            attRate = Math.round(attRate * 10.0) / 10.0;
+            String attTrend = "SAME";
+            double attDelta = 0.0;
+            if (prevAttRate >= 0 && (presCount + totAbsent) > 0) {
+                attDelta = Math.round((attRate - prevAttRate) * 10.0) / 10.0;
+                if (attDelta > 0.0) attTrend = "UP";
+                else if (attDelta < 0.0) attTrend = "DOWN";
+            }
+            if ((presCount + totAbsent) > 0) {
+                prevAttRate = attRate;
+            }
+
+            sumYearlyPresent += presCount;
+            sumYearlyPermission += permCount;
+            sumYearlyUnexcused += unexcCount;
+
+            monthlyAttendanceStats.add(new MonthlyAttendanceStat(
+                    mStr, (enrolledStudents != null ? enrolledStudents.size() : 0), presCount, attRate, permCount, unexcCount, totAbsent, attTrend, attDelta
+            ));
+        }
+
+        int sumYearlyAbsent = sumYearlyPermission + sumYearlyUnexcused;
+        double overallYearlyAttendanceRate = (sumYearlyPresent + sumYearlyAbsent > 0)
+                ? Math.round(((sumYearlyPresent * 100.0) / (sumYearlyPresent + sumYearlyAbsent)) * 10.0) / 10.0
+                : 100.0;
+
+        // Multi-Month Scores
+        double prevScoreAvg = -1.0;
+        int sumExamined = 0;
+        int sumPass = 0;
+        int sumFail = 0;
+        double sumScorePctTotal = 0.0;
+        int sumGradeA = 0, sumGradeB = 0, sumGradeC = 0, sumGradeD = 0, sumGradeE = 0, sumGradeF = 0;
+
+        for (String mStr : schoolMonths) {
+            if ("ប្រចាំឆ្នាំ".equals(mStr) || "ឆមាសទី១".equals(mStr) || "ឆមាសទី២".equals(mStr)) {
+                continue;
+            }
+            List<Score> mScores = allTeacherScores.stream()
+                    .filter(s -> isSameMonth(s.getMonth(), mStr))
+                    .toList();
+
+            Map<Long, List<Score>> studentScores = mScores.stream()
+                    .filter(s -> s.getStudentId() != null)
+                    .collect(Collectors.groupingBy(Score::getStudentId));
+
+            int mExamined = studentScores.size();
+            int mExaminedFemale = 0;
+            int mPass = 0;
+            int mPassFemale = 0;
+            int mFail = 0;
+            int mFailFemale = 0;
+            int mA = 0, mB = 0, mC = 0, mD = 0, mE = 0, mF = 0;
+            double mSumPct = 0.0;
+
+            for (Map.Entry<Long, List<Score>> entry : studentScores.entrySet()) {
+                Long sid = entry.getKey();
+                Student st = studentMap.get(sid);
+                boolean isF = (st != null && "ស្រី".equals(st.getGender()));
+                if (isF) mExaminedFemale++;
+
+                List<Score> scList = entry.getValue();
+                double stSum = 0.0;
+                double stMax = 0.0;
+                for (Score sc : scList) {
+                    double mx = resolveMaxTotalForSubject(sc.getClassName(), sc.getSubjectName(), accountId, currentYear);
+                    double cp = (mx > 0) ? Math.min(sc.getTotal(), mx) : sc.getTotal();
+                    stSum += cp;
+                    stMax += mx;
+                }
+                double pct = (stMax > 0) ? (stSum / stMax) * 100.0 : 0.0;
+                if (pct > 100.0) pct = 100.0;
+                mSumPct += pct;
+
+                if (pct >= 50.0) {
+                    mPass++;
+                    if (isF) mPassFemale++;
+                } else {
+                    mFail++;
+                    if (isF) mFailFemale++;
+                }
+
+                if (pct >= 90.0) mA++;
+                else if (pct >= 80.0) mB++;
+                else if (pct >= 70.0) mC++;
+                else if (pct >= 60.0) mD++;
+                else if (pct >= 50.0) mE++;
+                else mF++;
+            }
+
+            double mAvgPct = (mExamined > 0) ? Math.round((mSumPct / mExamined) * 10.0) / 10.0 : 0.0;
+            double mPassPct = (mExamined > 0) ? Math.round(((mPass * 100.0) / mExamined) * 10.0) / 10.0 : 0.0;
+            double mFailPct = (mExamined > 0) ? Math.round(((mFail * 100.0) / mExamined) * 10.0) / 10.0 : 0.0;
+
+            String sTrend = "SAME";
+            double sDelta = 0.0;
+            if (prevScoreAvg >= 0 && mExamined > 0) {
+                sDelta = Math.round((mAvgPct - prevScoreAvg) * 10.0) / 10.0;
+                if (sDelta > 0.0) sTrend = "UP";
+                else if (sDelta < 0.0) sTrend = "DOWN";
+            }
+            if (mExamined > 0) {
+                prevScoreAvg = mAvgPct;
+            }
+
+            sumExamined += mExamined;
+            sumPass += mPass;
+            sumFail += mFail;
+            sumScorePctTotal += (mAvgPct * mExamined);
+            sumGradeA += mA; sumGradeB += mB; sumGradeC += mC; sumGradeD += mD; sumGradeE += mE; sumGradeF += mF;
+
+            monthlyScoreStats.add(new MonthlyScoreStat(
+                    mStr, mExamined, mExaminedFemale, mAvgPct,
+                    mPass, mPassFemale, mPassPct,
+                    mFail, mFailFemale, mFailPct,
+                    mA, mB, mC, mD, mE, mF,
+                    sTrend, sDelta
+            ));
+        }
+
+        double overallYearlyScoreAvg = (sumExamined > 0) ? Math.round((sumScorePctTotal / sumExamined) * 10.0) / 10.0 : 0.0;
+        double overallYearlyPassRate = (sumExamined > 0) ? Math.round(((sumPass * 100.0) / sumExamined) * 10.0) / 10.0 : 0.0;
+        double overallYearlyFailRate = (sumExamined > 0) ? Math.round(((sumFail * 100.0) / sumExamined) * 10.0) / 10.0 : 0.0;
+
+        // Class Trend Comparison
+        List<ClassTrendStat> classTrendStats = new ArrayList<>();
+        for (Classroom cr : myTeacherClassrooms) {
+            String cName = cr.getClassName();
+            List<Student> cStudents = studentRepository.findByClassNameAndAccountIdAndAcademicYear(cName, accountId, currentYear);
+            if (cStudents == null || cStudents.isEmpty()) {
+                cStudents = studentRepository.findByClassNameAndAccountId(cName, accountId);
+            }
+            int cTotal = (cStudents != null) ? cStudents.size() : 0;
+            int cFemale = (cStudents != null) ? (int) cStudents.stream().filter(s -> "ស្រី".equals(s.getGender())).count() : 0;
+
+            List<Attendance> cAtts = allAttendanceRecords.stream()
+                    .filter(a -> a.getStudent() != null && cName.equals(a.getStudent().getClassName()))
+                    .toList();
+
+            int cPerm = 0, cUnexc = 0, cPres = 0;
+            for (Attendance a : cAtts) {
+                if (a.isPresent() || "PRESENT".equalsIgnoreCase(a.getAbsenceType())) cPres++;
+                else if (a.isPermission()) cPerm++;
+                else cUnexc++;
+            }
+            int cAbsTotal = cPerm + cUnexc;
+            double cAttRate = 100.0;
+            if ((cPres + cAbsTotal) > 0) {
+                cAttRate = Math.round(((cPres * 100.0) / (cPres + cAbsTotal)) * 10.0) / 10.0;
+            } else if (cAbsTotal > 0) {
+                int exp = Math.max(cTotal * 20, cAbsTotal);
+                cAttRate = Math.round((((exp - cAbsTotal) * 100.0) / exp) * 10.0) / 10.0;
+            }
+
+            // Scores for this class
+            List<Score> cScores = allTeacherScores.stream()
+                    .filter(s -> cName.equals(s.getClassName()))
+                    .toList();
+            Map<Long, List<Score>> cStudentScores = cScores.stream()
+                    .filter(s -> s.getStudentId() != null)
+                    .collect(Collectors.groupingBy(Score::getStudentId));
+
+            int cPassCount = 0;
+            int cFailCount = 0;
+            double cSumPct = 0.0;
+            for (List<Score> scList : cStudentScores.values()) {
+                double stSum = 0.0; double stMax = 0.0;
+                for (Score sc : scList) {
+                    double mx = resolveMaxTotalForSubject(cName, sc.getSubjectName(), accountId, currentYear);
+                    double cp = (mx > 0) ? Math.min(sc.getTotal(), mx) : sc.getTotal();
+                    stSum += cp;
+                    stMax += mx;
+                }
+                double pct = (stMax > 0) ? (stSum / stMax) * 100.0 : 0.0;
+                cSumPct += pct;
+                if (pct >= 50.0) cPassCount++;
+                else cFailCount++;
+            }
+            int cExamined = cStudentScores.size();
+            double cScoreAvg = (cExamined > 0) ? Math.round((cSumPct / cExamined) * 10.0) / 10.0 : 0.0;
+            double cPassRate = (cExamined > 0) ? Math.round(((cPassCount * 100.0) / cExamined) * 10.0) / 10.0 : 0.0;
+
+            String cAttTrend = (cAttRate >= 95.0) ? "UP" : (cAttRate < 85.0 ? "DOWN" : "SAME");
+            String cScrTrend = (cScoreAvg >= 75.0) ? "UP" : (cScoreAvg < 60.0 ? "DOWN" : "SAME");
+
+            classTrendStats.add(new ClassTrendStat(
+                    cName, cr.getTrack(), cTotal, cFemale,
+                    cAttRate, cAttTrend, 0.0,
+                    cPerm, cUnexc, cAbsTotal,
+                    cScoreAvg, cScrTrend, 0.0,
+                    cPassRate, cPassCount, cFailCount
+            ));
+        }
+
+        // Prepare JSON for interactive charts
+        List<String> chartMonths = new ArrayList<>();
+        List<Double> chartAttRates = new ArrayList<>();
+        List<Integer> chartPermissions = new ArrayList<>();
+        List<Integer> chartUnexcused = new ArrayList<>();
+        List<Integer> chartTotalAbsents = new ArrayList<>();
+        for (MonthlyAttendanceStat att : monthlyAttendanceStats) {
+            String mShort = att.getMonth().replaceAll(" ២០\\d\\d", "");
+            chartMonths.add(mShort);
+            chartAttRates.add(att.getAttendanceRate());
+            chartPermissions.add(att.getPermissionCount());
+            chartUnexcused.add(att.getUnexcusedCount());
+            chartTotalAbsents.add(att.getTotalAbsent());
+        }
+
+        List<Double> chartScoreAvgs = new ArrayList<>();
+        List<Double> chartPassRates = new ArrayList<>();
+        List<Double> chartFailRates = new ArrayList<>();
+        for (MonthlyScoreStat sc : monthlyScoreStats) {
+            chartScoreAvgs.add(sc.getAveragePercentage());
+            chartPassRates.add(sc.getPassPercent());
+            chartFailRates.add(sc.getFailPercent());
+        }
+
+        List<String> chartClassNames = new ArrayList<>();
+        List<Double> chartClassAttRates = new ArrayList<>();
+        List<Double> chartClassScores = new ArrayList<>();
+        List<Double> chartClassPassRates = new ArrayList<>();
+        for (ClassTrendStat ct : classTrendStats) {
+            chartClassNames.add(ct.getClassName());
+            chartClassAttRates.add(ct.getAttendanceRate());
+            chartClassScores.add(ct.getAverageScore());
+            chartClassPassRates.add(ct.getPassRate());
+        }
+
+        model.addAttribute("monthlyAttendanceStats", monthlyAttendanceStats);
+        model.addAttribute("monthlyScoreStats", monthlyScoreStats);
+        model.addAttribute("classTrendStats", classTrendStats);
+
+        model.addAttribute("sumYearlyPresent", sumYearlyPresent);
+        model.addAttribute("sumYearlyPermission", sumYearlyPermission);
+        model.addAttribute("sumYearlyUnexcused", sumYearlyUnexcused);
+        model.addAttribute("sumYearlyAbsent", sumYearlyAbsent);
+        model.addAttribute("overallYearlyAttendanceRate", overallYearlyAttendanceRate);
+
+        model.addAttribute("sumExamined", sumExamined);
+        model.addAttribute("overallYearlyScoreAvg", overallYearlyScoreAvg);
+        model.addAttribute("sumPass", sumPass);
+        model.addAttribute("overallYearlyPassRate", overallYearlyPassRate);
+        model.addAttribute("sumFail", sumFail);
+        model.addAttribute("overallYearlyFailRate", overallYearlyFailRate);
+        model.addAttribute("sumGradeA", sumGradeA);
+        model.addAttribute("sumGradeB", sumGradeB);
+        model.addAttribute("sumGradeC", sumGradeC);
+        model.addAttribute("sumGradeD", sumGradeD);
+        model.addAttribute("sumGradeE", sumGradeE);
+        model.addAttribute("sumGradeF", sumGradeF);
+
+        model.addAttribute("chartMonthsJson", toJsonList(chartMonths));
+        model.addAttribute("chartAttRatesJson", toJsonList(chartAttRates));
+        model.addAttribute("chartPermissionsJson", toJsonList(chartPermissions));
+        model.addAttribute("chartUnexcusedJson", toJsonList(chartUnexcused));
+        model.addAttribute("chartTotalAbsentsJson", toJsonList(chartTotalAbsents));
+        model.addAttribute("chartScoreAvgsJson", toJsonList(chartScoreAvgs));
+        model.addAttribute("chartPassRatesJson", toJsonList(chartPassRates));
+        model.addAttribute("chartFailRatesJson", toJsonList(chartFailRates));
+        model.addAttribute("chartClassNamesJson", toJsonList(chartClassNames));
+        model.addAttribute("chartClassAttRatesJson", toJsonList(chartClassAttRates));
+        model.addAttribute("chartClassScoresJson", toJsonList(chartClassScores));
+        model.addAttribute("chartClassPassRatesJson", toJsonList(chartClassPassRates));
+
         return "statistics";
     }
 
@@ -3602,6 +3944,245 @@ return "scores";
         public void setSubjectCount(int subjectCount) { this.subjectCount = subjectCount; }
         public String getTrend() { return trend; }
         public void setTrend(String trend) { this.trend = trend; }
+    }
+
+    public static boolean isSameMonth(String m1, String m2) {
+        if (m1 == null || m2 == null) return false;
+        String t1 = m1.trim();
+        String t2 = m2.trim();
+        if (t1.equalsIgnoreCase(t2)) return true;
+        String[] khmerMonths = {"វិច្ឆិកា", "ធ្នូ", "មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "ឆមាសទី១", "ឆមាសទី២", "ប្រចាំឆ្នាំ", "តេស្តដើមឆ្នាំ"};
+        for (String km : khmerMonths) {
+            if (t1.contains(km) && t2.contains(km)) return true;
+        }
+        return false;
+    }
+
+    public static String toJsonList(List<?> list) {
+        if (list == null || list.isEmpty()) return "[]";
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            Object o = list.get(i);
+            if (o instanceof Number || o instanceof Boolean) {
+                sb.append(o);
+            } else {
+                sb.append("\"").append(o.toString().replace("\"", "\\\"")).append("\"");
+            }
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    public static class MonthlyAttendanceStat {
+        private String month;
+        private int totalEnrolled;
+        private int presentCount;
+        private double attendanceRate;
+        private int permissionCount;
+        private int unexcusedCount;
+        private int totalAbsent;
+        private String trend;
+        private double trendDelta;
+
+        public MonthlyAttendanceStat() {}
+
+        public MonthlyAttendanceStat(String month, int totalEnrolled, int presentCount, double attendanceRate,
+                                     int permissionCount, int unexcusedCount, int totalAbsent,
+                                     String trend, double trendDelta) {
+            this.month = month;
+            this.totalEnrolled = totalEnrolled;
+            this.presentCount = presentCount;
+            this.attendanceRate = attendanceRate;
+            this.permissionCount = permissionCount;
+            this.unexcusedCount = unexcusedCount;
+            this.totalAbsent = totalAbsent;
+            this.trend = trend;
+            this.trendDelta = trendDelta;
+        }
+
+        public String getMonth() { return month; }
+        public void setMonth(String month) { this.month = month; }
+        public int getTotalEnrolled() { return totalEnrolled; }
+        public void setTotalEnrolled(int totalEnrolled) { this.totalEnrolled = totalEnrolled; }
+        public int getPresentCount() { return presentCount; }
+        public void setPresentCount(int presentCount) { this.presentCount = presentCount; }
+        public double getAttendanceRate() { return attendanceRate; }
+        public void setAttendanceRate(double attendanceRate) { this.attendanceRate = attendanceRate; }
+        public int getPermissionCount() { return permissionCount; }
+        public void setPermissionCount(int permissionCount) { this.permissionCount = permissionCount; }
+        public int getUnexcusedCount() { return unexcusedCount; }
+        public void setUnexcusedCount(int unexcusedCount) { this.unexcusedCount = unexcusedCount; }
+        public int getTotalAbsent() { return totalAbsent; }
+        public void setTotalAbsent(int totalAbsent) { this.totalAbsent = totalAbsent; }
+        public String getTrend() { return trend; }
+        public void setTrend(String trend) { this.trend = trend; }
+        public double getTrendDelta() { return trendDelta; }
+        public void setTrendDelta(double trendDelta) { this.trendDelta = trendDelta; }
+
+        public int getStudentCount() { return totalEnrolled; }
+        public String getAttendanceRateFormatted() { return String.format(Locale.US, "%.1f", attendanceRate); }
+    }
+
+    public static class MonthlyScoreStat {
+        private String month;
+        private int examinedCount;
+        private int examinedFemale;
+        private double averagePercentage;
+        private int passCount;
+        private int passFemale;
+        private double passPercent;
+        private int failCount;
+        private int failFemale;
+        private double failPercent;
+        private int gradeA, gradeB, gradeC, gradeD, gradeE, gradeF;
+        private String trend;
+        private double trendDelta;
+
+        public MonthlyScoreStat() {}
+
+        public MonthlyScoreStat(String month, int examinedCount, int examinedFemale, double averagePercentage,
+                                int passCount, int passFemale, double passPercent,
+                                int failCount, int failFemale, double failPercent,
+                                int gradeA, int gradeB, int gradeC, int gradeD, int gradeE, int gradeF,
+                                String trend, double trendDelta) {
+            this.month = month;
+            this.examinedCount = examinedCount;
+            this.examinedFemale = examinedFemale;
+            this.averagePercentage = averagePercentage;
+            this.passCount = passCount;
+            this.passFemale = passFemale;
+            this.passPercent = passPercent;
+            this.failCount = failCount;
+            this.failFemale = failFemale;
+            this.failPercent = failPercent;
+            this.gradeA = gradeA;
+            this.gradeB = gradeB;
+            this.gradeC = gradeC;
+            this.gradeD = gradeD;
+            this.gradeE = gradeE;
+            this.gradeF = gradeF;
+            this.trend = trend;
+            this.trendDelta = trendDelta;
+        }
+
+        public String getMonth() { return month; }
+        public void setMonth(String month) { this.month = month; }
+        public int getExaminedCount() { return examinedCount; }
+        public void setExaminedCount(int examinedCount) { this.examinedCount = examinedCount; }
+        public int getExaminedFemale() { return examinedFemale; }
+        public void setExaminedFemale(int examinedFemale) { this.examinedFemale = examinedFemale; }
+        public double getAveragePercentage() { return averagePercentage; }
+        public void setAveragePercentage(double averagePercentage) { this.averagePercentage = averagePercentage; }
+        public int getPassCount() { return passCount; }
+        public void setPassCount(int passCount) { this.passCount = passCount; }
+        public int getPassFemale() { return passFemale; }
+        public void setPassFemale(int passFemale) { this.passFemale = passFemale; }
+        public double getPassPercent() { return passPercent; }
+        public void setPassPercent(double passPercent) { this.passPercent = passPercent; }
+        public int getFailCount() { return failCount; }
+        public void setFailCount(int failCount) { this.failCount = failCount; }
+        public int getFailFemale() { return failFemale; }
+        public void setFailFemale(int failFemale) { this.failFemale = failFemale; }
+        public double getFailPercent() { return failPercent; }
+        public void setFailPercent(double failPercent) { this.failPercent = failPercent; }
+        public int getGradeA() { return gradeA; }
+        public void setGradeA(int gradeA) { this.gradeA = gradeA; }
+        public int getGradeB() { return gradeB; }
+        public void setGradeB(int gradeB) { this.gradeB = gradeB; }
+        public int getGradeC() { return gradeC; }
+        public void setGradeC(int gradeC) { this.gradeC = gradeC; }
+        public int getGradeD() { return gradeD; }
+        public void setGradeD(int gradeD) { this.gradeD = gradeD; }
+        public int getGradeE() { return gradeE; }
+        public void setGradeE(int gradeE) { this.gradeE = gradeE; }
+        public int getGradeF() { return gradeF; }
+        public void setGradeF(int gradeF) { this.gradeF = gradeF; }
+        public String getTrend() { return trend; }
+        public void setTrend(String trend) { this.trend = trend; }
+        public double getTrendDelta() { return trendDelta; }
+        public void setTrendDelta(double trendDelta) { this.trendDelta = trendDelta; }
+
+        public String getAverageScoreFormatted() { return String.format(Locale.US, "%.1f", averagePercentage); }
+        public String getPassRateFormatted() { return String.format(Locale.US, "%.1f", passPercent); }
+        public String getFailRateFormatted() { return String.format(Locale.US, "%.1f", failPercent); }
+    }
+
+    public static class ClassTrendStat {
+        private String className;
+        private String track;
+        private int studentCount;
+        private int femaleCount;
+        private double attendanceRate;
+        private String attendanceTrend;
+        private double attendanceTrendDelta;
+        private int permissionAbsents;
+        private int unexcusedAbsents;
+        private int totalAbsents;
+        private double averageScore;
+        private String scoreTrend;
+        private double scoreTrendDelta;
+        private double passRate;
+        private int passCount;
+        private int failCount;
+
+        public ClassTrendStat() {}
+
+        public ClassTrendStat(String className, String track, int studentCount, int femaleCount,
+                              double attendanceRate, String attendanceTrend, double attendanceTrendDelta,
+                              int permissionAbsents, int unexcusedAbsents, int totalAbsents,
+                              double averageScore, String scoreTrend, double scoreTrendDelta,
+                              double passRate, int passCount, int failCount) {
+            this.className = className;
+            this.track = track;
+            this.studentCount = studentCount;
+            this.femaleCount = femaleCount;
+            this.attendanceRate = attendanceRate;
+            this.attendanceTrend = attendanceTrend;
+            this.attendanceTrendDelta = attendanceTrendDelta;
+            this.permissionAbsents = permissionAbsents;
+            this.unexcusedAbsents = unexcusedAbsents;
+            this.totalAbsents = totalAbsents;
+            this.averageScore = averageScore;
+            this.scoreTrend = scoreTrend;
+            this.scoreTrendDelta = scoreTrendDelta;
+            this.passRate = passRate;
+            this.passCount = passCount;
+            this.failCount = failCount;
+        }
+
+        public String getClassName() { return className; }
+        public void setClassName(String className) { this.className = className; }
+        public String getTrack() { return track; }
+        public void setTrack(String track) { this.track = track; }
+        public int getStudentCount() { return studentCount; }
+        public void setStudentCount(int studentCount) { this.studentCount = studentCount; }
+        public int getFemaleCount() { return femaleCount; }
+        public void setFemaleCount(int femaleCount) { this.femaleCount = femaleCount; }
+        public double getAttendanceRate() { return attendanceRate; }
+        public void setAttendanceRate(double attendanceRate) { this.attendanceRate = attendanceRate; }
+        public String getAttendanceTrend() { return attendanceTrend; }
+        public void setAttendanceTrend(String attendanceTrend) { this.attendanceTrend = attendanceTrend; }
+        public double getAttendanceTrendDelta() { return attendanceTrendDelta; }
+        public void setAttendanceTrendDelta(double attendanceTrendDelta) { this.attendanceTrendDelta = attendanceTrendDelta; }
+        public int getPermissionAbsents() { return permissionAbsents; }
+        public void setPermissionAbsents(int permissionAbsents) { this.permissionAbsents = permissionAbsents; }
+        public int getUnexcusedAbsents() { return unexcusedAbsents; }
+        public void setUnexcusedAbsents(int unexcusedAbsents) { this.unexcusedAbsents = unexcusedAbsents; }
+        public int getTotalAbsents() { return totalAbsents; }
+        public void setTotalAbsents(int totalAbsents) { this.totalAbsents = totalAbsents; }
+        public double getAverageScore() { return averageScore; }
+        public void setAverageScore(double averageScore) { this.averageScore = averageScore; }
+        public String getScoreTrend() { return scoreTrend; }
+        public void setScoreTrend(String scoreTrend) { this.scoreTrend = scoreTrend; }
+        public double getScoreTrendDelta() { return scoreTrendDelta; }
+        public void setScoreTrendDelta(double scoreTrendDelta) { this.scoreTrendDelta = scoreTrendDelta; }
+        public double getPassRate() { return passRate; }
+        public void setPassRate(double passRate) { this.passRate = passRate; }
+        public int getPassCount() { return passCount; }
+        public void setPassCount(int passCount) { this.passCount = passCount; }
+        public int getFailCount() { return failCount; }
+        public void setFailCount(int failCount) { this.failCount = failCount; }
     }
 
     @PostMapping("/test/leave/submit")

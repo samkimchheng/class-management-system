@@ -48,4 +48,10 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     @Modifying
     @Query("DELETE FROM Attendance a WHERE a.student IN :students AND a.date >= :start AND a.date <= :end")
     void deleteByStudentInAndDateBetween(@Param("students") List<Student> students, @Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    @Query("SELECT a FROM Attendance a WHERE (a.accountId = :accountId OR a.student.accountId = :accountId) AND a.date >= :start AND a.date <= :end")
+    List<Attendance> findByAccountIdAndDateBetween(@Param("accountId") Long accountId, @Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    @Query("SELECT a FROM Attendance a WHERE (a.accountId = :accountId OR a.student.accountId = :accountId) AND a.student.className = :className AND a.date >= :start AND a.date <= :end")
+    List<Attendance> findByAccountIdAndClassNameAndDateBetween(@Param("accountId") Long accountId, @Param("className") String className, @Param("start") LocalDate start, @Param("end") LocalDate end);
 }

@@ -2081,4 +2081,154 @@ class ClassroomApplicationTests {
                 .andExpect(jsonPath("$.overallGrade").exists())
                 .andExpect(jsonPath("$.subjectScores").isArray());
     }
+
+    @Test
+    void testTeacherMonthlyAttendanceAndScoreAnalytics() throws Exception {
+        Account teacher = accountRepository.findByUsername("TeacherAnalyticsTest").orElse(null);
+        if (teacher == null) {
+            teacher = new Account();
+            teacher.setUsername("TeacherAnalyticsTest");
+            teacher.setPassword("pass123");
+            teacher.setFullName("លោកគ្រូ ស្ថិតិវិភាគ");
+            teacher.setRole("TEACHER");
+            teacher = accountRepository.save(teacher);
+        }
+
+        String academicYear = "២០២៦-២០២៧";
+
+        // Create 2 classrooms for this teacher
+        List<Classroom> c1List = classroomRepository.findByClassNameAndAccountIdAndAcademicYear("10-Alpha", teacher.getId(), academicYear);
+        Classroom c1 = c1List.isEmpty() ? null : c1List.get(0);
+        if (c1 == null) {
+            c1 = new Classroom();
+            c1.setClassName("10-Alpha");
+            c1.setAccountId(teacher.getId());
+            c1.setAcademicYear(academicYear);
+            c1.setTrack("វិទ្យាសាស្ត្រ");
+            c1 = classroomRepository.save(c1);
+        }
+
+        List<Classroom> c2List = classroomRepository.findByClassNameAndAccountIdAndAcademicYear("10-Beta", teacher.getId(), academicYear);
+        Classroom c2 = c2List.isEmpty() ? null : c2List.get(0);
+        if (c2 == null) {
+            c2 = new Classroom();
+            c2.setClassName("10-Beta");
+            c2.setAccountId(teacher.getId());
+            c2.setAcademicYear(academicYear);
+            c2.setTrack("វិទ្យាសាស្ត្រសង្គម");
+            c2 = classroomRepository.save(c2);
+        }
+
+        // Create student in c1
+        List<Student> s1List = studentRepository.findByClassNameAndAccountIdAndAcademicYear("10-Alpha", teacher.getId(), academicYear);
+        Student s1 = s1List.isEmpty() ? null : s1List.get(0);
+        if (s1 == null) {
+            s1 = new Student();
+            s1.setName("សុខ សាន");
+            s1.setGender("ប្រុស");
+            s1.setClassName("10-Alpha");
+            s1.setStudentCode("ALPHA-01");
+            s1.setAccountId(teacher.getId());
+            s1.setAcademicYear(academicYear);
+            s1 = studentRepository.save(s1);
+        }
+
+        // Create attendance in October 2026 and November 2026
+        Attendance attOct = new Attendance();
+        attOct.setStudent(s1);
+        attOct.setAccountId(teacher.getId());
+        attOct.setDate(LocalDate.of(2026, 10, 15));
+        attOct.setPresent(false);
+        attOct.setAbsenceType("PERMISSION");
+        attendanceRepository.save(attOct);
+
+        Attendance attNov = new Attendance();
+        attNov.setStudent(s1);
+        attNov.setAccountId(teacher.getId());
+        attNov.setDate(LocalDate.of(2026, 11, 10));
+        attNov.setPresent(true);
+        attNov.setAbsenceType("PRESENT");
+        attendanceRepository.save(attNov);
+
+        // Create scores in October 2026 and November 2026
+        Score scOct = new Score();
+        scOct.setStudentId(s1.getId());
+        scOct.setAccountId(teacher.getId());
+        scOct.setClassName("10-Alpha");
+        scOct.setSubjectName("គណិតវិទ្យា");
+        scOct.setMonth("ខែតុលា ២០២៦");
+        scOct.setAcademicYear(academicYear);
+        scOct.setMonthlyScore(60.0);
+        scOct.setAttendanceScore(10.0);
+        scOct.setAssignmentScore(10.0);
+        scOct.setTotal(80.0);
+        scoreRepository.save(scOct);
+
+        Score scNov = new Score();
+        scNov.setStudentId(s1.getId());
+        scNov.setAccountId(teacher.getId());
+        scNov.setClassName("10-Alpha");
+        scNov.setSubjectName("គណិតវិទ្យា");
+        scNov.setMonth("ខែវិច្ឆិកា ២០២៦");
+        scNov.setAcademicYear(academicYear);
+        scNov.setMonthlyScore(75.0);
+        scNov.setAttendanceScore(10.0);
+        scNov.setAssignmentScore(10.0);
+        scNov.setTotal(95.0);
+        scoreRepository.save(scNov);
+
+        // Teacher session
+        org.springframework.mock.web.MockHttpSession teacherSession = new org.springframework.mock.web.MockHttpSession();
+        teacherSession.setAttribute("ACCOUNT_ID", teacher.getId());
+        teacherSession.setAttribute("ACCOUNT_ROLE", "TEACHER");
+        teacherSession.setAttribute("ACCOUNT_NAME", teacher.getFullName());
+        teacherSession.setAttribute("CURRENT_ACADEMIC_YEAR", academicYear);
+
+        // Perform GET /statistics
+        org.springframework.test.web.servlet.MvcResult result = mockMvc.perform(get("/statistics")
+                .session(teacherSession))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("monthlyAttendanceStats"))
+                .andExpect(model().attributeExists("monthlyScoreStats"))
+                .andExpect(model().attributeExists("classTrendStats"))
+                .andExpect(model().attributeExists("overallYearlyAttendanceRate"))
+                .andExpect(model().attributeExists("overallYearlyScoreAvg"))
+                .andExpect(model().attributeExists("overallYearlyPassRate"))
+                .andExpect(model().attributeExists("overallYearlyFailRate"))
+                .andExpect(model().attributeExists("chartMonthsJson"))
+                .andExpect(model().attributeExists("chartAttRatesJson"))
+                .andExpect(model().attributeExists("chartScoreAvgsJson"))
+                .andExpect(model().attributeExists("chartClassNamesJson"))
+                .andReturn();
+
+        @SuppressWarnings("unchecked")
+        List<WebController.MonthlyAttendanceStat> attStats =
+                (List<WebController.MonthlyAttendanceStat>) result.getModelAndView().getModel().get("monthlyAttendanceStats");
+        assertNotNull(attStats);
+        assertFalse(attStats.isEmpty());
+
+        @SuppressWarnings("unchecked")
+        List<WebController.MonthlyScoreStat> scStats =
+                (List<WebController.MonthlyScoreStat>) result.getModelAndView().getModel().get("monthlyScoreStats");
+        assertNotNull(scStats);
+        assertFalse(scStats.isEmpty());
+
+        @SuppressWarnings("unchecked")
+        List<WebController.ClassTrendStat> clsStats =
+                (List<WebController.ClassTrendStat>) result.getModelAndView().getModel().get("classTrendStats");
+        assertNotNull(clsStats);
+        assertFalse(clsStats.isEmpty());
+
+        String chartMonths = (String) result.getModelAndView().getModel().get("chartMonthsJson");
+        assertNotNull(chartMonths);
+        assertTrue(chartMonths.startsWith("[") && chartMonths.endsWith("]"));
+
+        String chartAttRates = (String) result.getModelAndView().getModel().get("chartAttRatesJson");
+        assertNotNull(chartAttRates);
+        assertTrue(chartAttRates.startsWith("[") && chartAttRates.endsWith("]"));
+
+        String chartScoreAvgs = (String) result.getModelAndView().getModel().get("chartScoreAvgsJson");
+        assertNotNull(chartScoreAvgs);
+        assertTrue(chartScoreAvgs.startsWith("[") && chartScoreAvgs.endsWith("]"));
+    }
 }
