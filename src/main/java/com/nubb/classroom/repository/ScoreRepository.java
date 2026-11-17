@@ -94,4 +94,10 @@ public interface ScoreRepository extends JpaRepository<Score, Long> {
 
     @Query("SELECT DISTINCT s.subjectName FROM Score s WHERE s.accountId = :accountId AND s.subjectName IS NOT NULL AND s.subjectName != ''")
     List<String> findDistinctSubjectNamesByAccountId(@Param("accountId") Long accountId);
+
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId")
+    List<Score> findByStudentId(@Param("studentId") Long studentId);
+
+    @Query("SELECT s FROM Score s WHERE s.studentId = :studentId AND (:academicYear IS NULL OR s.academicYear = :academicYear OR (:academicYear = '២០២៦-២០២៧' AND (s.academicYear IS NULL OR s.academicYear = '')))")
+    List<Score> findByStudentIdAndAcademicYear(@Param("studentId") Long studentId, @Param("academicYear") String academicYear);
 }

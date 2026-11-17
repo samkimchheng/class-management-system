@@ -30,6 +30,118 @@ public class StudentPortalApiController {
     private LeaveRequestRepository leaveRequestRepository;
     @Autowired
     private AttendanceRepository attendanceRepository;
+    @Autowired(required = false)
+    private com.nubb.classroom.WebController webController;
+
+    @GetMapping("/scores")
+    public ResponseEntity<?> getScores(@RequestParam(value = "month", required = false) String requestedMonth, HttpSession session) {
+        Student student = (Student) session.getAttribute("loggedInStudent");
+        if (student == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        if (student.getId() != null) {
+            student = studentRepository.findById(student.getId()).orElse(student);
+            session.setAttribute("loggedInStudent", student);
+        }
+
+        String academicYear = (student.getAcademicYear() != null && !student.getAcademicYear().trim().isEmpty())
+                ? student.getAcademicYear().trim() : (webController != null ? webController.getCurrentAcademicYear() : "២០២៦-២០២៧");
+        if (academicYear == null || academicYear.trim().isEmpty()) {
+            academicYear = "២០២៦-២០២៧";
+        }
+
+        List<String> monthsList = new ArrayList<>(com.nubb.classroom.WebController.getMonthsForAcademicYear(academicYear));
+        List<Score> allStudentScores = scoreRepository.findByStudentIdAndAcademicYear(student.getId(), academicYear);
+        if (allStudentScores == null) allStudentScores = new ArrayList<>();
+
+        for (Score sc : allStudentScores) {
+            if (sc.getMonth() != null && !sc.getMonth().trim().isEmpty() && !monthsList.contains(sc.getMonth().trim())) {
+                monthsList.add(sc.getMonth().trim());
+            }
+        }
+
+        String selectedMonth = (requestedMonth != null && !requestedMonth.trim().isEmpty()) ? requestedMonth.trim() : null;
+        if (selectedMonth == null) {
+            if (!allStudentScores.isEmpty()) {
+                selectedMonth = allStudentScores.get(allStudentScores.size() - 1).getMonth();
+            } else {
+                int[] years = com.nubb.classroom.WebController.parseAcademicYearNumbers(academicYear);
+                selectedMonth = "ខែវិច្ឆិកា " + com.nubb.classroom.WebController.toKhmerNumber(years[0]);
+            }
+        }
+
+        final String currentSelMonth = selectedMonth;
+        List<Score> currentMonthScores = allStudentScores.stream()
+                .filter(s -> currentSelMonth.equals(s.getMonth()))
+                .toList();
+
+        List<com.nubb.classroom.WebController.StudentSubjectScoreView> subjectScoresList = new ArrayList<>();
+        double totalScoreSum = 0.0;
+        double maxTotalSum = 0.0;
+
+        for (Score s : currentMonthScores) {
+            String subj = (s.getSubjectName() != null) ? s.getSubjectName().trim() : "មុខវិជ្ជា";
+            double maxTotal = (webController != null)
+                    ? webController.resolveMaxTotalForSubject(student.getClassName(), subj, student.getAccountId(), academicYear)
+                    : 100.0;
+            double rawTotal = s.getTotal();
+            double cappedTotal = (maxTotal > 0) ? Math.min(rawTotal, maxTotal) : rawTotal;
+            if (cappedTotal < 0) cappedTotal = 0.0;
+
+            double pct = (maxTotal > 0) ? (cappedTotal / maxTotal) * 100.0 : 0.0;
+            if (pct > 100.0) pct = 100.0;
+
+            String grade;
+            if (pct >= 90.0) grade = "A";
+            else if (pct >= 80.0) grade = "B";
+            else if (pct >= 70.0) grade = "C";
+            else if (pct >= 60.0) grade = "D";
+            else if (pct >= 50.0) grade = "E";
+            else grade = "F";
+
+            boolean pass = pct >= 50.0;
+
+            subjectScoresList.add(new com.nubb.classroom.WebController.StudentSubjectScoreView(
+                    subj, s.getMonthlyScore(), s.getAttendanceScore(), s.getAssignmentScore(),
+                    cappedTotal, maxTotal, pct, grade, pass
+            ));
+
+            totalScoreSum += cappedTotal;
+            maxTotalSum += maxTotal;
+        }
+
+        subjectScoresList.sort(Comparator.comparing(com.nubb.classroom.WebController.StudentSubjectScoreView::getSubjectName));
+
+        int subjectCount = subjectScoresList.size();
+        double averagePercentage = (maxTotalSum > 0) ? (totalScoreSum / maxTotalSum) * 100.0 : 0.0;
+        if (averagePercentage > 100.0) averagePercentage = 100.0;
+        double averageScore = (subjectCount > 0) ? totalScoreSum / subjectCount : 0.0;
+
+        String overallGrade = "-";
+        if (subjectCount > 0) {
+            if (averagePercentage >= 90.0) overallGrade = "A (ល្អប្រសើរ)";
+            else if (averagePercentage >= 80.0) overallGrade = "B (ល្អណាស់)";
+            else if (averagePercentage >= 70.0) overallGrade = "C (ល្អ)";
+            else if (averagePercentage >= 60.0) overallGrade = "D (ល្អបង្គួរ)";
+            else if (averagePercentage >= 50.0) overallGrade = "E (មធ្យម)";
+            else overallGrade = "F (ខ្សោយ)";
+        }
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("studentName", student.getName());
+        resp.put("className", student.getClassName());
+        resp.put("studentCode", student.getStudentCode());
+        resp.put("academicYear", academicYear);
+        resp.put("selectedMonth", selectedMonth);
+        resp.put("monthsList", monthsList);
+        resp.put("subjectCount", subjectCount);
+        resp.put("totalScore", totalScoreSum);
+        resp.put("maxTotal", maxTotalSum);
+        resp.put("averagePercentage", Math.round(averagePercentage * 10.0) / 10.0);
+        resp.put("averageScore", Math.round(averageScore * 10.0) / 10.0);
+        resp.put("overallGrade", overallGrade);
+        resp.put("subjectScores", subjectScoresList);
+
+        return ResponseEntity.ok(resp);
+    }
 
     @GetMapping("/subjects")
     public ResponseEntity<?> getSubjects(@RequestParam String month, HttpSession session) {

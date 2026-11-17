@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>តាមដានពិន្ទុ និងនិទ្ទេស - គណនីសិស្ស</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3730a3;
+            --primary-light: #e0e7ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --muted: #64748b;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px 15px;
+            color: var(--dark);
+        }
+        .container {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+        .header-card {
+            background: white;
+            padding: 20px 24px;
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--primary);
+        }
+        .nav-pills {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-pill {
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+            padding: 8px 14px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .nav-pill:hover { transform: translateY(-1px); }
+        .nav-pill.active {
+            background: var(--primary);
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
+        }
+        .filter-card {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: white;
+            padding: 18px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+        }
+        .stat-box.primary::before { background: var(--primary); }
+        .stat-box.success::before { background: var(--success); }
+        .stat-box.warning::before { background: var(--warning); }
+        .stat-box.danger::before { background: var(--danger); }
+        .stat-label {
+            font-size: 0.88rem;
+            color: var(--muted);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+        .stat-sub {
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+        .motivational-card {
+            background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 20px 22px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            box-shadow: var(--card-shadow);
+        }
+        .motivational-icon {
+            font-size: 2.2rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .motivational-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #1e3a8a;
+            margin: 0 0 4px 0;
+        }
+        .motivational-desc {
+            font-size: 0.95rem;
+            color: #334155;
+            line-height: 1.65;
+            margin: 0;
+        }
+        .table-card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+        .table-header {
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .table-title {
+            font-size: 1.08rem;
+            font-weight: 800;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.92rem;
+        }
+        th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 700;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+        tr:hover td { background-color: #f8fafc; }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+        .badge-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .badge-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .badge-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .badge-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .badge-muted { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 14px;
+            margin-top: 15px;
+        }
+        .history-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 14px 16px;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .history-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.12);
+        }
+        .history-card.current {
+            border: 2px solid var(--primary);
+            background: #f8faff;
+        }
+        .btn-print {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-print:hover { background: #1d4ed8; }
+
+        /* Print Header Style */
+        .print-header { display: none; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .header-card, .filter-card, .nav-pills, .btn-print, .history-section { display: none !important; }
+            .print-header {
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
+                padding-bottom: 12px;
+                border-bottom: 2px solid #0f172a;
+            }
+            .stat-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+            .stat-box { border: 1px solid #94a3b8; box-shadow: none; padding: 10px 12px; }
+            .table-card { box-shadow: none; border: 1px solid #94a3b8; }
+            th { background: #e2e8f0 !important; -webkit-print-color-adjust: exact; }
+            .motivational-card { border: 1px solid #94a3b8; background: #f8fafc !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Print Header (Visible only when printed) -->
+        <div class="print-header">
+            <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 3px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+            <div style="font-size: 1.05rem; font-weight: bold; margin-bottom: 12px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+            <h2 style="margin: 0 0 6px 0; font-size: 1.35rem; color: #1e3a8a;">ព្រឹត្តិបត្រពិន្ទុ និងការវាយតម្លៃលទ្ធផលសិក្សាសិស្ស</h2>
+            <div style="font-size: 0.95rem; color: #334155;">
+                <span th:text="'ឈ្មោះសិស្ស៖ ' + ${student.name}">ឈ្មោះសិស្ស</span> | 
+                <span th:text="'ថ្នាក់រៀន៖ ' + ${student.className}">ថ្នាក់រៀន</span> | 
+                <span th:text="'អត្តលេខ៖ ' + ${student.studentCode}">អត្តលេខ</span> | 
+                <span th:text="'ប្រចាំ៖ ' + ${selectedMonth}">ប្រចាំខែ</span> | 
+                <span th:text="'ឆ្នាំសិក្សា៖ ' + ${currentAcademicYear}">ឆ្នាំសិក្សា</span>
+            </div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="header-card">
+            <div>
+                <h2 style="margin: 0; font-size: clamp(1.2rem, 3.5vw, 1.45rem); color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                    <span>👋 សួស្តី,</span> <span th:text="${student.name}" style="color: var(--primary);">ឈ្មោះសិស្ស</span>
+                </h2>
+                <div style="margin: 6px 0 0; color: var(--muted); font-size: 0.90rem; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <span>🏫 ថ្នាក់៖ <b th:text="${student.className}" style="color: #1e293b;">10A</b></span>
+                    <span>🆔 អត្តលេខ៖ <b th:text="${student.studentCode}" style="color: #1e293b;">CODE-01</b></span>
+                    <span>📅 ឆ្នាំសិក្សា៖ <b th:text="${currentAcademicYear}" style="color: #1e293b;">២០២៦-២០២៧</b></span>
+                </div>
+            </div>
+            <div class="nav-pills">
+                <a href="/test/take" class="nav-pill" style="background: #e0f2fe; color: #0284c7;">
+                    <span>📝</span> <span>ធ្វើតេស្តប្រឡង</span>
+                </a>
+                <a href="/test/scores" class="nav-pill active">
+                    <span>📊</span> <span>ពិន្ទុ & និទ្ទេស</span>
+                </a>
+                <a href="/lessons" class="nav-pill" style="background: #ede9fe; color: #6d28d9;">
+                    <span>📚</span> <span>មើលមេរៀន</span>
+                </a>
+                <a th:if="${student != null and student.vocabularyAccessAllowed == true}" href="/test/vocabulary" class="nav-pill" style="background: #ede9fe; color: #7c3aed;">
+                    <span>🔤</span> <span>រៀនពាក្យ</span>
+                </a>
+                <a th:if="${student != null and student.phonicsAccessAllowed == true}" href="/test/phonics" class="nav-pill" style="background: #ccfbf1; color: #0f766e;">
+                    <span>🗣️</span> <span>ប្រកបអង់គ្លេស</span>
+                </a>
+                <a href="/test/leave" class="nav-pill" style="background: #d1fae5; color: #059669;">
+                    <span>📋</span> <span>សុំច្បាប់</span>
+                </a>
+                <a href="/certificate" class="nav-pill" style="background: #fef3c7; color: #b45309;">
+                    <span>🎓</span> <span>វិញ្ញាបនបត្រ</span>
+                </a>
+                <a href="/test/logout" class="nav-pill" style="background: #fee2e2; color: #b91c1c;">
+                    <span>🚪</span> <span>ចាកចេញ</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter & Actions Card -->
+        <div class="filter-card">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <label for="monthSelect" style="font-weight: 700; color: #1e293b; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                    <span>📅</span> <span>ជ្រើសរើសខែដើម្បីតាមដានលទ្ធផល៖</span>
+                </label>
+                <select id="monthSelect" onchange="window.location.href='/test/scores?month=' + encodeURIComponent(this.value);" style="padding: 9px 14px; font-family: inherit; font-size: 0.95rem; font-weight: 600; border-radius: 8px; border: 1.5px solid #cbd5e1; outline: none; background: #f8fafc; color: #0f172a; cursor: pointer;">
+                    <option th:each="m : ${monthsList}" th:value="${m}" th:text="${m}" th:selected="${selectedMonth == m}">ខែវិច្ឆិកា ២០២៦</option>
+                </select>
+            </div>
+            <div>
+                <button type="button" class="btn-print" onclick="window.print()">
+                    <span>🖨️</span> <span>បោះពុម្ពព្រឹត្តិបត្រពិន្ទុ</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Stat Cards -->
+        <div class="stat-grid">
+            <!-- Total Score -->
+            <div class="stat-box primary">
+                <div>
+                    <div class="stat-label">
+                        <span>🎯</span> <span>ពិន្ទុសរុប (Total Points)</span>
+                    </div>
+                    <div class="stat-value" style="color: var(--primary);">
+                        <span th:text="${totalScoreFormatted}">0</span>
+                        <span style="font-size: 1rem; color: var(--muted); font-weight: 600;" th:text="' / ' + ${maxTotalFormatted}">/ 0</span>
+                    </div>
+                </div>
+                <div class="stat-sub" th:text="${subjectCount > 0 ? 'ពិន្ទុរួមលើ ' + subjectCount + ' មុខវិជ្ជា' : 'មិនទាន់មានពិន្ទុ'}">ពិន្ទុរួមលើ 0 មុខវិជ្ជា</div>
+            </div>
+
+            <!-- Average Percentage -->
+            <div class="stat-box success">
+                <div>
+                    <div class="stat-label">
+                        <span>📈</span> <span>មធ្យមភាគ (Average %)</span>
+                    </div>
+                    <div class="stat-value" style="color: #059669;">
+                        <span th:text="${averagePercentageFormatted}">0%</span>
+                    </div>
+                </div>
+                <div class="stat-sub" th:text="'ពិន្ទុមធ្យម៖ ' + ${averageScoreFormatted}">ពិន្ទុមធ្យម៖ 0</div>
+            </div>
+
+            <!-- Overall Grade -->
+            <div class="stat-box warning">
+                <div>
+                    <div class="stat-label">
+                        <span>🏅</span> <span>និទ្ទេសរួម (Overall Grade)</span>
+                    </div>
+                    <div class="stat-value">
+                        <span th:if="${overallGrade != null and overallGrade.startsWith('A')}" class="badge badge-success" style="font-size: 1.25rem; padding: 6px 14px;" th:text="${overallGrade}">A</span>
+                        <span th:if="${overallGrade != null and overallGrade.startsWith('B')}" class="badge badge-success" style="font-size: 1.25rem; padding: 6px 14px; background: rgba(16, 185, 129, 0.7);" th:text="${overallGrade}">B</span>
+                        <span th:if="${overallGrade != null and overallGrade.startsWith('C')}" class="badge badge-warning" style="font-size: 1.25rem; padding: 6px 14px;" th:text="${overallGrade}">C</span>
+                        <span th:if="${overallGrade != null and overallGrade.startsWith('D')}" class="badge badge-warning" style="font-size: 1.25rem; padding: 6px 14px; background: rgba(245, 158, 11, 0.7);" th:text="${overallGrade}">D</span>
+                        <span th:if="${overallGrade != null and overallGrade.startsWith('E')}" class="badge badge-warning" style="font-size: 1.25rem; padding: 6px 14px; background: #fb923c;" th:text="${overallGrade}">E</span>
+                        <span th:if="${overallGrade != null and overallGrade.startsWith('F')}" class="badge badge-danger" style="font-size: 1.25rem; padding: 6px 14px;" th:text="${overallGrade}">F</span>
+                        <span th:if="${overallGrade == null or overallGrade == '-'}" class="badge badge-muted" style="font-size: 1.25rem; padding: 6px 14px;">-</span>
+                    </div>
+                </div>
+                <div class="stat-sub">កម្រិតវាយតម្លៃសមត្ថភាព</div>
+            </div>
+
+            <!-- Class Rank -->
+            <div class="stat-box danger">
+                <div>
+                    <div class="stat-label">
+                        <span>🏆</span> <span>ចំណាត់ថ្នាក់ក្នុងថ្នាក់ (Class Rank)</span>
+                    </div>
+                    <div class="stat-value" style="color: var(--danger);">
+                        <span th:if="${classRank > 0}" th:text="'លេខ ' + ${classRank}">លេខ ១</span>
+                        <span th:if="${classRank == 0}">-</span>
+                    </div>
+                </div>
+                <div class="stat-sub" th:text="${totalStudentsInClass > 0 ? 'ក្នុងចំណោមសិស្ស ' + totalStudentsInClass + ' នាក់' : 'ក្នុងថ្នាក់រៀន'}">ក្នុងចំណោមសិស្ស 0 នាក់</div>
+            </div>
+        </div>
+
+        <!-- Motivational Box -->
+        <div class="motivational-card">
+            <div class="motivational-icon" th:text="${motivationalIcon}">🌟</div>
+            <div>
+                <h4 class="motivational-title" th:text="'ការលើកទឹកចិត្ត និងការវាយតម្លៃលទ្ធផល (' + ${selectedMonth} + ')'">ការលើកទឹកចិត្ត និងការវាយតម្លៃលទ្ធផល</h4>
+                <p class="motivational-desc" th:text="${motivationalMessage}">
+                    សូមបន្តខិតខំប្រឹងប្រែងរៀនសូត្រ ធ្វើលំហាត់ និងស្តាប់ការពន្យល់របស់លោកគ្រូ-អ្នកគ្រូឱ្យបានទៀងទាត់ ដើម្បីទទួលបានលទ្ធផលកាន់តែប្រសើរឡើង!
+                </p>
+            </div>
+        </div>
+
+        <!-- Detailed Scores Table -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <span>📋</span> <span th:text="'លទ្ធផលពិន្ទុលម្អិតតាមមុខវិជ្ជាប្រចាំ ' + ${selectedMonth}">លទ្ធផលពិន្ទុលម្អិតតាមមុខវិជ្ជា</span>
+                </h3>
+                <span style="font-size: 0.85rem; color: var(--muted);" th:text="'ចំនួន ' + ${subjectCount} + ' មុខវិជ្ជា'">ចំនួន 0 មុខវិជ្ជា</span>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align: center;">ល.រ</th>
+                            <th>មុខវិជ្ជា (Subject)</th>
+                            <th style="text-align: center;">ពិន្ទុប្រចាំខែ</th>
+                            <th style="text-align: center;">ពិន្ទុវត្តមាន</th>
+                            <th style="text-align: center;">កិច្ចការស្រាវជ្រាវ</th>
+                            <th style="text-align: center; color: var(--primary);">ពិន្ទុសរុប</th>
+                            <th style="text-align: center;">ពិន្ទុពេញ</th>
+                            <th style="text-align: center;">ភាគរយ (%)</th>
+                            <th style="text-align: center;">និទ្ទេស</th>
+                            <th style="text-align: center;">លទ្ធផល</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item, iterStat : ${subjectScoresList}">
+                            <td style="text-align: center; font-weight: bold; color: var(--muted);" th:text="${iterStat.count}">១</td>
+                            <td style="font-weight: 700; color: #0f172a;" th:text="${item.subjectName}">មុខវិជ្ជា</td>
+                            <td style="text-align: center;" th:text="${item.monthlyScore != null ? (item.monthlyScore == item.monthlyScore.longValue() ? item.monthlyScore.longValue() : item.monthlyScore) : '-'}">0</td>
+                            <td style="text-align: center;" th:text="${item.attendanceScore != null ? (item.attendanceScore == item.attendanceScore.longValue() ? item.attendanceScore.longValue() : item.attendanceScore) : '-'}">0</td>
+                            <td style="text-align: center;" th:text="${item.assignmentScore != null ? (item.assignmentScore == item.assignmentScore.longValue() ? item.assignmentScore.longValue() : item.assignmentScore) : '-'}">0</td>
+                            <td style="text-align: center; font-weight: 800; color: var(--primary); font-size: 1.05rem;" th:text="${item.totalScore == item.totalScore.longValue() ? item.totalScore.longValue() : item.totalScore}">0</td>
+                            <td style="text-align: center; font-weight: 600; color: #475569;" th:text="${item.maxTotal == item.maxTotal.longValue() ? item.maxTotal.longValue() : item.maxTotal}">100</td>
+                            <td style="text-align: center; font-weight: 700;" th:text="${#numbers.formatDecimal(item.percentage, 1, 1)} + '%'">0%</td>
+                            <td style="text-align: center;">
+                                <span th:if="${item.grade.startsWith('A')}" class="badge badge-success" th:text="${item.grade}">A</span>
+                                <span th:if="${item.grade.startsWith('B')}" class="badge badge-success" style="background: rgba(16, 185, 129, 0.7);" th:text="${item.grade}">B</span>
+                                <span th:if="${item.grade.startsWith('C')}" class="badge badge-warning" th:text="${item.grade}">C</span>
+                                <span th:if="${item.grade.startsWith('D')}" class="badge badge-warning" style="background: rgba(245, 158, 11, 0.7);" th:text="${item.grade}">D</span>
+                                <span th:if="${item.grade.startsWith('E')}" class="badge badge-warning" style="background: #fb923c;" th:text="${item.grade}">E</span>
+                                <span th:if="${item.grade.startsWith('F')}" class="badge badge-danger" th:text="${item.grade}">F</span>
+                                <span th:if="${item.grade == '-'}" class="badge badge-muted">-</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span th:if="${item.pass}" class="badge badge-success">✓ ជាប់</span>
+                                <span th:if="${!item.pass}" class="badge badge-danger">✗ ធ្លាក់</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(subjectScoresList)}">
+                            <td colspan="10" style="text-align: center; padding: 45px 20px; color: var(--muted); background: #f8fafc;">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                    <span style="font-size: 2.2rem;">📋</span>
+                                    <span style="font-weight: 700; color: #1e293b; font-size: 1.05rem;" th:text="'មិនទាន់មានទិន្នន័យពិន្ទុសម្រាប់ ' + ${selectedMonth} + ' នៅឡើយទេ'">មិនទាន់មានទិន្នន័យពិន្ទុ</span>
+                                    <span style="font-size: 0.90rem; max-width: 450px;">សូមរង់ចាំលោកគ្រូ-អ្នកគ្រូបញ្ចូលពិន្ទុ ឬជ្រើសរើសខែផ្សេងទៀតនៅក្នុងបញ្ជីខាងលើដើម្បីពិនិត្យពិន្ទុដែលបានកន្លងមក!</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Multi-Month Learning Progress Tracker -->
+        <div class="table-card history-section" th:if="${not #lists.isEmpty(monthlyHistoryList)}">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <span>📈</span> <span>ដំណើរវិវត្តន៍នៃការសិក្សា និងការរីកចម្រើនពិន្ទុ (Monthly Learning Progress)</span>
+                </h3>
+                <span style="font-size: 0.85rem; color: var(--muted);">តាមដានការរីកចម្រើនពីមួយខែទៅមួយខែ</span>
+            </div>
+            <div style="padding: 18px 20px;">
+                <div class="history-grid">
+                    <a th:each="hist : ${monthlyHistoryList}" 
+                       th:href="'/test/scores?month=' + ${#uris.escapePath(hist.month)}"
+                       class="history-card" 
+                       th:classappend="${hist.month == selectedMonth} ? ' current' : ''">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-weight: 700; font-size: 0.92rem; color: #0f172a;" th:text="${hist.month}">ខែវិច្ឆិកា</span>
+                            <span th:if="${hist.trend == 'UP'}" class="badge badge-success" style="font-size: 0.75rem;">↗️ ឡើង</span>
+                            <span th:if="${hist.trend == 'DOWN'}" class="badge badge-danger" style="font-size: 0.75rem;">↘️ ធ្លាក់</span>
+                            <span th:if="${hist.trend == 'SAME'}" class="badge badge-muted" style="font-size: 0.75rem;">➡️ ថេរ</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+                            <span style="font-size: 1.35rem; font-weight: 800; color: var(--primary);" th:text="${#numbers.formatDecimal(hist.averagePercentage, 1, 1)} + '%'">85.0%</span>
+                            <span class="badge" 
+                                  th:classappend="${hist.overallGrade.startsWith('A') or hist.overallGrade.startsWith('B') ? 'badge-success' : (hist.overallGrade.startsWith('C') or hist.overallGrade.startsWith('D') or hist.overallGrade.startsWith('E') ? 'badge-warning' : 'badge-danger')}" 
+                                  th:text="${hist.overallGrade}">A</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted);">
+                            <span th:text="${hist.rank > 0 ? 'ចំណាត់ថ្នាក់៖ លេខ ' + hist.rank : '-'}">ចំណាត់ថ្នាក់៖ លេខ ១</span>
+                            <span th:text="${hist.subjectCount + ' មុខវិជ្ជា'}">0 មុខវិជ្ជា</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

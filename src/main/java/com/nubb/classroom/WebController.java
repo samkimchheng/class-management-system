@@ -35,9 +35,11 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -3190,6 +3192,416 @@ return "scores";
         model.addAttribute("attendanceSummary", com.nubb.classroom.controller.StudentPortalApiController.calculateAttendanceSummary(student, attendanceRepository));
         model.addAttribute("today", LocalDate.now().toString());
         return "student-leave";
+    }
+
+    public double resolveMaxTotalForSubject(String className, String subjectName, Long accountId, String academicYear) {
+        double trackDefault = computeDefaultMaxScoreForClass(className, subjectName, accountId, academicYear);
+        if (className != null && !className.isEmpty() && !"ថ្នាក់រៀនទាំងអស់".equals(className) && accountId != null) {
+            List<com.nubb.classroom.model.ScoreRule> rules = scoreRuleRepository.findRules(className, subjectName, accountId);
+            if (rules != null && !rules.isEmpty()) {
+                com.nubb.classroom.model.ScoreRule r = rules.get(0);
+                double max = r.getMaxMonthlyScore() + r.getMaxAttendanceScore() + r.getMaxAssignmentScore();
+                if (max > 0) return max;
+            }
+            if (trackDefault != 100.0) {
+                return trackDefault;
+            }
+        }
+        if (trackDefault != 100.0) {
+            return trackDefault;
+        }
+        if (accountId != null) {
+            List<com.nubb.classroom.model.ScoreRule> globalRules = scoreRuleRepository.findRules("ថ្នាក់រៀនទាំងអស់", subjectName, accountId);
+            if (globalRules != null && !globalRules.isEmpty()) {
+                com.nubb.classroom.model.ScoreRule r = globalRules.get(0);
+                double max = r.getMaxMonthlyScore() + r.getMaxAttendanceScore() + r.getMaxAssignmentScore();
+                if (max > 0) return max;
+            }
+        }
+        return trackDefault > 0 ? trackDefault : 100.0;
+    }
+
+    @GetMapping("/test/scores")
+    public String studentScoresPage(
+            @RequestParam(value = "month", required = false) String requestedMonth,
+            jakarta.servlet.http.HttpSession session,
+            Model model) {
+
+        Student student = (Student) session.getAttribute("loggedInStudent");
+        if (student == null) {
+            return "redirect:/test";
+        }
+        if (student.getId() != null) {
+            student = studentRepository.findById(student.getId()).orElse(student);
+            session.setAttribute("loggedInStudent", student);
+        }
+        session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+
+        String academicYear = (student.getAcademicYear() != null && !student.getAcademicYear().trim().isEmpty())
+                ? student.getAcademicYear().trim() : getCurrentAcademicYear();
+        if (academicYear == null || academicYear.trim().isEmpty()) {
+            academicYear = "២០២៦-២០២៧";
+        }
+
+        List<String> monthsList = new ArrayList<>(getMonthsForAcademicYear(academicYear));
+        List<com.nubb.classroom.model.Score> allStudentScores = scoreRepository.findByStudentIdAndAcademicYear(student.getId(), academicYear);
+        if (allStudentScores == null) allStudentScores = new ArrayList<>();
+
+        for (com.nubb.classroom.model.Score sc : allStudentScores) {
+            if (sc.getMonth() != null && !sc.getMonth().trim().isEmpty() && !monthsList.contains(sc.getMonth().trim())) {
+                monthsList.add(sc.getMonth().trim());
+            }
+        }
+
+        String selectedMonth = (requestedMonth != null && !requestedMonth.trim().isEmpty()) ? requestedMonth.trim() : null;
+        if (selectedMonth == null) {
+            if (!allStudentScores.isEmpty()) {
+                selectedMonth = allStudentScores.get(allStudentScores.size() - 1).getMonth();
+            } else {
+                int[] years = parseAcademicYearNumbers(academicYear);
+                selectedMonth = "ខែវិច្ឆិកា " + toKhmerNumber(years[0]);
+            }
+        }
+
+        final String currentSelMonth = selectedMonth;
+        List<com.nubb.classroom.model.Score> currentMonthScores = allStudentScores.stream()
+                .filter(s -> currentSelMonth.equals(s.getMonth()))
+                .toList();
+
+        List<StudentSubjectScoreView> subjectScoresList = new ArrayList<>();
+        double totalScoreSum = 0.0;
+        double maxTotalSum = 0.0;
+
+        for (com.nubb.classroom.model.Score s : currentMonthScores) {
+            String subj = (s.getSubjectName() != null) ? s.getSubjectName().trim() : "មុខវិជ្ជា";
+            double maxTotal = resolveMaxTotalForSubject(student.getClassName(), subj, student.getAccountId(), academicYear);
+            double rawTotal = s.getTotal();
+            double cappedTotal = (maxTotal > 0) ? Math.min(rawTotal, maxTotal) : rawTotal;
+            if (cappedTotal < 0) cappedTotal = 0.0;
+
+            double pct = (maxTotal > 0) ? (cappedTotal / maxTotal) * 100.0 : 0.0;
+            if (pct > 100.0) pct = 100.0;
+
+            String grade;
+            if (pct >= 90.0) grade = "A";
+            else if (pct >= 80.0) grade = "B";
+            else if (pct >= 70.0) grade = "C";
+            else if (pct >= 60.0) grade = "D";
+            else if (pct >= 50.0) grade = "E";
+            else grade = "F";
+
+            boolean pass = pct >= 50.0;
+
+            Double monthlyVal = s.getMonthlyScore();
+            Double attVal = s.getAttendanceScore();
+            Double assVal = s.getAssignmentScore();
+
+            subjectScoresList.add(new StudentSubjectScoreView(
+                    subj, monthlyVal, attVal, assVal,
+                    cappedTotal, maxTotal, pct, grade, pass
+            ));
+
+            totalScoreSum += cappedTotal;
+            maxTotalSum += maxTotal;
+        }
+
+        subjectScoresList.sort(Comparator.comparing(StudentSubjectScoreView::getSubjectName));
+
+        int subjectCount = subjectScoresList.size();
+        double averagePercentage = (maxTotalSum > 0) ? (totalScoreSum / maxTotalSum) * 100.0 : 0.0;
+        if (averagePercentage > 100.0) averagePercentage = 100.0;
+        double averageScore = (subjectCount > 0) ? totalScoreSum / subjectCount : 0.0;
+
+        String overallGrade = "-";
+        if (subjectCount > 0) {
+            if (averagePercentage >= 90.0) overallGrade = "A (ល្អប្រសើរ)";
+            else if (averagePercentage >= 80.0) overallGrade = "B (ល្អណាស់)";
+            else if (averagePercentage >= 70.0) overallGrade = "C (ល្អ)";
+            else if (averagePercentage >= 60.0) overallGrade = "D (ល្អបង្គួរ)";
+            else if (averagePercentage >= 50.0) overallGrade = "E (មធ្យម)";
+            else overallGrade = "F (ខ្សោយ)";
+        }
+
+        int classRank = 0;
+        int totalStudentsInClass = 0;
+        if (student.getClassName() != null && student.getAccountId() != null) {
+            List<Student> classmates = studentRepository.findByClassNameAndAccountIdAndAcademicYear(
+                    student.getClassName(), student.getAccountId(), academicYear
+            );
+            if (classmates == null || classmates.isEmpty()) {
+                classmates = studentRepository.findByClassNameAndAccountId(student.getClassName(), student.getAccountId());
+            }
+            if (classmates != null) {
+                totalStudentsInClass = classmates.size();
+            }
+
+            List<com.nubb.classroom.model.Score> classMonthScores = scoreRepository.findByMonthAndClassNameAndAccountIdAndAcademicYear(
+                    selectedMonth, student.getClassName(), student.getAccountId(), academicYear
+            );
+            if (classMonthScores == null) classMonthScores = Collections.emptyList();
+
+            Map<Long, List<com.nubb.classroom.model.Score>> scoresByStudent = classMonthScores.stream()
+                    .filter(sc -> sc.getStudentId() != null)
+                    .collect(Collectors.groupingBy(com.nubb.classroom.model.Score::getStudentId));
+
+            List<StudentRankRecord> rankList = new ArrayList<>();
+            for (Map.Entry<Long, List<com.nubb.classroom.model.Score>> entry : scoresByStudent.entrySet()) {
+                Long sid = entry.getKey();
+                List<com.nubb.classroom.model.Score> scList = entry.getValue();
+                double tSum = 0.0;
+                double mSum = 0.0;
+                for (com.nubb.classroom.model.Score sc : scList) {
+                    double mTot = resolveMaxTotalForSubject(student.getClassName(), sc.getSubjectName(), student.getAccountId(), academicYear);
+                    double cTot = (mTot > 0) ? Math.min(sc.getTotal(), mTot) : sc.getTotal();
+                    tSum += cTot;
+                    mSum += mTot;
+                }
+                double pct = (mSum > 0) ? (tSum / mSum) * 100.0 : 0.0;
+                rankList.add(new StudentRankRecord(sid, pct, tSum));
+            }
+
+            rankList.sort((a, b) -> {
+                int c = Double.compare(b.avgPct, a.avgPct);
+                return (c != 0) ? c : Double.compare(b.total, a.total);
+            });
+
+            int currentR = 1;
+            for (int i = 0; i < rankList.size(); i++) {
+                StudentRankRecord r = rankList.get(i);
+                if (i > 0) {
+                    StudentRankRecord prev = rankList.get(i - 1);
+                    if (r.avgPct < prev.avgPct) {
+                        currentR = i + 1;
+                    }
+                }
+                if (Objects.equals(r.id, student.getId()) && subjectCount > 0) {
+                    classRank = currentR;
+                    break;
+                }
+            }
+        }
+
+        String motivationalIcon;
+        String motivationalMessage;
+        if (subjectCount == 0) {
+            motivationalIcon = "💡";
+            motivationalMessage = "មិនទាន់មានទិន្នន័យពិន្ទុសម្រាប់ " + selectedMonth + " នៅឡើយទេ។ សូមបន្តខិតខំប្រឹងប្រែងរៀនសូត្រ និងត្រៀមខ្លួនឱ្យបានល្អសម្រាប់ការប្រឡងប្រចាំខែ!";
+        } else if (averagePercentage >= 90.0) {
+            motivationalIcon = "🏆";
+            motivationalMessage = "អបអរសាទរ! ពិតជាអស្ចារ្យណាស់ ប្អូនទទួលបាននិទ្ទេស A ខ្ពស់បំផុត។ សូមបន្តរក្សានូវការខិតខំប្រឹងប្រែង ការស្រាវជ្រាវ និងវិន័យដ៏ល្អនេះបន្តទៀត!";
+        } else if (averagePercentage >= 80.0) {
+            motivationalIcon = "🌟";
+            motivationalMessage = "ពូកែណាស់! ប្អូនទទួលបាននិទ្ទេស B ល្អណាស់។ ប្រឹងប្រែងបន្ថែមបន្តិចទៀតលើមុខវិជ្ជាដែលនៅខ្វះចន្លោះ ប្អូននឹងអាចឈានទៅដល់និទ្ទេស A ជាមិនខាន!";
+        } else if (averagePercentage >= 70.0) {
+            motivationalIcon = "👍";
+            motivationalMessage = "ល្អណាស់! ប្អូនទទួលបាននិទ្ទេស C ការសិក្សាមានការរីកចម្រើន។ សូមបន្តយកចិត្តទុកដាក់ស្តាប់ការពន្យល់របស់គ្រូ និងធ្វើលំហាត់ឱ្យបានទៀងទាត់!";
+        } else if (averagePercentage >= 60.0) {
+            motivationalIcon = "💪";
+            motivationalMessage = "ខិតខំឡើង! ប្អូនទទួលបាននិទ្ទេស D ហើយមានសមត្ថភាពអាចធ្វើបានប្រសើរជាងនេះ។ សូមចំណាយពេលរំលឹកមេរៀនបន្ថែម និងសួរលោកគ្រូ-អ្នកគ្រូត្រង់ចំណុចមិនច្បាស់!";
+        } else if (averagePercentage >= 50.0) {
+            motivationalIcon = "🎯";
+            motivationalMessage = "ត្រូវព្យាយាមបន្ថែមទៀត! លទ្ធផលបានឆ្លងផុតកម្រិតមធ្យម (និទ្ទេស E)។ សូមបង្កើនការធ្វើស្វ័យសិក្សា និងកិច្ចការផ្ទះឱ្យបានច្រើនដើម្បីកុំឱ្យធ្លាក់ចុះ!";
+        } else {
+            motivationalIcon = "📖";
+            motivationalMessage = "កុំបាក់ទឹកចិត្ត! ការបរាជ័យជាស្ពានឆ្ពោះទៅរកភាពជោគជ័យ។ សូមកុំអស់សង្ឃឹម ត្រូវតាំងចិត្តជាថ្មី ពិគ្រោះជាមួយគ្រូ និងមិត្តភក្តិ ហើយខំប្រឹងប្រែងឡើងវិញ ប្អូនច្បាស់ជាធ្វើបាន!";
+        }
+
+        List<StudentMonthProgressView> monthlyHistoryList = new ArrayList<>();
+        Map<String, List<com.nubb.classroom.model.Score>> allScoresByMonth = allStudentScores.stream()
+                .filter(s -> s.getMonth() != null && !s.getMonth().trim().isEmpty())
+                .collect(Collectors.groupingBy(com.nubb.classroom.model.Score::getMonth));
+
+        List<String> distinctScoredMonths = new ArrayList<>();
+        for (String m : monthsList) {
+            if (allScoresByMonth.containsKey(m) && !distinctScoredMonths.contains(m)) {
+                distinctScoredMonths.add(m);
+            }
+        }
+        for (String m : allScoresByMonth.keySet()) {
+            if (!distinctScoredMonths.contains(m)) {
+                distinctScoredMonths.add(m);
+            }
+        }
+
+        double prevMonthPct = -1.0;
+        for (String m : distinctScoredMonths) {
+            List<com.nubb.classroom.model.Score> mScores = allScoresByMonth.get(m);
+            if (mScores == null || mScores.isEmpty()) continue;
+
+            double mTot = 0.0;
+            double mMax = 0.0;
+            for (com.nubb.classroom.model.Score sc : mScores) {
+                double mx = resolveMaxTotalForSubject(student.getClassName(), sc.getSubjectName(), student.getAccountId(), academicYear);
+                double cp = (mx > 0) ? Math.min(sc.getTotal(), mx) : sc.getTotal();
+                mTot += cp;
+                mMax += mx;
+            }
+            double mAvgPct = (mMax > 0) ? (mTot / mMax) * 100.0 : 0.0;
+            if (mAvgPct > 100.0) mAvgPct = 100.0;
+
+            String mGrade;
+            if (mAvgPct >= 90.0) mGrade = "A";
+            else if (mAvgPct >= 80.0) mGrade = "B";
+            else if (mAvgPct >= 70.0) mGrade = "C";
+            else if (mAvgPct >= 60.0) mGrade = "D";
+            else if (mAvgPct >= 50.0) mGrade = "E";
+            else mGrade = "F";
+
+            int mRank = 0;
+            if (student.getClassName() != null && student.getAccountId() != null) {
+                List<com.nubb.classroom.model.Score> clsScores = scoreRepository.findByMonthAndClassNameAndAccountIdAndAcademicYear(
+                        m, student.getClassName(), student.getAccountId(), academicYear
+                );
+                if (clsScores != null && !clsScores.isEmpty()) {
+                    Map<Long, List<com.nubb.classroom.model.Score>> grouped = clsScores.stream()
+                            .filter(sc -> sc.getStudentId() != null)
+                            .collect(Collectors.groupingBy(com.nubb.classroom.model.Score::getStudentId));
+                    List<StudentRankRecord> mRankList = new ArrayList<>();
+                    for (Map.Entry<Long, List<com.nubb.classroom.model.Score>> e : grouped.entrySet()) {
+                        double ts = 0.0; double ms = 0.0;
+                        for (com.nubb.classroom.model.Score sc : e.getValue()) {
+                            double subMx = resolveMaxTotalForSubject(student.getClassName(), sc.getSubjectName(), student.getAccountId(), academicYear);
+                            ts += (subMx > 0) ? Math.min(sc.getTotal(), subMx) : sc.getTotal();
+                            ms += subMx;
+                        }
+                        double pt = (ms > 0) ? (ts / ms) * 100.0 : 0.0;
+                        mRankList.add(new StudentRankRecord(e.getKey(), pt, ts));
+                    }
+                    mRankList.sort((a, b) -> Double.compare(b.avgPct, a.avgPct));
+                    int rk = 1;
+                    for (int i = 0; i < mRankList.size(); i++) {
+                        if (i > 0 && mRankList.get(i).avgPct < mRankList.get(i - 1).avgPct) {
+                            rk = i + 1;
+                        }
+                        if (Objects.equals(mRankList.get(i).id, student.getId())) {
+                            mRank = rk;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            String trend = "SAME";
+            if (prevMonthPct >= 0) {
+                if (mAvgPct > prevMonthPct + 0.1) trend = "UP";
+                else if (mAvgPct < prevMonthPct - 0.1) trend = "DOWN";
+                else trend = "SAME";
+            }
+            prevMonthPct = mAvgPct;
+
+            monthlyHistoryList.add(new StudentMonthProgressView(
+                    m, mAvgPct, mGrade, mRank, mScores.size(), trend
+            ));
+        }
+
+        String totalScoreFormatted = String.format(Locale.US, "%.1f", totalScoreSum).replaceAll("\\.0$", "");
+        String maxTotalFormatted = String.format(Locale.US, "%.1f", maxTotalSum).replaceAll("\\.0$", "");
+        String averagePercentageFormatted = String.format(Locale.US, "%.1f%%", averagePercentage);
+        String averageScoreFormatted = String.format(Locale.US, "%.1f", averageScore).replaceAll("\\.0$", "");
+
+        model.addAttribute("student", student);
+        model.addAttribute("currentAcademicYear", academicYear);
+        model.addAttribute("monthsList", monthsList);
+        model.addAttribute("selectedMonth", selectedMonth);
+        model.addAttribute("subjectScoresList", subjectScoresList);
+        model.addAttribute("subjectCount", subjectCount);
+        model.addAttribute("totalScoreFormatted", totalScoreFormatted);
+        model.addAttribute("maxTotalFormatted", maxTotalFormatted);
+        model.addAttribute("averagePercentageFormatted", averagePercentageFormatted);
+        model.addAttribute("averageScoreFormatted", averageScoreFormatted);
+        model.addAttribute("overallGrade", overallGrade);
+        model.addAttribute("classRank", classRank);
+        model.addAttribute("totalStudentsInClass", totalStudentsInClass);
+        model.addAttribute("motivationalIcon", motivationalIcon);
+        model.addAttribute("motivationalMessage", motivationalMessage);
+        model.addAttribute("monthlyHistoryList", monthlyHistoryList);
+
+        return "student-scores";
+    }
+
+    public static class StudentRankRecord {
+        public Long id;
+        public double avgPct;
+        public double total;
+        public StudentRankRecord(Long id, double avgPct, double total) { this.id = id; this.avgPct = avgPct; this.total = total; }
+    }
+
+    public static class StudentSubjectScoreView {
+        private String subjectName;
+        private Double monthlyScore;
+        private Double attendanceScore;
+        private Double assignmentScore;
+        private double totalScore;
+        private double maxTotal;
+        private double percentage;
+        private String grade;
+        private boolean pass;
+
+        public StudentSubjectScoreView() {}
+
+        public StudentSubjectScoreView(String subjectName, Double monthlyScore, Double attendanceScore, Double assignmentScore, double totalScore, double maxTotal, double percentage, String grade, boolean pass) {
+            this.subjectName = subjectName;
+            this.monthlyScore = monthlyScore;
+            this.attendanceScore = attendanceScore;
+            this.assignmentScore = assignmentScore;
+            this.totalScore = totalScore;
+            this.maxTotal = maxTotal;
+            this.percentage = percentage;
+            this.grade = grade;
+            this.pass = pass;
+        }
+
+        public String getSubjectName() { return subjectName; }
+        public void setSubjectName(String subjectName) { this.subjectName = subjectName; }
+        public Double getMonthlyScore() { return monthlyScore; }
+        public void setMonthlyScore(Double monthlyScore) { this.monthlyScore = monthlyScore; }
+        public Double getAttendanceScore() { return attendanceScore; }
+        public void setAttendanceScore(Double attendanceScore) { this.attendanceScore = attendanceScore; }
+        public Double getAssignmentScore() { return assignmentScore; }
+        public void setAssignmentScore(Double assignmentScore) { this.assignmentScore = assignmentScore; }
+        public double getTotalScore() { return totalScore; }
+        public void setTotalScore(double totalScore) { this.totalScore = totalScore; }
+        public double getMaxTotal() { return maxTotal; }
+        public void setMaxTotal(double maxTotal) { this.maxTotal = maxTotal; }
+        public double getPercentage() { return percentage; }
+        public void setPercentage(double percentage) { this.percentage = percentage; }
+        public String getGrade() { return grade; }
+        public void setGrade(String grade) { this.grade = grade; }
+        public boolean isPass() { return pass; }
+        public void setPass(boolean pass) { this.pass = pass; }
+    }
+
+    public static class StudentMonthProgressView {
+        private String month;
+        private double averagePercentage;
+        private String overallGrade;
+        private int rank;
+        private int subjectCount;
+        private String trend;
+
+        public StudentMonthProgressView() {}
+
+        public StudentMonthProgressView(String month, double averagePercentage, String overallGrade, int rank, int subjectCount, String trend) {
+            this.month = month;
+            this.averagePercentage = averagePercentage;
+            this.overallGrade = overallGrade;
+            this.rank = rank;
+            this.subjectCount = subjectCount;
+            this.trend = trend;
+        }
+
+        public String getMonth() { return month; }
+        public void setMonth(String month) { this.month = month; }
+        public double getAveragePercentage() { return averagePercentage; }
+        public void setAveragePercentage(double averagePercentage) { this.averagePercentage = averagePercentage; }
+        public String getOverallGrade() { return overallGrade; }
+        public void setOverallGrade(String overallGrade) { this.overallGrade = overallGrade; }
+        public int getRank() { return rank; }
+        public void setRank(int rank) { this.rank = rank; }
+        public int getSubjectCount() { return subjectCount; }
+        public void setSubjectCount(int subjectCount) { this.subjectCount = subjectCount; }
+        public String getTrend() { return trend; }
+        public void setTrend(String trend) { this.trend = trend; }
     }
 
     @PostMapping("/test/leave/submit")

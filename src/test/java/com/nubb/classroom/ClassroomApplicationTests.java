@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -1982,5 +1983,102 @@ class ClassroomApplicationTests {
         assertNotNull(allStudentRow);
         assertFalse(allStudentRow.getSubjectBreakdown().contains("ភាសាអង់គ្លេស៖ 66"), "Breakdown must not show English as 66 points!");
         assertTrue(allStudentRow.getSubjectBreakdown().contains("ភាសាអង់គ្លេស៖ 50"), "Breakdown must show English capped at 50 points!");
+    }
+
+    @Test
+    void testStudentMonthlyScoresAndGradeTracking() throws Exception {
+        Account teacher = accountRepository.findByUsername("Teacher1001").orElse(null);
+        assertNotNull(teacher);
+
+        // Find or create test student
+        Student student = studentRepository.findByClassNameAndAccountId("១១G", teacher.getId())
+                .stream().findFirst().orElse(null);
+        if (student == null) {
+            student = new Student();
+            student.setName("វ៉ាន់ សុខា");
+            student.setGender("ប្រុស");
+            student.setClassName("១១G");
+            student.setStudentCode("១១G-99");
+            student.setAccountId(teacher.getId());
+            student.setAcademicYear("២០២៦-២០២៧");
+            student = studentRepository.save(student);
+        }
+
+        String month = "ខែវិច្ឆិកា ២០២៦";
+        // Create English score (45 / 50 -> 90% -> Grade A)
+        Score scoreEng = scoreRepository.findByStudentIdAndMonthAndClassNameAndSubjectNameAndAccountId(
+                student.getId(), month, "១១G", "ភាសាអង់គ្លេស", teacher.getId()).orElse(new Score());
+        scoreEng.setStudentId(student.getId());
+        scoreEng.setAccountId(teacher.getId());
+        scoreEng.setClassName("១១G");
+        scoreEng.setSubjectName("ភាសាអង់គ្លេស");
+        scoreEng.setMonth(month);
+        scoreEng.setAcademicYear("២០២៦-២០២៧");
+        scoreEng.setMonthlyScore(35.0);
+        scoreEng.setAttendanceScore(5.0);
+        scoreEng.setAssignmentScore(5.0);
+        scoreEng.setTotal(45.0);
+        scoreRepository.save(scoreEng);
+
+        // 1. Unauthorized access should redirect to /test
+        mockMvc.perform(get("/test/scores"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/test"));
+
+        mockMvc.perform(get("/api/student-portal/scores"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/test"));
+
+        // 2. Student logged-in session
+        org.springframework.mock.web.MockHttpSession studentSession = new org.springframework.mock.web.MockHttpSession();
+        studentSession.setAttribute("loggedInStudent", student);
+        studentSession.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+
+        // 3. Test HTML page GET /test/scores
+        org.springframework.test.web.servlet.MvcResult viewResult = mockMvc.perform(get("/test/scores")
+                .session(studentSession)
+                .param("month", month))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("student"))
+                .andExpect(model().attribute("selectedMonth", month))
+                .andExpect(model().attributeExists("subjectScoresList"))
+                .andExpect(model().attributeExists("overallGrade"))
+                .andExpect(model().attributeExists("motivationalIcon"))
+                .andExpect(model().attributeExists("motivationalMessage"))
+                .andReturn();
+
+        @SuppressWarnings("unchecked")
+        List<WebController.StudentSubjectScoreView> subViews =
+                (List<WebController.StudentSubjectScoreView>) viewResult.getModelAndView().getModel().get("subjectScoresList");
+        assertNotNull(subViews);
+        assertFalse(subViews.isEmpty());
+
+        WebController.StudentSubjectScoreView engView = subViews.stream()
+                .filter(v -> "ភាសាអង់គ្លេស".equals(v.getSubjectName()))
+                .findFirst().orElse(null);
+        assertNotNull(engView);
+        assertEquals(50.0, engView.getMaxTotal(), "English max score in Grade 11 must be 50.0!");
+        assertEquals(45.0, engView.getTotalScore());
+        assertEquals(90.0, engView.getPercentage(), 0.01);
+        assertEquals("A", engView.getGrade());
+        assertTrue(engView.isPass());
+
+        String overallGrade = (String) viewResult.getModelAndView().getModel().get("overallGrade");
+        assertNotNull(overallGrade);
+        assertTrue(overallGrade.startsWith("A"), "Overall grade for 90% must be A!");
+
+        String icon = (String) viewResult.getModelAndView().getModel().get("motivationalIcon");
+        assertEquals("🏆", icon);
+
+        // 4. Test REST API GET /api/student-portal/scores
+        mockMvc.perform(get("/api/student-portal/scores")
+                .session(studentSession)
+                .param("month", month))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.studentName").value(student.getName()))
+                .andExpect(jsonPath("$.className").value(student.getClassName()))
+                .andExpect(jsonPath("$.selectedMonth").value(month))
+                .andExpect(jsonPath("$.overallGrade").exists())
+                .andExpect(jsonPath("$.subjectScores").isArray());
     }
 }
