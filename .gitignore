@@ -38,3 +38,9 @@ build/
 
 ### Scratch scripts ###
 scratch/
+
+### Uploads ###
+/uploads/images/*
+!/uploads/images/.gitkeep
+/uploads/audio/*
+!/uploads/audio/.gitkeep

@@ -676,7 +676,7 @@
                             <button type="button" 
                                     class="btn-listen" 
                                     th:id="'btn-listen-main-' + ${lesson.id}"
-                                    th:data-audio="${lesson.audioUrl != null ? lesson.audioUrl : ''}"
+                                    th:data-audio="${lesson.audioUrl != null ? (lesson.audioUrl.startsWith('http://') or lesson.audioUrl.startsWith('https://') or lesson.audioUrl.startsWith('data:') or lesson.audioUrl.startsWith('/') ? lesson.audioUrl : '/' + lesson.audioUrl) : ''}"
                                     th:data-audio-id="'audio-player-main-' + ${lesson.id}"
                                     th:data-text-id="'main-content-text-' + ${lesson.id}"
                                     th:data-lesson-id="${lesson.id}"
@@ -728,19 +728,23 @@
 
                             <!-- Audio Player for this Transcript (with direct src & multiple fallbacks) -->
                             <div th:if="${ts.audioUrl != null and !ts.audioUrl.isEmpty()}" style="margin-bottom: 10px;">
-                                <audio th:id="'audio-player-ts-' + ${ts.id}" class="audio-player" controls preload="auto" th:src="${ts.audioUrl}" th:data-lesson-id="${lesson.id}" th:data-lesson-index="${lessonStat.index}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
-                                    <source th:src="${ts.audioUrl}" type="audio/mpeg">
-                                    <source th:src="${ts.audioUrl}" type="audio/mp3">
-                                    <source th:src="${ts.audioUrl}" type="audio/wav">
-                                    <source th:src="${ts.audioUrl}" type="audio/ogg">
+                                <audio th:id="'audio-player-ts-' + ${ts.id}" class="audio-player" controls preload="metadata" 
+                                       th:src="${ts.audioUrl.startsWith('http://') or ts.audioUrl.startsWith('https://') or ts.audioUrl.startsWith('data:') or ts.audioUrl.startsWith('/') ? ts.audioUrl : '/' + ts.audioUrl}" 
+                                       th:data-lesson-id="${lesson.id}" th:data-lesson-index="${lessonStat.index}" ontimeupdate="handleAudioProgress(this)" onended="handleAudioEnded(this)">
+                                    <source th:src="${ts.audioUrl.startsWith('http://') or ts.audioUrl.startsWith('https://') or ts.audioUrl.startsWith('data:') or ts.audioUrl.startsWith('/') ? ts.audioUrl : '/' + ts.audioUrl}" type="audio/mpeg">
+                                    <source th:src="${ts.audioUrl.startsWith('http://') or ts.audioUrl.startsWith('https://') or ts.audioUrl.startsWith('data:') or ts.audioUrl.startsWith('/') ? ts.audioUrl : '/' + ts.audioUrl}" type="audio/mp3">
+                                    <source th:src="${ts.audioUrl.startsWith('http://') or ts.audioUrl.startsWith('https://') or ts.audioUrl.startsWith('data:') or ts.audioUrl.startsWith('/') ? ts.audioUrl : '/' + ts.audioUrl}" type="audio/wav">
+                                    <source th:src="${ts.audioUrl.startsWith('http://') or ts.audioUrl.startsWith('https://') or ts.audioUrl.startsWith('data:') or ts.audioUrl.startsWith('/') ? ts.audioUrl : '/' + ts.audioUrl}" type="audio/ogg">
                                 </audio>
                             </div>
 
                             <!-- Image for this Transcript (if present) -->
-                            <div th:if="${ts.imageUrl != null and !ts.imageUrl.isEmpty()}" style="margin: 10px 0 14px 0; text-align: center;">
+                            <div th:if="${ts.imageUrl != null and !ts.imageUrl.isEmpty()}" class="transcript-image-wrapper" style="margin: 10px 0 14px 0; text-align: center;">
                                 <div style="display: inline-block; max-width: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #cbd5e1; background: #ffffff;">
-                                    <img th:src="${ts.imageUrl}" 
+                                    <img th:src="${ts.imageUrl.startsWith('http://') or ts.imageUrl.startsWith('https://') or ts.imageUrl.startsWith('data:') or ts.imageUrl.startsWith('/') ? ts.imageUrl : '/' + ts.imageUrl}" 
                                          alt="រូបភាពមេរៀន / Transcript Image" 
+                                         loading="lazy"
+                                         onerror="this.onerror=null; const w=this.closest('.transcript-image-wrapper'); if(w) w.style.display='none';"
                                          style="max-width: 100%; max-height: 480px; object-fit: contain; display: block; margin: 0 auto; cursor: pointer; transition: transform 0.2s;"
                                          onclick="previewFullImage(this.src, this.alt)"
                                          title="ចុចដើម្បីពង្រីកមើលរូបភាពពេញ (Click to view full image)">
@@ -760,7 +764,7 @@
                                     <button type="button" 
                                             class="btn-listen" 
                                             th:id="'btn-listen-ts-' + ${ts.id}"
-                                            th:data-audio="${ts.audioUrl != null ? ts.audioUrl : ''}"
+                                            th:data-audio="${ts.audioUrl != null ? (ts.audioUrl.startsWith('http://') or ts.audioUrl.startsWith('https://') or ts.audioUrl.startsWith('data:') or ts.audioUrl.startsWith('/') ? ts.audioUrl : '/' + ts.audioUrl) : ''}"
                                             th:data-audio-id="'audio-player-ts-' + ${ts.id}"
                                             th:data-text-id="'ts-content-text-' + ${ts.id}"
                                             th:data-lesson-id="${lesson.id}"
@@ -1140,7 +1144,7 @@
                         <input type="text" name="tsAudioUrl" class="form-control" placeholder="https://example.com/audio.mp3" value="${escapeHtml(audioUrlVal)}">
                     </div>
                 </div>
-                ${audioUrlVal ? `<div style="margin-top: 8px;"><audio src="${escapeHtml(audioUrlVal)}" controls style="width: 100%; height: 34px; border-radius: 6px;"></audio></div>` : ''}
+                ${audioUrlVal ? `<div style="margin-top: 8px;"><audio src="${escapeHtml(audioUrlVal.startsWith('http://') || audioUrlVal.startsWith('https://') || audioUrlVal.startsWith('data:') || audioUrlVal.startsWith('/') ? audioUrlVal : '/' + audioUrlVal)}" controls style="width: 100%; height: 34px; border-radius: 6px;"></audio></div>` : ''}
 
                 <!-- Image Upload / Link for Transcript -->
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
@@ -1155,7 +1159,7 @@
                 </div>
                 <div id="${div.id}-img-preview" style="margin-top: 8px; ${imageUrlVal ? '' : 'display: none;'}">
                     <div style="position: relative; display: inline-block;">
-                        <img id="${div.id}-preview-img" src="${escapeHtml(imageUrlVal || '')}" style="max-width: 240px; max-height: 150px; border-radius: 8px; border: 1px solid #cbd5e1; object-fit: contain; background: #f8fafc; padding: 2px;">
+                        <img id="${div.id}-preview-img" src="${escapeHtml(imageUrlVal ? (imageUrlVal.startsWith('http://') || imageUrlVal.startsWith('https://') || imageUrlVal.startsWith('data:') || imageUrlVal.startsWith('/') ? imageUrlVal : '/' + imageUrlVal) : '')}" style="max-width: 240px; max-height: 150px; border-radius: 8px; border: 1px solid #cbd5e1; object-fit: contain; background: #f8fafc; padding: 2px;">
                         <button type="button" onclick="clearTsImage('${div.id}')" style="position: absolute; top: 4px; right: 4px; background: rgba(239,68,68,0.9); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" title="លុបរូបភាព">✕</button>
                     </div>
                 </div>
@@ -1290,7 +1294,11 @@
             const previewContainer = document.getElementById(boxId + '-img-preview');
             const previewImg = document.getElementById(boxId + '-preview-img');
             if (url && url.trim().length > 0) {
-                if (previewImg) previewImg.src = url.trim();
+                let cleanUrl = url.trim();
+                if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://') && !cleanUrl.startsWith('data:') && !cleanUrl.startsWith('/')) {
+                    cleanUrl = '/' + cleanUrl;
+                }
+                if (previewImg) previewImg.src = cleanUrl;
                 if (previewContainer) previewContainer.style.display = 'block';
             } else {
                 const fileInput = document.querySelector('#' + boxId + ' input[name="tsImageFile"]');
@@ -1562,23 +1570,65 @@
         // ==========================================
         let currentActiveListenBtn = null;
         let currentActiveAudio = null;
-        let currentSpeechUtterance = null;
+        let activeSpeechChunks = [];
+        let activeSpeechIndex = 0;
+        let isSpeakingTranscript = false;
+        let speechKeepAliveTimer = null;
+        let cachedEnglishVoice = null;
+
+        function findBestEnglishVoice() {
+            if (!('speechSynthesis' in window)) return null;
+            if (cachedEnglishVoice) return cachedEnglishVoice;
+            const voices = window.speechSynthesis.getVoices() || [];
+            if (voices.length === 0) return null;
+            const preferred = [
+                'google us english', 'google uk english female', 'google us', 'samantha', 'aria', 'jenny', 'zira', 'david', 'daniel', 'karen', 'allison'
+            ];
+            for (let pref of preferred) {
+                const found = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en') && v.name.toLowerCase().includes(pref));
+                if (found) {
+                    cachedEnglishVoice = found;
+                    return found;
+                }
+            }
+            cachedEnglishVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en')) || voices[0];
+            return cachedEnglishVoice;
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                cachedEnglishVoice = null;
+                findBestEnglishVoice();
+            };
+        }
 
         function stopAllAudioAndSpeech() {
             // 1. Pause any playing native HTML5 audio
             if (currentActiveAudio) {
-                try { currentActiveAudio.pause(); } catch(e) {}
+                try {
+                    currentActiveAudio.pause();
+                    currentActiveAudio.currentTime = 0;
+                } catch(e) {}
                 currentActiveAudio = null;
             }
             document.querySelectorAll('audio').forEach(a => {
                 try { a.pause(); } catch(e) {}
             });
 
-            // 2. Stop any active speech synthesis
-            if ('speechSynthesis' in window) {
-                try { window.speechSynthesis.cancel(); } catch(e) {}
+            // 2. Stop any active speech synthesis and chunking
+            isSpeakingTranscript = false;
+            activeSpeechChunks = [];
+            activeSpeechIndex = 0;
+            if (speechKeepAliveTimer) {
+                clearInterval(speechKeepAliveTimer);
+                speechKeepAliveTimer = null;
             }
-            currentSpeechUtterance = null;
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.resume();
+                } catch(e) {}
+            }
 
             // 3. Reset any active button appearance
             if (currentActiveListenBtn) {
@@ -1605,8 +1655,148 @@
             if (label) label.textContent = text || 'កំពុងចាក់... (ចុចផ្អាក)';
         }
 
+        function splitTextIntoSentences(text) {
+            if (!text) return [];
+            // Clean text: strip HTML if any, normalize whitespace and line breaks
+            const normalized = text.replace(/<[^>]*>/g, ' ').replace(/\r\n|\r|\n/g, '. ').replace(/\s+/g, ' ').trim();
+            // Split into sentences using punctuation (. ! ? : ;)
+            const parts = normalized.match(/[^.!?;\n]+[.!?;\n]+|[^.!?;\n]+$/g) || [normalized];
+            const chunks = [];
+            for (let part of parts) {
+                let p = part.trim();
+                if (!p) continue;
+                if (p.length > 160) {
+                    const subParts = p.match(/[^,]+[,]+|[^,]+$/g) || [p];
+                    for (let sp of subParts) {
+                        let sub = sp.trim();
+                        if (sub) chunks.push(sub);
+                    }
+                } else {
+                    chunks.push(p);
+                }
+            }
+            return chunks.length > 0 ? chunks : [text.trim()];
+        }
+
+        function playTranscriptWithSpeechSynthesis(btn, cleanText, lessonId, lessonIndex) {
+            if (!cleanText) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'គ្មានអត្ថបទសម្រាប់ស្ដាប់',
+                    text: 'សូមបញ្ចូលអត្ថបទជាមុនសិនដើម្បីស្ដាប់សំឡេង។'
+                });
+                return;
+            }
+
+            const chunks = splitTextIntoSentences(cleanText);
+            if (chunks.length === 0) return;
+
+            // Ensure speech synthesis engine is awake on mobile/Chrome
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.resume();
+                } catch(e) {}
+            }
+
+            activeSpeechChunks = chunks;
+            activeSpeechIndex = 0;
+            isSpeakingTranscript = true;
+            currentActiveListenBtn = btn;
+            setListenButtonPlaying(btn, 'កំពុងអានអត្ថបទ... (ចុចផ្អាក)');
+
+            // Keep-alive timer to prevent Chrome from silently terminating SpeechSynthesis on long passages
+            if (speechKeepAliveTimer) clearInterval(speechKeepAliveTimer);
+            speechKeepAliveTimer = setInterval(() => {
+                if ('speechSynthesis' in window) {
+                    if (window.speechSynthesis.speaking) {
+                        window.speechSynthesis.pause();
+                        window.speechSynthesis.resume();
+                    } else if (!isSpeakingTranscript) {
+                        clearInterval(speechKeepAliveTimer);
+                        speechKeepAliveTimer = null;
+                    }
+                }
+            }, 8000);
+
+            function speakCurrentChunk() {
+                if (!isSpeakingTranscript || activeSpeechIndex >= activeSpeechChunks.length) {
+                    stopAllAudioAndSpeech();
+                    if (lessonId && typeof updateProgressOnServer === 'function') {
+                        updateProgressOnServer(lessonId, 100, true, lessonIndex);
+                    }
+                    return;
+                }
+
+                if (!('speechSynthesis' in window)) {
+                    playServerTtsChunk(activeSpeechChunks[activeSpeechIndex], () => {
+                        activeSpeechIndex++;
+                        speakCurrentChunk();
+                    });
+                    return;
+                }
+
+                const chunkText = activeSpeechChunks[activeSpeechIndex];
+                const utterance = new SpeechSynthesisUtterance(chunkText);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.88;
+                utterance.pitch = 1.0;
+
+                const voice = findBestEnglishVoice();
+                if (voice) {
+                    utterance.voice = voice;
+                }
+
+                utterance.onend = function() {
+                    activeSpeechIndex++;
+                    speakCurrentChunk();
+                };
+
+                utterance.onerror = function(err) {
+                    console.warn('SpeechSynthesis chunk warning:', err);
+                    activeSpeechIndex++;
+                    speakCurrentChunk();
+                };
+
+                try {
+                    window.speechSynthesis.speak(utterance);
+                } catch(speakErr) {
+                    console.warn('SpeechSynthesis.speak failed:', speakErr);
+                    playServerTtsChunk(chunkText, () => {
+                        activeSpeechIndex++;
+                        speakCurrentChunk();
+                    });
+                }
+            }
+
+            speakCurrentChunk();
+        }
+
+        function playServerTtsChunk(text, onDone) {
+            if (!text || !isSpeakingTranscript) {
+                if (onDone) onDone();
+                return;
+            }
+            try {
+                const audio = new Audio('/api/tts/english?text=' + encodeURIComponent(text.substring(0, 200)));
+                currentActiveAudio = audio;
+                audio.onended = function() {
+                    currentActiveAudio = null;
+                    if (onDone) onDone();
+                };
+                audio.onerror = function() {
+                    currentActiveAudio = null;
+                    if (onDone) onDone();
+                };
+                audio.play().catch(() => {
+                    if (onDone) onDone();
+                });
+            } catch(e) {
+                if (onDone) onDone();
+            }
+        }
+
         function toggleListenTranscript(btn) {
-            const audioUrl = btn.getAttribute('data-audio') || '';
+            let audioUrl = (btn.getAttribute('data-audio') || '').trim();
             const audioId = btn.getAttribute('data-audio-id') || '';
             const textId = btn.getAttribute('data-text-id') || '';
             const lessonId = btn.getAttribute('data-lesson-id');
@@ -1621,9 +1811,18 @@
             // Stop other active playbacks
             stopAllAudioAndSpeech();
 
+            const textEl = document.getElementById(textId);
+            const rawText = textEl ? (textEl.innerText || textEl.textContent || '') : '';
+            const cleanText = rawText.trim();
+
+            // Normalize relative audio URL with leading slash
+            if (audioUrl && !audioUrl.startsWith('http://') && !audioUrl.startsWith('https://') && !audioUrl.startsWith('data:') && !audioUrl.startsWith('/')) {
+                audioUrl = '/' + audioUrl;
+            }
+
             // Check if there is an audio element with a valid URL
             let audioElement = audioId ? document.getElementById(audioId) : null;
-            if (audioElement && audioUrl && audioUrl.trim() !== '') {
+            if (audioElement && audioUrl && audioUrl.length > 3) {
                 currentActiveListenBtn = btn;
                 currentActiveAudio = audioElement;
                 setListenButtonPlaying(btn, 'កំពុងចាក់ MP3... (ចុចផ្អាក)');
@@ -1635,7 +1834,7 @@
                     if (typeof handleAudioEnded === 'function') handleAudioEnded(audioElement);
                 };
                 audioElement.onpause = function() {
-                    if (currentActiveListenBtn === btn) {
+                    if (currentActiveListenBtn === btn && !isSpeakingTranscript) {
                         resetListenButton(btn);
                         currentActiveListenBtn = null;
                         currentActiveAudio = null;
@@ -1646,84 +1845,33 @@
                 if (playPromise !== undefined) {
                     playPromise.catch(err => {
                         console.warn('MP3 playback failed, falling back to Web Speech Synthesis:', err);
-                        playSpeechSynthesis(btn, textId, lessonId, lessonIndex);
+                        currentActiveAudio = null;
+                        if (cleanText) {
+                            playTranscriptWithSpeechSynthesis(btn, cleanText, lessonId, lessonIndex);
+                        } else {
+                            resetListenButton(btn);
+                            currentActiveListenBtn = null;
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'មិនអាចចាក់សំឡេង MP3 បានទេ',
+                                text: 'ឯកសារសំឡេងមិនអាចចាក់បាន ឬរកមិនឃើញនៅលើ Server។'
+                            });
+                        }
                     });
                 }
                 return;
             }
 
             // Otherwise, play with Web Speech Synthesis (TTS)
-            playSpeechSynthesis(btn, textId, lessonId, lessonIndex);
-        }
-
-        function playSpeechSynthesis(btn, textId, lessonId, lessonIndex) {
-            if (!('speechSynthesis' in window)) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'កម្មវិធីរុករកមិនគាំទ្រសំឡេង',
-                    text: 'កម្មវិធីរុករករបស់អ្នកមិនគាំទ្រការអានសំឡេង Text-to-Speech ទេ។ សូមប្រើប្រាស់ Google Chrome ឬ Safari។'
-                });
-                return;
-            }
-
-            const textEl = document.getElementById(textId);
-            const rawText = textEl ? (textEl.innerText || textEl.textContent || '') : '';
-            const cleanText = rawText.trim();
-
-            if (!cleanText) {
+            if (cleanText) {
+                playTranscriptWithSpeechSynthesis(btn, cleanText, lessonId, lessonIndex);
+            } else {
                 Swal.fire({
                     icon: 'info',
                     title: 'គ្មានអត្ថបទសម្រាប់ស្ដាប់',
                     text: 'សូមបញ្ចូលអត្ថបទជាមុនសិនដើម្បីស្ដាប់សំឡេង។'
                 });
-                return;
             }
-
-            window.speechSynthesis.cancel();
-
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.88; // Comfortable natural learning rate
-            utterance.pitch = 1.0;
-
-            // Pick highest quality English voice available
-            const voices = window.speechSynthesis.getVoices();
-            if (voices && voices.length > 0) {
-                const preferredVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('David') || v.name.includes('Zira')))
-                    || voices.find(v => v.lang.startsWith('en'));
-                if (preferredVoice) {
-                    utterance.voice = preferredVoice;
-                }
-            }
-
-            currentActiveListenBtn = btn;
-            currentSpeechUtterance = utterance;
-            setListenButtonPlaying(btn, 'កំពុងអានអត្ថបទ... (ចុចផ្អាក)');
-
-            utterance.onend = function() {
-                resetListenButton(btn);
-                currentActiveListenBtn = null;
-                currentSpeechUtterance = null;
-                if (lessonId && typeof updateProgressOnServer === 'function') {
-                    updateProgressOnServer(lessonId, 100, true, lessonIndex);
-                }
-            };
-
-            utterance.onerror = function(e) {
-                console.warn('SpeechSynthesis error:', e);
-                resetListenButton(btn);
-                currentActiveListenBtn = null;
-                currentSpeechUtterance = null;
-            };
-
-            window.speechSynthesis.speak(utterance);
-        }
-
-        // Preload speech synthesis voices
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = function() {
-                window.speechSynthesis.getVoices();
-            };
         }
 
         // Sequential Lesson Controller & Locked Progression for Students

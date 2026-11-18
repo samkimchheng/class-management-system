@@ -21,9 +21,10 @@ public class LessonTranscript {
     @Column(columnDefinition = "TEXT")
     private String khmerContent;
 
+    @Column(columnDefinition = "TEXT")
     private String audioUrl;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 
     private int orderIndex;

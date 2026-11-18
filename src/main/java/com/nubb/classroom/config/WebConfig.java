@@ -23,8 +23,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        java.io.File uploadsDir = new java.io.File("uploads").getAbsoluteFile();
+        String absoluteUploads = uploadsDir.toURI().toString();
+
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(
+                        absoluteUploads,
                         "file:./uploads/",
                         "file:uploads/",
                         "file:/app/uploads/",

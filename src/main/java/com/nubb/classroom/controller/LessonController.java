@@ -524,8 +524,12 @@ public class LessonController {
             if (uploadedPath != null) {
                 lesson.setAudioUrl(uploadedPath);
             }
-        } else if (audioUrl != null && !audioUrl.trim().isEmpty()) {
-            lesson.setAudioUrl(audioUrl.trim());
+        } else if (audioUrl != null) {
+            String aUrl = audioUrl.trim();
+            if (!aUrl.isEmpty() && !aUrl.startsWith("http://") && !aUrl.startsWith("https://") && !aUrl.startsWith("data:") && !aUrl.startsWith("/")) {
+                aUrl = "/" + aUrl;
+            }
+            lesson.setAudioUrl(aUrl.isEmpty() ? null : aUrl);
         }
 
         lessonRepository.save(lesson);
@@ -550,6 +554,20 @@ public class LessonController {
                 String tAudioUrl = (tsAudioUrl != null && i < tsAudioUrl.size()) ? tsAudioUrl.get(i) : "";
                 String tImageUrl = (tsImageUrl != null && i < tsImageUrl.size()) ? tsImageUrl.get(i) : "";
 
+                // Normalize leading slashes for relative upload paths
+                if (tAudioUrl != null) {
+                    tAudioUrl = tAudioUrl.trim();
+                    if (!tAudioUrl.isEmpty() && !tAudioUrl.startsWith("http://") && !tAudioUrl.startsWith("https://") && !tAudioUrl.startsWith("data:") && !tAudioUrl.startsWith("/")) {
+                        tAudioUrl = "/" + tAudioUrl;
+                    }
+                }
+                if (tImageUrl != null) {
+                    tImageUrl = tImageUrl.trim();
+                    if (!tImageUrl.isEmpty() && !tImageUrl.startsWith("http://") && !tImageUrl.startsWith("https://") && !tImageUrl.startsWith("data:") && !tImageUrl.startsWith("/")) {
+                        tImageUrl = "/" + tImageUrl;
+                    }
+                }
+
                 // Match existing transcript by passed ID, otherwise fallback by index
                 LessonTranscript matchedExisting = null;
                 if (tsExistingId != null && i < tsExistingId.size()) {
@@ -564,14 +582,12 @@ public class LessonController {
                     matchedExisting = existingTs.get(i);
                 }
 
-                // Preserve existing audioUrl & imageUrl if not re-uploaded/changed
-                if (matchedExisting != null) {
-                    if (tAudioUrl == null || tAudioUrl.trim().isEmpty()) {
-                        tAudioUrl = matchedExisting.getAudioUrl();
-                    }
-                    if (tImageUrl == null || tImageUrl.trim().isEmpty()) {
-                        tImageUrl = matchedExisting.getImageUrl();
-                    }
+                // If not explicitly passed in request params, preserve existing values
+                if (tsAudioUrl == null && matchedExisting != null) {
+                    tAudioUrl = matchedExisting.getAudioUrl();
+                }
+                if (tsImageUrl == null && matchedExisting != null) {
+                    tImageUrl = matchedExisting.getImageUrl();
                 }
 
                 // Check for new uploaded MP3 file for this transcript
@@ -742,11 +758,14 @@ public class LessonController {
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            String filename = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + "_" + file.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_");
-            Path filePath = Paths.get(uploadDir + filename);
+            String orig = (file.getOriginalFilename() != null && !file.getOriginalFilename().trim().isEmpty())
+                    ? file.getOriginalFilename() : "audio.mp3";
+            String cleanName = orig.replaceAll("[^a-zA-Z0-9.-]", "_");
+            String filename = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + "_" + cleanName;
+            Path filePath = dir.toPath().resolve(filename);
             Files.write(filePath, file.getBytes());
             return "/uploads/audio/" + filename;
-        } catch (IOException e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -758,13 +777,14 @@ public class LessonController {
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            String orig = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image.jpg";
+            String orig = (file.getOriginalFilename() != null && !file.getOriginalFilename().trim().isEmpty())
+                    ? file.getOriginalFilename() : "image.jpg";
             String cleanName = orig.replaceAll("[^a-zA-Z0-9.-]", "_");
             String filename = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + "_" + cleanName;
-            Path filePath = Paths.get(uploadDir + filename);
+            Path filePath = dir.toPath().resolve(filename);
             Files.write(filePath, file.getBytes());
             return "/uploads/images/" + filename;
-        } catch (IOException e) {
+        } catch (Exception e) {
             return null;
         }
     }

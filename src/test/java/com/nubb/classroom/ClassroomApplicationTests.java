@@ -16,6 +16,7 @@ import com.nubb.classroom.model.Classroom;
 import com.nubb.classroom.model.Score;
 import com.nubb.classroom.model.ScoreRule;
 import com.nubb.classroom.model.Lesson;
+import com.nubb.classroom.model.LessonTranscript;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.model.Account;
 import com.nubb.classroom.model.LeaveRequest;
@@ -1722,6 +1723,25 @@ class ClassroomApplicationTests {
                 .filter(l -> l.getTitle() != null && (l.getTitle().startsWith("Unit1 : MY PERSONAL") || l.getTitle().startsWith("Grade 11 Unit 1")))
                 .toList();
         assertTrue(remainingOld.isEmpty(), "Old Grade 10 and 11 lessons must be deleted: " + remainingOld);
+    }
+
+    @Test
+    void testTranscriptsAudioAndImageRendering() {
+        List<Lesson> lessons = lessonRepository.findAll();
+        assertFalse(lessons.isEmpty(), "Lessons should exist in DB");
+        for (Lesson l : lessons) {
+            List<LessonTranscript> tsList = lessonTranscriptRepository.findByLessonIdOrderByOrderIndexAsc(l.getId());
+            for (LessonTranscript ts : tsList) {
+                assertNotNull(ts.getTitle(), "Transcript title should not be null");
+                // Verify audio/image URLs if present have valid format
+                if (ts.getAudioUrl() != null && !ts.getAudioUrl().isEmpty()) {
+                    assertTrue(ts.getAudioUrl().startsWith("/") || ts.getAudioUrl().startsWith("http"), "Audio URL should be absolute or start with /");
+                }
+                if (ts.getImageUrl() != null && !ts.getImageUrl().isEmpty()) {
+                    assertTrue(ts.getImageUrl().startsWith("/") || ts.getImageUrl().startsWith("http") || ts.getImageUrl().startsWith("data:"), "Image URL should be absolute or start with /");
+                }
+            }
+        }
     }
 
     @Test
