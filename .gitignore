@@ -1,6 +1,10 @@
 HELP.md
 target/
-/data/
+### Data ###
+/data/*
+!/data/.gitkeep
+!/data/backups/
+!/data/backups/.gitkeep
 !src/main/resources/data/
 *.db
 /*.pdf

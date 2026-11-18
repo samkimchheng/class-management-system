@@ -123,7 +123,11 @@ public class DataInitializer {
             "ALTER TABLE IF EXISTS leave_requests ADD COLUMN IF NOT EXISTS account_id BIGINT",
             "ALTER TABLE IF EXISTS \"LEAVE_REQUESTS\" ADD COLUMN IF NOT EXISTS \"ACCOUNT_ID\" BIGINT",
             "ALTER TABLE IF EXISTS lesson_transcripts ADD COLUMN IF NOT EXISTS image_url VARCHAR(1000)",
-            "ALTER TABLE IF EXISTS \"LESSON_TRANSCRIPTS\" ADD COLUMN IF NOT EXISTS \"IMAGE_URL\" VARCHAR(1000)"
+            "ALTER TABLE IF EXISTS \"LESSON_TRANSCRIPTS\" ADD COLUMN IF NOT EXISTS \"IMAGE_URL\" VARCHAR(1000)",
+            "ALTER TABLE IF EXISTS lesson_transcripts ALTER COLUMN image_url SET DATA TYPE TEXT",
+            "ALTER TABLE IF EXISTS \"LESSON_TRANSCRIPTS\" ALTER COLUMN \"IMAGE_URL\" SET DATA TYPE TEXT",
+            "ALTER TABLE IF EXISTS lesson_transcripts ALTER COLUMN audio_url SET DATA TYPE TEXT",
+            "ALTER TABLE IF EXISTS \"LESSON_TRANSCRIPTS\" ALTER COLUMN \"AUDIO_URL\" SET DATA TYPE TEXT"
         };
         for (String q : accountIdCols) {
             try { stmt.execute(q); } catch (Exception ignored) {}
@@ -149,52 +153,25 @@ public class DataInitializer {
         try { stmt.execute("UPDATE question SET account_id = 97 WHERE account_id IS NULL OR account_id = 1"); } catch (Exception ignored) {}
         try { stmt.execute("UPDATE \"QUESTION\" SET \"ACCOUNT_ID\" = 97 WHERE \"ACCOUNT_ID\" IS NULL OR \"ACCOUNT_ID\" = 1"); } catch (Exception ignored) {}
 
-        // One-time cleanup of old Grade 10 & 11 lessons requested by user
+        // Safe database snapshot and upload directory auto-protection on startup
         try {
-            stmt.execute("CREATE TABLE IF NOT EXISTS system_config (config_key VARCHAR(100) PRIMARY KEY, config_value VARCHAR(255))");
-            stmt.execute("CREATE TABLE IF NOT EXISTS \"SYSTEM_CONFIG\" (\"CONFIG_KEY\" VARCHAR(100) PRIMARY KEY, \"CONFIG_VALUE\" VARCHAR(255))");
-            boolean alreadyCleaned = false;
-            try (ResultSet rs = stmt.executeQuery("SELECT config_value FROM system_config WHERE config_key = 'CLEANED_OLD_GRADE10_11_LESSONS_V2'")) {
-                if (rs.next()) {
-                    alreadyCleaned = "true".equalsIgnoreCase(rs.getString(1));
-                }
-            } catch (Exception ignored) {}
-            if (!alreadyCleaned) {
-                try (ResultSet rs = stmt.executeQuery("SELECT \"CONFIG_VALUE\" FROM \"SYSTEM_CONFIG\" WHERE \"CONFIG_KEY\" = 'CLEANED_OLD_GRADE10_11_LESSONS_V2'")) {
-                    if (rs.next()) {
-                        alreadyCleaned = "true".equalsIgnoreCase(rs.getString(1));
-                    }
-                } catch (Exception ignored) {}
-            }
+            java.io.File audioDir = new java.io.File("./uploads/audio");
+            if (!audioDir.exists()) audioDir.mkdirs();
+            java.io.File imgDir = new java.io.File("./uploads/images");
+            if (!imgDir.exists()) imgDir.mkdirs();
 
-            if (!alreadyCleaned) {
-                try {
-                    stmt.execute("DELETE FROM lesson_transcripts WHERE lesson_id IN (SELECT id FROM lessons WHERE class_name LIKE '%10%' OR class_name LIKE '%១០%' OR class_name LIKE '%11%' OR class_name LIKE '%១១%' OR title LIKE 'Unit%' OR title LIKE 'Grade 10%' OR title LIKE 'Grade 11%')");
-                } catch (Exception ignored) {}
-                try {
-                    stmt.execute("DELETE FROM \"LESSON_TRANSCRIPTS\" WHERE \"LESSON_ID\" IN (SELECT \"ID\" FROM \"LESSONS\" WHERE \"CLASS_NAME\" LIKE '%10%' OR \"CLASS_NAME\" LIKE '%១០%' OR \"CLASS_NAME\" LIKE '%11%' OR \"CLASS_NAME\" LIKE '%១១%' OR \"TITLE\" LIKE 'Unit%' OR \"TITLE\" LIKE 'Grade 10%' OR \"TITLE\" LIKE 'Grade 11%')");
-                } catch (Exception ignored) {}
-                try {
-                    stmt.execute("DELETE FROM lesson_progress WHERE lesson_id IN (SELECT id FROM lessons WHERE class_name LIKE '%10%' OR class_name LIKE '%១០%' OR class_name LIKE '%11%' OR class_name LIKE '%១១%' OR title LIKE 'Unit%' OR title LIKE 'Grade 10%' OR title LIKE 'Grade 11%')");
-                } catch (Exception ignored) {}
-                try {
-                    stmt.execute("DELETE FROM \"LESSON_PROGRESS\" WHERE \"LESSON_ID\" IN (SELECT \"ID\" FROM \"LESSONS\" WHERE \"CLASS_NAME\" LIKE '%10%' OR \"CLASS_NAME\" LIKE '%១០%' OR \"CLASS_NAME\" LIKE '%11%' OR \"CLASS_NAME\" LIKE '%១១%' OR \"TITLE\" LIKE 'Unit%' OR \"TITLE\" LIKE 'Grade 10%' OR \"TITLE\" LIKE 'Grade 11%')");
-                } catch (Exception ignored) {}
-                try {
-                    stmt.execute("DELETE FROM lessons WHERE class_name LIKE '%10%' OR class_name LIKE '%១០%' OR class_name LIKE '%11%' OR class_name LIKE '%១១%' OR title LIKE 'Unit%' OR title LIKE 'Grade 10%' OR title LIKE 'Grade 11%'");
-                } catch (Exception ignored) {}
-                try {
-                    stmt.execute("DELETE FROM \"LESSONS\" WHERE \"CLASS_NAME\" LIKE '%10%' OR \"CLASS_NAME\" LIKE '%១០%' OR \"CLASS_NAME\" LIKE '%11%' OR \"CLASS_NAME\" LIKE '%១១%' OR \"TITLE\" LIKE 'Unit%' OR \"TITLE\" LIKE 'Grade 10%' OR \"TITLE\" LIKE 'Grade 11%'");
-                } catch (Exception ignored) {}
+            java.io.File backupDir = new java.io.File("./data/backups");
+            if (!backupDir.exists()) backupDir.mkdirs();
 
-                try { stmt.execute("MERGE INTO system_config (config_key, config_value) KEY(config_key) VALUES ('CLEANED_OLD_GRADE10_11_LESSONS_V2', 'true')"); } catch (Exception ignored) {}
-                try { stmt.execute("INSERT INTO system_config (config_key, config_value) VALUES ('CLEANED_OLD_GRADE10_11_LESSONS_V2', 'true') ON CONFLICT (config_key) DO UPDATE SET config_value = 'true'"); } catch (Exception ignored) {}
-                try { stmt.execute("MERGE INTO \"SYSTEM_CONFIG\" (\"CONFIG_KEY\", \"CONFIG_VALUE\") KEY(\"CONFIG_KEY\") VALUES ('CLEANED_OLD_GRADE10_11_LESSONS_V2', 'true')"); } catch (Exception ignored) {}
-                try { stmt.execute("INSERT INTO \"SYSTEM_CONFIG\" (\"CONFIG_KEY\", \"CONFIG_VALUE\") VALUES ('CLEANED_OLD_GRADE10_11_LESSONS_V2', 'true') ON CONFLICT (\"CONFIG_KEY\") DO UPDATE SET \"CONFIG_VALUE\" = 'true'"); } catch (Exception ignored) {}
-                System.out.println(">>> [DataInitializer] Successfully deleted old Grade 10 & Grade 11 lessons as requested by user.");
+            // Native non-blocking SQL snapshot for H2 database
+            try {
+                stmt.execute("SCRIPT TO './data/backups/classroomDB_backup_latest.sql' TABLE classroom, account, lessons, lesson_transcripts, score, attendance, students");
+                System.out.println(">>> [DataInitializer] Safe database SQL snapshot created successfully at ./data/backups/classroomDB_backup_latest.sql");
+            } catch (Exception sqlEx) {
+                // If not H2 or table not ready, ignore safely
             }
         } catch (Exception e) {
-            System.err.println(">>> [DataInitializer] Notice cleaning old lessons: " + e.getMessage());
+            System.err.println(">>> [DataInitializer] Notice verifying backup/upload directories: " + e.getMessage());
         }
 
         // Fix English & French Score Rules to Max 50

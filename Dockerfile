@@ -17,7 +17,7 @@ FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 # Create directories for database and uploads
-RUN mkdir -p /app/data /app/uploads
+RUN mkdir -p /app/data /app/uploads/audio /app/uploads/images /app/data/backups
 
 # Copy the built jar
 COPY --from=builder /app/target/*.jar app.jar

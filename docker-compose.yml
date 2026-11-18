@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  classroom:
+    build: .
+    container_name: classroom-app
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persistent storage: guarantees database and teacher uploads (MP3, Images) are NEVER lost across system updates/rebuilds
+      - classroom_data:/app/data
+      - classroom_uploads:/app/uploads
+    environment:
+      - PORT=8080
+      - JAVA_OPTS=-Xmx512m
+
+volumes:
+  classroom_data:
+    driver: local
+  classroom_uploads:
+    driver: local
