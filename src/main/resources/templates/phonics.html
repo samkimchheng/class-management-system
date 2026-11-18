@@ -553,8 +553,315 @@
         .form-control:focus {
             border-color: var(--primary);
         }
+
+        /* Mobile-only and helper classes */
+        .title-short { display: none; }
+        .btn-text-short { display: none; }
+        .mobile-menu-btn { display: none; }
+
+        /* Tablet & Mobile (<= 992px): Off-canvas collapsible sidebar + auto-fit full width */
+        @media screen and (max-width: 992px) {
+            body {
+                overflow-x: hidden !important;
+            }
+
+            .sidebar {
+                display: flex !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                bottom: 0 !important;
+                width: 280px !important;
+                max-width: 85vw !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                transform: translateX(-100%) !important;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                z-index: 1050 !important;
+                box-shadow: 4px 0 25px rgba(0, 0, 0, 0.35) !important;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0) !important;
+            }
+
+            .mobile-sidebar-backdrop {
+                position: fixed !important;
+                inset: 0 !important;
+                background: rgba(15, 23, 42, 0.65) !important;
+                backdrop-filter: blur(4px) !important;
+                -webkit-backdrop-filter: blur(4px) !important;
+                z-index: 1040 !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+                transition: opacity 0.3s ease, visibility 0.3s ease !important;
+            }
+
+            .mobile-sidebar-backdrop.active {
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+
+            .mobile-menu-btn {
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                padding: 0;
+                margin: 0;
+                font-size: 1.25rem;
+                border-radius: 8px;
+                background: #f1f5f9;
+                border: 1px solid #cbd5e1;
+                color: #0f172a;
+                cursor: pointer;
+                flex-shrink: 0;
+            }
+
+            .mobile-menu-btn:active {
+                background: #e2e8f0;
+                transform: scale(0.95);
+            }
+
+            .topbar {
+                padding: 8px 12px !important;
+                flex-wrap: nowrap !important;
+                gap: 8px !important;
+                min-height: 52px !important;
+            }
+
+            .topbar-left {
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                font-size: 0.95rem !important;
+                min-width: 0 !important;
+                flex: 1 1 auto !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+            }
+
+            .title-full { display: none !important; }
+            .title-short { display: inline !important; }
+            .btn-text-full { display: none !important; }
+            .btn-text-short { display: inline !important; }
+
+            .topbar-right-btns {
+                gap: 6px !important;
+            }
+            .topbar-right-btns .btn {
+                padding: 6px 9px !important;
+                font-size: 0.8rem !important;
+                gap: 4px !important;
+            }
+
+            /* Level Switcher Bar: horizontal scrollable pills on mobile */
+            .level-switcher-bar {
+                display: flex !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: thin;
+                gap: 8px !important;
+                margin-bottom: 14px !important;
+                padding-bottom: 6px !important;
+            }
+
+            .level-tab-card {
+                flex: 0 0 175px !important;
+                min-width: 175px !important;
+                padding: 10px 12px !important;
+                border-radius: 12px !important;
+            }
+            .level-tab-top { font-size: 0.88rem !important; }
+            .level-tab-sub { font-size: 0.74rem !important; }
+            .level-count-pill { font-size: 0.72rem !important; padding: 1px 6px !important; }
+        }
+
+        /* Mobile specific (<= 768px) */
+        @media screen and (max-width: 768px) {
+            .content {
+                padding: 12px 10px !important;
+            }
+
+            /* Phonics Hero Compact */
+            .phonics-hero {
+                padding: 14px 16px !important;
+                border-radius: 14px !important;
+                margin-bottom: 14px !important;
+                gap: 10px !important;
+            }
+
+            .phonics-hero-left {
+                gap: 12px !important;
+                align-items: flex-start !important;
+            }
+
+            .phonics-hero-icon {
+                width: 44px !important;
+                height: 44px !important;
+                font-size: 1.45rem !important;
+                border-radius: 12px !important;
+            }
+
+            .phonics-hero h1 {
+                font-size: 1.05rem !important;
+                line-height: 1.4 !important;
+            }
+
+            .phonics-hero p {
+                font-size: 0.8rem !important;
+                line-height: 1.4 !important;
+            }
+
+            .hero-actions {
+                padding-top: 10px !important;
+                gap: 6px !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+
+            .hero-actions .btn {
+                padding: 6px 10px !important;
+                font-size: 0.78rem !important;
+            }
+
+            /* KPI 2x2 grid */
+            .kpi-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 8px !important;
+                margin-bottom: 14px !important;
+            }
+
+            .kpi-card {
+                padding: 10px 10px !important;
+                gap: 8px !important;
+                border-radius: 12px !important;
+            }
+
+            .kpi-icon {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 1.15rem !important;
+                border-radius: 10px !important;
+            }
+
+            .kpi-val {
+                font-size: 1.12rem !important;
+            }
+
+            .kpi-lbl {
+                font-size: 0.74rem !important;
+                line-height: 1.3 !important;
+            }
+
+            /* Main view tabs horizontal scroll */
+            .main-tabs {
+                gap: 6px !important;
+                margin-bottom: 14px !important;
+                padding-bottom: 4px !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+
+            .main-tab-btn {
+                padding: 8px 12px !important;
+                font-size: 0.84rem !important;
+                border-radius: 10px 10px 0 0 !important;
+                flex-shrink: 0 !important;
+            }
+
+            /* Panel cards */
+            .panel-card {
+                padding: 14px 12px !important;
+                border-radius: 14px !important;
+                margin-bottom: 14px !important;
+            }
+
+            .panel-header {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+                margin-bottom: 12px !important;
+                padding-bottom: 10px !important;
+            }
+
+            .panel-title {
+                font-size: 1rem !important;
+            }
+
+            .curriculum-controls {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                width: 100% !important;
+                gap: 8px !important;
+            }
+
+            .curriculum-controls select,
+            .curriculum-controls input {
+                width: 100% !important;
+            }
+
+            .curriculum-btn-group {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 6px !important;
+                width: 100% !important;
+            }
+
+            .curriculum-btn-group .btn {
+                flex: 1 1 auto !important;
+                justify-content: center !important;
+                font-size: 0.82rem !important;
+                padding: 7px 10px !important;
+            }
+
+            /* Admin access panel on mobile */
+            .admin-access-header {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 10px !important;
+            }
+
+            .admin-access-btns {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 6px !important;
+                width: 100% !important;
+            }
+
+            .admin-access-btns .btn {
+                flex: 1 1 auto !important;
+                justify-content: center !important;
+                font-size: 0.78rem !important;
+                padding: 6px 10px !important;
+            }
+
+            /* Modal overlay */
+            .modal-overlay {
+                padding: 8px !important;
+            }
+
+            .modal-card {
+                padding: 16px 14px !important;
+                border-radius: 14px !important;
+                width: 100% !important;
+                max-height: 94vh !important;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+        }
     </style>
-    <link rel="stylesheet" href="/css/mobile-Wait.css" onerror="this.remove()">
 </head>
 <body>
     <!-- Sidebar -->
@@ -598,18 +905,19 @@
         <div class="topbar">
             <div class="topbar-left" style="display: inline-flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 auto; white-space: nowrap; overflow: hidden;">
                 <h3 style="margin: 0; font-size: 1.12rem; font-weight: 800; color: #0f172a !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    🗣️ មេរៀនប្រកបអង់គ្លេសតាមស្តង់ដារអន្តរជាតិ (Oxford Phonics World L1–L5)
+                    <span class="title-full">🗣️ មេរៀនប្រកបអង់គ្លេសតាមស្តង់ដារអន្តរជាតិ (Oxford Phonics World L1–L5)</span>
+                    <span class="title-short">🗣️ ប្រកបអង់គ្លេស</span>
                 </h3>
             </div>
-            <div style="display: inline-flex; align-items: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap; flex-shrink: 0;">
+            <div class="topbar-right-btns" style="display: inline-flex; align-items: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap; flex-shrink: 0;">
                 <a href="/vocabulary" class="btn" style="background: #eef2ff !important; color: #3730a3 !important; border: 1px solid #c7d2fe; padding: 7px 13px; font-size: 0.85rem; white-space: nowrap;">
-                    🔤 ទៅកាន់វាក្យសព្ទ (Vocab 10–12)
+                    <span>🔤</span> <span class="btn-text-full">ទៅកាន់វាក្យសព្ទ (Vocab 10–12)</span><span class="btn-text-short">វាក្យសព្ទ</span>
                 </a>
                 <a href="/admin/accounts" th:if="${session.ACCOUNT_ROLE == 'ADMIN'}" class="btn" style="background: #fef3c7 !important; color: #92400e !important; border: 1px solid #fde68a; padding: 7px 13px; font-size: 0.85rem; white-space: nowrap;">
-                    🛡️ គ្រប់គ្រងសិទ្ធិគ្រូ (Admin)
+                    <span>🛡️</span> <span class="btn-text-full">គ្រប់គ្រងសិទ្ធិគ្រូ (Admin)</span><span class="btn-text-short">Admin</span>
                 </a>
                 <a href="/logout" class="btn" style="background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fecaca; padding: 7px 13px; font-size: 0.85rem; white-space: nowrap;">
-                    🚪 ចាកចេញ
+                    <span>🚪</span> <span>ចាកចេញ</span>
                 </a>
             </div>
         </div>
@@ -642,7 +950,7 @@
 
             <!-- Admin-Only Access Control Panel (គ្រូណា • ថ្នាក់ណា • សិស្សណា) -->
             <div th:if="${isAdmin}" class="panel-card" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important; border: 2px solid #f59e0b; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 12px; margin-bottom: 14px; border-bottom: 1.5px solid rgba(245, 158, 11, 0.35); padding-bottom: 10px;">
+                <div class="admin-access-header" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; border-bottom: 1.5px solid rgba(245, 158, 11, 0.35); padding-bottom: 10px;">
                     <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
                         <span style="font-size: 1.5rem; flex-shrink: 0;">🛡️</span>
                         <div style="min-width: 0;">
@@ -654,7 +962,7 @@
                             </div>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 8px; flex-wrap: nowrap; flex-shrink: 0;">
+                    <div class="admin-access-btns" style="display: flex; gap: 8px; flex-shrink: 0;">
                         <button type="button" class="btn" style="background: #10b981 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; padding: 7px 14px; font-size: 0.84rem; white-space: nowrap;" onclick="toggleClassAccess('ALL', true)">
                             ✅ បើកសិទ្ធិសិស្សគ្រប់ថ្នាក់ទាំងអស់ (<span th:text="${allClassesStudentsCount}">0</span> នាក់)
                         </button>
@@ -979,7 +1287,7 @@
             <div id="tabCurriculum" class="tab-pane">
                 <div class="panel-card">
                     <div class="panel-header">
-                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div class="curriculum-controls" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                             <h3 class="panel-title" th:text="'📖 មេរៀនប្រកបក្នុង ' + ${levelShortLabel}">មេរៀនប្រកប</h3>
                             <select id="unitFilterSelect" onchange="applyUnitFilter(this.value)" class="form-control" style="width: auto; font-weight: 700;">
                                 <option value="ALL" th:selected="${selectedUnit == 'ALL'}">📚 គ្រប់មេរៀន (All Units)</option>
@@ -987,7 +1295,7 @@
                             </select>
                             <input type="text" id="wordSearchInput" th:value="${searchQuery}" oninput="filterWordsTable()" class="form-control" style="width: 230px;" placeholder="🔍 ស្វែងរកពាក្យ ឬសូរប្រកប...">
                         </div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <div class="curriculum-btn-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
                             <button th:if="${isAdmin}" type="button" class="btn" style="background: #dcfce7; color: #166534; border: 1px solid #86efac;" onclick="bulkToggleLevel(true)">
                                 🔓 បើកទាំងអស់ក្នុង Unit នេះ
                             </button>
