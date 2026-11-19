@@ -221,19 +221,19 @@ function getOfficialFooter() {
     const tSigHtml = HR.teacher.signature ? `<img src="${esc(HR.teacher.signature)}" style="max-height:54px;margin-top:4px;">` : '';
 
     return `
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:22px;font-size:0.86rem;gap:20px;flex-wrap:wrap;">
-            <div style="text-align:center;min-width:220px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:22px;padding:0 16px 0 48px;font-size:0.86rem;gap:20px;flex-wrap:wrap;">
+            <div style="text-align:center;min-width:230px;">
                 <div>បានឃើញ និងឯកភាព</div>
                 <div style="font-weight:800;">នាយកសាលា</div>
-                <div style="display:flex;justify-content:center;align-items:center;gap:6px;min-height:58px;">${stampHtml}${pSigHtml}</div>
-                <div style="font-weight:800;">${esc(principal)}</div>
+                <div style="display:flex;justify-content:center;align-items:center;gap:6px;min-height:68px;">${stampHtml}${pSigHtml}</div>
+                <div style="font-weight:800;padding-left:24px;">${esc(principal)}</div>
             </div>
-            <div style="text-align:center;min-width:240px;">
+            <div style="text-align:center;min-width:250px;">
                 <div>${esc(lunar)}</div>
                 <div>${esc(solar)}</div>
                 <div style="font-weight:800;margin-top:4px;">គ្រូបន្ទុកថ្នាក់</div>
-                <div style="min-height:54px;display:flex;justify-content:center;align-items:center;">${tSigHtml}</div>
-                <div style="font-weight:800;">${esc(teacherName)}</div>
+                <div style="min-height:64px;display:flex;justify-content:center;align-items:center;">${tSigHtml}</div>
+                <div style="font-weight:800;padding-left:24px;">${esc(teacherName)}</div>
             </div>
         </div>
     `;
@@ -1247,20 +1247,26 @@ function renderKearikPages(singleStudentId) {
                         </div>
 
                         <div style="padding:10px 14px;display:flex;flex-direction:column;justify-content:space-between;flex:1;font-size:0.78rem;">
-                            <div style="text-align:center;">
-                                <div class="moul" style="font-size:0.8rem;">មូលវិចារ គ្រូទទួលបន្ទុកថ្នាក់</div>
-                                <div style="min-height:42px;padding:6px 4px;font-style:italic;color:#1e293b;">${esc(st.teacherComment || '')}</div>
-                                <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
-                                <div class="moul" style="margin-top:4px;">គ្រូបន្ទុកថ្នាក់</div>
-                                <div style="font-weight:700;margin-top:18px;">${esc(teacherName)}</div>
+                            <div>
+                                <div class="moul" style="font-size:0.8rem;text-align:center;">មូលវិចារ គ្រូទទួលបន្ទុកថ្នាក់</div>
+                                <div style="min-height:36px;padding:6px 4px;font-style:italic;color:#1e293b;text-align:center;">${esc(st.teacherComment || '')}</div>
+                                <div style="margin-left:auto;width:58%;text-align:center;padding-right:8px;">
+                                    <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
+                                    <div class="moul" style="margin-top:4px;">គ្រូបន្ទុកថ្នាក់</div>
+                                    <div style="min-height:42px;"></div>
+                                    <div style="font-weight:800;">${esc(teacherName)}</div>
+                                </div>
                             </div>
 
-                            <div style="text-align:center;margin-top:16px;">
-                                <div class="moul" style="font-size:0.8rem;">មូលវិចារ នាយកសាលា</div>
-                                <div style="min-height:36px;"></div>
-                                <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
-                                <div class="moul" style="margin-top:4px;">នាយកសាលា</div>
-                                <div style="font-weight:700;margin-top:18px;">${esc(principal)}</div>
+                            <div style="margin-top:14px;">
+                                <div class="moul" style="font-size:0.8rem;text-align:center;">មូលវិចារ នាយកសាលា</div>
+                                <div style="min-height:30px;"></div>
+                                <div style="margin-left:auto;width:58%;text-align:center;padding-right:8px;">
+                                    <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
+                                    <div class="moul" style="margin-top:4px;">នាយកសាលា</div>
+                                    <div style="min-height:50px;"></div>
+                                    <div style="font-weight:800;">${esc(principal)}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
