@@ -96,6 +96,7 @@ async function loadHomeroomData() {
         const adm = data.admin || {};
         HR.admin.config = parseJsonSafe(adm.configJson, {});
         HR.admin.monthlyAtt = parseJsonSafe(adm.monthlyAttendanceJson, {});
+        HR.admin.monitorStudentId = adm.monitorStudentId || null;
         HR.admin.cleaning = parseJsonSafe(adm.cleaningScheduleJson, null);
         HR.admin.seating = parseJsonSafe(adm.seatingLayoutJson, null);
         HR.admin.youth = parseJsonSafe(adm.youthCouncilJson, null);
@@ -142,6 +143,47 @@ function populateStudentSelectors() {
         const el = document.getElementById(id);
         if (el) el.innerHTML = opts || '<option value="">គ្មានសិស្ស</option>';
     });
+    populateMonitorSelector();
+}
+
+function populateMonitorSelector() {
+    const sel = document.getElementById('hrMonitorSelect');
+    const statusEl = document.getElementById('hrMonitorStatus');
+    if (!sel) return;
+    const curId = HR.admin.monitorStudentId ? String(HR.admin.monitorStudentId) : '';
+    sel.innerHTML = `<option value="">-- មិនទាន់ផ្តល់សិទ្ធិ (មានតែគ្រូបន្ទុក) --</option>` +
+        HR.students.map((s, i) => `<option value="${s.id}" ${String(s.id) === curId ? 'selected' : ''}>${i + 1}. ${esc(s.name)} (${esc(s.studentCode)})</option>`).join('');
+    if (statusEl) {
+        const mon = HR.students.find(s => String(s.id) === curId);
+        statusEl.innerHTML = mon
+            ? `✅ កំពុងផ្តល់សិទ្ធិជូន៖ <b>${esc(mon.name)}</b> (លេខកូដចូលសិស្ស៖ <b>${esc(mon.studentCode)}</b>)`
+            : 'ℹ️ មិនទាន់មានប្រធានថ្នាក់ត្រូវបានផ្តល់សិទ្ធិនៅឡើយទេ';
+    }
+}
+
+async function saveClassMonitorPermission() {
+    const sel = document.getElementById('hrMonitorSelect');
+    if (!sel) return;
+    const val = sel.value ? Number(sel.value) : null;
+    const res = await fetch('/api/homeroom/admin/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ className: HR.className, academicYear: HR.academicYear, monitorStudentId: val })
+    });
+    const data = await res.json();
+    if (data.success) {
+        HR.admin.monitorStudentId = val;
+        populateMonitorSelector();
+        const mon = HR.students.find(s => s.id === val);
+        Swal.fire({
+            icon: 'success',
+            title: val ? 'បានផ្តល់សិទ្ធិប្រធានថ្នាក់ជោគជ័យ!' : 'បានដកសិទ្ធិប្រធានថ្នាក់រួចរាល់!',
+            text: mon ? `សិស្ស ${mon.name} អាចចូលគណនីសិស្ស (កូដ ${mon.studentCode}) ហើយចុចប៊ូតុង «👑 ស្រង់អវត្តមានតាមខែ» ដើម្បីជួយស្រង់អវត្តមានថ្នាក់ ${HR.className} បានភ្លាមៗ!` : '',
+            confirmButtonText: 'យល់ព្រម'
+        });
+    } else {
+        Swal.fire('បរាជ័យ', data.error || 'មិនអាចរក្សាទុកបានទេ', 'error');
+    }
 }
 
 function getOfficialHeader(docTitle, subtitle = '') {

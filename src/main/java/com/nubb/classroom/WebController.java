@@ -55,6 +55,9 @@ public class WebController {
     @Autowired(required = false)
     private ExternalLearnerRepository externalLearnerRepository;
 
+    @Autowired(required = false)
+    private com.nubb.classroom.repository.HomeroomClassAdminRepository homeroomClassAdminRepository;
+
     @Autowired
     private TokenSecurityService tokenSecurityService;
 
@@ -3494,6 +3497,9 @@ return "scores";
         boolean isAbsentToday = attendanceRepository.findByStudentId(student.getId()).stream()
                 .anyMatch(a -> today.equals(a.getDate()) && !a.isPresent());
         model.addAttribute("isAbsentToday", isAbsentToday);
+        boolean isClassMonitor = student.getId() != null && homeroomClassAdminRepository != null
+                && !homeroomClassAdminRepository.findByMonitorStudentId(student.getId()).isEmpty();
+        model.addAttribute("isClassMonitor", isClassMonitor);
         return "take-exam";
     }
 

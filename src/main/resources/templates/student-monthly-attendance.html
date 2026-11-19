@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ស្រង់អវត្តមានតាមខែ (ប្រធានថ្នាក់) - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700;800&family=Battambang:wght@400;700&family=Moul&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Kantumruy Pro', 'Battambang', sans-serif; }
+        body { margin: 0; background: #f1f5f9; color: #0f172a; }
+        .moul { font-family: 'Moul', 'Kantumruy Pro', serif; }
+
+        .topbar {
+            background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+            color: #fff; padding: 12px 18px; display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 12px rgba(153,27,27,0.22);
+        }
+        .topbar h1 { margin: 0; font-size: 1.08rem; font-weight: 800; }
+        .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+        .btn {
+            border: none; border-radius: 8px; padding: 7px 13px; font-weight: 700; font-size: 0.84rem;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+        }
+        .btn-white { background: #fff; color: #991b1b; }
+        .btn-success { background: #10b981; color: #fff; }
+        .btn-primary { background: #2563eb; color: #fff; }
+        .btn-outline { background: #fff; color: #334155; border: 1.5px solid #cbd5e1; }
+        .form-control { padding: 7px 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: 700; font-size: 0.86rem; background: #fff; }
+
+        .container { max-width: 1480px; margin: 16px auto; padding: 0 14px 40px; }
+        .panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; box-shadow: 0 2px 10px rgba(15,23,42,0.05); }
+        .toolbar {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+            gap: 10px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9;
+        }
+        .table-wrap { overflow-x: auto; }
+
+        .att-pdf-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; background: #fff; color: #000; }
+        .att-pdf-table th, .att-pdf-table td { border: 1px solid #000; padding: 3px 2px; text-align: center; vertical-align: middle; }
+        .att-pdf-table td.att-name { text-align: left; padding: 3px 6px; white-space: nowrap; font-weight: 600; min-width: 135px; }
+        .att-pdf-table .att-day-col { width: 25px; min-width: 25px; font-size: 0.72rem; }
+        .att-pdf-table .att-holiday {
+            background-color: #ff0000 !important; color: #ffffff !important;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .att-pdf-table .att-cell { cursor: pointer; user-select: none; font-weight: 800; font-size: 0.8rem; }
+        .att-pdf-table .att-cell:hover:not(.att-holiday) { background: #e0f2fe; }
+        .att-pdf-table .att-cell-p { color: #1d4ed8; background: #eff6ff; }
+        .att-pdf-table .att-cell-a { color: #dc2626; background: #fef2f2; }
+        .att-pdf-table .att-vhead {
+            writing-mode: vertical-rl; transform: rotate(180deg);
+            white-space: nowrap; font-weight: 800; font-size: 0.74rem; padding: 5px 2px; height: 64px;
+        }
+        .att-holiday-toggle { cursor: pointer; width: 15px; height: 15px; accent-color: #dc2626; margin: 0; }
+        .att-summary-bar {
+            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+            gap: 12px; margin-top: 12px; font-size: 0.84rem; color: #000;
+        }
+        .att-summary-item { display: inline-flex; align-items: center; gap: 6px; font-style: italic; font-weight: 600; }
+        .att-summary-box { border: 1px solid #000; padding: 2px 14px; min-width: 58px; text-align: center; font-style: normal; font-weight: 800; }
+
+        @media print {
+            @page { size: A4 landscape; margin: 8mm; }
+            body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .topbar, .no-print { display: none !important; }
+            .container { margin: 0; padding: 0; max-width: 100%; }
+            .panel { border: none; box-shadow: none; padding: 0; }
+            .att-pdf-table { font-size: 0.7rem !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div>
+            <h1>👑 ស្រង់អវត្តមានតាមខែ — ប្រធានថ្នាក់ <span th:text="${className}">ថ្នាក់</span></h1>
+            <div style="font-size:0.82rem;opacity:0.92;">
+                ប្រធានថ្នាក់៖ <b th:text="${student.name}">ឈ្មោះ</b> | ឆ្នាំសិក្សា៖ <b th:text="${academicYear}">២០២៦-២០២៧</b>
+            </div>
+        </div>
+        <div class="topbar-actions">
+            <a href="/test/take" class="btn btn-white">← ត្រឡប់ទៅគណនីសិស្ស</a>
+            <a href="/test/logout" class="btn btn-white" style="background:#fee2e2;">🚪 ចាកចេញ</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="panel">
+            <div class="toolbar no-print">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <label style="font-weight:700;">ជ្រើសរើសខែ៖</label>
+                    <select id="monMonthSelect" class="form-control" onchange="renderMonitorSheet()">
+                        <option value="11" selected>ខែវិច្ឆិកា (១១)</option>
+                        <option value="12">ខែធ្នូ (១២)</option>
+                        <option value="1">ខែមករា (០១)</option>
+                        <option value="2">ខែកុម្ភៈ (០២)</option>
+                        <option value="3">ខែមីនា (០៣)</option>
+                        <option value="4">ខែមេសា (០៤)</option>
+                        <option value="5">ខែឧសភា (០៥)</option>
+                        <option value="6">ខែមិថុនា (០៦)</option>
+                        <option value="7">ខែកក្កដា (០៧)</option>
+                        <option value="8">ខែសីហា (០៨)</option>
+                        <option value="9">ខែកញ្ញា (០៩)</option>
+                        <option value="10">ខែតុលា (១០)</option>
+                    </select>
+                    <select id="monYearSelect" class="form-control" onchange="renderMonitorSheet()">
+                        <option value="2025">២០២៥ (2025)</option>
+                        <option value="2026" selected>២០២៦ (2026)</option>
+                        <option value="2027">២០២៧ (2027)</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-success" onclick="saveMonitorSheet()">💾 រក្សាទុកអវត្តមានខែនេះ</button>
+                    <button class="btn btn-primary" onclick="window.print()">🖨️ ព្រីន / Save PDF</button>
+                </div>
+            </div>
+
+            <div class="no-print" style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:0.82rem;color:#7f1d1d;display:flex;flex-wrap:wrap;gap:12px;">
+                <span>💡 <b>របៀបស្រង់អវត្តមាន៖</b> ចុចលើប្រឡោះថ្ងៃរបស់មិត្តរួមថ្នាក់៖ ⬜ ទទេ = មករៀន | <b style="color:#1d4ed8;">🔵 ច = មានច្បាប់</b> | <b style="color:#dc2626;">🔴 អ = ឥតច្បាប់</b> — រួចចុច <b>«💾 រក្សាទុកអវត្តមានខែនេះ»</b> ដើម្បីបញ្ជូនជូនគ្រូបន្ទុកថ្នាក់!</span>
+            </div>
+
+            <div id="monitorSheetArea">កំពុងផ្ទុកទិន្នន័យ...</div>
+        </div>
+    </div>
+
+    <script>
+        const KHMER_MONTHS = {1:'មករា',2:'កុម្ភៈ',3:'មីនា',4:'មេសា',5:'ឧសភា',6:'មិថុនា',7:'កក្កដា',8:'សីហា',9:'កញ្ញា',10:'តុលា',11:'វិច្ឆិកា',12:'ធ្នូ'};
+        const KHMER_WEEKDAYS = ['អាទិ.', 'ច.', 'អ.', 'ពុ.', 'ព្រហ.', 'សុ.', 'ស.'];
+        let MON = { className: '', academicYear: '', teacher: {}, students: [], monthlyAtt: {}, config: {} };
+
+        function esc(s) {
+            return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+        function shortGender(g) {
+            const s = String(g || '').trim().toLowerCase();
+            return (s === 'ស្រី' || s === 'ស' || s === 'female' || s === 'f') ? 'ស' : 'ប';
+        }
+        function getKey() {
+            const m = Number(document.getElementById('monMonthSelect').value || 11);
+            const y = Number(document.getElementById('monYearSelect').value || 2026);
+            return { month: m, year: y, key: `${y}-${String(m).padStart(2, '0')}` };
+        }
+        function ensureMonth(key) {
+            if (!MON.monthlyAtt || typeof MON.monthlyAtt !== 'object') MON.monthlyAtt = {};
+            if (!MON.monthlyAtt[key]) MON.monthlyAtt[key] = { holidays: [], marks: {} };
+            if (!Array.isArray(MON.monthlyAtt[key].holidays)) MON.monthlyAtt[key].holidays = [];
+            if (!MON.monthlyAtt[key].marks) MON.monthlyAtt[key].marks = {};
+            return MON.monthlyAtt[key];
+        }
+
+        async function loadMonitorData() {
+            const res = await fetch('/api/student-portal/monthly-attendance');
+            if (!res.ok) {
+                Swal.fire('គ្មានសិទ្ធិ', 'អ្នកមិនមានសិទ្ធិប្រធានថ្នាក់ទេ', 'error').then(() => window.location.href = '/test/take');
+                return;
+            }
+            const data = await res.json();
+            MON.className = data.className;
+            MON.academicYear = data.academicYear;
+            MON.teacher = data.teacher || {};
+            MON.students = data.students || [];
+            try { MON.monthlyAtt = data.monthlyAttendanceJson ? JSON.parse(data.monthlyAttendanceJson) : {}; } catch(e) { MON.monthlyAtt = {}; }
+            try { MON.config = data.configJson ? JSON.parse(data.configJson) : {}; } catch(e) { MON.config = {}; }
+            renderMonitorSheet();
+        }
+
+        function renderMonitorSheet() {
+            const { month, year, key } = getKey();
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const mData = ensureMonth(key);
+            const holidaySet = new Set(mData.holidays.map(Number));
+
+            const days = [];
+            let studyDays = 0;
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dow = new Date(year, month - 1, d).getDay();
+                const isSunday = dow === 0;
+                const isHoliday = isSunday || holidaySet.has(d);
+                if (!isHoliday) studyDays++;
+                days.push({ day: d, label: String(d).padStart(2, '0'), weekday: KHMER_WEEKDAYS[dow], isSunday, isHoliday });
+            }
+
+            let grandAbsent = 0;
+            const rowsHtml = MON.students.map((st, idx) => {
+                let perm = 0, unex = 0;
+                const cells = days.map(d => {
+                    if (d.isHoliday) return `<td class="att-day-col att-holiday"></td>`;
+                    const mk = mData.marks[`${st.id}_${d.day}`] || '';
+                    if (mk === 'ច') perm++; else if (mk === 'អ') unex++;
+                    const cls = mk === 'ច' ? 'att-cell-p' : (mk === 'អ' ? 'att-cell-a' : '');
+                    return `<td class="att-day-col att-cell ${cls}" onclick="cycleMark(${st.id}, ${d.day})">${esc(mk)}</td>`;
+                }).join('');
+                const tot = perm + unex;
+                grandAbsent += tot;
+                return `<tr><td>${idx + 1}</td><td class="att-name">${esc(st.name)}</td><td>${shortGender(st.gender)}</td>${cells}<td>${perm}</td><td>${unex}</td><td style="font-weight:800;">${tot}</td></tr>`;
+            }).join('');
+
+            const totalReq = MON.students.length * studyDays;
+            const actualPres = Math.max(0, totalReq - grandAbsent);
+            const pct = totalReq > 0 ? ((grandAbsent / totalReq) * 100).toFixed(2) : '0.00';
+            const school = MON.config.school || MON.teacher.schoolName || 'វិទ្យាល័យ';
+
+            document.getElementById('monitorSheetArea').innerHTML = `
+                <div style="text-align:center;margin-bottom:10px;">
+                    <div class="moul" style="font-size:0.95rem;">${esc(school)}</div>
+                    <div class="moul" style="font-size:0.92rem;margin-top:4px;">បញ្ជីស្រង់អវត្តមានសម្រាប់ខែ${KHMER_MONTHS[month]} ថ្នាក់ទី ${esc(MON.className)} ឆ្នាំសិក្សា ${esc(MON.academicYear)}</div>
+                </div>
+                <div class="table-wrap">
+                    <table class="att-pdf-table">
+                        <thead>
+                            <tr>
+                                <th colspan="3" style="text-align:left;padding:4px 8px;font-weight:800;">ជ្រើសរើសថ្ងៃឈប់សម្រាក</th>
+                                ${days.map(d => `<th class="att-day-col"><input type="checkbox" class="att-holiday-toggle no-print" ${d.isHoliday ? 'checked' : ''} ${d.isSunday ? 'disabled' : `onchange="toggleHol(${d.day})"`}></th>`).join('')}
+                                <th colspan="3"></th>
+                            </tr>
+                            <tr>
+                                <th rowspan="2">ល.រ</th>
+                                <th rowspan="2">គោត្តនាម-នាម</th>
+                                <th rowspan="2">ភេទ</th>
+                                ${days.map(d => `<th class="att-day-col ${d.isHoliday ? 'att-holiday' : ''}">${d.label}</th>`).join('')}
+                                <th rowspan="2"><div class="att-vhead">មានច្បាប់</div></th>
+                                <th rowspan="2"><div class="att-vhead">ឥតច្បាប់</div></th>
+                                <th rowspan="2"><div class="att-vhead">សរុប</div></th>
+                            </tr>
+                            <tr>${days.map(d => `<th class="att-day-col ${d.isHoliday ? 'att-holiday' : ''}" style="font-size:0.65rem;">${d.weekday}</th>`).join('')}</tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                </div>
+                <div class="att-summary-bar">
+                    <div>
+                        <div class="att-summary-item"><span>ចំនួនពេលសរុបដែលសិស្សត្រូវមករៀន</span><span style="font-style:normal;font-weight:800;padding:0 10px;">${totalReq}</span></div>
+                        <div class="att-summary-item" style="margin-top:4px;padding-left:20px;"><span>ពេលដែលសិស្សត្រូវរៀនក្នុង១ខែ</span><span style="font-style:normal;font-weight:800;padding:0 14px;">${studyDays}</span></div>
+                    </div>
+                    <div class="att-summary-item"><span>ចំនួនពេលអវត្តមាន</span><span class="att-summary-box">${grandAbsent}</span></div>
+                    <div class="att-summary-item"><span>ចំនួនពេលដែលសិស្សបានមករៀនពិតប្រាកដ</span><span class="att-summary-box">${actualPres}</span></div>
+                    <div class="att-summary-item"><span>ភាគរយនៃអវត្តមាន</span><span class="att-summary-box">${pct}%</span></div>
+                </div>
+            `;
+        }
+
+        function toggleHol(day) {
+            const { key } = getKey();
+            const m = ensureMonth(key);
+            const i = m.holidays.indexOf(day);
+            if (i >= 0) m.holidays.splice(i, 1); else m.holidays.push(day);
+            renderMonitorSheet();
+        }
+        function cycleMark(sid, day) {
+            const { key } = getKey();
+            const m = ensureMonth(key);
+            const k = `${sid}_${day}`;
+            const c = m.marks[k] || '';
+            if (c === '') m.marks[k] = 'ច';
+            else if (c === 'ច') m.marks[k] = 'អ';
+            else delete m.marks[k];
+            renderMonitorSheet();
+        }
+        async function saveMonitorSheet() {
+            const res = await fetch('/api/student-portal/monthly-attendance/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ monthlyAttendanceJson: JSON.stringify(MON.monthlyAtt || {}) })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                Swal.fire({ icon: 'success', title: 'រក្សាទុកជោគជ័យ!', text: 'អវត្តមានត្រូវបានបញ្ជូនទៅក្នុងប្រព័ន្ធគ្រូបន្ទុកថ្នាក់រួចរាល់!', timer: 1600, showConfirmButton: false });
+            } else {
+                Swal.fire('បរាជ័យ', data.error || 'មិនអាចរក្សាទុកបានទេ', 'error');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadMonitorData);
+    </script>
+</body>
+</html>

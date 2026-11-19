@@ -47,6 +47,8 @@ public class HomeroomClassAdmin {
     @Column(columnDefinition = "TEXT")
     private String monthlyAttendanceJson; // បញ្ជីស្រង់អវត្តមានតាមខែ (ថ្ងៃឈប់សម្រាក + ច/អ តាមខែនីមួយៗ)
 
+    private Long monitorStudentId; // អត្តលេខ ID សិស្សប្រធានថ្នាក់ដែលគ្រូបន្ទុកផ្តល់សិទ្ធិស្រង់អវត្តមានតាមខែ
+
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public HomeroomClassAdmin() {}
@@ -89,6 +91,9 @@ public class HomeroomClassAdmin {
 
     public String getMonthlyAttendanceJson() { return monthlyAttendanceJson; }
     public void setMonthlyAttendanceJson(String monthlyAttendanceJson) { this.monthlyAttendanceJson = monthlyAttendanceJson; }
+
+    public Long getMonitorStudentId() { return monitorStudentId; }
+    public void setMonitorStudentId(Long monitorStudentId) { this.monitorStudentId = monitorStudentId; }
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }

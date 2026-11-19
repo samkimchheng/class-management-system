@@ -2299,7 +2299,45 @@ class ClassroomApplicationTests {
                 .andExpect(jsonPath("$.subjects").isArray())
                 .andExpect(jsonPath("$.students").isArray());
 
-        // 5. Existing teacher tables remain 100% untouched
+        // 5. Class Monitor delegation & security boundary test
+        List<Student> clsStudents = studentRepository.findByClassNameAndAccountId(cls, teacher.getId());
+        if (clsStudents.size() >= 2) {
+            Student monitor = clsStudents.get(0);
+            Student regular = clsStudents.get(1);
+
+            // Teacher delegates monthly attendance to monitor
+            mockMvc.perform(post("/api/homeroom/admin/save")
+                    .sessionAttr("ACCOUNT_ID", teacher.getId())
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .content("{\"className\":\"" + cls + "\",\"academicYear\":\"២០២៦-២០២៧\",\"monitorStudentId\":" + monitor.getId() + "}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true));
+
+            // Monitor can open page and save monthly attendance
+            mockMvc.perform(get("/test/monthly-attendance")
+                    .sessionAttr("loggedInStudent", monitor))
+                    .andExpect(status().isOk())
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.view().name("student-monthly-attendance"));
+
+            mockMvc.perform(post("/api/student-portal/monthly-attendance/save")
+                    .sessionAttr("loggedInStudent", monitor)
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .content("{\"monthlyAttendanceJson\":\"{\\\"2026-11\\\":{\\\"holidays\\\":[],\\\"marks\\\":{}}}\"}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true));
+
+            // Regular student is strictly blocked (redirect on page, 403 on API)
+            mockMvc.perform(get("/test/monthly-attendance")
+                    .sessionAttr("loggedInStudent", regular))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/test/take"));
+
+            mockMvc.perform(get("/api/student-portal/monthly-attendance")
+                    .sessionAttr("loggedInStudent", regular))
+                    .andExpect(status().isForbidden());
+        }
+
+        // 6. Existing teacher tables remain 100% untouched
         assertEquals(studentsBefore, studentRepository.count(), "Existing students count must not change");
         assertEquals(scoresBefore, scoreRepository.count(), "Existing scores count must not change");
         assertEquals(lessonsBefore, lessonRepository.count(), "Existing lessons count must not change");

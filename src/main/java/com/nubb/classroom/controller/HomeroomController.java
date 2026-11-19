@@ -232,6 +232,7 @@ public class HomeroomController {
         adminDto.put("meetingLogsJson", admin != null ? admin.getMeetingLogsJson() : null);
         adminDto.put("configJson", admin != null ? admin.getConfigJson() : null);
         adminDto.put("monthlyAttendanceJson", admin != null ? admin.getMonthlyAttendanceJson() : null);
+        adminDto.put("monitorStudentId", admin != null ? admin.getMonitorStudentId() : null);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("teacher", teacherInfo);
@@ -578,10 +579,124 @@ public class HomeroomController {
         if (payload.containsKey("meetingLogsJson")) admin.setMeetingLogsJson(strOrNull(payload.get("meetingLogsJson")));
         if (payload.containsKey("configJson")) admin.setConfigJson(strOrNull(payload.get("configJson")));
         if (payload.containsKey("monthlyAttendanceJson")) admin.setMonthlyAttendanceJson(strOrNull(payload.get("monthlyAttendanceJson")));
+        if (payload.containsKey("monitorStudentId")) {
+            Object mObj = payload.get("monitorStudentId");
+            if (mObj == null || String.valueOf(mObj).trim().isEmpty()) {
+                admin.setMonitorStudentId(null);
+            } else {
+                admin.setMonitorStudentId(Long.parseLong(String.valueOf(mObj).trim()));
+            }
+        }
         admin.setUpdatedAt(LocalDateTime.now());
 
         homeroomClassAdminRepository.save(admin);
         return ResponseEntity.ok(Map.of("success", true, "message", "រក្សាទុកទិន្នន័យរដ្ឋបាលថ្នាក់ជោគជ័យ"));
+    }
+
+    // =========================================================================
+    // CLASS MONITOR (ប្រធានថ្នាក់) DELEGATED MONTHLY ATTENDANCE PORTAL
+    // Strictly scoped ONLY to the 1 student designated by the homeroom teacher
+    // =========================================================================
+
+    private HomeroomClassAdmin findAuthorizedMonitorAdmin(Student stu) {
+        if (stu == null || stu.getId() == null) return null;
+        List<HomeroomClassAdmin> list = homeroomClassAdminRepository.findByMonitorStudentId(stu.getId());
+        for (HomeroomClassAdmin adm : list) {
+            if (Objects.equals(adm.getAccountId(), stu.getAccountId())
+                    && Objects.equals(adm.getClassName(), stu.getClassName())) {
+                return adm;
+            }
+        }
+        return list.isEmpty() ? null : list.get(0);
+    }
+
+    @GetMapping("/test/monthly-attendance")
+    public String classMonitorMonthlyAttendancePage(Model model) {
+        Student stu = (Student) session.getAttribute("loggedInStudent");
+        if (stu == null) {
+            return "redirect:/test";
+        }
+        if (stu.getId() != null) {
+            stu = studentRepository.findById(stu.getId()).orElse(stu);
+            session.setAttribute("loggedInStudent", stu);
+        }
+        HomeroomClassAdmin admin = findAuthorizedMonitorAdmin(stu);
+        if (admin == null) {
+            return "redirect:/test/take";
+        }
+        model.addAttribute("student", stu);
+        model.addAttribute("className", admin.getClassName());
+        model.addAttribute("academicYear", admin.getAcademicYear() != null ? admin.getAcademicYear() : "២០២៦-២០២៧");
+        return "student-monthly-attendance";
+    }
+
+    @GetMapping("/api/student-portal/monthly-attendance")
+    @ResponseBody
+    public ResponseEntity<?> getMonitorMonthlyAttendance() {
+        Student stu = (Student) session.getAttribute("loggedInStudent");
+        if (stu == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        HomeroomClassAdmin admin = findAuthorizedMonitorAdmin(stu);
+        if (admin == null) {
+            return ResponseEntity.status(403).body(Map.of("error", "អ្នកមិនមានសិទ្ធិប្រធានថ្នាក់សម្រាប់ស្រង់អវត្តមានទេ"));
+        }
+
+        Long accountId = admin.getAccountId();
+        String className = admin.getClassName();
+        String activeYear = admin.getAcademicYear() != null ? admin.getAcademicYear() : "២០២៦-២០២៧";
+        Account teacher = accountId != null ? accountRepository.findById(accountId).orElse(null) : null;
+
+        List<Student> students = studentRepository.findByClassNameAndAccountIdAndAcademicYear(className, accountId, activeYear);
+        if (students.isEmpty()) {
+            students = studentRepository.findByClassNameAndAccountId(className, accountId);
+        }
+        students.sort(Comparator.comparing(s -> s.getName() != null ? s.getName() : ""));
+
+        List<Map<String, Object>> studentDtos = new ArrayList<>();
+        for (Student s : students) {
+            Map<String, Object> dto = new LinkedHashMap<>();
+            dto.put("id", s.getId());
+            dto.put("name", s.getName() != null ? s.getName() : "");
+            dto.put("gender", s.getGender() != null ? s.getGender() : "");
+            dto.put("studentCode", s.getStudentCode() != null ? s.getStudentCode() : "");
+            studentDtos.add(dto);
+        }
+
+        Map<String, Object> teacherInfo = new LinkedHashMap<>();
+        teacherInfo.put("fullName", teacher != null && teacher.getFullName() != null ? teacher.getFullName() : "");
+        teacherInfo.put("schoolName", teacher != null && teacher.getSchoolName() != null ? teacher.getSchoolName() : "វិទ្យាល័យ");
+        teacherInfo.put("principalName", teacher != null && teacher.getPrincipalName() != null ? teacher.getPrincipalName() : "");
+
+        Map<String, Object> res = new LinkedHashMap<>();
+        res.put("className", className);
+        res.put("academicYear", activeYear);
+        res.put("monitorName", stu.getName());
+        res.put("teacher", teacherInfo);
+        res.put("students", studentDtos);
+        res.put("monthlyAttendanceJson", admin.getMonthlyAttendanceJson());
+        res.put("configJson", admin.getConfigJson());
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/api/student-portal/monthly-attendance/save")
+    @ResponseBody
+    @Transactional
+    public ResponseEntity<?> saveMonitorMonthlyAttendance(@RequestBody Map<String, Object> payload) {
+        Student stu = (Student) session.getAttribute("loggedInStudent");
+        if (stu == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        HomeroomClassAdmin admin = findAuthorizedMonitorAdmin(stu);
+        if (admin == null) {
+            return ResponseEntity.status(403).body(Map.of("error", "អ្នកមិនមានសិទ្ធិប្រធានថ្នាក់សម្រាប់ស្រង់អវត្តមានទេ"));
+        }
+        if (payload.containsKey("monthlyAttendanceJson")) {
+            admin.setMonthlyAttendanceJson(strOrNull(payload.get("monthlyAttendanceJson")));
+            admin.setUpdatedAt(LocalDateTime.now());
+            homeroomClassAdminRepository.save(admin);
+        }
+        return ResponseEntity.ok(Map.of("success", true, "message", "ប្រធានថ្នាក់បានរក្សាទុកអវត្តមានតាមខែជោគជ័យ!"));
     }
 
     private double parseDouble(Object obj, double fallback) {
