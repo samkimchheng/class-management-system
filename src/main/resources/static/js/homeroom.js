@@ -1199,16 +1199,16 @@ function renderKearikPages(singleStudentId) {
                             <table class="kearik-table" style="border:none;">
                                 <tbody>
                                     <tr>
-                                        <td class="moul" style="border-top:none;border-left:none;font-size:0.8rem;padding:5px;">${esc(school)}</td>
-                                        <td style="border-top:none;border-right:none;font-weight:800;width:36%;font-size:0.8rem;">សិស្សសរុប ${totalStuKh} នាក់</td>
+                                        <td class="moul" style="border-top:none;border-left:none;font-size:0.74rem;padding:4px 5px;white-space:nowrap;">${esc(school)}</td>
+                                        <td style="border-top:none;border-right:none;font-weight:800;width:30%;font-size:0.78rem;white-space:nowrap;">សិស្សសរុប ${totalStuKh} នាក់</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="2" class="moul" style="border-left:none;border-right:none;font-size:0.82rem;padding:5px;">
+                                        <td colspan="2" class="moul" style="border-left:none;border-right:none;font-size:0.8rem;padding:4px;">
                                             ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="2" class="moul" style="border-left:none;border-right:none;font-size:0.8rem;padding:4px;">ការវាយតម្លៃ</td>
+                                        <td colspan="2" class="moul" style="border-left:none;border-right:none;font-size:0.78rem;padding:3px;">ការវាយតម្លៃ</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1240,29 +1240,29 @@ function renderKearikPages(singleStudentId) {
                                 </tbody>
                             </table>
 
-                            <div style="padding:8px 10px;border-bottom:1px solid #000;font-size:0.78rem;">
-                                <div class="moul" style="text-align:center;margin-bottom:12px;">លទ្ធផលនៃការប្រឡងបញ្ចប់ភូមិសិក្សា ( ជាប់ ឬ ធ្លាក់ )</div>
-                                <div>មណ្ឌលប្រឡង..........................................ខេត្ត.............បន្ទប់.......លេខតុ.......</div>
+                            <div style="padding:5px 8px;border-bottom:1px solid #000;font-size:0.72rem;">
+                                <div class="moul" style="text-align:center;margin-bottom:6px;font-size:0.76rem;">លទ្ធផលនៃការប្រឡងបញ្ចប់ភូមិសិក្សា ( ជាប់ ឬ ធ្លាក់ )</div>
+                                <div style="white-space:nowrap;">មណ្ឌលប្រឡង..........................................ខេត្ត.............បន្ទប់.......លេខតុ.......</div>
                             </div>
                         </div>
 
-                        <div style="padding:10px 14px;display:flex;flex-direction:column;justify-content:space-between;flex:1;font-size:0.78rem;">
+                        <div style="padding:6px 10px 8px;display:flex;flex-direction:column;justify-content:space-between;flex:1;font-size:0.75rem;">
                             <div style="text-align:center;">
-                                <div class="moul" style="font-size:0.8rem;">មូលវិចារ គ្រូទទួលបន្ទុកថ្នាក់</div>
-                                <div style="min-height:36px;padding:6px 4px;font-style:italic;color:#1e293b;">${esc(st.teacherComment || '')}</div>
+                                <div class="moul" style="font-size:0.78rem;">មូលវិចារ គ្រូទទួលបន្ទុកថ្នាក់</div>
+                                <div style="min-height:18px;padding:2px 4px;font-style:italic;color:#1e293b;">${esc(st.teacherComment || '')}</div>
                                 <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
-                                <div class="moul" style="margin-top:4px;">គ្រូបន្ទុកថ្នាក់</div>
-                                <div style="min-height:42px;"></div>
-                                <div class="moul" style="padding-left:56px;font-size:0.82rem;">${esc(teacherName)}</div>
+                                <div class="moul" style="margin-top:2px;">គ្រូបន្ទុកថ្នាក់</div>
+                                <div style="min-height:28px;"></div>
+                                <div class="moul" style="padding-left:56px;font-size:0.78rem;">${esc(teacherName)}</div>
                             </div>
 
-                            <div style="text-align:center;margin-top:14px;">
-                                <div class="moul" style="font-size:0.8rem;">មូលវិចារ នាយកសាលា</div>
-                                <div style="min-height:30px;"></div>
+                            <div style="text-align:center;margin-top:6px;">
+                                <div class="moul" style="font-size:0.78rem;">មូលវិចារ នាយកសាលា</div>
+                                <div style="min-height:14px;"></div>
                                 <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
-                                <div class="moul" style="margin-top:4px;">នាយកសាលា</div>
-                                <div style="min-height:50px;"></div>
-                                <div class="moul" style="padding-left:56px;font-size:0.82rem;">${esc(principal)}</div>
+                                <div class="moul" style="margin-top:2px;">នាយកសាលា</div>
+                                <div style="min-height:32px;"></div>
+                                <div class="moul" style="padding-left:56px;font-size:0.78rem;">${esc(principal)}</div>
                             </div>
                         </div>
                     </div>
@@ -1313,30 +1313,37 @@ async function downloadReportDocsPdf() {
             const prevBorder = el.style.border;
             const prevRadius = el.style.borderRadius;
             const prevMargin = el.style.marginBottom;
+            const prevPadding = el.style.padding;
+            const prevWidth = el.style.width;
             el.style.border = 'none';
             el.style.borderRadius = '0';
             el.style.marginBottom = '0';
+            el.style.padding = '4px';
+            el.style.width = '1120px';
 
             const canvas = await html2canvas(el, {
                 scale: pages.length > 15 ? 1.5 : 2,
                 useCORS: true,
                 backgroundColor: '#ffffff',
                 logging: false,
+                width: 1120,
                 windowWidth: 1200
             });
 
             el.style.border = prevBorder;
             el.style.borderRadius = prevRadius;
             el.style.marginBottom = prevMargin;
+            el.style.padding = prevPadding;
+            el.style.width = prevWidth;
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.94);
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
             const imgW = canvas.width;
             const imgH = canvas.height;
             const ratio = Math.min(maxW / imgW, maxH / imgH);
             const drawW = imgW * ratio;
             const drawH = imgH * ratio;
             const offsetX = margin + (maxW - drawW) / 2;
-            const offsetY = margin;
+            const offsetY = margin + (maxH - drawH) / 2;
 
             if (i > 0) pdf.addPage('a4', 'landscape');
             pdf.addImage(imgData, 'JPEG', offsetX, offsetY, drawW, drawH, undefined, 'FAST');
