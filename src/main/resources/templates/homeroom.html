@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធការងារគ្រូបន្ទុកថ្នាក់ (Homeroom) - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&family=Moul&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --indigo: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --bg: #f1f5f9;
+            --sidebar-width: 260px;
+        }
+        * { box-sizing: border-box; font-family: 'Kantumruy Pro', 'Battambang', sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--dark); display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width); background: #1e293b; color: #fff;
+            display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0;
+            z-index: 200; box-shadow: 2px 0 12px rgba(0,0,0,0.18); transition: transform 0.25s ease;
+        }
+        .sidebar-header { padding: 20px 16px; text-align: center; background: #0f172a; border-bottom: 1px solid #334155; }
+        .sidebar-header h2 { margin: 0; font-size: 1.25rem; color: #38bdf8; }
+        .sidebar-header .user-sub { font-size: 0.82rem; color: #94a3b8; margin-top: 4px; }
+        .nav-menu { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1; }
+        .nav-item { border-bottom: 1px solid #334155; }
+        .nav-link {
+            display: flex; align-items: center; gap: 10px; padding: 12px 18px;
+            color: #cbd5e1; text-decoration: none; font-size: 0.92rem; font-weight: 600;
+            border-left: 4px solid transparent; transition: all 0.2s;
+        }
+        .nav-link:hover { background: #334155; color: #fff; }
+        .nav-item.active .nav-link { background: #334155; color: #fff; border-left-color: #38bdf8; }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.55); z-index: 190; }
+
+        /* Main layout */
+        .main-content { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .topbar {
+            background: #fff; border-bottom: 1px solid var(--border); padding: 12px 22px;
+            display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            position: sticky; top: 0; z-index: 100; flex-wrap: wrap;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .btn-hamburger {
+            display: none; background: #1e293b; color: #fff; border: none; border-radius: 8px;
+            padding: 8px 12px; font-size: 1.1rem; cursor: pointer;
+        }
+        .topbar-title { font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px; }
+        .class-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .class-bar select {
+            padding: 7px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px;
+            font-weight: 700; font-size: 0.92rem; background: #f8fafc; color: #0f172a;
+        }
+
+        .content { padding: 18px 22px 40px; max-width: 1520px; width: 100%; margin: 0 auto; }
+
+        /* Hero Banner */
+        .hr-hero {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0ea5e9 100%);
+            border-radius: 16px; padding: 18px 22px; color: #fff; margin-bottom: 18px;
+            box-shadow: 0 10px 25px rgba(37,99,235,0.22);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+        }
+        .hr-hero h1 { margin: 0; font-size: 1.32rem; font-weight: 800; }
+        .hr-hero p { margin: 4px 0 0; font-size: 0.88rem; opacity: 0.92; }
+        .hr-badge {
+            background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35);
+            padding: 6px 12px; border-radius: 999px; font-size: 0.82rem; font-weight: 700;
+        }
+
+        /* Tabs */
+        .hr-tabs {
+            display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 16px;
+            scrollbar-width: thin;
+        }
+        .hr-tab {
+            border: 1.5px solid #cbd5e1; background: #fff; color: #334155;
+            padding: 9px 14px; border-radius: 10px; font-weight: 700; font-size: 0.86rem;
+            cursor: pointer; white-space: nowrap; transition: all 0.18s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .hr-tab:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
+        .hr-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 12px rgba(37,99,235,0.28); }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* Cards & Panels */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .kpi-card {
+            background: #fff; border: 1px solid var(--border); border-radius: 14px;
+            padding: 15px 18px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+        }
+        .kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0; }
+        .kpi-val { font-size: 1.35rem; font-weight: 800; color: #0f172a; line-height: 1.2; }
+        .kpi-lbl { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+
+        .panel {
+            background: #fff; border: 1px solid var(--border); border-radius: 14px;
+            padding: 18px 20px; margin-bottom: 18px; box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+        }
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+            gap: 10px; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2px solid #f1f5f9;
+        }
+        .panel-title { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+
+        /* Buttons */
+        .btn {
+            border: none; border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 0.85rem;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s;
+            text-decoration: none;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: #059669; }
+        .btn-warning { background: var(--warning); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-outline { background: #fff; color: #334155; border: 1.5px solid #cbd5e1; }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
+        .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+
+        /* Tables */
+        .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+        table.hr-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; background: #fff; }
+        table.hr-table th, table.hr-table td { border: 1px solid #e2e8f0; padding: 7px 9px; text-align: center; vertical-align: middle; }
+        table.hr-table th { background: #f8fafc; font-weight: 800; color: #1e293b; white-space: nowrap; }
+        table.hr-table td.text-left { text-align: left; }
+        table.hr-table tbody tr:hover { background: #f8fafc; }
+        .score-input {
+            width: 62px; padding: 5px 4px; text-align: center; border: 1px solid #cbd5e1;
+            border-radius: 6px; font-weight: 700; font-size: 0.86rem;
+        }
+        .score-input:focus { outline: none; border-color: var(--primary); background: #eff6ff; }
+        .form-control {
+            padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.86rem; width: 100%;
+        }
+
+        /* Badges */
+        .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-weight: 800; font-size: 0.78rem; }
+        .badge-A { background: #dcfce7; color: #166534; }
+        .badge-B { background: #dbeafe; color: #1e40af; }
+        .badge-C { background: #e0e7ff; color: #3730a3; }
+        .badge-D { background: #fef3c7; color: #92400e; }
+        .badge-E { background: #ffedd5; color: #9a3412; }
+        .badge-F { background: #fee2e2; color: #991b1b; }
+
+        /* Official MoEYS Print Sheets */
+        .moul { font-family: 'Moul', 'Kantumruy Pro', serif; }
+        .print-sheet {
+            background: #fff; border: 1px solid #cbd5e1; border-radius: 12px;
+            padding: 24px 28px; margin-bottom: 20px; color: #0f172a;
+        }
+        .moeys-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; font-size: 0.9rem; }
+        .moeys-kingdom { text-align: center; flex: 1; }
+        .moeys-kingdom .moul { font-size: 1rem; color: #0f172a; }
+        .moeys-ministry { text-align: left; font-weight: 700; line-height: 1.6; }
+
+        /* Certificate Box */
+        .cert-frame {
+            border: 8px double #1d4ed8; padding: 26px 32px; border-radius: 12px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            position: relative; max-width: 920px; margin: 0 auto 20px;
+        }
+        .cert-frame.theme-red { border-color: #b91c1c; }
+        .cert-frame.theme-gold { border-color: #b45309; background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%); }
+
+        /* Honor Roll Cards */
+        .honor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-top: 16px; }
+        .honor-card {
+            border: 2px solid #f59e0b; border-radius: 14px; padding: 14px; text-align: center;
+            background: linear-gradient(180deg, #fffbeb 0%, #fff 100%);
+        }
+        .honor-photo {
+            width: 96px; height: 118px; object-fit: cover; border-radius: 8px;
+            border: 2px solid #d97706; background: #e2e8f0; margin: 0 auto 8px; display: block;
+        }
+
+        /* ID Cards Grid */
+        .idcard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+        .idcard {
+            border: 2px solid #1d4ed8; border-radius: 12px; overflow: hidden; background: #fff;
+            box-shadow: 0 4px 12px rgba(15,23,42,0.08); page-break-inside: avoid;
+        }
+        .idcard-head { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff; padding: 8px 12px; text-align: center; }
+        .idcard-body { display: flex; gap: 12px; padding: 12px; font-size: 0.8rem; line-height: 1.5; }
+        .idcard-photo { width: 82px; height: 102px; object-fit: cover; border-radius: 6px; border: 1.5px solid #94a3b8; background: #f1f5f9; flex-shrink: 0; }
+
+        /* Seating Grid */
+        .seating-board {
+            background: #14532d; color: #fff; text-align: center; padding: 10px; border-radius: 8px;
+            font-weight: 800; max-width: 420px; margin: 0 auto 18px; letter-spacing: 0.5px;
+        }
+        .seating-grid { display: grid; gap: 10px; }
+        .seat-box {
+            border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 8px; background: #f8fafc;
+            text-align: center; min-height: 68px; display: flex; flex-direction: column; justify-content: center; gap: 4px;
+        }
+        .seat-box select { width: 100%; font-size: 0.8rem; padding: 4px; border-radius: 6px; border: 1px solid #cbd5e1; }
+
+        /* Print Mode */
+        @media print {
+            body { background: #fff !important; display: block !important; }
+            .sidebar, .sidebar-overlay, .topbar, .hr-hero, .hr-tabs, .no-print { display: none !important; }
+            .main-content { margin-left: 0 !important; width: 100% !important; }
+            .content { padding: 0 !important; max-width: 100% !important; }
+            .tab-pane { display: none !important; }
+            .tab-pane.active { display: block !important; }
+            .panel { border: none !important; box-shadow: none !important; padding: 0 !important; }
+            .print-sheet { border: none !important; padding: 8px !important; }
+            .page-break { page-break-after: always; }
+        }
+
+        /* Mobile Responsive */
+        @media screen and (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; }
+            .main-content { margin-left: 0; width: 100%; }
+            .btn-hamburger { display: inline-flex; }
+            .content { padding: 12px 10px 30px; }
+            .topbar { padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>គ្រប់គ្រងថ្នាក់រៀន</h2>
+            <div class="user-sub" th:text="'សួស្តី, ' + ${fullName}">សួស្តី, លោកគ្រូ</div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/" class="nav-link"><span>🏠</span> <span>ទំព័រដើម</span></a></li>
+            <li class="nav-item active"><a href="/homeroom" class="nav-link"><span>🎓</span> <span>គ្រូបន្ទុកថ្នាក់ (Homeroom)</span></a></li>
+            <li class="nav-item"><a href="/profile" class="nav-link"><span>👤</span> <span>បំពេញព័ត៌មានផ្ទាល់ខ្លួន</span></a></li>
+            <li class="nav-item"><a href="/certificate" class="nav-link"><span>📜</span> <span>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span></a></li>
+            <li class="nav-item"><a href="/classrooms" class="nav-link"><span>🏫</span> <span>បញ្ជីថ្នាក់រៀនខ្ញុំ</span></a></li>
+            <li class="nav-item"><a href="/students" class="nav-link"><span>👥</span> <span>បញ្ជីឈ្មោះសិស្ស</span></a></li>
+            <li class="nav-item"><a href="/attendance" class="nav-link"><span>📅</span> <span>បញ្ជីអវត្តមាន</span></a></li>
+            <li class="nav-item"><a href="/scores" class="nav-link"><span>📊</span> <span>បញ្ជីពិន្ទុ</span></a></li>
+            <li class="nav-item"><a href="/statistics" class="nav-link"><span>📈</span> <span>ស្ថិតិសិស្ស</span></a></li>
+            <li class="nav-item"><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
+            <li class="nav-item"><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
+            <li class="nav-item"><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
+            <li class="nav-item"><a href="/logout" class="nav-link" style="color:#fca5a5;"><span>🚪</span> <span>ចាកចេញ</span></a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="btn-hamburger" onclick="toggleSidebar(true)">☰</button>
+                <h1 class="topbar-title">🎓 ប្រព័ន្ធការងារគ្រូបន្ទុកថ្នាក់ (ស្តង់ដារក្រសួងអប់រំ)</h1>
+            </div>
+            <div class="class-bar">
+                <label style="font-weight:700;font-size:0.86rem;">ថ្នាក់៖</label>
+                <select id="hrClassSelect" onchange="loadHomeroomData()">
+                    <option th:each="c : ${classrooms}" th:value="${c.className}" th:text="${c.className}"
+                            th:selected="${c.className == selectedClass}"></option>
+                </select>
+                <input type="hidden" id="hrAcademicYear" th:value="${academicYear}">
+                <span class="hr-badge" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;" th:text="'ឆ្នាំសិក្សា ' + ${academicYear}">ឆ្នាំសិក្សា ២០២៦-២០២៧</span>
+                <button class="btn btn-outline btn-sm" onclick="downloadJsonBackup()">💾 រក្សាទុកបម្រុង</button>
+            </div>
+        </header>
+
+        <main class="content">
+            <!-- Hero -->
+            <div class="hr-hero">
+                <div>
+                    <h1>ប្រព័ន្ធគ្រប់គ្រងថ្នាក់សម្រាប់គ្រូបន្ទុកថ្នាក់ (Homeroom Teacher Suite)</h1>
+                    <p>រក្សាទុកទិន្នន័យដាច់ដោយឡែក ១០០% — មិនប៉ះពាល់ទិន្នន័យពិន្ទុ ឬមេរៀនចាស់របស់លោកគ្រូឡើយ ហើយទាញឈ្មោះសិស្ស និងអវត្តមានមកប្រើដោយស្វ័យប្រវត្តិ។</p>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <span class="hr-badge">✅ ពិន្ទុគ្រប់មុខវិជ្ជា ១២ខែ + ឆមាស</span>
+                    <span class="hr-badge">✅ ប័ណ្ណសរសើរ &amp; កិត្តិយស</span>
+                    <span class="hr-badge">✅ រដ្ឋបាលថ្នាក់ &amp; GEIP</span>
+                </div>
+            </div>
+
+            <!-- 9 Tabs -->
+            <div class="hr-tabs" id="hrTabs">
+                <button class="hr-tab active" data-tab="tab-setup" onclick="switchTab('tab-setup', this)">🏠 ១. រៀបចំថ្នាក់ &amp; មុខវិជ្ជា</button>
+                <button class="hr-tab" data-tab="tab-scores" onclick="switchTab('tab-scores', this)">📝 ២. ស្រង់ពិន្ទុគ្រប់មុខវិជ្ជា</button>
+                <button class="hr-tab" data-tab="tab-ranks" onclick="switchTab('tab-ranks', this)">🏆 ៣. ចំណាត់ថ្នាក់ ឆមាស &amp; ប្រចាំឆ្នាំ</button>
+                <button class="hr-tab" data-tab="tab-honor" onclick="switchTab('tab-honor', this)">🌟 ៤. តារាងកិត្តិយស &amp; ប័ណ្ណសរសើរ</button>
+                <button class="hr-tab" data-tab="tab-reports" onclick="switchTab('tab-reports', this)">📋 ៥. ព្រឹត្តិបត្រពិន្ទុ &amp; តាមដាន</button>
+                <button class="hr-tab" data-tab="tab-cards" onclick="switchTab('tab-cards', this)">🪪 ៦. កាតសិស្ស &amp; សលាកបត្រ</button>
+                <button class="hr-tab" data-tab="tab-admin" onclick="switchTab('tab-admin', this)">🧹 ៧. វេនសម្អាត ប្លង់តុ &amp; យុវជន</button>
+                <button class="hr-tab" data-tab="tab-assets" onclick="switchTab('tab-assets', this)">📦 ៨. សារពើភ័ណ្ឌ &amp; ខ្ចីសៀវភៅ</button>
+                <button class="hr-tab" data-tab="tab-geip" onclick="switchTab('tab-geip', this)">📈 ៩. ផែនការ GEIP &amp; កំណត់ហេតុ</button>
+            </div>
+
+            <!-- ==================== TAB 1: DASHBOARD & SUBJECTS ==================== -->
+            <section id="tab-setup" class="tab-pane active">
+                <div class="kpi-grid" id="hrKpiGrid"></div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">📚 បញ្ជីមុខវិជ្ជា និងឈ្មោះគ្រូបង្រៀនតាមមុខវិជ្ជា (Subject Teachers)</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;" class="no-print">
+                            <button class="btn btn-outline btn-sm" onclick="applyPreset('G7_9')">⚡ ថ្នាក់ទី៧-៩</button>
+                            <button class="btn btn-outline btn-sm" onclick="applyPreset('G10')">⚡ ថ្នាក់ទី១០</button>
+                            <button class="btn btn-outline btn-sm" onclick="applyPreset('G11_12_SCI')">⚡ ថ្នាក់១១-១២ វិទ្យាសាស្ត្រ</button>
+                            <button class="btn btn-outline btn-sm" onclick="applyPreset('G11_12_SOC')">⚡ ថ្នាក់១១-១២ សង្គម</button>
+                            <button class="btn btn-primary btn-sm" onclick="openAddSubjectModal()">➕ បន្ថែមមុខវិជ្ជា</button>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="hr-table">
+                            <thead>
+                                <tr>
+                                    <th>ល.រ</th>
+                                    <th>ឈ្មោះមុខវិជ្ជា</th>
+                                    <th>ឈ្មោះគ្រូបង្រៀនតាមមុខវិជ្ជា</th>
+                                    <th>ពិន្ទុពេញ</th>
+                                    <th>មេគុណ</th>
+                                    <th class="no-print">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subjectsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel no-print">
+                    <div class="panel-header">
+                        <h3 class="panel-title">⚙️ ការកំណត់ឯកសារផ្លូវការសម្រាប់ថ្នាក់នេះ (ប្រើលើប័ណ្ណសរសើរ កាតសិស្ស ព្រឹត្តិបត្រ)</h3>
+                        <button class="btn btn-success btn-sm" onclick="saveClassConfig()">💾 រក្សាទុកការកំណត់</button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;">មន្ទីរអប់រំ យុវជន និងកីឡា (ខេត្ត/រាជធានី)៖</label>
+                            <input type="text" id="cfgMinistry" class="form-control" placeholder="ឧ. មន្ទីរអប់រំ យុវជន និងកីឡា ខេត្តពោធិ៍សាត់">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;">ឈ្មោះសាលារៀន៖</label>
+                            <input type="text" id="cfgSchool" class="form-control" placeholder="ឧ. វិទ្យាល័យ ...">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;">ឈ្មោះនាយកសាលា៖</label>
+                            <input type="text" id="cfgPrincipal" class="form-control" placeholder="ឈ្មោះនាយកសាលា">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;">ថ្ងៃខែឆ្នាំចន្ទគតិ (លើឯកសារព្រីន)៖</label>
+                            <input type="text" id="cfgLunarDate" class="form-control" placeholder="ថ្ងៃ... ...កើត ខែ... ឆ្នាំ... ព.ស. ២៥...">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;">ទីកន្លែង និងកាលបរិច្ឆេទសុរិយគតិ៖</label>
+                            <input type="text" id="cfgSolarDate" class="form-control" placeholder="..., ថ្ងៃទី ... ខែ ... ឆ្នាំ ២០២៦">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 2: MULTI-SUBJECT SCORES ==================== -->
+            <section id="tab-scores" class="tab-pane">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h3 class="panel-title">📝 តារាងស្រង់ពិន្ទុគ្រប់មុខវិជ្ជា</h3>
+                            <select id="scorePeriodSelect" class="form-control" style="width:auto;font-weight:700;" onchange="renderScoreEntryTable()">
+                                <option value="SEC">តេស្តដើមឆ្នាំ (SEC)</option>
+                                <option value="M1" selected>ខែវិច្ឆិកា (M1)</option>
+                                <option value="M2">ខែធ្នូ (M2)</option>
+                                <option value="M3">ខែមករា (M3)</option>
+                                <option value="M4">ខែកុម្ភៈ (M4)</option>
+                                <option value="M5">ខែមីនា (M5)</option>
+                                <option value="EXAM_S1">ប្រឡងឆមាសលើកទី១ (EXAM_S1)</option>
+                                <option value="M6">ខែមេសា (M6)</option>
+                                <option value="M7">ខែឧសភា (M7)</option>
+                                <option value="M8">ខែមិថុនា (M8)</option>
+                                <option value="M9">ខែកក្កដា (M9)</option>
+                                <option value="M10">ខែសីហា (M10)</option>
+                                <option value="EXAM_S2">ប្រឡងឆមាសលើកទី២ (EXAM_S2)</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;" class="no-print">
+                            <button class="btn btn-success btn-sm" onclick="saveCurrentPeriodScores()">💾 រក្សាទុកពិន្ទុទាំងអស់</button>
+                            <button class="btn btn-outline btn-sm" onclick="exportScoresExcel()">📊 Export Excel</button>
+                            <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ ព្រីនតារាងពិន្ទុ</button>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="hr-table" id="scoreEntryTable">
+                            <thead id="scoreEntryHead"></thead>
+                            <tbody id="scoreEntryBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 3: RANKINGS, SEMESTERS & ANNUAL ==================== -->
+            <section id="tab-ranks" class="tab-pane">
+                <div class="panel">
+                    <div class="panel-header no-print">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h3 class="panel-title">🏆 ចំណាត់ថ្នាក់ លទ្ធផលឆមាស ប្រចាំឆ្នាំ និងស្ថិតិនិទ្ទេស</h3>
+                            <select id="rankViewSelect" class="form-control" style="width:auto;font-weight:700;" onchange="renderRankingsView()">
+                                <option value="M1">ប្រចាំខែវិច្ឆិកា (M1)</option>
+                                <option value="M2">ប្រចាំខែធ្នូ (M2)</option>
+                                <option value="M3">ប្រចាំខែមករា (M3)</option>
+                                <option value="M4">ប្រចាំខែកុម្ភៈ (M4)</option>
+                                <option value="M5">ប្រចាំខែមីនា (M5)</option>
+                                <option value="S1">លទ្ធផលប្រចាំឆមាសទី១ (S1)</option>
+                                <option value="M6">ប្រចាំខែមេសា (M6)</option>
+                                <option value="M7">ប្រចាំខែឧសភា (M7)</option>
+                                <option value="M8">ប្រចាំខែមិថុនា (M8)</option>
+                                <option value="M9">ប្រចាំខែកក្កដា (M9)</option>
+                                <option value="M10">ប្រចាំខែសីហា (M10)</option>
+                                <option value="S2">លទ្ធផលប្រចាំឆមាសទី២ (S2)</option>
+                                <option value="YEAR">លទ្ធផលប្រចាំឆ្នាំសិក្សា (Annual)</option>
+                                <option value="PROMOTION">បញ្ជីឈ្មោះសិស្សឡើងថ្នាក់ / ត្រួតថ្នាក់</option>
+                                <option value="TEACHER_RANKS">រាប់និទ្ទេសតាមមុខវិជ្ជា &amp; ចំណាត់ថ្នាក់គ្រូមុខវិជ្ជា</option>
+                            </select>
+                            <select id="rankColsMode" class="form-control" style="width:auto;" onchange="renderRankingsView()">
+                                <option value="1">ទម្រង់ ១ ជួរ (លម្អិត)</option>
+                                <option value="2">ទម្រង់ ២ ជួរ (បិទប្រកាស)</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-outline btn-sm" onclick="exportRankingsExcel()">📊 Export Excel (ទៅទីចាត់ការ)</button>
+                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន / Save PDF</button>
+                        </div>
+                    </div>
+                    <div id="rankingsPrintArea"></div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 4: HONOR ROLL & CERTIFICATES ==================== -->
+            <section id="tab-honor" class="tab-pane">
+                <div class="panel">
+                    <div class="panel-header no-print">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h3 class="panel-title">🌟 តារាងកិត្តិយស &amp; ប័ណ្ណសរសើរ</h3>
+                            <select id="honorPeriodSelect" class="form-control" style="width:auto;font-weight:700;" onchange="renderHonorAndCert()">
+                                <option value="M1">ប្រចាំខែវិច្ឆិកា</option>
+                                <option value="M2">ប្រចាំខែធ្នូ</option>
+                                <option value="M3">ប្រចាំខែមករា</option>
+                                <option value="M4">ប្រចាំខែកុម្ភៈ</option>
+                                <option value="M5">ប្រចាំខែមីនា</option>
+                                <option value="S1" selected>ប្រចាំឆមាសទី១</option>
+                                <option value="S2">ប្រចាំឆមាសទី២</option>
+                                <option value="YEAR">ប្រចាំឆ្នាំសិក្សា</option>
+                            </select>
+                            <select id="honorModeSelect" class="form-control" style="width:auto;" onchange="renderHonorAndCert()">
+                                <option value="HONOR">តារាងកិត្តិយស (Top 5 មានរូបថត)</option>
+                                <option value="CERT_TOP5">ប័ណ្ណសរសើរ (Top 5 ទាំងអស់)</option>
+                                <option value="CERT_ONE">ប័ណ្ណសរសើរ (ជ្រើសរើសសិស្សម្នាក់)</option>
+                            </select>
+                            <select id="certThemeSelect" class="form-control" style="width:auto;" onchange="renderHonorAndCert()">
+                                <option value="blue">ស៊ុមពណ៌ខៀវ</option>
+                                <option value="red">ស៊ុមពណ៌ក្រហម</option>
+                                <option value="gold">ស៊ុមពណ៌មាស</option>
+                            </select>
+                            <select id="certStudentSelect" class="form-control" style="width:auto;display:none;" onchange="renderHonorAndCert()"></select>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន / Save PDF</button>
+                    </div>
+                    <div id="honorCertArea"></div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 5: REPORT CARDS & TRACKING BOOK ==================== -->
+            <section id="tab-reports" class="tab-pane">
+                <div class="panel">
+                    <div class="panel-header no-print">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h3 class="panel-title">📋 ព្រឹត្តិបត្រពិន្ទុ សៀវភៅតាមដាន &amp; សិក្ខាគារិក</h3>
+                            <select id="reportDocType" class="form-control" style="width:auto;font-weight:700;" onchange="renderReportDocs()">
+                                <option value="PRITIBAT_ONE">ព្រឹត្តិបត្រពិន្ទុ (សិស្សម្នាក់)</option>
+                                <option value="PRITIBAT_ALL">ព្រឹត្តិបត្រពិន្ទុ (សិស្សទាំងអស់)</option>
+                                <option value="TAMDAN">សៀវភៅតាមដានការសិក្សា (សង្ខេបថ្នាក់)</option>
+                                <option value="KEARIK">សៀវភៅសិក្ខាគារិក (ប្រវត្តិ + លទ្ធផលប្រចាំឆ្នាំ)</option>
+                            </select>
+                            <select id="reportPeriodSelect" class="form-control" style="width:auto;" onchange="renderReportDocs()">
+                                <option value="M1">ខែវិច្ឆិកា</option>
+                                <option value="M2">ខែធ្នូ</option>
+                                <option value="M3">ខែមករា</option>
+                                <option value="M4">ខែកុម្ភៈ</option>
+                                <option value="M5">ខែមីនា</option>
+                                <option value="S1" selected>ឆមាសទី១</option>
+                                <option value="S2">ឆមាសទី២</option>
+                                <option value="YEAR">ប្រចាំឆ្នាំសិក្សា</option>
+                            </select>
+                            <select id="reportStudentSelect" class="form-control" style="width:auto;" onchange="renderReportDocs()"></select>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន / Save PDF</button>
+                    </div>
+                    <div id="reportDocsArea"></div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 6: STUDENT ID CARDS & SALAKABAT ==================== -->
+            <section id="tab-cards" class="tab-pane">
+                <div class="panel">
+                    <div class="panel-header no-print">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h3 class="panel-title">🪪 បំពេញប្រវត្តិបន្ថែម រូបថត កាតសិស្ស &amp; សលាកបត្រឯកត្តជន</h3>
+                            <select id="cardModeSelect" class="form-control" style="width:auto;font-weight:700;" onchange="renderCardsTab()">
+                                <option value="EDIT_EXTRA">បំពេញព័ត៌មានបន្ថែម &amp; Upload រូបថតសិស្ស</option>
+                                <option value="ID_CARDS">ព្រីនប័ណ្ណសម្គាល់ខ្លួនសិស្ស (កាតសិស្ស)</option>
+                                <option value="SALAKABAT">ព្រីនសលាកបត្រឯកត្តជន (Salakabat)</option>
+                            </select>
+                            <select id="salakabatStudentSelect" class="form-control" style="width:auto;display:none;" onchange="renderCardsTab()"></select>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន / Save PDF</button>
+                    </div>
+                    <div id="cardsTabArea"></div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 7: CLEANING, SEATING & YOUTH COUNCIL ==================== -->
+            <section id="tab-admin" class="tab-pane">
+                <div class="panel">
+                    <div class="panel-header no-print">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h3 class="panel-title">🧹 រដ្ឋបាលថ្នាក់រៀន</h3>
+                            <select id="adminSubTab" class="form-control" style="width:auto;font-weight:700;" onchange="renderAdminSubTab()">
+                                <option value="CLEANING">🧹 វេនសម្អាតថ្នាក់ (ចន្ទ-សៅរ៍)</option>
+                                <option value="SEATING">🪑 ប្លង់តុអង្គុយសិស្ស (Seating Map)</option>
+                                <option value="YOUTH">🎖️ ក្រុមប្រឹក្សាយុវជន / គណៈកម្មការថ្នាក់</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-success btn-sm" onclick="saveCurrentAdminSubTab()">💾 រក្សាទុក</button>
+                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីនតារាង</button>
+                        </div>
+                    </div>
+                    <div id="adminSubTabArea"></div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 8: INVENTORY & TEXTBOOK LOANS ==================== -->
+            <section id="tab-assets" class="tab-pane">
+                <div class="panel">
+                    <div class="panel-header no-print">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h3 class="panel-title">📦 សារពើភ័ណ្ឌសម្ភារៈ &amp; បញ្ជីខ្ចីសៀវភៅពុម្ព</h3>
+                            <select id="assetSubTab" class="form-control" style="width:auto;font-weight:700;" onchange="renderAssetSubTab()">
+                                <option value="INVENTORY">📦 បញ្ជីសារពើភ័ណ្ឌសម្ភារៈថ្នាក់</option>
+                                <option value="BOOKS">📖 បញ្ជីខ្ចី-សងសៀវភៅពុម្ពសិស្ស</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-outline btn-sm" onclick="addAssetRow()">➕ បន្ថែមជួរ</button>
+                            <button class="btn btn-success btn-sm" onclick="saveCurrentAssetSubTab()">💾 រក្សាទុក</button>
+                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីនបញ្ជី</button>
+                        </div>
+                    </div>
+                    <div id="assetSubTabArea"></div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 9: GEIP PLANS & MEETING LOGS ==================== -->
+            <section id="tab-geip" class="tab-pane">
+                <div class="panel">
+                    <div class="panel-header no-print">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h3 class="panel-title">📈 ផែនការសិស្ស GEIP (ជីព) កិច្ចព្រមព្រៀង &amp; កំណត់ហេតុប្រជុំ</h3>
+                            <select id="geipSubTab" class="form-control" style="width:auto;font-weight:700;" onchange="renderGeipSubTab()">
+                                <option value="GEIP">📈 ផែនការ GEIP (៣ឆ្នាំ / ១ឆ្នាំ / ត្រីមាស ១-៤)</option>
+                                <option value="MEETINGS">📝 សៀវភៅកំណត់ហេតុប្រជុំជីវភាពថ្នាក់</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-outline btn-sm" onclick="addGeipOrMeetingRow()">➕ បន្ថែម</button>
+                            <button class="btn btn-success btn-sm" onclick="saveCurrentGeipSubTab()">💾 រក្សាទុក</button>
+                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន</button>
+                        </div>
+                    </div>
+                    <div id="geipSubTabArea"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/homeroom.js"></script>
+</body>
+</html>

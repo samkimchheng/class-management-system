@@ -2251,4 +2251,57 @@ class ClassroomApplicationTests {
         assertNotNull(chartScoreAvgs);
         assertTrue(chartScoreAvgs.startsWith("[") && chartScoreAvgs.endsWith("]"));
     }
+
+    @Test
+    void testHomeroomTeacherModulePreservesExistingData() throws Exception {
+        Account teacher = accountRepository.findAll().stream()
+                .filter(a -> !classroomRepository.findByAccountId(a.getId()).isEmpty())
+                .findFirst().orElse(null);
+        assertNotNull(teacher);
+        List<Classroom> classes = classroomRepository.findByAccountId(teacher.getId());
+        assertFalse(classes.isEmpty());
+        String cls = classes.get(0).getClassName();
+
+        long studentsBefore = studentRepository.count();
+        long scoresBefore = scoreRepository.count();
+        long lessonsBefore = lessonRepository.count();
+
+        // 1. Homeroom page loads cleanly for teacher
+        mockMvc.perform(get("/homeroom")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", "TEACHER"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.view().name("homeroom"));
+
+        // 2. Apply standard MoEYS preset subjects
+        mockMvc.perform(post("/api/homeroom/subjects/preset")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"className\":\"" + cls + "\",\"academicYear\":\"២០២៦-២០២៧\",\"preset\":\"G10\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        // 3. Save class admin cleaning schedule JSON
+        mockMvc.perform(post("/api/homeroom/admin/save")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"className\":\"" + cls + "\",\"academicYear\":\"២០២៦-២០២៧\",\"cleaningScheduleJson\":\"[]\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        // 4. Bootstrap returns full data cleanly
+        mockMvc.perform(get("/api/homeroom/bootstrap")
+                .param("className", cls)
+                .param("academicYear", "២០២៦-២០២៧")
+                .sessionAttr("ACCOUNT_ID", teacher.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.className").value(cls))
+                .andExpect(jsonPath("$.subjects").isArray())
+                .andExpect(jsonPath("$.students").isArray());
+
+        // 5. Existing teacher tables remain 100% untouched
+        assertEquals(studentsBefore, studentRepository.count(), "Existing students count must not change");
+        assertEquals(scoresBefore, scoreRepository.count(), "Existing scores count must not change");
+        assertEquals(lessonsBefore, lessonRepository.count(), "Existing lessons count must not change");
+    }
 }
