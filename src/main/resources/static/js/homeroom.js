@@ -1276,31 +1276,85 @@ async function downloadReportDocsPdf() {
     const area = document.getElementById('reportDocsArea');
     if (!area || !area.innerHTML.trim()) return;
     const docType = document.getElementById('reportDocType').value;
-    if (typeof html2pdf === 'undefined') {
+
+    const JsPdfCtor = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+    if (typeof html2canvas === 'undefined' || !JsPdfCtor) {
         window.print();
         return;
     }
+
+    // Select individual pages (.kearik-page or .print-sheet) to render ONE-BY-ONE
+    // Avoids browser max-canvas-height blank page bug AND guarantees 0 trailing blank pages!
+    let pages = Array.from(area.querySelectorAll('.kearik-page, .print-sheet'));
+    if (pages.length === 0) pages = [area];
+
     Swal.fire({
         title: 'កំពុងបង្កើតឯកសារ PDF...',
-        text: 'សូមរង់ចាំបន្តិច (បើមានសិស្សច្រើនអាចចំណាយពេល ៥-១៥ វិនាទី)',
+        html: `<div id="pdfProgText">កំពុងដំណើរការទំព័រទី <b>1</b> / <b>${pages.length}</b> ...</div>`,
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
+
     try {
-        const opt = {
-            margin: [5, 5, 5, 5],
-            filename: `${docType}_${HR.className}_${HR.academicYear}.pdf`,
-            image: { type: 'jpeg', quality: 0.96 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-            pagebreak: { mode: ['css', 'legacy'] }
-        };
-        await html2pdf().set(opt).from(area).save();
+        const pdf = new JsPdfCtor({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        const pageW = pdf.internal.pageSize.getWidth();   // 297mm
+        const pageH = pdf.internal.pageSize.getHeight();  // 210mm
+        const margin = 5;
+        const maxW = pageW - margin * 2;  // 287mm
+        const maxH = pageH - margin * 2;  // 200mm
+
+        for (let i = 0; i < pages.length; i++) {
+            const progEl = document.getElementById('pdfProgText');
+            if (progEl) {
+                progEl.innerHTML = `កំពុងដំណើរការទំព័រទី <b>${i + 1}</b> / <b>${pages.length}</b> ...`;
+            }
+
+            const el = pages[i];
+            const prevBorder = el.style.border;
+            const prevRadius = el.style.borderRadius;
+            const prevMargin = el.style.marginBottom;
+            el.style.border = 'none';
+            el.style.borderRadius = '0';
+            el.style.marginBottom = '0';
+
+            const canvas = await html2canvas(el, {
+                scale: pages.length > 15 ? 1.5 : 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                windowWidth: 1200
+            });
+
+            el.style.border = prevBorder;
+            el.style.borderRadius = prevRadius;
+            el.style.marginBottom = prevMargin;
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.94);
+            const imgW = canvas.width;
+            const imgH = canvas.height;
+            const ratio = Math.min(maxW / imgW, maxH / imgH);
+            const drawW = imgW * ratio;
+            const drawH = imgH * ratio;
+            const offsetX = margin + (maxW - drawW) / 2;
+            const offsetY = margin;
+
+            if (i > 0) pdf.addPage('a4', 'landscape');
+            pdf.addImage(imgData, 'JPEG', offsetX, offsetY, drawW, drawH, undefined, 'FAST');
+
+            // Yield briefly so UI progress stays smooth on large classes
+            await new Promise(r => setTimeout(r, 10));
+        }
+
+        pdf.save(`${docType}_${HR.className}_${HR.academicYear}.pdf`);
         Swal.close();
     } catch (e) {
-        console.error(e);
+        console.error('PDF generation error:', e);
         Swal.close();
-        window.print();
+        Swal.fire({
+            icon: 'warning',
+            title: 'សូមប្រើប៊ូតុងព្រីន (Save as PDF)',
+            text: 'មានបញ្ហាក្នុងការបង្កើត PDF ដោយផ្ទាល់។ សូមចុច «🖨️ ព្រីន» រួចជ្រើស Save as PDF។'
+        });
     }
 }
 
