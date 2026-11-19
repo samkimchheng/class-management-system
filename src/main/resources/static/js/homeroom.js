@@ -224,16 +224,16 @@ function getOfficialFooter() {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:22px;font-size:0.86rem;gap:20px;flex-wrap:wrap;">
             <div style="text-align:center;min-width:230px;">
                 <div>បានឃើញ និងឯកភាព</div>
-                <div style="font-weight:800;">នាយកសាលា</div>
+                <div class="moul" style="font-size:0.84rem;margin-top:2px;">នាយកសាលា</div>
                 <div style="display:flex;justify-content:center;align-items:center;gap:6px;min-height:66px;">${stampHtml}${pSigHtml}</div>
-                <div style="font-weight:800;padding-left:52px;">${esc(principal)}</div>
+                <div class="moul" style="padding-left:52px;font-size:0.86rem;">${esc(principal)}</div>
             </div>
             <div style="text-align:center;min-width:250px;">
                 <div>${esc(lunar)}</div>
                 <div>${esc(solar)}</div>
-                <div style="font-weight:800;margin-top:4px;">គ្រូបន្ទុកថ្នាក់</div>
+                <div class="moul" style="font-size:0.84rem;margin-top:4px;">គ្រូបន្ទុកថ្នាក់</div>
                 <div style="min-height:62px;display:flex;justify-content:center;align-items:center;">${tSigHtml}</div>
-                <div style="font-weight:800;padding-left:52px;">${esc(teacherName)}</div>
+                <div class="moul" style="padding-left:52px;font-size:0.86rem;">${esc(teacherName)}</div>
             </div>
         </div>
     `;
@@ -810,7 +810,7 @@ function renderHonorAndCert() {
                         <div class="honor-card">
                             <div style="font-weight:800;color:#b45309;font-size:1rem;margin-bottom:6px;">🥇 ចំណាត់ថ្នាក់លេខ ${r.rank}</div>
                             <img class="honor-photo" src="${esc(r.student.photoUrl || 'https://ui-avatars.com/api/?background=e0e7ff&color=1e3a8a&name=' + encodeURIComponent(r.student.name))}" alt="Photo">
-                            <div style="font-weight:800;font-size:0.95rem;color:#0f172a;">${esc(r.student.name)}</div>
+                            <div class="moul" style="font-size:0.9rem;color:#0f172a;">${esc(r.student.name)}</div>
                             <div style="font-size:0.8rem;color:#475569;margin-top:2px;">ភេទ៖ ${esc(r.student.gender)}</div>
                             <div style="margin-top:6px;"><span class="badge badge-${r.mention.code}">មធ្យមភាគ ${fmtNum(r.avg)} (${r.mention.code})</span></div>
                         </div>`).join('') : '<div style="grid-column:1/-1;text-align:center;color:#64748b;padding:24px;">មិនទាន់មានទិន្នន័យពិន្ទុសម្រាប់រយៈពេលនេះទេ។</div>'}
@@ -836,7 +836,7 @@ function renderHonorAndCert() {
         <div class="cert-frame ${themeClass} ${idx < listToPrint.length - 1 ? 'page-break' : ''}">
             ${getOfficialHeader('ប័ណ្ណសរសើរ', '')}
             <div style="text-align:center;line-height:2;font-size:0.98rem;margin:10px 0 18px;">
-                <div>សូមសរសើរចំពោះសិស្សឈ្មោះ <strong style="font-size:1.18rem;color:${accentColor};">${esc(r.student.name)}</strong> &nbsp; ភេទ៖ <strong>${esc(r.student.gender)}</strong></div>
+                <div>សូមសរសើរចំពោះសិស្សឈ្មោះ <strong class="moul" style="font-size:1.12rem;color:${accentColor};">${esc(r.student.name)}</strong> &nbsp; ភេទ៖ <strong>${esc(r.student.gender)}</strong></div>
                 <div>កើតនៅថ្ងៃទី៖ <strong>${esc(r.student.dob || '............................')}</strong> &nbsp; ជាសិស្សថ្នាក់ទី៖ <strong>${esc(HR.className)}</strong></div>
                 <div>ដែលបានខិតខំប្រឹងប្រែងរៀនសូត្ររហូតទទួលបាន <strong style="color:${accentColor};font-size:1.1rem;">ចំណាត់ថ្នាក់លេខ ${r.rank}</strong> ក្នុងចំណោមសិស្សសរុប <strong>${HR.students.length} នាក់</strong></div>
                 <div>មធ្យមភាគ៖ <strong>${fmtNum(r.avg)}</strong> &nbsp; និទ្ទេស៖ <strong style="color:${accentColor};">${r.mention.code} (${r.mention.kh})</strong> &nbsp; សម្រាប់លទ្ធផលសិក្សា <strong>${PERIOD_LABELS[period] || period}</strong> ឆ្នាំសិក្សា <strong>${esc(HR.academicYear)}</strong></div>
@@ -954,7 +954,7 @@ function renderReportDocs() {
             <div class="print-sheet ${idx < list.length - 1 ? 'page-break' : ''}">
                 ${getOfficialHeader('ព្រឹត្តិបត្រពិន្ទុ និងតាមដានការសិក្សាសិស្ស', `${PERIOD_LABELS[period] || period}`)}
                 <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#f8fafc;padding:10px 14px;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:12px;font-size:0.88rem;">
-                    <div><strong>គោត្តនាម-នាម៖</strong> ${esc(r.student.name)}</div>
+                    <div><strong>គោត្តនាម-នាម៖</strong> <span class="moul" style="color:#0f766e;">${esc(r.student.name)}</span></div>
                     <div><strong>ភេទ៖</strong> ${esc(r.student.gender)}</div>
                     <div><strong>អត្តលេខ៖</strong> ${esc(r.student.studentCode)}</div>
                     <div><strong>ថ្នាក់ទី៖</strong> ${esc(HR.className)}</div>
@@ -1121,7 +1121,7 @@ function renderKearikPages(singleStudentId) {
                                 <tr>
                                     <td style="font-weight:800;">${toKhmerNum(item.num)}</td>
                                     <td>${esc(st.studentCode || '-')}</td>
-                                    <td class="k-teal">${esc(st.name)}</td>
+                                    <td class="k-teal moul">${esc(st.name)}</td>
                                     <td>${esc(st.gender)}</td>
                                     <td>${esc(st.dob || '-')}</td>
                                 </tr>
@@ -1253,7 +1253,7 @@ function renderKearikPages(singleStudentId) {
                                 <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
                                 <div class="moul" style="margin-top:4px;">គ្រូបន្ទុកថ្នាក់</div>
                                 <div style="min-height:42px;"></div>
-                                <div style="font-weight:800;padding-left:56px;">${esc(teacherName)}</div>
+                                <div class="moul" style="padding-left:56px;font-size:0.82rem;">${esc(teacherName)}</div>
                             </div>
 
                             <div style="text-align:center;margin-top:14px;">
@@ -1262,7 +1262,7 @@ function renderKearikPages(singleStudentId) {
                                 <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
                                 <div class="moul" style="margin-top:4px;">នាយកសាលា</div>
                                 <div style="min-height:50px;"></div>
-                                <div style="font-weight:800;padding-left:56px;">${esc(principal)}</div>
+                                <div class="moul" style="padding-left:56px;font-size:0.82rem;">${esc(principal)}</div>
                             </div>
                         </div>
                     </div>
@@ -1357,7 +1357,7 @@ function renderCardsTab() {
                             <img class="idcard-photo" src="${esc(s.photoUrl || 'https://ui-avatars.com/api/?background=e0e7ff&color=1e3a8a&name=' + encodeURIComponent(s.name))}" alt="Photo">
                             <div style="flex:1;">
                                 <div><strong>អត្តលេខ៖</strong> ${esc(s.studentCode)}</div>
-                                <div><strong>ឈ្មោះ៖</strong> <strong style="color:#1d4ed8;">${esc(s.name)}</strong></div>
+                                <div><strong>ឈ្មោះ៖</strong> <strong class="moul" style="color:#1d4ed8;">${esc(s.name)}</strong></div>
                                 <div><strong>ភេទ៖</strong> ${esc(s.gender)} &nbsp; <strong>ថ្នាក់៖</strong> ${esc(HR.className)}</div>
                                 <div><strong>ថ្ងៃកំណើត៖</strong> ${esc(s.dob || '-')}</div>
                                 <div><strong>ទូរស័ព្ទ៖</strong> ${esc(s.phone || '-')}</div>
@@ -1379,7 +1379,7 @@ function renderCardsTab() {
                 <img src="${esc(s.photoUrl || 'https://ui-avatars.com/api/?background=e2e8f0&color=334155&name=' + encodeURIComponent(s.name))}" style="width:110px;height:135px;object-fit:cover;border:2px solid #94a3b8;border-radius:8px;">
                 <table class="hr-table" style="flex:1;">
                     <tbody>
-                        <tr><th class="text-left" style="width:30%;">គោត្តនាម និងនាម</th><td class="text-left" style="font-weight:800;">${esc(s.name)}</td><th style="width:15%;">ភេទ</th><td>${esc(s.gender)}</td></tr>
+                        <tr><th class="text-left" style="width:30%;">គោត្តនាម និងនាម</th><td class="text-left moul" style="color:#0f766e;">${esc(s.name)}</td><th style="width:15%;">ភេទ</th><td>${esc(s.gender)}</td></tr>
                         <tr><th class="text-left">អត្តលេខសិស្ស</th><td class="text-left">${esc(s.studentCode)}</td><th>ថ្នាក់ទី</th><td>${esc(HR.className)}</td></tr>
                         <tr><th class="text-left">ថ្ងៃខែឆ្នាំកំណើត</th><td class="text-left" colspan="3">${esc(s.dob || '........................................')}</td></tr>
                         <tr><th class="text-left">ទីកន្លែងកំណើត</th><td class="text-left" colspan="3">${esc(s.pob || '........................................')}</td></tr>
