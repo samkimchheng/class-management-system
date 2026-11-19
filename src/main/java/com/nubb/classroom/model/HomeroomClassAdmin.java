@@ -44,6 +44,9 @@ public class HomeroomClassAdmin {
     @Column(columnDefinition = "TEXT")
     private String configJson; // ការកំណត់បន្ថែម (ឧ. ឈ្មោះសាលា, នាយក, ខេត្ត, ប្រធានថ្នាក់, ថ្ងៃខែចន្ទគតិ)
 
+    @Column(columnDefinition = "TEXT")
+    private String monthlyAttendanceJson; // បញ្ជីស្រង់អវត្តមានតាមខែ (ថ្ងៃឈប់សម្រាក + ច/អ តាមខែនីមួយៗ)
+
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public HomeroomClassAdmin() {}
@@ -83,6 +86,9 @@ public class HomeroomClassAdmin {
 
     public String getConfigJson() { return configJson; }
     public void setConfigJson(String configJson) { this.configJson = configJson; }
+
+    public String getMonthlyAttendanceJson() { return monthlyAttendanceJson; }
+    public void setMonthlyAttendanceJson(String monthlyAttendanceJson) { this.monthlyAttendanceJson = monthlyAttendanceJson; }
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }

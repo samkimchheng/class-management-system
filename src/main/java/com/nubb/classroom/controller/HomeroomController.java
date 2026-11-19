@@ -139,6 +139,7 @@ public class HomeroomController {
         // Attendance summary per student (read-only from existing attendance table)
         Map<Long, int[]> attCounts = new HashMap<>(); // [permission, unexcused, totalAbsent]
         Map<Long, Map<Integer, int[]>> attByMonth = new HashMap<>();
+        List<Map<String, Object>> dailyAbsences = new ArrayList<>();
         if (!students.isEmpty()) {
             List<Attendance> allAtts = attendanceRepository.findByStudentIn(students);
             for (Attendance a : allAtts) {
@@ -157,6 +158,11 @@ public class HomeroomController {
                                 .computeIfAbsent(m, k -> new int[3]);
                         if (a.isPermission()) mc[0]++; else mc[1]++;
                         mc[2]++;
+                        Map<String, Object> da = new HashMap<>();
+                        da.put("studentId", sid);
+                        da.put("date", a.getDate().toString());
+                        da.put("permission", a.isPermission());
+                        dailyAbsences.add(da);
                     }
                 }
             }
@@ -225,6 +231,7 @@ public class HomeroomController {
         adminDto.put("geipPlanJson", admin != null ? admin.getGeipPlanJson() : null);
         adminDto.put("meetingLogsJson", admin != null ? admin.getMeetingLogsJson() : null);
         adminDto.put("configJson", admin != null ? admin.getConfigJson() : null);
+        adminDto.put("monthlyAttendanceJson", admin != null ? admin.getMonthlyAttendanceJson() : null);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("teacher", teacherInfo);
@@ -233,6 +240,7 @@ public class HomeroomController {
         result.put("students", studentDtos);
         result.put("subjects", subjects);
         result.put("scores", scores);
+        result.put("dailyAbsences", dailyAbsences);
         result.put("admin", adminDto);
         return ResponseEntity.ok(result);
     }
@@ -569,6 +577,7 @@ public class HomeroomController {
         if (payload.containsKey("geipPlanJson")) admin.setGeipPlanJson(strOrNull(payload.get("geipPlanJson")));
         if (payload.containsKey("meetingLogsJson")) admin.setMeetingLogsJson(strOrNull(payload.get("meetingLogsJson")));
         if (payload.containsKey("configJson")) admin.setConfigJson(strOrNull(payload.get("configJson")));
+        if (payload.containsKey("monthlyAttendanceJson")) admin.setMonthlyAttendanceJson(strOrNull(payload.get("monthlyAttendanceJson")));
         admin.setUpdatedAt(LocalDateTime.now());
 
         homeroomClassAdminRepository.save(admin);

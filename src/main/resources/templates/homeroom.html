@@ -209,16 +209,49 @@
         }
         .seat-box select { width: 100%; font-size: 0.8rem; padding: 4px; border-radius: 6px; border: 1px solid #cbd5e1; }
 
+        /* Monthly Attendance Sheet (Exact MoEYS PDF Layout) */
+        .att-pdf-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; background: #fff; color: #000; }
+        .att-pdf-table th, .att-pdf-table td { border: 1px solid #000; padding: 3px 2px; text-align: center; vertical-align: middle; }
+        .att-pdf-table td.att-name { text-align: left; padding: 3px 6px; white-space: nowrap; font-weight: 600; min-width: 135px; }
+        .att-pdf-table .att-day-col { width: 24px; min-width: 24px; font-size: 0.72rem; }
+        .att-pdf-table .att-holiday {
+            background-color: #ff0000 !important; color: #ffffff !important;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .att-pdf-table .att-cell { cursor: pointer; user-select: none; font-weight: 800; font-size: 0.78rem; transition: background 0.12s; }
+        .att-pdf-table .att-cell:hover:not(.att-holiday) { background: #e0f2fe; }
+        .att-pdf-table .att-cell-p { color: #1d4ed8; background: #eff6ff; }
+        .att-pdf-table .att-cell-a { color: #dc2626; background: #fef2f2; }
+        .att-pdf-table .att-vhead {
+            writing-mode: vertical-rl; transform: rotate(180deg);
+            white-space: nowrap; font-weight: 800; font-size: 0.74rem; padding: 5px 2px; height: 64px;
+        }
+        .att-holiday-toggle {
+            cursor: pointer; width: 15px; height: 15px; accent-color: #dc2626; margin: 0; vertical-align: middle;
+        }
+        .att-summary-bar {
+            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+            gap: 12px; margin-top: 10px; font-size: 0.84rem; color: #000;
+        }
+        .att-summary-item { display: inline-flex; align-items: center; gap: 6px; font-style: italic; font-weight: 600; }
+        .att-summary-box {
+            border: 1px solid #000; padding: 2px 14px; min-width: 58px; text-align: center;
+            font-style: normal; font-weight: 800; background: #fff;
+        }
+
         /* Print Mode */
         @media print {
-            body { background: #fff !important; display: block !important; }
+            @page { size: A4 landscape; margin: 8mm; }
+            body { background: #fff !important; display: block !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .sidebar, .sidebar-overlay, .topbar, .hr-hero, .hr-tabs, .no-print { display: none !important; }
             .main-content { margin-left: 0 !important; width: 100% !important; }
             .content { padding: 0 !important; max-width: 100% !important; }
             .tab-pane { display: none !important; }
             .tab-pane.active { display: block !important; }
             .panel { border: none !important; box-shadow: none !important; padding: 0 !important; }
-            .print-sheet { border: none !important; padding: 8px !important; }
+            .print-sheet { border: none !important; padding: 4px !important; }
+            .att-pdf-table { font-size: 0.7rem !important; }
+            .att-pdf-table .att-day-col { width: 20px !important; min-width: 18px !important; }
             .page-break { page-break-after: always; }
         }
 
@@ -293,9 +326,10 @@
                 </div>
             </div>
 
-            <!-- 9 Tabs -->
+            <!-- 10 Tabs -->
             <div class="hr-tabs" id="hrTabs">
                 <button class="hr-tab active" data-tab="tab-setup" onclick="switchTab('tab-setup', this)">🏠 ១. រៀបចំថ្នាក់ &amp; មុខវិជ្ជា</button>
+                <button class="hr-tab" data-tab="tab-monthly-att" onclick="switchTab('tab-monthly-att', this)" style="border-color:#dc2626;color:#b91c1c;">📅 ស្រង់អវត្តមានតាមខែ</button>
                 <button class="hr-tab" data-tab="tab-scores" onclick="switchTab('tab-scores', this)">📝 ២. ស្រង់ពិន្ទុគ្រប់មុខវិជ្ជា</button>
                 <button class="hr-tab" data-tab="tab-ranks" onclick="switchTab('tab-ranks', this)">🏆 ៣. ចំណាត់ថ្នាក់ ឆមាស &amp; ប្រចាំឆ្នាំ</button>
                 <button class="hr-tab" data-tab="tab-honor" onclick="switchTab('tab-honor', this)">🌟 ៤. តារាងកិត្តិយស &amp; ប័ណ្ណសរសើរ</button>
@@ -365,6 +399,52 @@
                             <input type="text" id="cfgSolarDate" class="form-control" placeholder="..., ថ្ងៃទី ... ខែ ... ឆ្នាំ ២០២៦">
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB: MONTHLY ATTENDANCE (PDF FORMAT) ==================== -->
+            <section id="tab-monthly-att" class="tab-pane">
+                <div class="panel">
+                    <div class="panel-header no-print">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <h3 class="panel-title">📅 បញ្ជីស្រង់អវត្តមានតាមខែ (តាមស្តង់ដារ PDF)</h3>
+                            <select id="attMonthSelect" class="form-control" style="width:auto;font-weight:700;" onchange="renderMonthlyAttendance()">
+                                <option value="11" selected>ខែវិច្ឆិកា (១១)</option>
+                                <option value="12">ខែធ្នូ (១២)</option>
+                                <option value="1">ខែមករា (០១)</option>
+                                <option value="2">ខែកុម្ភៈ (០២)</option>
+                                <option value="3">ខែមីនា (០៣)</option>
+                                <option value="4">ខែមេសា (០៤)</option>
+                                <option value="5">ខែឧសភា (០៥)</option>
+                                <option value="6">ខែមិថុនា (០៦)</option>
+                                <option value="7">ខែកក្កដា (០៧)</option>
+                                <option value="8">ខែសីហា (០៨)</option>
+                                <option value="9">ខែកញ្ញា (០៩)</option>
+                                <option value="10">ខែតុលា (១០)</option>
+                            </select>
+                            <select id="attYearSelect" class="form-control" style="width:auto;font-weight:700;" onchange="renderMonthlyAttendance()">
+                                <option value="2025">២០២៥ (2025)</option>
+                                <option value="2026" selected>២០២៦ (2026)</option>
+                                <option value="2027">២០២៧ (2027)</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-outline btn-sm" onclick="pullExistingAttendanceIntoMonth()" title="ទាញអវត្តមានដែលគ្រូបានស្រង់រួចពីម៉ឺនុយ បញ្ជីអវត្តមាន">🔄 ទាញពីបញ្ជីអវត្តមានចាស់</button>
+                            <button class="btn btn-success btn-sm" onclick="saveMonthlyAttendance()">💾 រក្សាទុកអវត្តមានខែនេះ</button>
+                            <button class="btn btn-outline btn-sm" onclick="exportMonthlyAttendanceExcel()">📊 Export Excel</button>
+                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន / Save PDF (A4 ផ្តេក)</button>
+                        </div>
+                    </div>
+
+                    <div class="no-print" style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:0.82rem;color:#334155;display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
+                        <span>💡 <b>របៀបប្រើប្រាស់៖</b> ចុចលើប្រឡោះថ្ងៃណាមួយរបស់សិស្សដើម្បីប្តូរ៖</span>
+                        <span>⬜ ទទេ = មករៀន</span>
+                        <span style="color:#1d4ed8;font-weight:800;">🔵 ច = មានច្បាប់</span>
+                        <span style="color:#dc2626;font-weight:800;">🔴 អ = ឥតច្បាប់</span>
+                        <span>| គូសធីកជួរលើ <b>«ជ្រើសរើសថ្ងៃឈប់សម្រាក»</b> ដើម្បីដាក់ថ្ងៃឈប់សម្រាកពណ៌ក្រហម (ថ្ងៃអាទិត្យ <b>អាទិ.</b> ដាក់ក្រហមស្វ័យប្រវត្តិ)។</span>
+                    </div>
+
+                    <div id="monthlyAttendanceArea"></div>
                 </div>
             </section>
 

@@ -23,6 +23,7 @@ let HR = {
     subjects: [],
     scores: [],      // raw list from DB
     scoreMap: {},    // key: `${period}_${studentId}_${subjectId}` -> number
+    dailyAbsences: [],
     admin: {
         cleaning: null,
         seating: null,
@@ -31,6 +32,7 @@ let HR = {
         books: null,
         geip: null,
         meetings: null,
+        monthlyAtt: {},
         config: {}
     }
 };
@@ -55,6 +57,7 @@ function switchTab(tabId, btn) {
     if (btn) btn.classList.add('active');
 
     if (tabId === 'tab-scores') renderScoreEntryTable();
+    else if (tabId === 'tab-monthly-att') renderMonthlyAttendance();
     else if (tabId === 'tab-ranks') renderRankingsView();
     else if (tabId === 'tab-honor') renderHonorAndCert();
     else if (tabId === 'tab-reports') renderReportDocs();
@@ -87,10 +90,12 @@ async function loadHomeroomData() {
         HR.students = data.students || [];
         HR.subjects = data.subjects || [];
         HR.scores = data.scores || [];
+        HR.dailyAbsences = data.dailyAbsences || [];
         rebuildScoreMap();
 
         const adm = data.admin || {};
         HR.admin.config = parseJsonSafe(adm.configJson, {});
+        HR.admin.monthlyAtt = parseJsonSafe(adm.monthlyAttendanceJson, {});
         HR.admin.cleaning = parseJsonSafe(adm.cleaningScheduleJson, null);
         HR.admin.seating = parseJsonSafe(adm.seatingLayoutJson, null);
         HR.admin.youth = parseJsonSafe(adm.youthCouncilJson, null);
@@ -1351,6 +1356,255 @@ function downloadJsonBackup() {
     a.href = URL.createObjectURL(blob);
     a.download = `Homeroom_Backup_${HR.className}_${HR.academicYear}.json`;
     a.click();
+}
+
+// ==================== TAB: MONTHLY ATTENDANCE (EXACT MOEYS PDF LAYOUT) ====================
+const KHMER_MONTHS = {
+    1: 'មករា', 2: 'កុម្ភៈ', 3: 'មីនា', 4: 'មេសា', 5: 'ឧសភា', 6: 'មិថុនា',
+    7: 'កក្កដា', 8: 'សីហា', 9: 'កញ្ញា', 10: 'តុលា', 11: 'វិច្ឆិកា', 12: 'ធ្នូ'
+};
+const KHMER_WEEKDAYS = ['អាទិ.', 'ច.', 'អ.', 'ពុ.', 'ព្រហ.', 'សុ.', 'ស.'];
+
+function getMonthlyAttKey() {
+    const m = Number(document.getElementById('attMonthSelect').value || 11);
+    const y = Number(document.getElementById('attYearSelect').value || 2026);
+    return { month: m, year: y, key: `${y}-${String(m).padStart(2, '0')}` };
+}
+
+function getOrCreateMonthAtt(key) {
+    if (!HR.admin.monthlyAtt || typeof HR.admin.monthlyAtt !== 'object') {
+        HR.admin.monthlyAtt = {};
+    }
+    if (!HR.admin.monthlyAtt[key]) {
+        HR.admin.monthlyAtt[key] = { holidays: [], marks: {} };
+    }
+    if (!Array.isArray(HR.admin.monthlyAtt[key].holidays)) HR.admin.monthlyAtt[key].holidays = [];
+    if (!HR.admin.monthlyAtt[key].marks) HR.admin.monthlyAtt[key].marks = {};
+    return HR.admin.monthlyAtt[key];
+}
+
+function getShortGender(g) {
+    if (!g) return '';
+    const s = String(g).trim().toLowerCase();
+    if (s === 'ស្រី' || s === 'ស' || s === 'female' || s === 'f') return 'ស';
+    return 'ប';
+}
+
+function renderMonthlyAttendance() {
+    const area = document.getElementById('monthlyAttendanceArea');
+    if (!area) return;
+    const { month, year, key } = getMonthlyAttKey();
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const mData = getOrCreateMonthAtt(key);
+    const holidaySet = new Set(mData.holidays.map(Number));
+
+    // Build day metadata (Sunday = auto-holiday)
+    const days = [];
+    let studyDays = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dow = new Date(year, month - 1, d).getDay(); // 0 = Sun
+        const isSunday = dow === 0;
+        const isHoliday = isSunday || holidaySet.has(d);
+        if (!isHoliday) studyDays++;
+        days.push({
+            day: d,
+            label: String(d).padStart(2, '0'),
+            weekday: KHMER_WEEKDAYS[dow],
+            isSunday,
+            isHoliday
+        });
+    }
+
+    let grandTotalAbsent = 0;
+    const studentRowsHtml = HR.students.map((st, idx) => {
+        let perm = 0, unex = 0;
+        const cells = days.map(d => {
+            if (d.isHoliday) {
+                return `<td class="att-day-col att-holiday"></td>`;
+            }
+            const mk = mData.marks[`${st.id}_${d.day}`] || '';
+            if (mk === 'ច') perm++;
+            else if (mk === 'អ') unex++;
+            const cls = mk === 'ច' ? 'att-cell-p' : (mk === 'អ' ? 'att-cell-a' : '');
+            return `<td class="att-day-col att-cell ${cls}" onclick="cycleAttMark(${st.id}, ${d.day})" title="${esc(st.name)} - ថ្ងៃទី ${d.label}">${esc(mk)}</td>`;
+        }).join('');
+        const tot = perm + unex;
+        grandTotalAbsent += tot;
+        return `
+            <tr>
+                <td>${idx + 1}</td>
+                <td class="att-name">${esc(st.name)}</td>
+                <td>${getShortGender(st.gender)}</td>
+                ${cells}
+                <td>${perm}</td>
+                <td>${unex}</td>
+                <td style="font-weight:800;">${tot}</td>
+            </tr>`;
+    }).join('');
+
+    const totalStudents = HR.students.length;
+    const totalRequired = totalStudents * studyDays;
+    const totalActualPresent = Math.max(0, totalRequired - grandTotalAbsent);
+    const absentPercent = totalRequired > 0 ? ((grandTotalAbsent / totalRequired) * 100).toFixed(2) : '0.00';
+
+    const cfg = HR.admin.config || {};
+    const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
+    const monthKh = KHMER_MONTHS[month] || month;
+
+    area.innerHTML = `
+        <div class="print-sheet" style="padding:14px 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div style="text-align:left;font-weight:800;font-size:0.9rem;min-width:220px;">
+                    <div class="moul" style="font-size:0.9rem;">${esc(school)}</div>
+                </div>
+                <div style="text-align:center;flex:1;">
+                    <div class="moul" style="font-size:0.98rem;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                    <div class="moul" style="font-size:0.88rem;margin-top:2px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    <div style="letter-spacing:3px;font-size:0.8rem;">~❖~</div>
+                </div>
+                <div style="min-width:220px;"></div>
+            </div>
+            <div style="text-align:center;margin:4px 0 10px;">
+                <div class="moul" style="font-size:0.95rem;">
+                    បញ្ជីស្រង់អវត្តមានសម្រាប់ខែ${esc(monthKh)} ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}
+                </div>
+            </div>
+
+            <div class="table-wrap" style="border:none;border-radius:0;">
+                <table class="att-pdf-table">
+                    <thead>
+                        <tr>
+                            <th colspan="3" style="text-align:left;padding:4px 8px;font-weight:800;font-size:0.82rem;">ជ្រើសរើសថ្ងៃឈប់សម្រាក</th>
+                            ${days.map(d => `
+                                <th class="att-day-col" style="padding:2px;">
+                                    <input type="checkbox" class="att-holiday-toggle no-print" ${d.isHoliday ? 'checked' : ''} ${d.isSunday ? 'disabled title="ថ្ងៃអាទិត្យ"' : `onchange="toggleAttHoliday(${d.day})" title="ដាក់/ដកថ្ងៃឈប់សម្រាក ថ្ងៃទី ${d.label}"`}>
+                                </th>`).join('')}
+                            <th colspan="3"></th>
+                        </tr>
+                        <tr>
+                            <th rowspan="2" style="width:28px;">ល.រ</th>
+                            <th rowspan="2" style="min-width:135px;">គោត្តនាម-នាម</th>
+                            <th rowspan="2" style="width:28px;">ភេទ</th>
+                            ${days.map(d => `<th class="att-day-col ${d.isHoliday ? 'att-holiday' : ''}">${d.label}</th>`).join('')}
+                            <th rowspan="2" style="width:26px;"><div class="att-vhead">មានច្បាប់</div></th>
+                            <th rowspan="2" style="width:26px;"><div class="att-vhead">ឥតច្បាប់</div></th>
+                            <th rowspan="2" style="width:26px;"><div class="att-vhead">សរុប</div></th>
+                        </tr>
+                        <tr>
+                            ${days.map(d => `<th class="att-day-col ${d.isHoliday ? 'att-holiday' : ''}" style="font-size:0.65rem;">${d.weekday}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${studentRowsHtml || `<tr><td colspan="${daysInMonth + 6}" style="padding:18px;color:#64748b;">គ្មានសិស្សក្នុងថ្នាក់នេះ</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Exact Bottom Summary Statistics matching PDF Page 2 -->
+            <div class="att-summary-bar">
+                <div>
+                    <div class="att-summary-item">
+                        <span>ចំនួនពេលសរុបដែលសិស្សត្រូវមករៀន</span>
+                        <span style="font-style:normal;font-weight:800;padding:0 10px;">${totalRequired}</span>
+                    </div>
+                    <div class="att-summary-item" style="margin-top:4px;padding-left:20px;">
+                        <span>ពេលដែលសិស្សត្រូវរៀនក្នុង១ខែ</span>
+                        <span style="font-style:normal;font-weight:800;padding:0 14px;">${studyDays}</span>
+                    </div>
+                </div>
+                <div class="att-summary-item">
+                    <span>ចំនួនពេលអវត្តមាន</span>
+                    <span class="att-summary-box">${grandTotalAbsent}</span>
+                </div>
+                <div class="att-summary-item">
+                    <span>ចំនួនពេលដែលសិស្សបានមករៀនពិតប្រាកដ</span>
+                    <span class="att-summary-box">${totalActualPresent}</span>
+                </div>
+                <div class="att-summary-item">
+                    <span>ភាគរយនៃអវត្តមាន</span>
+                    <span class="att-summary-box">${absentPercent}%</span>
+                </div>
+            </div>
+
+            ${getOfficialFooter()}
+        </div>
+    `;
+}
+
+function toggleAttHoliday(day) {
+    const { key } = getMonthlyAttKey();
+    const mData = getOrCreateMonthAtt(key);
+    const idx = mData.holidays.indexOf(day);
+    if (idx >= 0) mData.holidays.splice(idx, 1);
+    else mData.holidays.push(day);
+    renderMonthlyAttendance();
+}
+
+function cycleAttMark(studentId, day) {
+    const { key } = getMonthlyAttKey();
+    const mData = getOrCreateMonthAtt(key);
+    const k = `${studentId}_${day}`;
+    const cur = mData.marks[k] || '';
+    if (cur === '') mData.marks[k] = 'ច';
+    else if (cur === 'ច') mData.marks[k] = 'អ';
+    else delete mData.marks[k];
+    renderMonthlyAttendance();
+}
+
+function pullExistingAttendanceIntoMonth() {
+    const { month, year, key } = getMonthlyAttKey();
+    const prefix = `${year}-${String(month).padStart(2, '0')}-`;
+    const mData = getOrCreateMonthAtt(key);
+    let pulled = 0;
+    (HR.dailyAbsences || []).forEach(a => {
+        if (a.date && a.date.startsWith(prefix)) {
+            const d = parseInt(a.date.substring(8, 10), 10);
+            if (!isNaN(d)) {
+                mData.marks[`${a.studentId}_${d}`] = a.permission ? 'ច' : 'អ';
+                pulled++;
+            }
+        }
+    });
+    renderMonthlyAttendance();
+    Swal.fire({
+        icon: 'info',
+        title: pulled > 0 ? `ទាញបាន ${pulled} កំណត់ត្រាអវត្តមាន!` : 'មិនមានអវត្តមានក្នុងខែនេះទេ',
+        text: pulled > 0 ? 'សូមចុច «រក្សាទុកអវត្តមានខែនេះ» ដើម្បីរក្សាទុក។' : 'មិនទាន់មានទិន្នន័យអវត្តមានសម្រាប់ខែ-ឆ្នាំដែលបានជ្រើសរើសនៅក្នុងបញ្ជីអវត្តមានចាស់ទេ។',
+        timer: 2200,
+        showConfirmButton: false
+    });
+}
+
+async function saveMonthlyAttendance() {
+    await saveAdminField('monthlyAttendanceJson', JSON.stringify(HR.admin.monthlyAtt || {}));
+}
+
+function exportMonthlyAttendanceExcel() {
+    const { month, year, key } = getMonthlyAttKey();
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const mData = getOrCreateMonthAtt(key);
+    const holidaySet = new Set(mData.holidays.map(Number));
+
+    const rows = HR.students.map((st, i) => {
+        const obj = { 'ល.រ': i + 1, 'គោត្តនាម-នាម': st.name, 'ភេទ': getShortGender(st.gender) };
+        let perm = 0, unex = 0;
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dow = new Date(year, month - 1, d).getDay();
+            const isHol = dow === 0 || holidaySet.has(d);
+            const mk = isHol ? 'ឈប់' : (mData.marks[`${st.id}_${d}`] || '');
+            if (mk === 'ច') perm++;
+            else if (mk === 'អ') unex++;
+            obj[String(d).padStart(2, '0')] = mk;
+        }
+        obj['មានច្បាប់'] = perm;
+        obj['ឥតច្បាប់'] = unex;
+        obj['សរុប'] = perm + unex;
+        return obj;
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, `Attendance_${key}`);
+    XLSX.writeFile(wb, `Attendance_${HR.className}_${key}.xlsx`);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
