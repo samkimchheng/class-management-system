@@ -243,36 +243,37 @@
 
         /* Kearik (សៀវភៅសិក្ខាគារិក - Exact MoEYS 2-Column PDF Layout) */
         .kearik-page {
-            background: #fff; color: #000; padding: 14px 16px; border: 1px solid #cbd5e1;
+            background: #fff; color: #000000; padding: 10px 12px; border: 1px solid #cbd5e1;
             border-radius: 10px; margin-bottom: 22px; page-break-inside: avoid;
         }
         .kearik-grid {
-            display: grid; grid-template-columns: 51.5% 47.5%; gap: 1%; align-items: stretch;
+            display: grid; grid-template-columns: 52.5% 46.8%; gap: 0.7%; align-items: stretch;
         }
         .kearik-table {
-            width: 100%; border-collapse: collapse; font-size: 0.72rem; color: #000; background: #fff;
+            width: 100%; border-collapse: collapse; font-size: 12.5px; color: #000000 !important;
+            font-weight: 500; background: #fff;
         }
         .kearik-table th, .kearik-table td {
-            border: 1px solid #000; padding: 2px 3px; text-align: center; vertical-align: middle; line-height: 1.32;
+            border: 1.2px solid #000000; padding: 3px 4px; text-align: center; vertical-align: middle; line-height: 1.35; color: #000000;
         }
-        .kearik-table td.k-left { text-align: left; padding-left: 5px; }
-        .kearik-table th { font-weight: 800; background: #fff; }
+        .kearik-table td.k-left { text-align: left; padding-left: 6px; }
+        .kearik-table th { font-weight: 800; background: #fff; color: #000000; }
         .kearik-title-bar {
-            border: 1px solid #000; border-top: none; text-align: center; font-weight: 800;
-            padding: 3px 4px; font-size: 0.82rem; background: #fff;
+            border: 1.2px solid #000000; border-top: none; text-align: center; font-weight: 800;
+            padding: 4px; font-size: 13px; background: #fff; color: #000000;
         }
         .kearik-right-box {
-            border: 1px solid #000; display: flex; flex-direction: column; justify-content: space-between;
+            border: 1.2px solid #000000; display: flex; flex-direction: column; justify-content: space-between; color: #000000;
         }
-        .k-blue { color: #1d4ed8; font-weight: 700; }
-        .k-red { color: #dc2626; font-weight: 700; }
-        .k-teal { color: #0f766e; font-weight: 800; font-size: 0.86rem; }
+        .k-blue { color: #1d4ed8 !important; font-weight: 700; }
+        .k-red { color: #dc2626 !important; font-weight: 700; }
+        .k-teal { color: #0f766e !important; font-size: 13.5px; }
 
         /* Print Mode */
         @media print {
-            @page { size: A4 landscape; margin: 6mm; }
+            @page { size: A4 landscape; margin: 4mm; }
             .kearik-page { border: none !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; }
-            .kearik-table { font-size: 0.68rem !important; }
+            .kearik-table { font-size: 11.5px !important; color: #000000 !important; }
             body { background: #fff !important; display: block !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .sidebar, .sidebar-overlay, .topbar, .hr-hero, .hr-tabs, .no-print { display: none !important; }
             .main-content { margin-left: 0 !important; width: 100% !important; }

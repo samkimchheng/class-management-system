@@ -1240,29 +1240,29 @@ function renderKearikPages(singleStudentId) {
                                 </tbody>
                             </table>
 
-                            <div style="padding:5px 8px;border-bottom:1px solid #000;font-size:0.72rem;">
-                                <div class="moul" style="text-align:center;margin-bottom:6px;font-size:0.76rem;">លទ្ធផលនៃការប្រឡងបញ្ចប់ភូមិសិក្សា ( ជាប់ ឬ ធ្លាក់ )</div>
+                            <div style="padding:6px 8px;border-bottom:1.2px solid #000;font-size:12px;color:#000;font-weight:500;">
+                                <div class="moul" style="text-align:center;margin-bottom:6px;font-size:12.5px;color:#000;">លទ្ធផលនៃការប្រឡងបញ្ចប់ភូមិសិក្សា ( ជាប់ ឬ ធ្លាក់ )</div>
                                 <div style="white-space:nowrap;">មណ្ឌលប្រឡង..........................................ខេត្ត.............បន្ទប់.......លេខតុ.......</div>
                             </div>
                         </div>
 
-                        <div style="padding:6px 10px 8px;display:flex;flex-direction:column;justify-content:space-between;flex:1;font-size:0.75rem;">
+                        <div style="padding:6px 10px 8px;display:flex;flex-direction:column;justify-content:space-between;flex:1;font-size:12.5px;color:#000;font-weight:500;">
                             <div style="text-align:center;">
-                                <div class="moul" style="font-size:0.78rem;">មូលវិចារ គ្រូទទួលបន្ទុកថ្នាក់</div>
-                                <div style="min-height:18px;padding:2px 4px;font-style:italic;color:#1e293b;">${esc(st.teacherComment || '')}</div>
+                                <div class="moul" style="font-size:12.5px;color:#000;">មូលវិចារ គ្រូទទួលបន្ទុកថ្នាក់</div>
+                                <div style="min-height:18px;padding:2px 4px;font-style:italic;color:#000;">${esc(st.teacherComment || '')}</div>
                                 <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
-                                <div class="moul" style="margin-top:2px;">គ្រូបន្ទុកថ្នាក់</div>
+                                <div class="moul" style="margin-top:2px;font-size:12.5px;color:#000;">គ្រូបន្ទុកថ្នាក់</div>
                                 <div style="min-height:28px;"></div>
-                                <div class="moul" style="padding-left:56px;font-size:0.78rem;">${esc(teacherName)}</div>
+                                <div class="moul" style="padding-left:56px;font-size:12.5px;color:#000;">${esc(teacherName)}</div>
                             </div>
 
                             <div style="text-align:center;margin-top:6px;">
-                                <div class="moul" style="font-size:0.78rem;">មូលវិចារ នាយកសាលា</div>
+                                <div class="moul" style="font-size:12.5px;color:#000;">មូលវិចារ នាយកសាលា</div>
                                 <div style="min-height:14px;"></div>
                                 <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
-                                <div class="moul" style="margin-top:2px;">នាយកសាលា</div>
+                                <div class="moul" style="margin-top:2px;font-size:12.5px;color:#000;">នាយកសាលា</div>
                                 <div style="min-height:32px;"></div>
-                                <div class="moul" style="padding-left:56px;font-size:0.78rem;">${esc(principal)}</div>
+                                <div class="moul" style="padding-left:56px;font-size:12.5px;color:#000;">${esc(principal)}</div>
                             </div>
                         </div>
                     </div>
@@ -1299,9 +1299,9 @@ async function downloadReportDocsPdf() {
         const pdf = new JsPdfCtor({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const pageW = pdf.internal.pageSize.getWidth();   // 297mm
         const pageH = pdf.internal.pageSize.getHeight();  // 210mm
-        const margin = 5;
-        const maxW = pageW - margin * 2;  // 287mm
-        const maxH = pageH - margin * 2;  // 200mm
+        const margin = 3;
+        const maxW = pageW - margin * 2;  // 291mm
+        const maxH = pageH - margin * 2;  // 204mm
 
         for (let i = 0; i < pages.length; i++) {
             const progEl = document.getElementById('pdfProgText');
@@ -1318,16 +1318,16 @@ async function downloadReportDocsPdf() {
             el.style.border = 'none';
             el.style.borderRadius = '0';
             el.style.marginBottom = '0';
-            el.style.padding = '4px';
-            el.style.width = '1120px';
+            el.style.padding = '2px';
+            el.style.width = '1220px';
 
             const canvas = await html2canvas(el, {
-                scale: pages.length > 15 ? 1.5 : 2,
+                scale: pages.length > 15 ? 1.6 : 2,
                 useCORS: true,
                 backgroundColor: '#ffffff',
                 logging: false,
-                width: 1120,
-                windowWidth: 1200
+                width: 1220,
+                windowWidth: 1280
             });
 
             el.style.border = prevBorder;
