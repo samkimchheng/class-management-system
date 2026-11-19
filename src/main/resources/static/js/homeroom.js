@@ -848,12 +848,102 @@ function renderHonorAndCert() {
 }
 
 // ==================== TAB 5: REPORT CARDS, TAMDAN & KEARIK ====================
+function toKhmerNum(n) {
+    const kh = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+    return String(n).replace(/\d/g, d => kh[Number(d)]);
+}
+
+const STANDARD_KEARIK_SUBJECTS = [
+    { label: 'ភាសាខ្មែរ', keys: ['ភាសាខ្មែរ', 'ខ្មែរ', 'khmer'] },
+    { label: 'គណិតវិទ្យា', keys: ['គណិតវិទ្យា', 'គណិត', 'math'] },
+    { label: 'រូបវិទ្យា', keys: ['រូបវិទ្យា', 'រូប', 'physics'] },
+    { label: 'គីមីវិទ្យា', keys: ['គីមីវិទ្យា', 'គីមី', 'chem'] },
+    { label: 'ជីវវិទ្យា', keys: ['ជីវវិទ្យា', 'ជីវ', 'bio'] },
+    { label: 'ប្រវត្តិវិទ្យា', keys: ['ប្រវត្តិវិទ្យា', 'ប្រវត្តិ', 'history'] },
+    { label: 'ព័ត៌មានវិទ្យា', keys: ['ព័ត៌មានវិទ្យា', 'ict', 'computer'] },
+    { label: 'សីល-ពលរដ្ឋ', keys: ['សីល', 'ពលរដ្ឋ', 'civic', 'moral'] },
+    { label: 'ផែនដីវិទ្យា', keys: ['ផែនដី', 'បរិស្ថាន', 'earth'] },
+    { label: 'ភូមិវិទ្យា', keys: ['ភូមិវិទ្យា', 'ភូមិ', 'geo'] },
+    { label: 'គេហវិទ្យា', keys: ['គេហវិទ្យា', 'គេហ', 'home'] },
+    { label: 'អប់រំកាយ', keys: ['អប់រំកាយ', 'កីឡា', 'sport', 'pe'] },
+    { label: 'បំណិនជីវិត', keys: ['បំណិនជីវិត', 'បំណិន', 'life'] },
+    { label: 'សេដ្ឋកិច្ច', keys: ['សេដ្ឋកិច្ច', 'econ'] },
+    { label: 'សិល្បៈ', keys: ['សិល្បៈ', 'art'] },
+    { label: 'កសិកម្ម', keys: ['កសិកម្ម', 'agri'] },
+    { label: 'ភាសាបរទេស', keys: ['ភាសាអង់គ្លេស', 'អង់គ្លេស', 'បារាំង', 'ភាសាបរទេស', 'english', 'french'] }
+];
+
+function findMatchingSubject(stdDef) {
+    for (const sub of HR.subjects) {
+        const lower = (sub.subjectName || '').toLowerCase();
+        if (stdDef.keys.some(k => lower.includes(k))) return sub;
+    }
+    return null;
+}
+
+function computeSubjectRanksForPeriod(period, subjectId) {
+    const arr = HR.students.map(st => ({
+        sid: st.id,
+        val: HR.scoreMap[`${period}_${st.id}_${subjectId}`]
+    })).filter(x => x.val !== undefined).sort((a, b) => b.val - a.val);
+    const rankMap = {};
+    let lastV = null, lastR = 0;
+    arr.forEach((x, idx) => {
+        if (lastV !== null && Math.round(x.val * 100) === Math.round(lastV * 100)) {
+            rankMap[x.sid] = lastR;
+        } else {
+            rankMap[x.sid] = idx + 1;
+            lastR = idx + 1;
+            lastV = x.val;
+        }
+    });
+    return rankMap;
+}
+
+function getStudentSemesterAttendance(student) {
+    // Combine monthlyAttendanceJson (Nov-Mar = S1, Apr-Oct = S2) or fallback to existing Attendance
+    let s1P = 0, s1U = 0, s2P = 0, s2U = 0, hasMonthly = false;
+    const mAtt = HR.admin.monthlyAtt || {};
+    Object.keys(mAtt).forEach(k => {
+        const parts = k.split('-');
+        const mNum = parts.length === 2 ? parseInt(parts[1], 10) : 0;
+        const marks = (mAtt[k] && mAtt[k].marks) ? mAtt[k].marks : {};
+        Object.keys(marks).forEach(mkKey => {
+            if (mkKey.startsWith(`${student.id}_`)) {
+                hasMonthly = true;
+                const val = marks[mkKey];
+                const isS1 = (mNum === 11 || mNum === 12 || mNum === 1 || mNum === 2 || mNum === 3);
+                if (val === 'ច') { if (isS1) s1P++; else s2P++; }
+                else if (val === 'អ') { if (isS1) s1U++; else s2U++; }
+            }
+        });
+    });
+    if (!hasMonthly && student.absentByMonth) {
+        Object.keys(student.absentByMonth).forEach(mStr => {
+            const mNum = parseInt(mStr, 10);
+            const arr = student.absentByMonth[mStr] || [0, 0, 0];
+            const isS1 = (mNum === 11 || mNum === 12 || mNum === 1 || mNum === 2 || mNum === 3);
+            if (isS1) { s1P += arr[0]; s1U += arr[1]; }
+            else { s2P += arr[0]; s2U += arr[1]; }
+        });
+    }
+    return { s1P, s1U, s2P, s2U, yrP: s1P + s2P, yrU: s1U + s2U };
+}
+
 function renderReportDocs() {
     const docType = document.getElementById('reportDocType').value;
     const period = document.getElementById('reportPeriodSelect').value;
     const stuId = document.getElementById('reportStudentSelect').value;
     const area = document.getElementById('reportDocsArea');
-    document.getElementById('reportStudentSelect').style.display = docType === 'PRITIBAT_ONE' ? 'inline-block' : 'none';
+    document.getElementById('reportStudentSelect').style.display =
+        (docType === 'PRITIBAT_ONE' || docType === 'KEARIK_ONE') ? 'inline-block' : 'none';
+    document.getElementById('reportPeriodSelect').style.display =
+        (docType === 'KEARIK_ONE' || docType === 'KEARIK_ALL' || docType === 'TAMDAN') ? 'none' : 'inline-block';
+
+    if (docType === 'KEARIK_ONE' || docType === 'KEARIK_ALL') {
+        renderKearikPages(docType === 'KEARIK_ONE' ? stuId : null);
+        return;
+    }
 
     const results = computeResultsForPeriod(period);
     if (docType === 'PRITIBAT_ONE' || docType === 'PRITIBAT_ALL') {
@@ -902,50 +992,314 @@ function renderReportDocs() {
         return;
     }
 
-    if (docType === 'TAMDAN') {
-        const s1 = computeSemester(1), s2 = computeSemester(2), yr = computeAnnual();
-        const s1M = {}, s2M = {}, yrM = {};
-        s1.forEach(r => s1M[r.student.id] = r); s2.forEach(r => s2M[r.student.id] = r); yr.forEach(r => yrM[r.student.id] = r);
-        area.innerHTML = `
-            <div class="print-sheet">
-                ${getOfficialHeader('សៀវភៅតាមដានការសិក្សា និងវត្តមានសិស្សប្រចាំឆ្នាំ', `ថ្នាក់ទី ${HR.className}`)}
-                <table class="hr-table">
-                    <thead><tr><th>ល.រ</th><th>គោត្តនាម-នាម</th><th>ភេទ</th><th>ឆមាសទី១</th><th>ចំណាត់.ឆ១</th><th>ឆមាសទី២</th><th>ចំណាត់.ឆ២</th><th>ប្រចាំឆ្នាំ</th><th>និទ្ទេស</th><th>អវត្ត.សរុប</th></tr></thead>
-                    <tbody>
-                        ${HR.students.map((st, i) => {
-                            const r1 = s1M[st.id], r2 = s2M[st.id], ry = yrM[st.id];
-                            return `<tr><td>${i + 1}</td><td class="text-left" style="font-weight:700;">${esc(st.name)}</td><td>${esc(st.gender)}</td><td>${fmtNum(r1?.avg)}</td><td>${r1?.rank || '-'}</td><td>${fmtNum(r2?.avg)}</td><td>${r2?.rank || '-'}</td><td style="font-weight:800;color:#1d4ed8;">${fmtNum(ry?.avg)}</td><td><span class="badge badge-${ry?.mention?.code || '-'}">${ry?.mention?.code || '-'}</span></td><td>${st.absentTotal || 0}</td></tr>`;
-                        }).join('')}
-                    </tbody>
-                </table>
-                ${getOfficialFooter()}
-            </div>`;
-        return;
-    }
-
-    // KEARIK (សៀវភៅសិក្ខាគារិក)
-    const yr = computeAnnual();
+    // TAMDAN
+    const s1 = computeSemester(1), s2 = computeSemester(2), yr = computeAnnual();
+    const s1M = {}, s2M = {}, yrM = {};
+    s1.forEach(r => s1M[r.student.id] = r); s2.forEach(r => s2M[r.student.id] = r); yr.forEach(r => yrM[r.student.id] = r);
     area.innerHTML = `
         <div class="print-sheet">
-            ${getOfficialHeader('សៀវភៅសិក្ខាគារិកប្រចាំថ្នាក់', `ឆ្នាំសិក្សា ${HR.academicYear}`)}
-            <table class="hr-table" style="font-size:0.8rem;">
-                <thead><tr><th>ល.រ</th><th>អត្តលេខ</th><th>គោត្តនាម-នាម</th><th>ភេទ</th><th>ថ្ងៃខែឆ្នាំកំណើត</th><th>ឈ្មោះឪពុក</th><th>ឈ្មោះម្ដាយ</th><th>អាសយដ្ឋាន</th><th>មធ្យម.ឆ្នាំ</th><th>លទ្ធផល</th></tr></thead>
+            ${getOfficialHeader('សៀវភៅតាមដានការសិក្សា និងវត្តមានសិស្សប្រចាំឆ្នាំ', `ថ្នាក់ទី ${HR.className}`)}
+            <table class="hr-table">
+                <thead><tr><th>ល.រ</th><th>គោត្តនាម-នាម</th><th>ភេទ</th><th>ឆមាសទី១</th><th>ចំណាត់.ឆ១</th><th>ឆមាសទី២</th><th>ចំណាត់.ឆ២</th><th>ប្រចាំឆ្នាំ</th><th>និទ្ទេស</th><th>អវត្ត.សរុប</th></tr></thead>
                 <tbody>
-                    ${yr.map((r, i) => `
-                        <tr>
-                            <td>${i + 1}</td><td>${esc(r.student.studentCode)}</td>
-                            <td class="text-left" style="font-weight:700;">${esc(r.student.name)}</td>
-                            <td>${esc(r.student.gender)}</td><td>${esc(r.student.dob || '-')}</td>
-                            <td class="text-left">${esc(r.student.fatherName || '-')}</td>
-                            <td class="text-left">${esc(r.student.motherName || '-')}</td>
-                            <td class="text-left">${esc([r.student.village, r.student.commune, r.student.district].filter(Boolean).join(', ') || '-')}</td>
-                            <td style="font-weight:800;">${fmtNum(r.avg)}</td>
-                            <td>${r.promoted === true ? 'ឡើងថ្នាក់' : r.promoted === false ? 'ត្រួតថ្នាក់' : '-'}</td>
-                        </tr>`).join('')}
+                    ${HR.students.map((st, i) => {
+                        const r1 = s1M[st.id], r2 = s2M[st.id], ry = yrM[st.id];
+                        return `<tr><td>${i + 1}</td><td class="text-left" style="font-weight:700;">${esc(st.name)}</td><td>${esc(st.gender)}</td><td>${fmtNum(r1?.avg)}</td><td>${r1?.rank || '-'}</td><td>${fmtNum(r2?.avg)}</td><td>${r2?.rank || '-'}</td><td style="font-weight:800;color:#1d4ed8;">${fmtNum(ry?.avg)}</td><td><span class="badge badge-${ry?.mention?.code || '-'}">${ry?.mention?.code || '-'}</span></td><td>${st.absentTotal || 0}</td></tr>`;
+                    }).join('')}
                 </tbody>
             </table>
             ${getOfficialFooter()}
         </div>`;
+}
+
+function renderKearikPages(singleStudentId) {
+    const area = document.getElementById('reportDocsArea');
+    const s1List = computeSemester(1), s2List = computeSemester(2), yrList = computeAnnual();
+    const ex1List = computeSinglePeriod('EXAM_S1'), ex2List = computeSinglePeriod('EXAM_S2');
+
+    // Compute ranks for monthly averages in S1 & S2
+    const s1MthRankRows = s1List.map(r => ({ student: r.student, avg: r.avgMonths, rank: null }));
+    assignRanks(s1MthRankRows);
+    const s2MthRankRows = s2List.map(r => ({ student: r.student, avg: r.avgMonths, rank: null }));
+    assignRanks(s2MthRankRows);
+
+    const mapBy = (arr) => { const m = {}; arr.forEach(x => m[x.student.id] = x); return m; };
+    const s1M = mapBy(s1List), s2M = mapBy(s2List), yrM = mapBy(yrList);
+    const ex1M = mapBy(ex1List), ex2M = mapBy(ex2List);
+    const s1MthM = mapBy(s1MthRankRows), s2MthM = mapBy(s2MthRankRows);
+
+    // Precompute subject rank maps for EXAM_S1 & EXAM_S2
+    const subRankS1 = {}, subRankS2 = {};
+    HR.subjects.forEach(sub => {
+        subRankS1[sub.id] = computeSubjectRanksForPeriod('EXAM_S1', sub.id);
+        subRankS2[sub.id] = computeSubjectRanksForPeriod('EXAM_S2', sub.id);
+    });
+
+    const cfg = HR.admin.config || {};
+    const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
+    const principal = cfg.principal || HR.teacher.principalName || '';
+    const teacherName = HR.teacher.fullName || '';
+    const totalStuKh = toKhmerNum(HR.students.length);
+
+    const targetStudents = singleStudentId
+        ? HR.students.map((s, idx) => ({ st: s, num: idx + 1 })).filter(x => String(x.st.id) === String(singleStudentId))
+        : HR.students.map((s, idx) => ({ st: s, num: idx + 1 }));
+
+    if (targetStudents.length === 0) {
+        area.innerHTML = '<div style="text-align:center;color:#64748b;padding:24px;">គ្មានទិន្នន័យសិស្ស</div>';
+        return;
+    }
+
+    area.innerHTML = targetStudents.map((item, pageIdx) => {
+        const st = item.st;
+        const r1 = s1M[st.id] || {}, r2 = s2M[st.id] || {}, ry = yrM[st.id] || {};
+        const e1 = ex1M[st.id] || {}, e2 = ex2M[st.id] || {};
+        const m1 = s1MthM[st.id] || {}, m2 = s2MthM[st.id] || {};
+        const att = getStudentSemesterAttendance(st);
+
+        const m1Mention = getMentionByAvg50(r1.avgMonths);
+        const m2Mention = getMentionByAvg50(r2.avgMonths);
+        const e1Mention = getMentionByAvg50(e1.avg);
+        const e2Mention = getMentionByAvg50(e2.avg);
+
+        const subjectRowsHtml = STANDARD_KEARIK_SUBJECTS.map((std, i) => {
+            const matched = findMatchingSubject(std);
+            let sc1 = '-', rk1 = '-', mn1 = '-';
+            let sc2 = '-', rk2 = '-', mn2 = '-';
+            let scY = '-', rkY = '-', mnY = '-';
+            let tName = '';
+            if (matched) {
+                tName = matched.teacherName || '';
+                const v1 = HR.scoreMap[`EXAM_S1_${st.id}_${matched.id}`];
+                const v2 = HR.scoreMap[`EXAM_S2_${st.id}_${matched.id}`];
+                if (v1 !== undefined) {
+                    sc1 = fmtNum(v1); rk1 = subRankS1[matched.id][st.id] || '-'; mn1 = getSubjectMention(v1, matched.maxScore);
+                }
+                if (v2 !== undefined) {
+                    sc2 = fmtNum(v2); rk2 = subRankS2[matched.id][st.id] || '-'; mn2 = getSubjectMention(v2, matched.maxScore);
+                }
+                if (v1 !== undefined && v2 !== undefined) {
+                    const vy = (v1 + v2) / 2;
+                    scY = fmtNum(vy); mnY = getSubjectMention(vy, matched.maxScore);
+                } else if (v1 !== undefined) {
+                    scY = fmtNum(v1); mnY = getSubjectMention(v1, matched.maxScore);
+                } else if (v2 !== undefined) {
+                    scY = fmtNum(v2); mnY = getSubjectMention(v2, matched.maxScore);
+                }
+            }
+            return `
+                <tr>
+                    <td>${toKhmerNum(i + 1)}</td>
+                    <td class="k-left">${esc(std.label)}</td>
+                    <td>${sc1}</td><td>${rk1}</td><td class="k-blue">${mn1}</td>
+                    <td>${sc2}</td><td>${rk2}</td><td class="k-blue">${mn2}</td>
+                    <td>${scY}</td><td>${rkY}</td><td class="k-blue">${mnY}</td>
+                    <td class="k-left" style="font-size:0.66rem;">${esc(tName)}</td>
+                </tr>`;
+        }).join('');
+
+        const certS1 = (r1.rank && r1.rank <= 5) ? '១' : '';
+        const certS2 = (r2.rank && r2.rank <= 5) ? '១' : '';
+        const certYr = (ry.rank && ry.rank <= 5) ? '១' : '';
+
+        return `
+            <div class="kearik-page ${pageIdx < targetStudents.length - 1 ? 'page-break' : ''}">
+                <div class="kearik-grid">
+                    <!-- LEFT COLUMN -->
+                    <div>
+                        <table class="kearik-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:28px;">ល.រ</th>
+                                    <th style="width:74px;">អត្តលេខ</th>
+                                    <th>គោត្តនាម និងនាម</th>
+                                    <th style="width:38px;">ភេទ</th>
+                                    <th style="width:95px;">ថ្ងៃខែឆ្នាំកំណើត</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-weight:800;">${toKhmerNum(item.num)}</td>
+                                    <td>${esc(st.studentCode || '-')}</td>
+                                    <td class="k-teal">${esc(st.name)}</td>
+                                    <td>${esc(st.gender)}</td>
+                                    <td>${esc(st.dob || '-')}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="kearik-title-bar moul">លទ្ធផលនៃការសិក្សា</div>
+
+                        <table class="kearik-table" style="border-top:none;">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" style="width:24px;">ល.រ</th>
+                                    <th rowspan="2" style="min-width:86px;">មុខវិជ្ជា</th>
+                                    <th colspan="3">ឆមាសទី ១</th>
+                                    <th colspan="3">ឆមាសទី ២</th>
+                                    <th colspan="3">ប្រចាំឆ្នាំ</th>
+                                    <th rowspan="2" style="min-width:74px;font-size:0.65rem;">មូលវិចារ ហត្ថលេខា<br>និងឈ្មោះគ្រូ</th>
+                                </tr>
+                                <tr>
+                                    <th>ពិន្ទុ</th><th>ចំ.</th><th>និ.</th>
+                                    <th>ពិន្ទុ</th><th>ចំ.</th><th>និ.</th>
+                                    <th>ពិន្ទុ</th><th>ចំ.</th><th>និ.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${subjectRowsHtml}
+                                <tr>
+                                    <td>១៨</td><td class="k-left" style="font-weight:700;">ពិន្ទុប្រឡងឆមាស</td>
+                                    <td style="font-weight:700;">${fmtNum(e1.total)}</td><td></td><td></td>
+                                    <td style="font-weight:700;">${fmtNum(e2.total)}</td><td></td><td></td>
+                                    <td></td><td></td><td></td><td></td>
+                                </tr>
+                                <tr>
+                                    <td>១៩</td><td class="k-left" style="font-weight:700;">ម.ពិន្ទុប្រឡងឆមាស</td>
+                                    <td style="font-weight:700;">${fmtNum(e1.avg)}</td><td class="k-red">${e1.rank || '-'}</td><td class="k-blue">${e1Mention.code}</td>
+                                    <td style="font-weight:700;">${fmtNum(e2.avg)}</td><td class="k-red">${e2.rank || '-'}</td><td class="k-blue">${e2Mention.code}</td>
+                                    <td></td><td></td><td></td><td></td>
+                                </tr>
+                                <tr>
+                                    <td>២០</td><td class="k-left" style="font-weight:700;">ម.ពិន្ទុខែប្រចាំឆមាស</td>
+                                    <td style="font-weight:700;">${fmtNum(r1.avgMonths)}</td><td class="k-red">${m1.rank || '-'}</td><td class="k-blue">${m1Mention.code}</td>
+                                    <td style="font-weight:700;">${fmtNum(r2.avgMonths)}</td><td class="k-red">${m2.rank || '-'}</td><td class="k-blue">${m2Mention.code}</td>
+                                    <td></td><td></td><td></td><td></td>
+                                </tr>
+                                <tr>
+                                    <td>២១</td><td class="k-left" style="font-weight:800;">ម.ពិន្ទុប្រចាំឆមាស</td>
+                                    <td style="font-weight:800;">${fmtNum(r1.avg)}</td><td class="k-red">${r1.rank || '-'}</td><td class="k-blue">${r1.mention?.code || '-'}</td>
+                                    <td style="font-weight:800;">${fmtNum(r2.avg)}</td><td class="k-red">${r2.rank || '-'}</td><td class="k-blue">${r2.mention?.code || '-'}</td>
+                                    <td style="font-weight:800;">${fmtNum(ry.avg)}</td><td class="k-red">${ry.rank || '-'}</td><td class="k-blue">${ry.mention?.code || '-'}</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="kearik-title-bar moul" style="font-size:0.78rem;">ចំនួនអវត្តមានក្នុងឆ្នាំសិក្សា</div>
+                        <table class="kearik-table" style="border-top:none;">
+                            <thead>
+                                <tr>
+                                    <th style="width:28%;">អវត្តមាន</th>
+                                    <th>ឆមាសទី ១</th>
+                                    <th>ឆមាសទី ២</th>
+                                    <th>ប្រចាំឆ្នាំ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="k-left">- មានច្បាប់</td><td>${att.s1P}</td><td>${att.s2P}</td><td style="font-weight:700;">${att.yrP}</td></tr>
+                                <tr><td class="k-left">- អត់ច្បាប់</td><td>${att.s1U}</td><td>${att.s2U}</td><td style="font-weight:700;">${att.yrU}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- RIGHT COLUMN -->
+                    <div class="kearik-right-box">
+                        <div>
+                            <table class="kearik-table" style="border:none;">
+                                <tbody>
+                                    <tr>
+                                        <td class="moul" style="border-top:none;border-left:none;font-size:0.8rem;padding:5px;">${esc(school)}</td>
+                                        <td style="border-top:none;border-right:none;font-weight:800;width:36%;font-size:0.8rem;">សិស្សសរុប ${totalStuKh} នាក់</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="moul" style="border-left:none;border-right:none;font-size:0.82rem;padding:5px;">
+                                            ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="moul" style="border-left:none;border-right:none;font-size:0.8rem;padding:4px;">ការវាយតម្លៃ</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table class="kearik-table" style="border-left:none;border-right:none;border-top:none;">
+                                <thead>
+                                    <tr>
+                                        <th style="border-left:none;width:44%;">ផ្នែកទាំង ៤</th>
+                                        <th>ឆមាសទី១</th>
+                                        <th>ឆមាសទី២</th>
+                                        <th style="border-right:none;">ប្រចាំឆ្នាំ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="k-left" style="border-left:none;">១- ការសិក្សា</td><td>${esc(r1.mention?.kh || '-')}</td><td>${esc(r2.mention?.kh || '-')}</td><td style="border-right:none;">${esc(ry.mention?.kh || '-')}</td></tr>
+                                    <tr><td class="k-left" style="border-left:none;">២- សីលធម៌រស់នៅ</td><td>ល្អ</td><td>ល្អ</td><td style="border-right:none;">ល្អ</td></tr>
+                                    <tr><td class="k-left" style="border-left:none;">៣- ពលកម្ម-បង្កបង្កើនផល</td><td>ល្អបង្គួរ</td><td>ល្អបង្គួរ</td><td style="border-right:none;">ល្អបង្គួរ</td></tr>
+                                    <tr><td class="k-left" style="border-left:none;">៤- សុខភាព-អនាម័យ</td><td>ល្អ</td><td>ល្អ</td><td style="border-right:none;">ល្អ</td></tr>
+                                </tbody>
+                            </table>
+
+                            <div style="text-align:center;font-weight:800;padding:4px;font-size:0.8rem;border-bottom:1px solid #000;" class="moul">ការសរសើរ</div>
+                            <table class="kearik-table" style="border-left:none;border-right:none;border-top:none;">
+                                <tbody>
+                                    <tr><td class="k-left" style="border-left:none;width:44%;font-weight:700;">បានទទួលការសរសើរ</td><td></td><td></td><td style="border-right:none;"></td></tr>
+                                    <tr><td class="k-left" style="border-left:none;">- ប័ណ្ណសរសើរចំនួន៖.........</td><td>${certS1}</td><td>${certS2}</td><td style="border-right:none;">${certYr}</td></tr>
+                                    <tr><td class="k-left" style="border-left:none;">- លិខិតសរសើរចំនួន៖.......</td><td></td><td></td><td style="border-right:none;"></td></tr>
+                                    <tr><td class="k-left" style="border-left:none;">- សក្ខីប័ណ្ណលើកទឹកចិត្ត៖......</td><td></td><td></td><td style="border-right:none;"></td></tr>
+                                </tbody>
+                            </table>
+
+                            <div style="padding:8px 10px;border-bottom:1px solid #000;font-size:0.78rem;">
+                                <div class="moul" style="text-align:center;margin-bottom:12px;">លទ្ធផលនៃការប្រឡងបញ្ចប់ភូមិសិក្សា ( ជាប់ ឬ ធ្លាក់ )</div>
+                                <div>មណ្ឌលប្រឡង..........................................ខេត្ត.............បន្ទប់.......លេខតុ.......</div>
+                            </div>
+                        </div>
+
+                        <div style="padding:10px 14px;display:flex;flex-direction:column;justify-content:space-between;flex:1;font-size:0.78rem;">
+                            <div style="text-align:center;">
+                                <div class="moul" style="font-size:0.8rem;">មូលវិចារ គ្រូទទួលបន្ទុកថ្នាក់</div>
+                                <div style="min-height:42px;padding:6px 4px;font-style:italic;color:#1e293b;">${esc(st.teacherComment || '')}</div>
+                                <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
+                                <div class="moul" style="margin-top:4px;">គ្រូបន្ទុកថ្នាក់</div>
+                                <div style="font-weight:700;margin-top:18px;">${esc(teacherName)}</div>
+                            </div>
+
+                            <div style="text-align:center;margin-top:16px;">
+                                <div class="moul" style="font-size:0.8rem;">មូលវិចារ នាយកសាលា</div>
+                                <div style="min-height:36px;"></div>
+                                <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
+                                <div class="moul" style="margin-top:4px;">នាយកសាលា</div>
+                                <div style="font-weight:700;margin-top:18px;">${esc(principal)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function downloadReportDocsPdf() {
+    const area = document.getElementById('reportDocsArea');
+    if (!area || !area.innerHTML.trim()) return;
+    const docType = document.getElementById('reportDocType').value;
+    if (typeof html2pdf === 'undefined') {
+        window.print();
+        return;
+    }
+    Swal.fire({
+        title: 'កំពុងបង្កើតឯកសារ PDF...',
+        text: 'សូមរង់ចាំបន្តិច (បើមានសិស្សច្រើនអាចចំណាយពេល ៥-១៥ វិនាទី)',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    try {
+        const opt = {
+            margin: [5, 5, 5, 5],
+            filename: `${docType}_${HR.className}_${HR.academicYear}.pdf`,
+            image: { type: 'jpeg', quality: 0.96 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+            pagebreak: { mode: ['css', 'legacy'] }
+        };
+        await html2pdf().set(opt).from(area).save();
+        Swal.close();
+    } catch (e) {
+        console.error(e);
+        Swal.close();
+        window.print();
+    }
 }
 
 // ==================== TAB 6: STUDENT EXTRA, ID CARDS & SALAKABAT ====================

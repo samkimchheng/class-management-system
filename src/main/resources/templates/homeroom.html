@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&family=Moul&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -239,9 +240,38 @@
             font-style: normal; font-weight: 800; background: #fff;
         }
 
+        /* Kearik (សៀវភៅសិក្ខាគារិក - Exact MoEYS 2-Column PDF Layout) */
+        .kearik-page {
+            background: #fff; color: #000; padding: 14px 16px; border: 1px solid #cbd5e1;
+            border-radius: 10px; margin-bottom: 22px; page-break-inside: avoid;
+        }
+        .kearik-grid {
+            display: grid; grid-template-columns: 51.5% 47.5%; gap: 1%; align-items: stretch;
+        }
+        .kearik-table {
+            width: 100%; border-collapse: collapse; font-size: 0.72rem; color: #000; background: #fff;
+        }
+        .kearik-table th, .kearik-table td {
+            border: 1px solid #000; padding: 2px 3px; text-align: center; vertical-align: middle; line-height: 1.32;
+        }
+        .kearik-table td.k-left { text-align: left; padding-left: 5px; }
+        .kearik-table th { font-weight: 800; background: #fff; }
+        .kearik-title-bar {
+            border: 1px solid #000; border-top: none; text-align: center; font-weight: 800;
+            padding: 3px 4px; font-size: 0.82rem; background: #fff;
+        }
+        .kearik-right-box {
+            border: 1px solid #000; display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .k-blue { color: #1d4ed8; font-weight: 700; }
+        .k-red { color: #dc2626; font-weight: 700; }
+        .k-teal { color: #0f766e; font-weight: 800; font-size: 0.86rem; }
+
         /* Print Mode */
         @media print {
-            @page { size: A4 landscape; margin: 8mm; }
+            @page { size: A4 landscape; margin: 6mm; }
+            .kearik-page { border: none !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; }
+            .kearik-table { font-size: 0.68rem !important; }
             body { background: #fff !important; display: block !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .sidebar, .sidebar-overlay, .topbar, .hr-hero, .hr-tabs, .no-print { display: none !important; }
             .main-content { margin-left: 0 !important; width: 100% !important; }
@@ -573,10 +603,11 @@
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                             <h3 class="panel-title">📋 ព្រឹត្តិបត្រពិន្ទុ សៀវភៅតាមដាន &amp; សិក្ខាគារិក</h3>
                             <select id="reportDocType" class="form-control" style="width:auto;font-weight:700;" onchange="renderReportDocs()">
+                                <option value="KEARIK_ONE">សៀវភៅសិក្ខាគារិក (សិស្សម្នាក់ - ទម្រង់ PDF)</option>
+                                <option value="KEARIK_ALL">សៀវភៅសិក្ខាគារិក (សិស្សទាំងអស់ - ១ នាក់ ១ ទំព័រ)</option>
                                 <option value="PRITIBAT_ONE">ព្រឹត្តិបត្រពិន្ទុ (សិស្សម្នាក់)</option>
                                 <option value="PRITIBAT_ALL">ព្រឹត្តិបត្រពិន្ទុ (សិស្សទាំងអស់)</option>
                                 <option value="TAMDAN">សៀវភៅតាមដានការសិក្សា (សង្ខេបថ្នាក់)</option>
-                                <option value="KEARIK">សៀវភៅសិក្ខាគារិក (ប្រវត្តិ + លទ្ធផលប្រចាំឆ្នាំ)</option>
                             </select>
                             <select id="reportPeriodSelect" class="form-control" style="width:auto;" onchange="renderReportDocs()">
                                 <option value="M1">ខែវិច្ឆិកា</option>
@@ -590,7 +621,10 @@
                             </select>
                             <select id="reportStudentSelect" class="form-control" style="width:auto;" onchange="renderReportDocs()"></select>
                         </div>
-                        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន / Save PDF</button>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-success btn-sm" onclick="downloadReportDocsPdf()">📥 ដោនឡូត PDF</button>
+                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន (A4 ផ្តេក)</button>
+                        </div>
                     </div>
                     <div id="reportDocsArea"></div>
                 </div>
