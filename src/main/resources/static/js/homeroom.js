@@ -1246,22 +1246,22 @@ function renderKearikPages(singleStudentId) {
                             </div>
                         </div>
 
-                        <div style="padding:6px 10px 8px;display:flex;flex-direction:column;justify-content:space-between;flex:1;font-size:14px;color:#000;font-weight:400;">
+                        <div style="padding:8px 10px 10px;display:flex;flex-direction:column;justify-content:space-between;flex:1;font-size:14px;color:#000;font-weight:400;">
                             <div style="text-align:center;">
                                 <div class="moul" style="font-size:13.5px;color:#000;">មូលវិចារ គ្រូទទួលបន្ទុកថ្នាក់</div>
-                                <div style="min-height:18px;padding:2px 4px;font-style:italic;color:#000;">${esc(st.teacherComment || '')}</div>
+                                <div style="min-height:82px;padding:6px 4px;font-style:italic;color:#000;">${esc(st.teacherComment || '')}</div>
                                 <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
                                 <div class="moul" style="margin-top:2px;font-size:13.5px;color:#000;">គ្រូបន្ទុកថ្នាក់</div>
-                                <div style="min-height:28px;"></div>
+                                <div style="min-height:36px;"></div>
                                 <div class="moul" style="padding-left:56px;font-size:13.5px;color:#000;">${esc(teacherName)}</div>
                             </div>
 
-                            <div style="text-align:center;margin-top:6px;">
+                            <div style="text-align:center;margin-top:12px;">
                                 <div class="moul" style="font-size:13.5px;color:#000;">មូលវិចារ នាយកសាលា</div>
-                                <div style="min-height:14px;"></div>
+                                <div style="min-height:46px;"></div>
                                 <div>ថ្ងៃទី........ខែ.............ឆ្នាំ........</div>
                                 <div class="moul" style="margin-top:2px;font-size:13.5px;color:#000;">នាយកសាលា</div>
-                                <div style="min-height:32px;"></div>
+                                <div style="min-height:40px;"></div>
                                 <div class="moul" style="padding-left:56px;font-size:13.5px;color:#000;">${esc(principal)}</div>
                             </div>
                         </div>
