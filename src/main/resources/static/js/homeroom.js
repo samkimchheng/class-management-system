@@ -1849,28 +1849,39 @@ function getShortGender(g) {
     return 'ប';
 }
 
-function renderMonthlyAttendance() {
+function renderMonthlyAttendance(preserveScroll = false) {
     const area = document.getElementById('monthlyAttendanceArea');
     if (!area) return;
+    const prevWrap = document.getElementById('attScrollWrap');
+    const prevScrollLeft = (preserveScroll && prevWrap) ? prevWrap.scrollLeft : 0;
+    const prevScrollTop = (preserveScroll && prevWrap) ? prevWrap.scrollTop : 0;
+
     const { month, year, key } = getMonthlyAttKey();
     const daysInMonth = new Date(year, month, 0).getDate();
     const mData = getOrCreateMonthAtt(key);
     const holidaySet = new Set(mData.holidays.map(Number));
 
-    // Build day metadata (Sunday = auto-holiday)
+    const now = new Date();
+    const nowY = now.getFullYear();
+    const nowM = now.getMonth() + 1;
+    const nowD = now.getDate();
+
+    // Build day metadata (Sunday = auto-holiday; highlight today in bright yellow)
     const days = [];
     let studyDays = 0;
     for (let d = 1; d <= daysInMonth; d++) {
         const dow = new Date(year, month - 1, d).getDay(); // 0 = Sun
         const isSunday = dow === 0;
         const isHoliday = isSunday || holidaySet.has(d);
+        const isToday = (year === nowY && month === nowM && d === nowD);
         if (!isHoliday) studyDays++;
         days.push({
             day: d,
             label: String(d).padStart(2, '0'),
             weekday: KHMER_WEEKDAYS[dow],
             isSunday,
-            isHoliday
+            isHoliday,
+            isToday
         });
     }
 
@@ -1884,15 +1895,15 @@ function renderMonthlyAttendance() {
             const mk = mData.marks[`${st.id}_${d.day}`] || '';
             if (mk === 'ច') perm++;
             else if (mk === 'អ') unex++;
-            const cls = mk === 'ច' ? 'att-cell-p' : (mk === 'អ' ? 'att-cell-a' : '');
-            return `<td class="att-day-col att-cell ${cls}" onclick="cycleAttMark(${st.id}, ${d.day})" title="${esc(st.name)} - ថ្ងៃទី ${d.label}">${esc(mk)}</td>`;
+            const cls = (mk === 'ច' ? 'att-cell-p' : (mk === 'អ' ? 'att-cell-a' : '')) + (d.isToday ? ' att-today-cell' : '');
+            return `<td class="att-day-col att-cell ${cls}" onclick="cycleAttMark(${st.id}, ${d.day})" title="${esc(st.name)} - ថ្ងៃទី ${d.label}${d.isToday ? ' (ថ្ងៃនេះ)' : ''}">${esc(mk)}</td>`;
         }).join('');
         const tot = perm + unex;
         grandTotalAbsent += tot;
         return `
             <tr>
-                <td>${idx + 1}</td>
-                <td class="att-name">${esc(st.name)}</td>
+                <td class="att-sticky-1">${idx + 1}</td>
+                <td class="att-name att-sticky-2">${esc(st.name)}</td>
                 <td>${getShortGender(st.gender)}</td>
                 ${cells}
                 <td>${perm}</td>
@@ -1929,28 +1940,29 @@ function renderMonthlyAttendance() {
                 </div>
             </div>
 
-            <div class="table-wrap" style="border:none;border-radius:0;">
+            <div id="attScrollWrap" class="att-scroll-wrap">
                 <table class="att-pdf-table">
                     <thead>
                         <tr>
-                            <th colspan="3" style="text-align:left;padding:4px 8px;font-weight:800;font-size:0.82rem;">ជ្រើសរើសថ្ងៃឈប់សម្រាក</th>
+                            <th colspan="2" class="att-sticky-12" style="text-align:left;padding:4px 8px;font-weight:800;font-size:0.82rem;">ជ្រើសរើសថ្ងៃឈប់សម្រាក</th>
+                            <th></th>
                             ${days.map(d => `
-                                <th class="att-day-col" style="padding:2px;">
+                                <th class="att-day-col ${d.isToday && !d.isHoliday ? 'att-today-head' : ''}" style="padding:2px;">
                                     <input type="checkbox" class="att-holiday-toggle no-print" ${d.isHoliday ? 'checked' : ''} ${d.isSunday ? 'disabled title="ថ្ងៃអាទិត្យ"' : `onchange="toggleAttHoliday(${d.day})" title="ដាក់/ដកថ្ងៃឈប់សម្រាក ថ្ងៃទី ${d.label}"`}>
                                 </th>`).join('')}
                             <th colspan="3"></th>
                         </tr>
                         <tr>
-                            <th rowspan="2" class="att-col-fit" style="padding:4px 6px;">ល.រ</th>
-                            <th rowspan="2" class="att-col-fit" style="padding:4px 10px;">គោត្តនាម និងនាម</th>
+                            <th rowspan="2" class="att-col-fit att-sticky-1" style="padding:4px 6px;">ល.រ</th>
+                            <th rowspan="2" class="att-col-fit att-sticky-2" style="padding:4px 10px;">គោត្តនាម និងនាម</th>
                             <th rowspan="2" class="att-col-fit" style="padding:4px 6px;">ភេទ</th>
-                            ${days.map(d => `<th class="att-day-col ${d.isHoliday ? 'att-holiday' : ''}">${d.label}</th>`).join('')}
+                            ${days.map(d => `<th ${d.isToday ? 'id="attTodayCol"' : ''} class="att-day-col ${d.isHoliday ? 'att-holiday' : (d.isToday ? 'att-today-head' : '')}">${d.label}${d.isToday && !d.isHoliday ? '<span class="att-today-badge">ថ្ងៃនេះ</span>' : ''}</th>`).join('')}
                             <th rowspan="2" class="att-col-fit"><div class="att-vhead">មានច្បាប់</div></th>
                             <th rowspan="2" class="att-col-fit"><div class="att-vhead">ឥតច្បាប់</div></th>
                             <th rowspan="2" class="att-col-fit"><div class="att-vhead">សរុប</div></th>
                         </tr>
                         <tr>
-                            ${days.map(d => `<th class="att-day-col att-day-wd ${d.isHoliday ? 'att-holiday' : ''}">${d.weekday}</th>`).join('')}
+                            ${days.map(d => `<th class="att-day-col att-day-wd ${d.isHoliday ? 'att-holiday' : (d.isToday ? 'att-today-head' : '')}">${d.weekday}</th>`).join('')}
                         </tr>
                     </thead>
                     <tbody>
@@ -1988,6 +2000,42 @@ function renderMonthlyAttendance() {
             ${getOfficialFooter()}
         </div>
     `;
+
+    // Restore scroll position on cell clicks, or smoothly center Today's yellow column on load/month switch
+    const wrap = document.getElementById('attScrollWrap');
+    if (wrap) {
+        if (preserveScroll) {
+            wrap.scrollLeft = prevScrollLeft;
+            wrap.scrollTop = prevScrollTop;
+        } else {
+            scrollAttWrapToToday(wrap);
+        }
+    }
+}
+
+function scrollAttWrapToToday(wrap) {
+    const todayEl = document.getElementById('attTodayCol');
+    if (!wrap || !todayEl) return;
+    const targetLeft = Math.max(0, todayEl.offsetLeft - 260);
+    wrap.scrollTo({ left: targetLeft, behavior: 'smooth' });
+}
+
+function jumpToAttToday() {
+    const now = new Date();
+    const mSel = document.getElementById('attMonthSelect');
+    const ySel = document.getElementById('attYearSelect');
+    if (mSel) mSel.value = String(now.getMonth() + 1);
+    if (ySel) {
+        const yVal = String(now.getFullYear());
+        if (!Array.from(ySel.options).some(o => o.value === yVal)) {
+            const opt = document.createElement('option');
+            opt.value = yVal;
+            opt.textContent = yVal;
+            ySel.appendChild(opt);
+        }
+        ySel.value = yVal;
+    }
+    renderMonthlyAttendance(false);
 }
 
 function toggleAttHoliday(day) {
@@ -1996,7 +2044,7 @@ function toggleAttHoliday(day) {
     const idx = mData.holidays.indexOf(day);
     if (idx >= 0) mData.holidays.splice(idx, 1);
     else mData.holidays.push(day);
-    renderMonthlyAttendance();
+    renderMonthlyAttendance(true);
 }
 
 function cycleAttMark(studentId, day) {
@@ -2007,7 +2055,7 @@ function cycleAttMark(studentId, day) {
     if (cur === '') mData.marks[k] = 'ច';
     else if (cur === 'ច') mData.marks[k] = 'អ';
     else delete mData.marks[k];
-    renderMonthlyAttendance();
+    renderMonthlyAttendance(true);
 }
 
 function pullExistingAttendanceIntoMonth() {

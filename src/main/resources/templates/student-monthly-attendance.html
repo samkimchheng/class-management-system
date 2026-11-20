@@ -37,20 +37,65 @@
         }
         .table-wrap { overflow-x: auto; }
 
-        .att-pdf-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; background: #fff; color: #000; }
-        .att-pdf-table th, .att-pdf-table td { border: 1px solid #000; padding: 5px 3px; text-align: center; vertical-align: middle; }
+        .att-scroll-wrap {
+            overflow-x: auto; overflow-y: auto; max-height: 74vh;
+            border: 1px solid #cbd5e1; border-radius: 8px; position: relative; background: #fff;
+        }
+        .att-pdf-table {
+            width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0;
+            font-size: 0.95rem; background: #fff; color: #000;
+            border-top: 1px solid #000; border-left: 1px solid #000;
+        }
+        .att-pdf-table th, .att-pdf-table td {
+            border-right: 1px solid #000; border-bottom: 1px solid #000;
+            padding: 5px 3px; text-align: center; vertical-align: middle; background: #fff;
+        }
+        .att-pdf-table thead th { position: sticky; z-index: 5; background: #f8fafc; }
+        .att-pdf-table thead tr:nth-child(1) th { top: 0; }
         .att-pdf-table th.att-col-fit, .att-pdf-table td.att-col-fit { width: 1%; white-space: nowrap; }
+        .att-pdf-table .att-sticky-1 {
+            position: sticky; left: 0; z-index: 4;
+            min-width: 44px; width: 44px; max-width: 44px; background: #fff;
+        }
+        .att-pdf-table .att-sticky-2 {
+            position: sticky; left: 44px; z-index: 4; background: #fff;
+            box-shadow: 3px 0 6px -2px rgba(15, 23, 42, 0.22);
+        }
+        .att-pdf-table thead .att-sticky-1,
+        .att-pdf-table thead .att-sticky-2,
+        .att-pdf-table thead .att-sticky-12 {
+            position: sticky; left: 0; z-index: 8; background: #f1f5f9;
+        }
+        .att-pdf-table thead .att-sticky-2 { left: 44px; }
+        .att-pdf-table thead .att-sticky-12 { box-shadow: 3px 0 6px -2px rgba(15, 23, 42, 0.22); }
         .att-pdf-table td.att-name { text-align: left; padding: 5px 10px; white-space: nowrap; font-weight: 600; font-size: 0.96rem; width: 1%; }
-        .att-pdf-table .att-day-col { min-width: 34px; width: auto; font-size: 0.88rem; }
+        .att-pdf-table tbody tr:hover td:not(.att-holiday):not(.att-today-cell) { background: #e0f2fe; }
+        .att-pdf-table tbody tr:hover td.att-sticky-1,
+        .att-pdf-table tbody tr:hover td.att-sticky-2 { background: #e0f2fe; }
+        .att-pdf-table .att-day-col { min-width: 38px; width: 38px; font-size: 0.88rem; }
         .att-pdf-table .att-day-wd { font-size: 0.8rem; }
+        .att-pdf-table .att-today-head {
+            background: #facc15 !important; color: #713f12 !important; font-weight: 800 !important;
+            border-left: 2px solid #ca8a04 !important; border-right: 2px solid #ca8a04 !important;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .att-pdf-table .att-today-cell {
+            background: #fef9c3 !important;
+            border-left: 2px solid #eab308 !important; border-right: 2px solid #eab308 !important;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .att-pdf-table .att-today-cell:hover { background: #fef08a !important; }
+        .att-today-badge { display: block; font-size: 0.62rem; line-height: 1.05; color: #92400e; font-weight: 800; }
         .att-pdf-table .att-holiday {
             background-color: #ff0000 !important; color: #ffffff !important;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
-        .att-pdf-table .att-cell { cursor: pointer; user-select: none; font-weight: 800; font-size: 0.95rem; height: 30px; }
-        .att-pdf-table .att-cell:hover:not(.att-holiday) { background: #e0f2fe; }
+        .att-pdf-table .att-cell { cursor: pointer; user-select: none; font-weight: 800; font-size: 0.95rem; height: 32px; }
+        .att-pdf-table .att-cell:hover:not(.att-holiday) { background: #bae6fd; }
         .att-pdf-table .att-cell-p { color: #1d4ed8; background: #eff6ff; }
         .att-pdf-table .att-cell-a { color: #dc2626; background: #fef2f2; }
+        .att-pdf-table .att-cell-p.att-today-cell { color: #1d4ed8; background: #fde68a !important; }
+        .att-pdf-table .att-cell-a.att-today-cell { color: #dc2626; background: #fed7aa !important; }
         .att-pdf-table .att-vhead {
             writing-mode: vertical-rl; transform: rotate(180deg);
             white-space: nowrap; font-weight: 800; font-size: 0.86rem; padding: 5px 2px; height: 72px;
@@ -69,7 +114,10 @@
             .topbar, .no-print { display: none !important; }
             .container { margin: 0; padding: 0; max-width: 100%; }
             .panel { border: none; box-shadow: none; padding: 0; }
-            .att-pdf-table { font-size: 0.7rem !important; }
+            .att-scroll-wrap { overflow: visible !important; max-height: none !important; border: none !important; }
+            .att-pdf-table { width: 100% !important; min-width: 100% !important; border-collapse: collapse !important; font-size: 0.8rem !important; }
+            .att-pdf-table th, .att-pdf-table td { border: 1px solid #000 !important; position: static !important; box-shadow: none !important; }
+            .att-today-badge { display: none !important; }
         }
     </style>
 </head>
@@ -113,6 +161,7 @@
                     </select>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn" style="background:#facc15;color:#713f12;border:1px solid #ca8a04;" onclick="jumpToMonToday()">📍 ទៅថ្ងៃនេះ</button>
                     <button class="btn btn-success" onclick="saveMonitorSheet()">💾 រក្សាទុកអវត្តមានខែនេះ</button>
                     <button class="btn btn-primary" onclick="window.print()">🖨️ ព្រីន / Save PDF</button>
                 </div>
@@ -167,11 +216,18 @@
             renderMonitorSheet();
         }
 
-        function renderMonitorSheet() {
+        function renderMonitorSheet(preserveScroll = false) {
+            const prevWrap = document.getElementById('monScrollWrap');
+            const prevLeft = (preserveScroll && prevWrap) ? prevWrap.scrollLeft : 0;
+            const prevTop = (preserveScroll && prevWrap) ? prevWrap.scrollTop : 0;
+
             const { month, year, key } = getKey();
             const daysInMonth = new Date(year, month, 0).getDate();
             const mData = ensureMonth(key);
             const holidaySet = new Set(mData.holidays.map(Number));
+
+            const now = new Date();
+            const nowY = now.getFullYear(), nowM = now.getMonth() + 1, nowD = now.getDate();
 
             const days = [];
             let studyDays = 0;
@@ -179,8 +235,9 @@
                 const dow = new Date(year, month - 1, d).getDay();
                 const isSunday = dow === 0;
                 const isHoliday = isSunday || holidaySet.has(d);
+                const isToday = (year === nowY && month === nowM && d === nowD);
                 if (!isHoliday) studyDays++;
-                days.push({ day: d, label: String(d).padStart(2, '0'), weekday: KHMER_WEEKDAYS[dow], isSunday, isHoliday });
+                days.push({ day: d, label: String(d).padStart(2, '0'), weekday: KHMER_WEEKDAYS[dow], isSunday, isHoliday, isToday });
             }
 
             let grandAbsent = 0;
@@ -190,12 +247,12 @@
                     if (d.isHoliday) return `<td class="att-day-col att-holiday"></td>`;
                     const mk = mData.marks[`${st.id}_${d.day}`] || '';
                     if (mk === 'ច') perm++; else if (mk === 'អ') unex++;
-                    const cls = mk === 'ច' ? 'att-cell-p' : (mk === 'អ' ? 'att-cell-a' : '');
-                    return `<td class="att-day-col att-cell ${cls}" onclick="cycleMark(${st.id}, ${d.day})">${esc(mk)}</td>`;
+                    const cls = (mk === 'ច' ? 'att-cell-p' : (mk === 'អ' ? 'att-cell-a' : '')) + (d.isToday ? ' att-today-cell' : '');
+                    return `<td class="att-day-col att-cell ${cls}" onclick="cycleMark(${st.id}, ${d.day})" title="${esc(st.name)} - ថ្ងៃទី ${d.label}${d.isToday ? ' (ថ្ងៃនេះ)' : ''}">${esc(mk)}</td>`;
                 }).join('');
                 const tot = perm + unex;
                 grandAbsent += tot;
-                return `<tr><td>${idx + 1}</td><td class="att-name">${esc(st.name)}</td><td>${shortGender(st.gender)}</td>${cells}<td>${perm}</td><td>${unex}</td><td style="font-weight:800;">${tot}</td></tr>`;
+                return `<tr><td class="att-sticky-1">${idx + 1}</td><td class="att-name att-sticky-2">${esc(st.name)}</td><td>${shortGender(st.gender)}</td>${cells}<td>${perm}</td><td>${unex}</td><td style="font-weight:800;">${tot}</td></tr>`;
             }).join('');
 
             const totalReq = MON.students.length * studyDays;
@@ -208,24 +265,25 @@
                     <div class="moul" style="font-size:0.95rem;">${esc(school)}</div>
                     <div class="moul" style="font-size:0.92rem;margin-top:4px;">បញ្ជីស្រង់អវត្តមានសម្រាប់ខែ${KHMER_MONTHS[month]} ថ្នាក់ទី ${esc(MON.className)} ឆ្នាំសិក្សា ${esc(MON.academicYear)}</div>
                 </div>
-                <div class="table-wrap">
+                <div id="monScrollWrap" class="att-scroll-wrap">
                     <table class="att-pdf-table">
                         <thead>
                             <tr>
-                                <th colspan="3" style="text-align:left;padding:4px 8px;font-weight:800;">ជ្រើសរើសថ្ងៃឈប់សម្រាក</th>
-                                ${days.map(d => `<th class="att-day-col"><input type="checkbox" class="att-holiday-toggle no-print" ${d.isHoliday ? 'checked' : ''} ${d.isSunday ? 'disabled' : `onchange="toggleHol(${d.day})"`}></th>`).join('')}
+                                <th colspan="2" class="att-sticky-12" style="text-align:left;padding:4px 8px;font-weight:800;">ជ្រើសរើសថ្ងៃឈប់សម្រាក</th>
+                                <th></th>
+                                ${days.map(d => `<th class="att-day-col ${d.isToday && !d.isHoliday ? 'att-today-head' : ''}"><input type="checkbox" class="att-holiday-toggle no-print" ${d.isHoliday ? 'checked' : ''} ${d.isSunday ? 'disabled' : `onchange="toggleHol(${d.day})"`}></th>`).join('')}
                                 <th colspan="3"></th>
                             </tr>
                             <tr>
-                                <th rowspan="2" class="att-col-fit" style="padding:4px 6px;">ល.រ</th>
-                                <th rowspan="2" class="att-col-fit" style="padding:4px 10px;">គោត្តនាម និងនាម</th>
+                                <th rowspan="2" class="att-col-fit att-sticky-1" style="padding:4px 6px;">ល.រ</th>
+                                <th rowspan="2" class="att-col-fit att-sticky-2" style="padding:4px 10px;">គោត្តនាម និងនាម</th>
                                 <th rowspan="2" class="att-col-fit" style="padding:4px 6px;">ភេទ</th>
-                                ${days.map(d => `<th class="att-day-col ${d.isHoliday ? 'att-holiday' : ''}">${d.label}</th>`).join('')}
+                                ${days.map(d => `<th ${d.isToday ? 'id="monTodayCol"' : ''} class="att-day-col ${d.isHoliday ? 'att-holiday' : (d.isToday ? 'att-today-head' : '')}">${d.label}${d.isToday && !d.isHoliday ? '<span class="att-today-badge">ថ្ងៃនេះ</span>' : ''}</th>`).join('')}
                                 <th rowspan="2" class="att-col-fit"><div class="att-vhead">មានច្បាប់</div></th>
                                 <th rowspan="2" class="att-col-fit"><div class="att-vhead">ឥតច្បាប់</div></th>
                                 <th rowspan="2" class="att-col-fit"><div class="att-vhead">សរុប</div></th>
                             </tr>
-                            <tr>${days.map(d => `<th class="att-day-col att-day-wd ${d.isHoliday ? 'att-holiday' : ''}">${d.weekday}</th>`).join('')}</tr>
+                            <tr>${days.map(d => `<th class="att-day-col att-day-wd ${d.isHoliday ? 'att-holiday' : (d.isToday ? 'att-today-head' : '')}">${d.weekday}</th>`).join('')}</tr>
                         </thead>
                         <tbody>${rowsHtml}</tbody>
                     </table>
@@ -240,6 +298,29 @@
                     <div class="att-summary-item"><span>ភាគរយនៃអវត្តមាន</span><span class="att-summary-box">${pct}%</span></div>
                 </div>
             `;
+
+            const wrap = document.getElementById('monScrollWrap');
+            if (wrap) {
+                if (preserveScroll) {
+                    wrap.scrollLeft = prevLeft;
+                    wrap.scrollTop = prevTop;
+                } else {
+                    const todayEl = document.getElementById('monTodayCol');
+                    if (todayEl) wrap.scrollTo({ left: Math.max(0, todayEl.offsetLeft - 260), behavior: 'smooth' });
+                }
+            }
+        }
+
+        function jumpToMonToday() {
+            const now = new Date();
+            document.getElementById('monMonthSelect').value = String(now.getMonth() + 1);
+            const ySel = document.getElementById('monYearSelect');
+            const yVal = String(now.getFullYear());
+            if (!Array.from(ySel.options).some(o => o.value === yVal)) {
+                const opt = document.createElement('option'); opt.value = yVal; opt.textContent = yVal; ySel.appendChild(opt);
+            }
+            ySel.value = yVal;
+            renderMonitorSheet(false);
         }
 
         function toggleHol(day) {
@@ -247,7 +328,7 @@
             const m = ensureMonth(key);
             const i = m.holidays.indexOf(day);
             if (i >= 0) m.holidays.splice(i, 1); else m.holidays.push(day);
-            renderMonitorSheet();
+            renderMonitorSheet(true);
         }
         function cycleMark(sid, day) {
             const { key } = getKey();
@@ -257,7 +338,7 @@
             if (c === '') m.marks[k] = 'ច';
             else if (c === 'ច') m.marks[k] = 'អ';
             else delete m.marks[k];
-            renderMonitorSheet();
+            renderMonitorSheet(true);
         }
         async function saveMonitorSheet() {
             const res = await fetch('/api/student-portal/monthly-attendance/save', {
