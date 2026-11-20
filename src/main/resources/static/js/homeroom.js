@@ -1123,24 +1123,24 @@ function renderRankingsView() {
         }
 
         const colgroup = `<colgroup>
-            <col style="width:28px;"><col style="width:128px;"><col style="width:26px;"><col style="width:42px;"><col style="width:44px;"><col style="width:42px;"><col style="width:24px;"><col style="width:28px;"><col style="width:30px;">
-            <col style="width:28px;"><col style="width:128px;"><col style="width:26px;"><col style="width:42px;"><col style="width:44px;"><col style="width:42px;"><col style="width:24px;"><col style="width:28px;"><col style="width:30px;">
+            <col style="width:28px;"><col style="width:136px;"><col style="width:26px;"><col style="width:44px;"><col style="width:46px;"><col style="width:44px;"><col style="width:24px;"><col style="width:28px;"><col style="width:30px;">
+            <col style="width:28px;"><col style="width:136px;"><col style="width:26px;"><col style="width:44px;"><col style="width:46px;"><col style="width:44px;"><col style="width:24px;"><col style="width:28px;"><col style="width:30px;">
         </colgroup>`;
 
         area.innerHTML = `
             <div id="rankingA4Sheet" class="rank-a4-sheet">
                 <div style="text-align:center;color:#000;line-height:1.6;">
-                    <div class="moul" style="font-size:16.5px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
-                    <div class="moul" style="font-size:14.5px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
-                    <div style="font-size:12px;letter-spacing:3px;margin-top:-2px;">~❖~</div>
+                    <div class="moul" style="font-size:18px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                    <div class="moul" style="font-size:16px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    <div style="font-size:12.5px;letter-spacing:3px;margin-top:-2px;">~❖~</div>
                 </div>
                 <div style="text-align:left;color:#000;margin-top:-18px;margin-bottom:6px;line-height:1.65;">
-                    <div class="moul" style="font-size:13.5px;">${esc(ministry)}</div>
-                    <div class="moul" style="font-size:13.5px;">${esc(school)}</div>
+                    <div class="moul" style="font-size:15px;">${esc(ministry)}</div>
+                    <div class="moul" style="font-size:15px;">${esc(school)}</div>
                 </div>
                 <div style="text-align:center;color:#000;margin:4px 0 10px;line-height:1.65;">
-                    <div class="moul" style="font-size:14.5px;">ចំណាត់ថ្នាក់សម្រាប់ ${esc(periodKh)}</div>
-                    <div class="moul" style="font-size:14px;">ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>
+                    <div class="moul" style="font-size:16px;">ចំណាត់ថ្នាក់សម្រាប់ ${esc(periodKh)}</div>
+                    <div class="moul" style="font-size:15.5px;">ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>
                 </div>
                 <table class="rank-a4-table">
                     ${colgroup}
