@@ -608,16 +608,57 @@ public class HomeroomController {
     // Strictly scoped ONLY to the 1 student designated by the homeroom teacher
     // =========================================================================
 
-    private HomeroomClassAdmin findAuthorizedMonitorAdmin(Student stu) {
-        if (stu == null || stu.getId() == null) return null;
-        List<HomeroomClassAdmin> list = homeroomClassAdminRepository.findByMonitorStudentId(stu.getId());
-        for (HomeroomClassAdmin adm : list) {
-            if (Objects.equals(adm.getAccountId(), stu.getAccountId())
-                    && Objects.equals(adm.getClassName(), stu.getClassName())) {
-                return adm;
+    private static String normalizeCodeForMatch(String code) {
+        if (code == null) return "";
+        String kh = "០១២៣៤៥៦៧៨៩";
+        StringBuilder sb = new StringBuilder();
+        for (char c : code.trim().toUpperCase().toCharArray()) {
+            int idx = kh.indexOf(c);
+            sb.append(idx >= 0 ? (char) ('0' + idx) : c);
+        }
+        return sb.toString().replaceAll("\\s+", "");
+    }
+
+    public static HomeroomClassAdmin resolveAuthorizedMonitorAdmin(
+            Student stu,
+            StudentRepository studentRepo,
+            HomeroomClassAdminRepository adminRepo) {
+        if (stu == null || adminRepo == null) return null;
+
+        // 1. Direct exact Student ID match
+        if (stu.getId() != null) {
+            List<HomeroomClassAdmin> direct = adminRepo.findByMonitorStudentId(stu.getId());
+            for (HomeroomClassAdmin adm : direct) {
+                if (Objects.equals(adm.getAccountId(), stu.getAccountId())
+                        && Objects.equals(adm.getClassName(), stu.getClassName())) {
+                    return adm;
+                }
+            }
+            if (!direct.isEmpty()) return direct.get(0);
+        }
+
+        // 2. Fallback: When multiple teachers teach the same class (same studentCode across teacher accounts),
+        // match the logged-in student's code against any designated Class Monitor record
+        if (studentRepo != null && stu.getStudentCode() != null && !stu.getStudentCode().trim().isEmpty()) {
+            String myCode = normalizeCodeForMatch(stu.getStudentCode());
+            if (!myCode.isEmpty()) {
+                List<Student> allStudents = studentRepo.findAll();
+                for (Student other : allStudents) {
+                    if (other == null || other.getId() == null || Objects.equals(other.getId(), stu.getId())) continue;
+                    if (myCode.equals(normalizeCodeForMatch(other.getStudentCode()))) {
+                        List<HomeroomClassAdmin> found = adminRepo.findByMonitorStudentId(other.getId());
+                        if (!found.isEmpty()) {
+                            return found.get(0);
+                        }
+                    }
+                }
             }
         }
-        return list.isEmpty() ? null : list.get(0);
+        return null;
+    }
+
+    private HomeroomClassAdmin findAuthorizedMonitorAdmin(Student stu) {
+        return resolveAuthorizedMonitorAdmin(stu, studentRepository, homeroomClassAdminRepository);
     }
 
     @GetMapping("/test/monthly-attendance")
