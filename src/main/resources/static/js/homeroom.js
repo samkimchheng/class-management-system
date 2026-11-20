@@ -1954,6 +1954,22 @@ function renderKearikPages(singleStudentId) {
     }).join('');
 }
 
+async function downloadAllStudentsReportPdf() {
+    const docSel = document.getElementById('reportDocType');
+    if (!docSel) return;
+    const cur = docSel.value;
+    if (cur === 'KEARIK_ONE') {
+        docSel.value = 'KEARIK_ALL';
+        renderReportDocs();
+        await new Promise(r => setTimeout(r, 120));
+    } else if (cur === 'PRITIBAT_ONE') {
+        docSel.value = 'PRITIBAT_ALL';
+        renderReportDocs();
+        await new Promise(r => setTimeout(r, 120));
+    }
+    await downloadReportDocsPdf();
+}
+
 async function downloadReportDocsPdf() {
     const area = document.getElementById('reportDocsArea');
     if (!area || !area.innerHTML.trim()) return;
