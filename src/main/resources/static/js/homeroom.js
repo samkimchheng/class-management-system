@@ -703,28 +703,20 @@ async function downloadMoeysScoreSheetPdf() {
     const totalCount = results.length;
     const femaleCount = results.filter(r => getShortGender(r.student.gender) === 'ស').length;
 
-    // Paginate cleanly: 22 students on Page 1 (matching PDF), 24 students per subsequent page
-    const pagesData = [];
-    if (results.length <= 22) {
-        pagesData.push({ isFirst: true, startNo: 1, rows: results.slice(0) });
-    } else {
-        pagesData.push({ isFirst: true, startNo: 1, rows: results.slice(0, 22) });
-        let idx = 22;
-        while (idx < results.length) {
-            pagesData.push({ isFirst: false, startNo: idx + 1, rows: results.slice(idx, idx + 24) });
-            idx += 24;
-        }
-    }
+    // Fit ALL students + header + grade summary + signatures cleanly onto ONE FULL A3 Portrait sheet (297mm x 420mm)
+    // At 1260px width, A3 portrait height is ~1782px; available height for student rows after banner/header/footer (~440px) is ~1310px
+    const dynamicRowH = Math.max(21, Math.min(34, Math.floor(1310 / Math.max(totalCount, 1))));
+    const dynamicFont = totalCount > 52 ? 12.5 : (totalCount > 45 ? 13.5 : 14);
 
     const theadHtml = `
         <thead>
             <tr>
-                <th rowspan="3" class="ms-shade" style="width:32px;">ល.រ</th>
-                <th rowspan="3" class="ms-shade" style="width:155px;">គោត្តនាម-នាម</th>
+                <th rowspan="3" class="ms-shade" style="width:34px;">ល.រ</th>
+                <th rowspan="3" class="ms-shade" style="width:162px;">គោត្តនាម-នាម</th>
                 <th rowspan="3" class="ms-shade" style="width:36px;">ភេទ</th>
-                <th colspan="${HR.subjects.length}" style="font-weight:700;font-size:14px;background:#fff;padding:5px;">តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</th>
+                <th colspan="${HR.subjects.length}" style="font-weight:700;font-size:14.5px;background:#fff;padding:6px;">តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</th>
                 <th rowspan="3" class="ms-shade" style="width:44px;"><div class="ms-vsum">ពិន្ទុសរុប</div></th>
-                <th rowspan="3" class="ms-shade" style="width:50px;"><div class="ms-vsum">មធ្យមភាគ</div></th>
+                <th rowspan="3" class="ms-shade" style="width:52px;"><div class="ms-vsum">មធ្យមភាគ</div></th>
                 <th rowspan="3" class="ms-shade" style="width:44px;"><div class="ms-vsum">ចំណាត់ថ្នាក់</div></th>
                 <th rowspan="3" class="ms-shade" style="width:44px;"><div class="ms-vsum">និទ្ទេស</div></th>
             </tr>
@@ -737,80 +729,76 @@ async function downloadMoeysScoreSheetPdf() {
         </thead>`;
 
     const bannerHtml = `
-        <div class="moeys-top-banner" style="font-size:14.5px;padding:7px 14px;margin-bottom:6px;">
+        <div class="moeys-top-banner" style="font-size:15px;padding:8px 14px;margin-bottom:8px;">
             <span>តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</span>
             <span>ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</span>
             <span>-បញ្ឈប់បញ្ជីត្រឹមចំនួនសិស្ស ${totalCount}នាក់ ស្រី ${femaleCount}នាក់</span>
         </div>`;
 
-    const stage = document.getElementById('moeysPdfStage');
-    stage.innerHTML = pagesData.map((pg, pIdx) => {
-        const isLast = (pIdx === pagesData.length - 1);
-        const bodyRows = pg.rows.map((r, ri) => {
-            const hasScore = (r.total !== null && r.total !== undefined);
-            const totalTxt = hasScore ? (Number.isInteger(r.total) ? String(r.total) : r.total.toFixed(2)) : '0';
-            const avgTxt = (r.avg !== null && r.avg !== undefined) ? r.avg.toFixed(2) : '0.00';
-            const rankTxt = r.rank ? String(r.rank) : '-';
-            const mentionTxt = (r.avg !== null && r.avg !== undefined && r.mention) ? r.mention.code : '-';
-            return `
-                <tr style="height:27px;">
-                    <td>${pg.startNo + ri}</td>
-                    <td class="ms-name" style="position:static;box-shadow:none;">${esc(r.student.name)}</td>
-                    <td>${getShortGender(r.student.gender)}</td>
-                    ${HR.subjects.map(sub => {
-                        const v = r.subScores[sub.id];
-                        return `<td>${v !== null && v !== undefined ? v : ''}</td>`;
-                    }).join('')}
-                    <td>${totalTxt}</td>
-                    <td>${avgTxt}</td>
-                    <td class="ms-rank">${rankTxt}</td>
-                    <td class="ms-mention">${mentionTxt}</td>
-                </tr>`;
-        }).join('');
+    const bodyRows = results.map((r, ri) => {
+        const hasScore = (r.total !== null && r.total !== undefined);
+        const totalTxt = hasScore ? (Number.isInteger(r.total) ? String(r.total) : r.total.toFixed(2)) : '0';
+        const avgTxt = (r.avg !== null && r.avg !== undefined) ? r.avg.toFixed(2) : '0.00';
+        const rankTxt = r.rank ? String(r.rank) : '-';
+        const mentionTxt = (r.avg !== null && r.avg !== undefined && r.mention) ? r.mention.code : '-';
         return `
-            <div class="moeys-pdf-page" style="width:1260px;background:#fff;padding:12px 14px;box-sizing:border-box;">
-                ${pg.isFirst ? bannerHtml : ''}
-                <table class="moeys-score-table" style="width:100%;min-width:100%;border-collapse:collapse;font-size:14px;">
-                    ${pg.isFirst ? theadHtml : ''}
-                    <tbody>${bodyRows}</tbody>
-                </table>
-                ${isLast ? buildMoeysGradeSummaryHtml(results) : ''}
-            </div>`;
+            <tr style="height:${dynamicRowH}px;">
+                <td>${ri + 1}</td>
+                <td class="ms-name" style="position:static;box-shadow:none;font-size:${dynamicFont}px;">${esc(r.student.name)}</td>
+                <td>${getShortGender(r.student.gender)}</td>
+                ${HR.subjects.map(sub => {
+                    const v = r.subScores[sub.id];
+                    return `<td>${v !== null && v !== undefined ? v : ''}</td>`;
+                }).join('')}
+                <td>${totalTxt}</td>
+                <td>${avgTxt}</td>
+                <td class="ms-rank">${rankTxt}</td>
+                <td class="ms-mention">${mentionTxt}</td>
+            </tr>`;
     }).join('');
 
-    const pages = Array.from(stage.querySelectorAll('.moeys-pdf-page'));
+    const stage = document.getElementById('moeysPdfStage');
+    stage.innerHTML = `
+        <div id="moeysA3SinglePage" style="width:1260px;min-height:1750px;background:#fff;padding:14px 16px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;">
+            <div>
+                ${bannerHtml}
+                <table class="moeys-score-table" style="width:100%;min-width:100%;border-collapse:collapse;font-size:${dynamicFont}px;">
+                    ${theadHtml}
+                    <tbody>${bodyRows}</tbody>
+                </table>
+            </div>
+            <div style="margin-top:10px;">
+                ${buildMoeysGradeSummaryHtml(results)}
+            </div>
+        </div>`;
+
     Swal.fire({
-        title: 'កំពុងបង្កើតឯកសារ PDF តារាងពិន្ទុ...',
-        html: `<div id="moeysPdfProg">ទំព័រទី <b>1</b> / <b>${pages.length}</b></div>`,
+        title: 'កំពុងបង្កើតឯកសារ PDF (ក្រដាស A3 ១សន្លឹកពេញ)...',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
 
     try {
-        const pdf = new JsPdfCtor({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
-        const margin = 4;
+        const el = document.getElementById('moeysA3SinglePage');
+        const canvas = await html2canvas(el, {
+            scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: 1260, windowWidth: 1300
+        });
+
+        const pdf = new JsPdfCtor({ orientation: 'portrait', unit: 'mm', format: 'a3' });
+        const pageW = pdf.internal.pageSize.getWidth();  // 297mm
+        const pageH = pdf.internal.pageSize.getHeight(); // 420mm
+        const margin = 5;
         const maxW = pageW - margin * 2;
         const maxH = pageH - margin * 2;
 
-        for (let i = 0; i < pages.length; i++) {
-            const prog = document.getElementById('moeysPdfProg');
-            if (prog) prog.innerHTML = `ទំព័រទី <b>${i + 1}</b> / <b>${pages.length}</b>`;
-            const canvas = await html2canvas(pages[i], {
-                scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: 1260, windowWidth: 1300
-            });
-            const imgData = canvas.toDataURL('image/jpeg', 0.96);
-            const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
-            const drawW = canvas.width * ratio;
-            const drawH = canvas.height * ratio;
-            const offsetX = margin + (maxW - drawW) / 2;
-            if (i > 0) pdf.addPage('a4', 'landscape');
-            pdf.addImage(imgData, 'JPEG', offsetX, margin, drawW, drawH, undefined, 'FAST');
-            await new Promise(r => setTimeout(r, 15));
-        }
+        const imgData = canvas.toDataURL('image/jpeg', 0.96);
+        const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
+        const drawW = canvas.width * ratio;
+        const drawH = canvas.height * ratio;
+        const offsetX = margin + (maxW - drawW) / 2;
 
-        pdf.save(`ScoreSheet_${HR.className}_${periodKh}_${HR.academicYear}.pdf`);
+        pdf.addImage(imgData, 'JPEG', offsetX, margin, drawW, drawH, undefined, 'FAST');
+        pdf.save(`ScoreSheet_A3_${HR.className}_${periodKh}_${HR.academicYear}.pdf`);
         Swal.close();
     } catch (e) {
         console.error(e);
