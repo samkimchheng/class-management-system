@@ -44,6 +44,8 @@
             overflow-x: auto; overflow-y: auto; max-height: 74vh;
             border: 1px solid #cbd5e1; border-radius: 8px; position: relative; background: #fff;
         }
+        .att-scroll-inner { display: inline-flex; align-items: flex-start; min-width: 100%; }
+        .att-scroll-spacer { flex: 0 0 70vw; min-width: 520px; pointer-events: none; }
         .att-pdf-table {
             width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0;
             font-size: 0.95rem; background: #fff; color: #000;
@@ -118,6 +120,8 @@
             .container { margin: 0; padding: 0; max-width: 100%; }
             .panel { border: none; box-shadow: none; padding: 0; }
             .att-scroll-wrap { overflow: visible !important; max-height: none !important; border: none !important; }
+            .att-scroll-inner { display: block !important; width: 100% !important; }
+            .att-scroll-spacer { display: none !important; }
             .att-pdf-table { width: 100% !important; min-width: 100% !important; border-collapse: collapse !important; font-size: 0.8rem !important; }
             .att-pdf-table th, .att-pdf-table td { border: 1px solid #000 !important; position: static !important; box-shadow: none !important; }
             .att-today-badge { display: none !important; }
@@ -317,6 +321,7 @@
                     <div class="moul" style="font-size:0.92rem;margin-top:4px;">បញ្ជីស្រង់អវត្តមានសម្រាប់ខែ${KHMER_MONTHS[month]} ថ្នាក់ទី ${esc(MON.className)} ឆ្នាំសិក្សា ${esc(MON.academicYear)}</div>
                 </div>
                 <div id="monScrollWrap" class="att-scroll-wrap">
+                    <div class="att-scroll-inner">
                     <table class="att-pdf-table">
                         <thead>
                             <tr>
@@ -338,6 +343,8 @@
                         </thead>
                         <tbody>${rowsHtml}</tbody>
                     </table>
+                    <div class="att-scroll-spacer no-print"></div>
+                    </div>
                 </div>
                 <div class="att-summary-bar">
                     <div>
@@ -357,8 +364,10 @@
                     wrap.scrollTop = prevTop;
                 } else {
                     const todayEl = document.getElementById('monTodayCol');
-                    const stickyOffset = window.innerWidth <= 768 ? 175 : 260;
-                    if (todayEl) wrap.scrollTo({ left: Math.max(0, todayEl.offsetLeft - stickyOffset), behavior: 'smooth' });
+                    const s1 = wrap.querySelector('thead .att-sticky-1');
+                    const s2 = wrap.querySelector('thead .att-sticky-2');
+                    const stickyW = (s1 ? s1.offsetWidth : 44) + (s2 ? s2.offsetWidth : 170) + 6;
+                    if (todayEl) wrap.scrollTo({ left: Math.max(0, todayEl.offsetLeft - stickyW), behavior: 'smooth' });
                 }
             }
         }

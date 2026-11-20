@@ -2623,6 +2623,7 @@ function renderMonthlyAttendance(preserveScroll = false) {
             </div>
 
             <div id="attScrollWrap" class="att-scroll-wrap">
+                <div class="att-scroll-inner">
                 <table class="att-pdf-table">
                     <thead>
                         <tr>
@@ -2651,6 +2652,8 @@ function renderMonthlyAttendance(preserveScroll = false) {
                         ${studentRowsHtml || `<tr><td colspan="${daysInMonth + 6}" style="padding:18px;color:#64748b;">គ្មានសិស្សក្នុងថ្នាក់នេះ</td></tr>`}
                     </tbody>
                 </table>
+                <div class="att-scroll-spacer no-print"></div>
+                </div>
             </div>
 
             <!-- Exact Bottom Summary Statistics matching PDF Page 2 -->
@@ -2698,8 +2701,11 @@ function renderMonthlyAttendance(preserveScroll = false) {
 function scrollAttWrapToToday(wrap) {
     const todayEl = document.getElementById('attTodayCol');
     if (!wrap || !todayEl) return;
-    const stickyOffset = window.innerWidth <= 768 ? 175 : 260;
-    const targetLeft = Math.max(0, todayEl.offsetLeft - stickyOffset);
+    // Align today's yellow column right next to the sticky No + Student Name columns
+    const sticky1 = wrap.querySelector('thead .att-sticky-1');
+    const sticky2 = wrap.querySelector('thead .att-sticky-2');
+    const stickyW = (sticky1 ? sticky1.offsetWidth : 44) + (sticky2 ? sticky2.offsetWidth : 170) + 6;
+    const targetLeft = Math.max(0, todayEl.offsetLeft - stickyW);
     wrap.scrollTo({ left: targetLeft, behavior: 'smooth' });
 }
 

@@ -219,6 +219,12 @@
             overflow-x: auto; overflow-y: auto; max-height: 74vh;
             border: 1px solid #cbd5e1; border-radius: 8px; position: relative; background: #fff;
         }
+        .att-scroll-inner {
+            display: inline-flex; align-items: flex-start; min-width: 100%;
+        }
+        .att-scroll-spacer {
+            flex: 0 0 70vw; min-width: 520px; pointer-events: none;
+        }
         .att-pdf-table {
             width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0;
             font-size: 0.95rem; background: #fff; color: #000;
@@ -466,6 +472,8 @@
             .panel { border: none !important; box-shadow: none !important; padding: 0 !important; }
             .print-sheet { border: none !important; padding: 4px !important; }
             .att-scroll-wrap { overflow: visible !important; max-height: none !important; border: none !important; }
+            .att-scroll-inner { display: block !important; width: 100% !important; }
+            .att-scroll-spacer { display: none !important; }
             .att-pdf-table { width: 100% !important; min-width: 100% !important; border-collapse: collapse !important; font-size: 0.82rem !important; }
             .att-pdf-table th, .att-pdf-table td { border: 1px solid #000 !important; position: static !important; box-shadow: none !important; }
             .att-pdf-table td.att-name { font-size: 0.84rem !important; padding: 3px 7px !important; width: 1% !important; }
@@ -1015,6 +1023,6 @@
         </main>
     </div>
 
-    <script src="/js/homeroom.js?v=20261120r"></script>
+    <script src="/js/homeroom.js?v=20261120s"></script>
 </body>
 </html>
