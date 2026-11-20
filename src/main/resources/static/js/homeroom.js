@@ -550,7 +550,7 @@ function buildMoeysGradeSummaryHtml(results) {
             if (isF) counts[code].f++;
         }
     });
-    const pct = n => total > 0 ? Math.round((n / total) * 100) : 0;
+    const pct = n => total > 0 ? Number(((n / total) * 100).toFixed(2)) : 0;
     const cfg = HR.admin.config || {};
     const lunarDate = cfg.lunarDate || 'ថ្ងៃ............ខែ............ឆ្នាំ............ ព.ស. ២៥......';
     const solarDate = cfg.solarDate || '............, ថ្ងៃទី...... ខែ............ ឆ្នាំ២០២......';
@@ -1081,16 +1081,108 @@ function renderRankingsView() {
     const subtitle = `សិស្សសរុប៖ ${results.length} នាក់ | ជាប់មធ្យមភាគ៖ ${passCount} នាក់ (${valid.length ? ((passCount / valid.length) * 100).toFixed(1) : 0}%)`;
 
     if (colsMode === '2') {
-        // Official MoEYS 1-Page A4 Portrait 2-Column Side-by-Side Ranking Sheet (Exact PDF Format)
-        // Keeps students in roster order 1..N (left: 1..half, right: half+1..N) just like the official PDF
-        const list = rawResults;
+        const isSem1 = (view === 'S1');
+        const isSem2 = (view === 'S2');
+        const isYear = (view === 'YEAR');
+        const isSemOrYear = (isSem1 || isSem2 || isYear);
+
+        // Semester & Annual sheets are sorted by Rank (1, 2, 3...) matching the official PDF; Monthly keeps roster order 1..N
+        const list = isSemOrYear ? results : rawResults;
         const half = Math.ceil(list.length / 2);
         const leftList = list.slice(0, half);
         const rightList = list.slice(half);
         const cfg = HR.admin.config || {};
         const ministry = cfg.ministry || 'មន្ទីរអប់រំ យុវជន និងកីឡា';
         const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
+        const rkRowH = Math.max(24, Math.min(36, Math.floor(805 / Math.max(half, 1))));
 
+        const headingPeriod = isSem1 ? 'ប្រចាំឆមាសទី១'
+            : isSem2 ? 'ប្រចាំឆមាសទី២'
+            : isYear ? 'ប្រចាំឆ្នាំសិក្សា'
+            : periodKh;
+
+        if (isSemOrYear) {
+            const col4Label = isYear ? 'ម.ឆ១' : 'ម.ខែ';
+            const col5Label = isYear ? 'ម.ឆ២' : (isSem1 ? 'ម.ឆ១' : 'ម.ឆ២');
+            const col6Label = isYear ? 'ម.ប្រឆ្នាំ' : (isSem1 ? 'ម.ប្រឆ១' : 'ម.ប្រឆ២');
+
+            const renderSemCells = (r, no, isRightStart) => {
+                const midCls = isRightStart ? 'rk-mid-border' : '';
+                if (!r) {
+                    return `<td class="${midCls}"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>`;
+                }
+                const c4 = isYear ? r.s1Avg : r.avgMonths;
+                const c5 = isYear ? r.s2Avg : r.examAvg;
+                const c6 = r.avg;
+                const fmt2 = v => (v !== null && v !== undefined) ? Number(v).toFixed(2) : '0.00';
+                const rankTxt = r.rank ? String(r.rank) : '-';
+                const mentionTxt = (c6 !== null && c6 !== undefined && r.mention) ? r.mention.code : '-';
+                return `
+                    <td class="${midCls}">${no}</td>
+                    <td class="rk-name">${esc(r.student.name)}</td>
+                    <td>${getShortGender(r.student.gender)}</td>
+                    <td>${fmt2(c4)}</td>
+                    <td>${fmt2(c5)}</td>
+                    <td>${fmt2(c6)}</td>
+                    <td class="rk-rank">${rankTxt}</td>
+                    <td style="color:#1d4ed8;">${mentionTxt}</td>`;
+            };
+
+            let rowsHtml = '';
+            for (let i = 0; i < half; i++) {
+                rowsHtml += `<tr style="height:${rkRowH}px;">${renderSemCells(leftList[i], i + 1, false)}${renderSemCells(rightList[i] || null, half + i + 1, true)}</tr>`;
+            }
+
+            const semColgroup = `<colgroup>
+                <col style="width:30px;"><col style="width:146px;"><col style="width:30px;"><col style="width:52px;"><col style="width:52px;"><col style="width:56px;"><col style="width:46px;"><col style="width:46px;">
+                <col style="width:30px;"><col style="width:146px;"><col style="width:30px;"><col style="width:52px;"><col style="width:52px;"><col style="width:56px;"><col style="width:46px;"><col style="width:46px;">
+            </colgroup>`;
+
+            area.innerHTML = `
+                <div id="rankingA4Sheet" class="rank-a4-sheet">
+                    <div style="text-align:center;color:#000;line-height:1.6;">
+                        <div class="moul" style="font-size:18px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                        <div class="moul" style="font-size:16px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                        <div style="font-size:12.5px;letter-spacing:3px;margin-top:-2px;">~❖~</div>
+                    </div>
+                    <div style="text-align:left;color:#000;margin-top:-18px;margin-bottom:6px;line-height:1.65;">
+                        <div class="moul" style="font-size:15px;">${esc(ministry)}</div>
+                        <div class="moul" style="font-size:15px;">${esc(school)}</div>
+                    </div>
+                    <div style="text-align:center;color:#000;margin:4px 0 10px;line-height:1.65;">
+                        <div class="moul" style="font-size:16px;">ចំណាត់ថ្នាក់សម្រាប់ ${esc(headingPeriod)}</div>
+                        <div class="moul" style="font-size:15.5px;">ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>
+                    </div>
+                    <table class="rank-a4-table">
+                        ${semColgroup}
+                        <thead>
+                            <tr style="height:34px;">
+                                <th>ល.រ</th>
+                                <th>គោត្តនាម-នាម</th>
+                                <th>ភេទ</th>
+                                <th>${col4Label}</th>
+                                <th>${col5Label}</th>
+                                <th>${col6Label}</th>
+                                <th>ចំ.ថ្នាក់</th>
+                                <th>និទ្ទេស</th>
+                                <th class="rk-mid-border">ល.រ</th>
+                                <th>គោត្តនាម-នាម</th>
+                                <th>ភេទ</th>
+                                <th>${col4Label}</th>
+                                <th>${col5Label}</th>
+                                <th>${col6Label}</th>
+                                <th>ចំ.ថ្នាក់</th>
+                                <th>និទ្ទេស</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                    ${buildMoeysGradeSummaryHtml(list)}
+                </div>`;
+            return;
+        }
+
+        // Official MoEYS 1-Page A4 Portrait 2-Column Side-by-Side Monthly Ranking Sheet (Exact PDF Format)
         const renderCells = (r, no, isRightStart) => {
             const midCls = isRightStart ? 'rk-mid-border' : '';
             if (!r) {
@@ -1113,8 +1205,6 @@ function renderRankingsView() {
                 <td>${att.tot}</td>`;
         };
 
-        // Auto-size row height so the 2-column ranking table fills the full A4 Portrait height cleanly (zero excess bottom whitespace)
-        const rkRowH = Math.max(24, Math.min(36, Math.floor(805 / Math.max(half, 1))));
         let rowsHtml = '';
         for (let i = 0; i < half; i++) {
             const lItem = leftList[i];
