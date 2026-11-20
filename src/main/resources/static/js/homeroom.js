@@ -725,16 +725,16 @@ async function downloadMoeysScoreSheetPdf() {
     const totalCount = results.length;
     const femaleCount = results.filter(r => getShortGender(r.student.gender) === 'ស').length;
 
-    // Paginate cleanly onto A3 Landscape (420mm x 297mm): Page 1 = 22 students, Page 2+ = 24 students
+    // Paginate cleanly onto A3 Landscape (420mm x 297mm): Page 1 = 30 students (1..30), Page 2+ = up to 30 students
     const pagesData = [];
-    if (results.length <= 22) {
+    if (results.length <= 30) {
         pagesData.push({ isFirst: true, startNo: 1, rows: results.slice(0) });
     } else {
-        pagesData.push({ isFirst: true, startNo: 1, rows: results.slice(0, 22) });
-        let idx = 22;
+        pagesData.push({ isFirst: true, startNo: 1, rows: results.slice(0, 30) });
+        let idx = 30;
         while (idx < results.length) {
-            pagesData.push({ isFirst: false, startNo: idx + 1, rows: results.slice(idx, idx + 24) });
-            idx += 24;
+            pagesData.push({ isFirst: false, startNo: idx + 1, rows: results.slice(idx, idx + 30) });
+            idx += 30;
         }
     }
 
@@ -775,7 +775,7 @@ async function downloadMoeysScoreSheetPdf() {
     const stage = document.getElementById('moeysPdfStage');
     stage.innerHTML = pagesData.map((pg, pIdx) => {
         const isLast = (pIdx === pagesData.length - 1);
-        const rowH = pg.isFirst ? 31 : (isLast ? 29 : 34);
+        const rowH = pg.isFirst ? 24.5 : 26;
         const bodyRows = pg.rows.map((r, ri) => {
             const hasScore = (r.total !== null && r.total !== undefined);
             const totalTxt = hasScore ? (Number.isInteger(r.total) ? String(r.total) : r.total.toFixed(2)) : '0';
