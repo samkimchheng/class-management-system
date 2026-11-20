@@ -1320,33 +1320,184 @@ function exportRankingsExcel() {
     XLSX.writeFile(wb, `Rankings_${HR.className}_${view}.xlsx`);
 }
 
-// ==================== TAB 4: HONOR ROLL & CERTIFICATES ====================
+// ==================== TAB 4: HONOR ROLL (2 OFFICIAL PDF TEMPLATES) & CERTIFICATES ====================
+function buildHonorRibbonSlot(item, rankNum, withPhoto) {
+    const khRank = toKhmerNum(rankNum);
+    const nameText = item && item.student ? item.student.name : '..........................';
+    const photoUrl = item && item.student && item.student.photoUrl ? item.student.photoUrl : '';
+
+    // Exact Khmer ribbon banner SVG (soft pastel green #e2edd8, dark navy stroke #1e3a5f, folded tails + stars)
+    const ribbonSvg = `
+        <svg viewBox="0 0 360 86" width="356" height="84" style="position:absolute;inset:0;z-index:1;">
+            <!-- Left ribbon tail -->
+            <polygon points="8,24 58,24 58,78 8,78 30,51" fill="#e2edd8" stroke="#1e3a5f" stroke-width="1.4" stroke-linejoin="round"/>
+            <polygon points="44,68 58,68 58,78" fill="#bdd3ab" stroke="#1e3a5f" stroke-width="1.2" stroke-linejoin="round"/>
+            <!-- Right ribbon tail -->
+            <polygon points="352,24 302,24 302,78 352,78 330,51" fill="#e2edd8" stroke="#1e3a5f" stroke-width="1.4" stroke-linejoin="round"/>
+            <polygon points="316,68 302,68 302,78" fill="#bdd3ab" stroke="#1e3a5f" stroke-width="1.2" stroke-linejoin="round"/>
+            <!-- Main center ribbon -->
+            <rect x="44" y="12" width="272" height="56" fill="#e2edd8" stroke="#1e3a5f" stroke-width="1.5"/>
+            <!-- Left star -->
+            <polygon points="44,1 47,9 55,9 49,14 51,22 44,17 37,22 39,14 33,9 41,9" fill="#ffffff" stroke="#1e3a5f" stroke-width="1.3" stroke-linejoin="round"/>
+            ${!withPhoto ? '<polygon points="316,1 319,9 327,9 321,14 323,22 316,17 309,22 311,14 305,9 313,9" fill="#ffffff" stroke="#1e3a5f" stroke-width="1.3" stroke-linejoin="round"/>' : ''}
+        </svg>`;
+
+    if (withPhoto) {
+        return `
+            <div class="honor-slot">
+                <div class="honor-photo-box">
+                    ${photoUrl ? `<img src="${esc(photoUrl)}" alt="Photo">` : ''}
+                </div>
+                <div class="honor-ribbon-wrap">
+                    ${ribbonSvg}
+                    <div class="honor-rank-circle" style="position:absolute;top:-22px;right:14px;">${khRank}</div>
+                    <div class="honor-ribbon-name">${esc(nameText)}</div>
+                </div>
+            </div>`;
+    } else {
+        return `
+            <div class="honor-slot">
+                <div class="honor-rank-circle" style="margin-bottom:4px;">${khRank}</div>
+                <div class="honor-ribbon-wrap">
+                    ${ribbonSvg}
+                    <div class="honor-ribbon-name">${esc(nameText)}</div>
+                </div>
+            </div>`;
+    }
+}
+
+async function downloadHonorA4PortraitPdf() {
+    const el = document.getElementById('honorA4Sheet') || document.querySelector('#honorCertArea .cert-frame');
+    if (!el) return;
+    const JsPdfCtor = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+    if (typeof html2canvas === 'undefined' || !JsPdfCtor) { window.print(); return; }
+    if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
+
+    const period = document.getElementById('honorPeriodSelect').value;
+    const mode = document.getElementById('honorModeSelect').value;
+    const periodLabel = getScorePeriodKhmerLabel(period);
+
+    Swal.fire({
+        title: 'កំពុងបង្កើត PDF តារាងកិត្តិយស (A4 បញ្ឈរ)...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    try {
+        const targets = document.getElementById('honorA4Sheet')
+            ? [document.getElementById('honorA4Sheet')]
+            : Array.from(document.querySelectorAll('#honorCertArea .cert-frame'));
+
+        const pdf = new JsPdfCtor({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageW = pdf.internal.pageSize.getWidth();  // 210mm
+        const pageH = pdf.internal.pageSize.getHeight(); // 297mm
+        const margin = 4;
+        const maxW = pageW - margin * 2;
+        const maxH = pageH - margin * 2;
+
+        for (let i = 0; i < targets.length; i++) {
+            const node = targets[i];
+            const prevB = node.style.border, prevR = node.style.borderRadius;
+            node.style.border = 'none'; node.style.borderRadius = '0';
+
+            const canvas = await html2canvas(node, {
+                scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: 840, windowWidth: 880
+            });
+
+            node.style.border = prevB; node.style.borderRadius = prevR;
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.96);
+            const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
+            const drawW = canvas.width * ratio;
+            const drawH = canvas.height * ratio;
+            const offsetX = margin + (maxW - drawW) / 2;
+
+            if (i > 0) pdf.addPage('a4', 'portrait');
+            pdf.addImage(imgData, 'JPEG', offsetX, margin, drawW, drawH, undefined, 'FAST');
+            await new Promise(r => setTimeout(r, 15));
+        }
+
+        const tag = mode === 'HONOR_WITH_PHOTO' ? 'WithPhoto' : (mode === 'HONOR_NO_PHOTO' ? 'NoPhoto' : 'Cert');
+        pdf.save(`HonorRoll_${tag}_A4_${HR.className}_${periodLabel}_${HR.academicYear}.pdf`);
+        Swal.close();
+    } catch (e) {
+        console.error(e);
+        Swal.close();
+        window.print();
+    }
+}
+
 function renderHonorAndCert() {
     const period = document.getElementById('honorPeriodSelect').value;
     const mode = document.getElementById('honorModeSelect').value;
     const theme = document.getElementById('certThemeSelect').value;
     const stuSel = document.getElementById('certStudentSelect');
     stuSel.style.display = mode === 'CERT_ONE' ? 'inline-block' : 'none';
+    document.getElementById('certThemeSelect').style.display = (mode === 'CERT_TOP5' || mode === 'CERT_ONE') ? 'inline-block' : 'none';
 
     const results = computeResultsForPeriod(period).filter(r => r.rank !== null).sort((a, b) => a.rank - b.rank);
     const top5 = results.slice(0, 5);
     const area = document.getElementById('honorCertArea');
 
-    if (mode === 'HONOR') {
+    if (mode === 'HONOR_NO_PHOTO' || mode === 'HONOR_WITH_PHOTO') {
+        const withPhoto = (mode === 'HONOR_WITH_PHOTO');
+        const cfg = HR.admin.config || {};
+        const ministry = cfg.ministry || 'មន្ទីរអប់រំ យុវជន និងកីឡា';
+        const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
+        const lunarDate = cfg.lunarDate || 'ថ្ងៃ............ខែ............ឆ្នាំ............ ព.ស. ២៥......';
+        const solarDate = cfg.solarDate || '............, ថ្ងៃទី...... ខែ............ ឆ្នាំ២០២......';
+        const principalName = cfg.principalName || HR.teacher.principalName || '';
+        const teacherName = HR.teacher.fullName || '';
+        const periodTitle = period === 'S1' ? 'ប្រចាំឆមាសទី១'
+            : period === 'S2' ? 'ប្រចាំឆមាសទី២'
+            : period === 'YEAR' ? 'ប្រចាំឆ្នាំសិក្សា'
+            : getScorePeriodKhmerLabel(period);
+
         area.innerHTML = `
-            <div class="print-sheet" style="border:6px double #d97706;">
-                ${getOfficialHeader('តារាងកិត្តិយស', `លទ្ធផលសិក្សា ${PERIOD_LABELS[period] || period} — ថ្នាក់ទី ${HR.className}`)}
-                <div class="honor-grid">
-                    ${top5.length ? top5.map(r => `
-                        <div class="honor-card">
-                            <div style="font-weight:800;color:#b45309;font-size:1rem;margin-bottom:6px;">🥇 ចំណាត់ថ្នាក់លេខ ${r.rank}</div>
-                            <img class="honor-photo" src="${esc(r.student.photoUrl || 'https://ui-avatars.com/api/?background=e0e7ff&color=1e3a8a&name=' + encodeURIComponent(r.student.name))}" alt="Photo">
-                            <div class="moul" style="font-size:0.9rem;color:#0f172a;">${esc(r.student.name)}</div>
-                            <div style="font-size:0.8rem;color:#475569;margin-top:2px;">ភេទ៖ ${esc(r.student.gender)}</div>
-                            <div style="margin-top:6px;"><span class="badge badge-${r.mention.code}">មធ្យមភាគ ${fmtNum(r.avg)} (${r.mention.code})</span></div>
-                        </div>`).join('') : '<div style="grid-column:1/-1;text-align:center;color:#64748b;padding:24px;">មិនទាន់មានទិន្នន័យពិន្ទុសម្រាប់រយៈពេលនេះទេ។</div>'}
+            <div style="overflow-x:auto;">
+                <div id="honorA4Sheet" class="honor-a4-sheet">
+                    <div>
+                        <div style="text-align:center;color:#000;line-height:1.65;">
+                            <div class="moul" style="font-size:18px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                            <div class="moul" style="font-size:16px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                            <div style="font-size:13px;letter-spacing:3px;margin-top:-2px;">~❖~</div>
+                        </div>
+                        <div style="text-align:left;color:#000;margin-top:-12px;margin-bottom:8px;line-height:1.7;">
+                            <div class="moul" style="font-size:14.5px;">${esc(ministry)}</div>
+                            <div class="moul" style="font-size:14.5px;">${esc(school)}</div>
+                        </div>
+                        <div style="text-align:center;color:#0f2a5c;margin:4px 0 ${withPhoto ? '8px' : '20px'};line-height:1.7;">
+                            <div class="moul" style="font-size:21px;">តារាងកិត្តិយសសម្រាប់ ${esc(periodTitle)}</div>
+                            <div class="moul" style="font-size:16px;margin-top:4px;">ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>
+                        </div>
+                    </div>
+
+                    <div class="honor-pyramid ${withPhoto ? 'with-photo' : ''}">
+                        ${buildHonorRibbonSlot(top5[0], 1, withPhoto)}
+                        <div class="honor-row-2">
+                            ${buildHonorRibbonSlot(top5[1], 2, withPhoto)}
+                            ${buildHonorRibbonSlot(top5[2], 3, withPhoto)}
+                        </div>
+                        <div class="honor-row-2">
+                            ${buildHonorRibbonSlot(top5[3], 4, withPhoto)}
+                            ${buildHonorRibbonSlot(top5[4], 5, withPhoto)}
+                        </div>
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:0 28px;margin-top:${withPhoto ? '10px' : '24px'};font-size:15.5px;color:#000;line-height:1.8;">
+                        <div style="text-align:center;min-width:220px;padding-top:34px;">
+                            <div>បានឃើញ និងឯកភាព</div>
+                            <div style="font-weight:700;margin-top:4px;">នាយកសាលា</div>
+                            <div class="moul" style="margin-top:56px;font-size:15px;">${esc(principalName)}</div>
+                        </div>
+                        <div style="text-align:center;min-width:280px;">
+                            <div>${esc(lunarDate)}</div>
+                            <div>${esc(solarDate)}</div>
+                            <div style="font-weight:700;margin-top:4px;">គ្រូបន្ទុកថ្នាក់</div>
+                            <div class="moul" style="margin-top:52px;font-size:15.5px;">${esc(teacherName)}</div>
+                        </div>
+                    </div>
                 </div>
-                ${getOfficialFooter()}
             </div>`;
         return;
     }
