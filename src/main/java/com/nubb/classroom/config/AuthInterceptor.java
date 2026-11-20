@@ -75,6 +75,9 @@ public class AuthInterceptor implements HandlerInterceptor {
                                 session.setAttribute("ACCOUNT_USERNAME", acc.getUsername());
                                 boolean canAccessVocab = com.nubb.classroom.controller.PhonicsController.isAuthorizedForPhonics(acc);
                                 session.setAttribute("VOCABULARY_PERMISSION", canAccessVocab);
+                                boolean canAccessHomeroom = Boolean.TRUE.equals(acc.getHomeroomPermission())
+                                        || "ADMIN".equalsIgnoreCase(acc.getRole());
+                                session.setAttribute("HOMEROOM_PERMISSION", canAccessHomeroom);
                                 if (acc.getCurrentAcademicYear() != null && !acc.getCurrentAcademicYear().trim().isEmpty()) {
                                     session.setAttribute("CURRENT_ACADEMIC_YEAR", acc.getCurrentAcademicYear().trim());
                                 } else {
@@ -88,8 +91,8 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
 
-        // 2. Auto-restore Student or External Learner session from persistent cookie with cryptographic signature check
-        if (session.getAttribute("loggedInStudent") == null) {
+        // 2. Auto-restore Student or External Learner session ONLY when no Teacher/Admin is logged in
+        if (session.getAttribute("loggedInStudent") == null && session.getAttribute("ACCOUNT_ID") == null) {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie c : cookies) {
@@ -189,8 +192,8 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // If a student is logged in, strictly enforce student boundary and prevent access to teacher management views
-        if (session.getAttribute("loggedInStudent") != null) {
+        // If a student is logged in (and not an authenticated Teacher/Admin), strictly enforce student boundary
+        if (session.getAttribute("loggedInStudent") != null && session.getAttribute("ACCOUNT_ID") == null) {
             session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
             try {
                 Student curStu = (Student) session.getAttribute("loggedInStudent");
