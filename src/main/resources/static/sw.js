@@ -1,5 +1,5 @@
-// CMS Progressive Web App Service Worker (v2 - Android WebAPK & iOS Safe)
-const CACHE_NAME = 'cms-pwa-v2';
+// CMS Progressive Web App Service Worker (v3 - Android WebAPK & iOS Mobile Fit)
+const CACHE_NAME = 'cms-pwa-v3';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon-192.png',

@@ -1,5 +1,66 @@
-// CMS App (PWA) Installer v2 — Smart Detection for Android Chrome, iOS Safari, In-App Browsers & Desktop
+// CMS App (PWA) Installer v3 — Mobile Standalone Screen-Fit + Smart Installer (Android, iOS, Desktop)
 (function () {
+    // 1. Ensure clean mobile viewport & standalone fit CSS on EVERY page of CMS App
+    (function applyMobileAppFit() {
+        let vp = document.querySelector('meta[name="viewport"]');
+        if (!vp) {
+            vp = document.createElement('meta');
+            vp.name = 'viewport';
+            document.head.appendChild(vp);
+        }
+        vp.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
+
+        const isStandaloneNow = window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
+
+        if (!document.getElementById('cmsPwaMobileFit')) {
+            const st = document.createElement('style');
+            st.id = 'cmsPwaMobileFit';
+            st.textContent = `
+                html { -webkit-text-size-adjust: 100%; max-width: 100vw; overflow-x: hidden; }
+                body { max-width: 100vw; overflow-x: hidden; }
+                @media all and (display-mode: standalone) {
+                    html, body {
+                        width: 100% !important;
+                        max-width: 100vw !important;
+                        overflow-x: hidden !important;
+                        min-height: 100dvh;
+                    }
+                    body {
+                        padding-bottom: env(safe-area-inset-bottom, 0px);
+                    }
+                    .topbar, header.topbar {
+                        padding-top: max(10px, env(safe-area-inset-top, 10px)) !important;
+                    }
+                    .main-content, .content, .container, .panel, .card, .login-card {
+                        max-width: 100% !important;
+                        box-sizing: border-box !important;
+                    }
+                }
+                @media screen and (max-width: 768px) {
+                    .login-card {
+                        width: calc(100% - 28px) !important;
+                        max-width: 400px !important;
+                        padding: 26px 20px !important;
+                        margin: 14px auto !important;
+                        box-sizing: border-box !important;
+                    }
+                    input[type="text"], input[type="password"], input[type="number"], input[type="date"], select, textarea {
+                        font-size: 16px;
+                    }
+                }
+            `;
+            document.head.appendChild(st);
+        }
+
+        if (isStandaloneNow) {
+            document.documentElement.classList.add('cms-standalone');
+            document.addEventListener('DOMContentLoaded', () => {
+                if (document.body) document.body.classList.add('cms-standalone');
+            });
+        }
+    })();
+
     // Register Service Worker immediately (don't wait for window.load so Android Chrome fires beforeinstallprompt faster!)
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
