@@ -676,8 +676,9 @@
                             <button class="btn btn-sm" style="background:#facc15;color:#713f12;border:1px solid #ca8a04;" onclick="jumpToAttToday()" title="រំកិលទៅថ្ងៃនេះ (ហាយឡាយពណ៌លឿង)">📍 ទៅថ្ងៃនេះ</button>
                             <button class="btn btn-outline btn-sm" onclick="pullExistingAttendanceIntoMonth()" title="ទាញអវត្តមានដែលគ្រូបានស្រង់រួចពីម៉ឺនុយ បញ្ជីអវត្តមាន">🔄 ទាញពីបញ្ជីអវត្តមានចាស់</button>
                             <button class="btn btn-success btn-sm" onclick="saveMonthlyAttendance()">💾 រក្សាទុកអវត្តមានខែនេះ</button>
+                            <button class="btn btn-primary btn-sm" onclick="downloadMonthlyAttendanceA3Pdf()">📥 ដោនឡូត PDF (A3 ផ្តេក)</button>
                             <button class="btn btn-outline btn-sm" onclick="exportMonthlyAttendanceExcel()">📊 Export Excel</button>
-                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន / Save PDF (A4 ផ្តេក)</button>
+                            <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ ព្រីន</button>
                         </div>
                     </div>
 
@@ -700,6 +701,7 @@
                     </div>
 
                     <div id="monthlyAttendanceArea"></div>
+                    <div id="attA3PdfStage" style="position:fixed;left:-99999px;top:0;width:1920px;background:#fff;z-index:-1;"></div>
                 </div>
             </section>
 
@@ -933,6 +935,6 @@
         </main>
     </div>
 
-    <script src="/js/homeroom.js?v=20261120l"></script>
+    <script src="/js/homeroom.js?v=20261120m"></script>
 </body>
 </html>

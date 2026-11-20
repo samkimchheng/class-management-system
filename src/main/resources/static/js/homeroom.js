@@ -2395,6 +2395,198 @@ function exportMonthlyAttendanceExcel() {
     XLSX.writeFile(wb, `Attendance_${HR.className}_${key}.xlsx`);
 }
 
+async function downloadMonthlyAttendanceA3Pdf() {
+    const JsPdfCtor = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+    if (typeof html2canvas === 'undefined' || !JsPdfCtor) { window.print(); return; }
+
+    if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (e) {}
+    }
+
+    const { month, year, key } = getMonthlyAttKey();
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const mData = getOrCreateMonthAtt(key);
+    const holidaySet = new Set(mData.holidays.map(Number));
+
+    const days = [];
+    let studyDays = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dow = new Date(year, month - 1, d).getDay();
+        const isSunday = dow === 0;
+        const isHoliday = isSunday || holidaySet.has(d);
+        if (!isHoliday) studyDays++;
+        days.push({ day: d, label: String(d).padStart(2, '0'), weekday: KHMER_WEEKDAYS[dow], isSunday, isHoliday });
+    }
+
+    const totalStudents = HR.students.length;
+    const stageW = 1920;
+    const includeFooterOnPage1 = (totalStudents <= 34);
+    const availRowsH = includeFooterOnPage1 ? 820 : 1140;
+    const rowH = Math.max(21, Math.min(32, Math.floor(availRowsH / Math.max(totalStudents, 1))));
+    const rowFont = rowH <= 22 ? 15 : 16;
+    const cellPad = '1px 2px';
+
+    // Crisp 3x HiDPI vertical Khmer headers for summary columns
+    const vPermImg = makeVerticalKhmerHeaderImg('មានច្បាប់', true, 78, 30, 15);
+    const vUnexImg = makeVerticalKhmerHeaderImg('ឥតច្បាប់', true, 78, 30, 15);
+    const vTotImg = makeVerticalKhmerHeaderImg('សរុប', true, 78, 30, 15);
+
+    let grandTotalAbsent = 0;
+    const rowsHtml = HR.students.map((st, idx) => {
+        let perm = 0, unex = 0;
+        const cells = days.map(d => {
+            if (d.isHoliday) {
+                return `<td style="background:#ff0000;border:1px solid #000;padding:${cellPad};"></td>`;
+            }
+            const mk = mData.marks[`${st.id}_${d.day}`] || '';
+            if (mk === 'ច') perm++;
+            else if (mk === 'អ') unex++;
+            const color = mk === 'ច' ? '#1d4ed8' : (mk === 'អ' ? '#dc2626' : '#000');
+            const bg = mk === 'ច' ? '#eff6ff' : (mk === 'អ' ? '#fef2f2' : '#fff');
+            return `<td style="border:1px solid #000;padding:${cellPad};text-align:center;font-weight:700;color:${color};background:${bg};line-height:1.12;">${esc(mk)}</td>`;
+        }).join('');
+        const tot = perm + unex;
+        grandTotalAbsent += tot;
+        return `
+            <tr style="height:${rowH}px;">
+                <td style="border:1px solid #000;text-align:center;padding:${cellPad};line-height:1.12;">${idx + 1}</td>
+                <td style="border:1px solid #000;text-align:left;padding:${cellPad} 10px;white-space:nowrap;font-size:${rowFont + 0.5}px;line-height:1.12;">${esc(st.name)}</td>
+                <td style="border:1px solid #000;text-align:center;padding:${cellPad};line-height:1.12;">${getShortGender(st.gender)}</td>
+                ${cells}
+                <td style="border:1px solid #000;text-align:center;padding:${cellPad};line-height:1.12;">${perm}</td>
+                <td style="border:1px solid #000;text-align:center;padding:${cellPad};line-height:1.12;">${unex}</td>
+                <td style="border:1px solid #000;text-align:center;padding:${cellPad};font-weight:700;line-height:1.12;">${tot}</td>
+            </tr>`;
+    }).join('');
+
+    const totalRequired = totalStudents * studyDays;
+    const totalActualPresent = Math.max(0, totalRequired - grandTotalAbsent);
+    const absentPercent = totalRequired > 0 ? ((grandTotalAbsent / totalRequired) * 100).toFixed(2) : '0.00';
+
+    const cfg = HR.admin.config || {};
+    const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
+    const monthKh = KHMER_MONTHS[month] || month;
+
+    const colgroupHtml = `<colgroup>
+        <col style="width:46px;">
+        <col style="width:225px;">
+        <col style="width:46px;">
+        ${days.map(() => `<col>`).join('')}
+        <col style="width:48px;">
+        <col style="width:48px;">
+        <col style="width:48px;">
+    </colgroup>`;
+
+    const summaryFooterHtml = `
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:15.5px;color:#000;">
+            <div>
+                <div style="font-style:italic;font-weight:600;">ចំនួនពេលសរុបដែលសិស្សត្រូវមករៀន <span style="font-style:normal;font-weight:800;padding:0 12px;">${totalRequired}</span></div>
+                <div style="font-style:italic;font-weight:600;margin-top:4px;padding-left:24px;">ពេលដែលសិស្សត្រូវរៀនក្នុង១ខែ <span style="font-style:normal;font-weight:800;padding:0 16px;">${studyDays}</span></div>
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:8px;font-style:italic;font-weight:600;">
+                <span>ចំនួនពេលអវត្តមាន</span>
+                <span style="border:1px solid #000;padding:3px 16px;min-width:64px;text-align:center;font-style:normal;font-weight:800;">${grandTotalAbsent}</span>
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:8px;font-style:italic;font-weight:600;">
+                <span>ចំនួនពេលដែលសិស្សបានមករៀនពិតប្រាកដ</span>
+                <span style="border:1px solid #000;padding:3px 16px;min-width:64px;text-align:center;font-style:normal;font-weight:800;">${totalActualPresent}</span>
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:8px;font-style:italic;font-weight:600;">
+                <span>ភាគរយនៃអវត្តមាន</span>
+                <span style="border:1px solid #000;padding:3px 16px;min-width:70px;text-align:center;font-style:normal;font-weight:800;">${absentPercent}%</span>
+            </div>
+        </div>
+        ${getOfficialFooter()}`;
+
+    const stage = document.getElementById('attA3PdfStage');
+    stage.style.width = stageW + 'px';
+    let stageHtml = `
+        <div class="att-a3-page" style="width:${stageW}px;background:#fff;padding:4px 4px 6px 4px;box-sizing:border-box;color:#000;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+                <div style="text-align:left;min-width:280px;padding-top:6px;">
+                    <div class="moul" style="font-size:16px;">${esc(school)}</div>
+                </div>
+                <div style="text-align:center;flex:1;">
+                    <div class="moul" style="font-size:17px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                    <div class="moul" style="font-size:15.5px;margin-top:2px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    <div class="moul" style="font-size:16px;margin-top:4px;">
+                        បញ្ជីស្រង់អវត្តមានសម្រាប់ខែ${esc(monthKh)} ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}
+                    </div>
+                </div>
+                <div style="min-width:280px;"></div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:${rowFont}px;color:#000;background:#fff;border:1.4px solid #000;">
+                ${colgroupHtml}
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="border:1px solid #000;background:#f1f5f9;font-size:16px;font-weight:700;padding:4px;">ល.រ</th>
+                        <th rowspan="2" style="border:1px solid #000;background:#f1f5f9;font-size:16.5px;font-weight:700;padding:4px;">គោត្តនាម និងនាម</th>
+                        <th rowspan="2" style="border:1px solid #000;background:#f1f5f9;font-size:16px;font-weight:700;padding:4px;">ភេទ</th>
+                        ${days.map(d => `<th style="border:1px solid #000;padding:3px 1px;font-size:14.5px;font-weight:700;background:${d.isHoliday ? '#ff0000' : '#fff'};color:${d.isHoliday ? '#fff' : '#000'};">${d.label}</th>`).join('')}
+                        <th rowspan="2" style="border:1px solid #000;background:#f1f5f9;padding:2px;">${vPermImg}</th>
+                        <th rowspan="2" style="border:1px solid #000;background:#f1f5f9;padding:2px;">${vUnexImg}</th>
+                        <th rowspan="2" style="border:1px solid #000;background:#f1f5f9;padding:2px;">${vTotImg}</th>
+                    </tr>
+                    <tr>
+                        ${days.map(d => `<th style="border:1px solid #000;padding:2px 1px;font-size:12.5px;font-weight:600;background:${d.isHoliday ? '#ff0000' : '#fff'};color:${d.isHoliday ? '#fff' : '#000'};">${d.weekday}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+            </table>
+            ${includeFooterOnPage1 ? summaryFooterHtml : ''}
+        </div>`;
+
+    if (!includeFooterOnPage1) {
+        stageHtml += `
+            <div class="att-a3-page" style="width:${stageW}px;background:#fff;padding:14px 22px;box-sizing:border-box;color:#000;">
+                ${summaryFooterHtml}
+            </div>`;
+    }
+    stage.innerHTML = stageHtml;
+
+    const pages = Array.from(stage.querySelectorAll('.att-a3-page'));
+    Swal.fire({
+        title: 'កំពុងបង្កើត PDF អវត្តមាន (ក្រដាស A3 ផ្តេក)...',
+        html: `<div id="attA3Prog">ទំព័រទី <b>1</b> / <b>${pages.length}</b></div>`,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    try {
+        const pdf = new JsPdfCtor({ orientation: 'landscape', unit: 'mm', format: 'a3' });
+        const pageW = pdf.internal.pageSize.getWidth();  // 420mm
+        const pageH = pdf.internal.pageSize.getHeight(); // 297mm
+        const marginX = 2.5;
+        const maxW = pageW - marginX * 2; // 415mm full edge-to-edge width!
+        const maxH = pageH - 5;
+
+        for (let i = 0; i < pages.length; i++) {
+            const prog = document.getElementById('attA3Prog');
+            if (prog) prog.innerHTML = `ទំព័រទី <b>${i + 1}</b> / <b>${pages.length}</b>`;
+            const canvas = await html2canvas(pages[i], {
+                scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: stageW, windowWidth: stageW + 40
+            });
+            const imgData = canvas.toDataURL('image/jpeg', 0.96);
+            const drawW = maxW;
+            const drawH = Math.min(maxH, canvas.height * (maxW / canvas.width));
+            const topY = (i === 0) ? 2.5 : 5;
+
+            if (i > 0) pdf.addPage('a3', 'landscape');
+            pdf.addImage(imgData, 'JPEG', marginX, topY, drawW, drawH, undefined, 'FAST');
+            await new Promise(r => setTimeout(r, 15));
+        }
+
+        pdf.save(`Attendance_A3_Landscape_${HR.className}_${monthKh}_${year}.pdf`);
+        Swal.close();
+    } catch (e) {
+        console.error(e);
+        Swal.close();
+        window.print();
+    } finally {
+        stage.innerHTML = '';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadHomeroomData();
 });
