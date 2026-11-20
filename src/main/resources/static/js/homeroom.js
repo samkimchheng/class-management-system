@@ -725,35 +725,36 @@ async function downloadMoeysScoreSheetPdf() {
     const totalCount = results.length;
     const femaleCount = results.filter(r => getShortGender(r.student.gender) === 'ស').length;
 
-    // Put ALL students (e.g. #1 to #47) on Page 1 of A3 Landscape (420mm x 297mm)
-    // At 1600px width, A3 Landscape height is ~1115px; banner+header = ~175px, leaving ~920px for student rows
+    // Put ALL students (e.g. #1 to #47) on Page 1 of A3 Landscape (420mm x 297mm) filling 100% edge-to-edge left & right
+    // At 1720px width, A3 Landscape printable ratio is 1.43 -> max height for 100% full width is ~1190px
+    const stageW = 1720;
     const includeFooterOnPage1 = (totalCount <= 34);
-    const availRowsH = includeFooterOnPage1 ? 720 : 915;
+    const availRowsH = includeFooterOnPage1 ? 740 : 960;
     const rowH = Math.max(17, Math.min(28, Math.floor(availRowsH / Math.max(totalCount, 1))));
-    const rowFont = rowH <= 18 ? 12 : (rowH <= 20 ? 13 : 14);
+    const rowFont = rowH <= 18 ? 12.5 : (rowH <= 21 ? 13.5 : 14.5);
     const cellPad = rowH <= 20 ? '1px 2px' : '2px 2px';
 
     // Use 3x HiDPI canvas-rendered vertical Khmer labels so html2canvas renders them 100% crisp like on screen
-    const vTotalImg = makeVerticalKhmerHeaderImg('ពិន្ទុសរុប', true, 104, 30);
-    const vAvgImg = makeVerticalKhmerHeaderImg('មធ្យមភាគ', true, 104, 30);
-    const vRankImg = makeVerticalKhmerHeaderImg('ចំណាត់ថ្នាក់', true, 104, 30);
-    const vMentionImg = makeVerticalKhmerHeaderImg('និទ្ទេស', true, 104, 30);
-    const subImgs = HR.subjects.map(s => makeVerticalKhmerHeaderImg(s.subjectName, false, 98, 28));
+    const vTotalImg = makeVerticalKhmerHeaderImg('ពិន្ទុសរុប', true, 96, 30);
+    const vAvgImg = makeVerticalKhmerHeaderImg('មធ្យមភាគ', true, 96, 30);
+    const vRankImg = makeVerticalKhmerHeaderImg('ចំណាត់ថ្នាក់', true, 96, 30);
+    const vMentionImg = makeVerticalKhmerHeaderImg('និទ្ទេស', true, 96, 30);
+    const subImgs = HR.subjects.map(s => makeVerticalKhmerHeaderImg(s.subjectName, false, 92, 28));
 
     const theadHtml = `
         <thead>
             <tr>
-                <th rowspan="3" class="ms-shade" style="width:38px;font-size:14px;">ល.រ</th>
-                <th rowspan="3" class="ms-shade" style="width:185px;font-size:14.5px;">គោត្តនាម-នាម</th>
-                <th rowspan="3" class="ms-shade" style="width:42px;font-size:14px;">ភេទ</th>
-                <th colspan="${HR.subjects.length}" style="font-weight:700;font-size:15px;background:#fff;padding:5px;">តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</th>
-                <th rowspan="3" class="ms-shade" style="width:56px;padding:2px;">${vTotalImg}</th>
-                <th rowspan="3" class="ms-shade" style="width:62px;padding:2px;">${vAvgImg}</th>
-                <th rowspan="3" class="ms-shade" style="width:54px;padding:2px;">${vRankImg}</th>
-                <th rowspan="3" class="ms-shade" style="width:54px;padding:2px;">${vMentionImg}</th>
+                <th rowspan="3" class="ms-shade" style="width:40px;font-size:14.5px;">ល.រ</th>
+                <th rowspan="3" class="ms-shade" style="width:195px;font-size:15px;">គោត្តនាម-នាម</th>
+                <th rowspan="3" class="ms-shade" style="width:44px;font-size:14.5px;">ភេទ</th>
+                <th colspan="${HR.subjects.length}" style="font-weight:700;font-size:15.5px;background:#fff;padding:5px;">តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</th>
+                <th rowspan="3" class="ms-shade" style="width:60px;padding:2px;">${vTotalImg}</th>
+                <th rowspan="3" class="ms-shade" style="width:66px;padding:2px;">${vAvgImg}</th>
+                <th rowspan="3" class="ms-shade" style="width:58px;padding:2px;">${vRankImg}</th>
+                <th rowspan="3" class="ms-shade" style="width:58px;padding:2px;">${vMentionImg}</th>
             </tr>
             <tr>
-                ${HR.subjects.map(s => `<th style="font-size:13px;background:#fff;padding:3px 2px;font-weight:400;">${s.maxScore != null ? s.maxScore : 0}</th>`).join('')}
+                ${HR.subjects.map(s => `<th style="font-size:13.5px;background:#fff;padding:3px 2px;font-weight:400;">${s.maxScore != null ? s.maxScore : 0}</th>`).join('')}
             </tr>
             <tr>
                 ${subImgs.map(img => `<th style="background:#fff;padding:2px 1px;">${img}</th>`).join('')}
@@ -761,22 +762,21 @@ async function downloadMoeysScoreSheetPdf() {
         </thead>`;
 
     const bannerHtml = `
-        <div class="moeys-top-banner" style="font-size:16px;padding:6px 16px;margin-bottom:6px;">
+        <div class="moeys-top-banner" style="font-size:16.5px;padding:6px 14px;margin-bottom:5px;">
             <span>តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</span>
             <span>ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</span>
             <span>-បញ្ឈប់បញ្ជីត្រឹមចំនួនសិស្ស ${totalCount}នាក់ ស្រី ${femaleCount}នាក់</span>
         </div>`;
 
-    const subColW = Math.floor((1600 - 28 - 38 - 185 - 42 - 56 - 62 - 54 - 54) / Math.max(HR.subjects.length, 1));
     const colgroupHtml = `<colgroup>
-        <col style="width:38px;">
-        <col style="width:185px;">
-        <col style="width:42px;">
-        ${HR.subjects.map(() => `<col style="width:${subColW}px;">`).join('')}
-        <col style="width:56px;">
-        <col style="width:62px;">
-        <col style="width:54px;">
-        <col style="width:54px;">
+        <col style="width:40px;">
+        <col style="width:195px;">
+        <col style="width:44px;">
+        ${HR.subjects.map(() => `<col>`).join('')}
+        <col style="width:60px;">
+        <col style="width:66px;">
+        <col style="width:58px;">
+        <col style="width:58px;">
     </colgroup>`;
 
     const allBodyRows = results.map((r, ri) => {
@@ -802,9 +802,9 @@ async function downloadMoeysScoreSheetPdf() {
     }).join('');
 
     const stage = document.getElementById('moeysPdfStage');
-    stage.style.width = '1600px';
+    stage.style.width = stageW + 'px';
     let stageHtml = `
-        <div class="moeys-pdf-page" style="width:1600px;background:#fff;padding:6px 14px 8px 14px;box-sizing:border-box;">
+        <div class="moeys-pdf-page" style="width:${stageW}px;background:#fff;padding:4px 4px 6px 4px;box-sizing:border-box;">
             ${bannerHtml}
             <table class="moeys-score-table" style="width:100%;min-width:100%;border-collapse:collapse;table-layout:fixed;font-size:${rowFont}px;">
                 ${colgroupHtml}
@@ -815,7 +815,7 @@ async function downloadMoeysScoreSheetPdf() {
         </div>`;
     if (!includeFooterOnPage1) {
         stageHtml += `
-            <div class="moeys-pdf-page" style="width:1600px;background:#fff;padding:12px 24px;box-sizing:border-box;">
+            <div class="moeys-pdf-page" style="width:${stageW}px;background:#fff;padding:10px 18px;box-sizing:border-box;">
                 ${buildMoeysGradeSummaryHtml(results)}
             </div>`;
     }
@@ -833,16 +833,16 @@ async function downloadMoeysScoreSheetPdf() {
         const pdf = new JsPdfCtor({ orientation: 'landscape', unit: 'mm', format: 'a3' });
         const pageW = pdf.internal.pageSize.getWidth();  // 420mm
         const pageH = pdf.internal.pageSize.getHeight(); // 297mm
-        const marginX = 5;
+        const marginX = 3;
         const maxW = pageW - marginX * 2;
-        const maxH = pageH - 8;
+        const maxH = pageH - 6;
 
         const canvases = [];
         for (let i = 0; i < pages.length; i++) {
             const prog = document.getElementById('moeysPdfProg');
             if (prog) prog.innerHTML = `ទំព័រទី <b>${i + 1}</b> / <b>${pages.length}</b>`;
             const canvas = await html2canvas(pages[i], {
-                scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: 1600, windowWidth: 1640
+                scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: stageW, windowWidth: stageW + 40
             });
             canvases.push(canvas);
             await new Promise(r => setTimeout(r, 15));
@@ -860,7 +860,7 @@ async function downloadMoeysScoreSheetPdf() {
             const drawW = cv.width * commonRatio;
             const drawH = cv.height * commonRatio;
             const offsetX = marginX + (maxW - drawW) / 2;
-            const topY = (i === 0) ? 4 : 6;
+            const topY = (i === 0) ? 3 : 5;
 
             if (i > 0) pdf.addPage('a3', 'landscape');
             pdf.addImage(imgData, 'JPEG', offsetX, topY, drawW, drawH, undefined, 'FAST');
