@@ -739,11 +739,11 @@ async function downloadMoeysScoreSheetPdf() {
     }
 
     // Use 3x HiDPI canvas-rendered vertical Khmer labels so html2canvas renders them 100% crisp like on screen
-    const vTotalImg = makeVerticalKhmerHeaderImg('ពិន្ទុសរុប', true, 128, 32);
-    const vAvgImg = makeVerticalKhmerHeaderImg('មធ្យមភាគ', true, 128, 32);
-    const vRankImg = makeVerticalKhmerHeaderImg('ចំណាត់ថ្នាក់', true, 128, 32);
-    const vMentionImg = makeVerticalKhmerHeaderImg('និទ្ទេស', true, 128, 32);
-    const subImgs = HR.subjects.map(s => makeVerticalKhmerHeaderImg(s.subjectName, false, 118, 28));
+    const vTotalImg = makeVerticalKhmerHeaderImg('ពិន្ទុសរុប', true, 108, 30);
+    const vAvgImg = makeVerticalKhmerHeaderImg('មធ្យមភាគ', true, 108, 30);
+    const vRankImg = makeVerticalKhmerHeaderImg('ចំណាត់ថ្នាក់', true, 108, 30);
+    const vMentionImg = makeVerticalKhmerHeaderImg('និទ្ទេស', true, 108, 30);
+    const subImgs = HR.subjects.map(s => makeVerticalKhmerHeaderImg(s.subjectName, false, 102, 28));
 
     const theadHtml = `
         <thead>
@@ -787,11 +787,12 @@ async function downloadMoeysScoreSheetPdf() {
     const stage = document.getElementById('moeysPdfStage');
     stage.innerHTML = pagesData.map((pg, pIdx) => {
         const isLast = (pIdx === pagesData.length - 1);
-        // Page 1: 30 students filling A3 landscape cleanly; Page 2: compact remaining student block (~20% of A3 sheet height)
-        const targetP2TableH = 200; // ~20% of 990px A3 landscape height
-        const rowH = pg.isFirst ? 24.5 : Math.max(17, Math.min(22, Math.floor(targetP2TableH / Math.max(pg.rows.length, 1))));
-        const rowFont = pg.isFirst ? 14.5 : (rowH <= 18 ? 12 : 13);
-        const cellPad = pg.isFirst ? '2px 2px' : '1px 2px';
+        // Page 1: 30 students filling A3 landscape cleanly at full width; Page 2: compact remaining block near top edge
+        const targetP2TableH = 200;
+        const rowH = pg.isFirst ? 23 : Math.max(17, Math.min(22, Math.floor(targetP2TableH / Math.max(pg.rows.length, 1))));
+        const rowFont = pg.isFirst ? 14 : (rowH <= 18 ? 12 : 13);
+        const cellPad = pg.isFirst ? '1.5px 2px' : '1px 2px';
+        const pagePad = pg.isFirst ? '8px 14px 10px 14px' : '0px 14px 10px 14px';
         const bodyRows = pg.rows.map((r, ri) => {
             const hasScore = (r.total !== null && r.total !== undefined);
             const totalTxt = hasScore ? (Number.isInteger(r.total) ? String(r.total) : r.total.toFixed(2)) : '0';
@@ -814,7 +815,7 @@ async function downloadMoeysScoreSheetPdf() {
                 </tr>`;
         }).join('');
         return `
-            <div class="moeys-pdf-page" style="width:1400px;background:#fff;padding:12px 16px;box-sizing:border-box;">
+            <div class="moeys-pdf-page" style="width:1400px;background:#fff;padding:${pagePad};box-sizing:border-box;">
                 ${pg.isFirst ? bannerHtml : ''}
                 <table class="moeys-score-table" style="width:100%;min-width:100%;border-collapse:collapse;table-layout:fixed;font-size:${rowFont}px;">
                     ${colgroupHtml}
@@ -837,25 +838,38 @@ async function downloadMoeysScoreSheetPdf() {
         const pdf = new JsPdfCtor({ orientation: 'landscape', unit: 'mm', format: 'a3' });
         const pageW = pdf.internal.pageSize.getWidth();  // 420mm
         const pageH = pdf.internal.pageSize.getHeight(); // 297mm
-        const margin = 6;
-        const maxW = pageW - margin * 2;
-        const maxH = pageH - margin * 2;
+        const marginX = 5;
+        const maxW = pageW - marginX * 2;
+        const maxH = pageH - 8;
 
+        // Capture all pages first, then apply ONE identical scale ratio across all pages so Page 1 & Page 2 columns align 100% identically!
+        const canvases = [];
         for (let i = 0; i < pages.length; i++) {
             const prog = document.getElementById('moeysPdfProg');
             if (prog) prog.innerHTML = `ទំព័រទី <b>${i + 1}</b> / <b>${pages.length}</b>`;
             const canvas = await html2canvas(pages[i], {
                 scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: 1400, windowWidth: 1440
             });
-            const imgData = canvas.toDataURL('image/jpeg', 0.96);
-            const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
-            const drawW = canvas.width * ratio;
-            const drawH = canvas.height * ratio;
-            const offsetX = margin + (maxW - drawW) / 2;
+            canvases.push(canvas);
+            await new Promise(r => setTimeout(r, 15));
+        }
+
+        let commonRatio = Infinity;
+        canvases.forEach(cv => {
+            const r = Math.min(maxW / cv.width, maxH / cv.height);
+            if (r < commonRatio) commonRatio = r;
+        });
+
+        for (let i = 0; i < canvases.length; i++) {
+            const cv = canvases[i];
+            const imgData = cv.toDataURL('image/jpeg', 0.96);
+            const drawW = cv.width * commonRatio;
+            const drawH = cv.height * commonRatio;
+            const offsetX = marginX + (maxW - drawW) / 2;
+            const topY = (i === 0) ? 4 : 2;
 
             if (i > 0) pdf.addPage('a3', 'landscape');
-            pdf.addImage(imgData, 'JPEG', offsetX, margin, drawW, drawH, undefined, 'FAST');
-            await new Promise(r => setTimeout(r, 15));
+            pdf.addImage(imgData, 'JPEG', offsetX, topY, drawW, drawH, undefined, 'FAST');
         }
 
         pdf.save(`ScoreSheet_A3_Landscape_${HR.className}_${periodKh}_${HR.academicYear}.pdf`);
