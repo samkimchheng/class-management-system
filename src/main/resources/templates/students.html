@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>បញ្ជីឈ្មោះសិស្ស - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&family=Moul&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css?v=20261029h}" href="../static/css/style.css?v=20261029h">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         .btn-delete-class-students {
             display: inline-flex;
@@ -492,6 +494,9 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                             <span th:text="${selectedClass != null and selectedClass != 'ថ្នាក់រៀនទាំងអស់' ? '🗑️ លុបសិស្សថ្នាក់ ' + selectedClass + ' ទាំងអស់' : '🗑️ លុបសិស្សម្តង១ថ្នាក់'}">🗑️ លុបសិស្សម្តង១ថ្នាក់</span>
                         </button>
+                        <button type="button" id="btnDownloadStudentsPdf" class="btn" onclick="downloadStudentsA4Pdf()" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #fff; font-weight: 700; border: none; display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; border-radius: 8px; cursor: pointer;" title="ដោនឡូតបញ្ជីឈ្មោះសិស្សជាឯកសារ PDF (ក្រដាស A4)">
+                            <span>📥 ដោនឡូត PDF (A4)</span>
+                        </button>
                         <button type="button" id="btnOpenExcelImport" class="btn btn-excel-import" onclick="openExcelImportModal()" title="នាំចូលបញ្ជីឈ្មោះសិស្សពី Excel ម្តងមួយថ្នាក់">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                             <span>📥 នាំចូលពី Excel</span>
@@ -559,7 +564,234 @@
             </div>
         </div>
     </div>
+    <div id="studentsPdfStage" style="position:fixed;left:-99999px;top:0;background:#fff;z-index:-1;"></div>
     <script>
+        async function downloadStudentsA4Pdf() {
+            const trs = Array.from(document.querySelectorAll('#studentsTableBody tr'));
+            if (trs.length === 0) {
+                Swal.fire('មិនមានទិន្នន័យ', 'មិនមានបញ្ជីឈ្មោះសិស្សសម្រាប់ដោនឡូតទេ!', 'info');
+                return;
+            }
+
+            const { isConfirmed, value: mode } = await Swal.fire({
+                title: '📥 ដោនឡូតបញ្ជីឈ្មោះសិស្ស (PDF A4)',
+                html: `
+                    <div style="text-align:left;display:flex;flex-direction:column;gap:10px;margin-top:6px;">
+                        <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #2563eb;border-radius:8px;background:#eff6ff;cursor:pointer;">
+                            <input type="radio" name="stuPdfMode" value="portrait" checked style="width:18px;height:18px;accent-color:#2563eb;">
+                            <div>
+                                <div style="font-weight:700;color:#1e3a8a;">📄 A4 បញ្ឈរ (Portrait — ទម្រង់ស្តង់ដារ)</div>
+                                <div style="font-size:0.82rem;color:#475569;">ល.រ, គោត្តនាម-នាម, ភេទ, ថ្នាក់, លេខកូដប្រឡង, ផ្សេងៗ</div>
+                            </div>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer;">
+                            <input type="radio" name="stuPdfMode" value="landscape" style="width:18px;height:18px;accent-color:#2563eb;">
+                            <div>
+                                <div style="font-weight:700;color:#0f172a;">📄 A4 ផ្តេក (Landscape — ទម្រង់លម្អិតពេញលេញ)</div>
+                                <div style="font-size:0.82rem;color:#475569;">រួមមាន ភូមិ/ឃុំ/ស្រុក/ខេត្ត, ឈ្មោះឪពុក/ម្តាយ និងមុខរបរ</div>
+                            </div>
+                        </label>
+                    </div>`,
+                showCancelButton: true,
+                confirmButtonText: '📥 ដោនឡូត PDF',
+                cancelButtonText: 'បោះបង់',
+                confirmButtonColor: '#dc2626',
+                preConfirm: () => {
+                    const checked = document.querySelector('input[name="stuPdfMode"]:checked');
+                    return checked ? checked.value : 'portrait';
+                }
+            });
+
+            if (!isConfirmed) return;
+
+            const JsPdfCtor = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+            if (typeof html2canvas === 'undefined' || !JsPdfCtor) { window.print(); return; }
+            if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
+
+            const escHtml = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const studentsData = trs.map((tr, i) => {
+                const tds = tr.querySelectorAll('td');
+                const g = (tds[2]?.textContent || '').trim();
+                const isFemale = g.includes('ស្រី') || g === 'ស' || g.toUpperCase() === 'F';
+                return {
+                    no: i + 1,
+                    name: (tds[1]?.textContent || '').trim(),
+                    gender: g,
+                    isFemale,
+                    cls: (tds[3]?.textContent || '').trim(),
+                    village: (tds[4]?.textContent || '').trim(),
+                    commune: (tds[5]?.textContent || '').trim(),
+                    district: (tds[6]?.textContent || '').trim(),
+                    province: (tds[7]?.textContent || '').trim(),
+                    father: (tds[8]?.textContent || '').trim(),
+                    fatherJob: (tds[9]?.textContent || '').trim(),
+                    mother: (tds[10]?.textContent || '').trim(),
+                    motherJob: (tds[11]?.textContent || '').trim(),
+                    code: (tds[12]?.textContent || '').trim(),
+                    status: (tds[13]?.textContent || '').trim()
+                };
+            });
+
+            const totalCount = studentsData.length;
+            const femaleCount = studentsData.filter(s => s.isFemale).length;
+            const maleCount = totalCount - femaleCount;
+            const selectedCls = (document.getElementById('classNameSelect')?.value || 'ថ្នាក់រៀនទាំងអស់').trim();
+            const yearLabel = (document.getElementById('academicYearSelect')?.value || '២០២៦-២០២៧').trim();
+            const classTitle = (selectedCls && selectedCls !== 'ថ្នាក់រៀនទាំងអស់') ? `ថ្នាក់ទី ${selectedCls}` : 'គ្រប់ថ្នាក់រៀន';
+
+            const isLandscape = (mode === 'landscape');
+            const stageW = isLandscape ? 1280 : 900;
+            const perPageFirst = isLandscape ? 22 : 30;
+            const perPageNext = isLandscape ? 26 : 36;
+
+            const pages = [];
+            if (studentsData.length <= perPageFirst) {
+                pages.push({ isFirst: true, rows: studentsData });
+            } else {
+                pages.push({ isFirst: true, rows: studentsData.slice(0, perPageFirst) });
+                let idx = perPageFirst;
+                while (idx < studentsData.length) {
+                    pages.push({ isFirst: false, rows: studentsData.slice(idx, idx + perPageNext) });
+                    idx += perPageNext;
+                }
+            }
+
+            const theadPortrait = `
+                <thead>
+                    <tr style="background:#eef2ff;">
+                        <th style="border:1px solid #000;padding:6px 4px;width:44px;text-align:center;">ល.រ</th>
+                        <th style="border:1px solid #000;padding:6px 8px;text-align:center;">គោត្តនាម និងនាម</th>
+                        <th style="border:1px solid #000;padding:6px 4px;width:72px;text-align:center;">ភេទ</th>
+                        <th style="border:1px solid #000;padding:6px 4px;width:86px;text-align:center;">ថ្នាក់ទី</th>
+                        <th style="border:1px solid #000;padding:6px 4px;width:130px;text-align:center;">លេខកូដប្រឡង</th>
+                        <th style="border:1px solid #000;padding:6px 4px;width:140px;text-align:center;">ផ្សេងៗ</th>
+                    </tr>
+                </thead>`;
+
+            const theadLandscape = `
+                <thead>
+                    <tr style="background:#eef2ff;">
+                        <th style="border:1px solid #000;padding:5px 3px;width:36px;text-align:center;">ល.រ</th>
+                        <th style="border:1px solid #000;padding:5px 6px;width:170px;text-align:center;">គោត្តនាម និងនាម</th>
+                        <th style="border:1px solid #000;padding:5px 3px;width:54px;text-align:center;">ភេទ</th>
+                        <th style="border:1px solid #000;padding:5px 3px;width:62px;text-align:center;">ថ្នាក់</th>
+                        <th style="border:1px solid #000;padding:5px 4px;text-align:center;">អាសយដ្ឋាន (ភូមិ/ឃុំ/ស្រុក/ខេត្ត)</th>
+                        <th style="border:1px solid #000;padding:5px 4px;width:155px;text-align:center;">ឈ្មោះឪពុក / មុខរបរ</th>
+                        <th style="border:1px solid #000;padding:5px 4px;width:155px;text-align:center;">ឈ្មោះម្តាយ / មុខរបរ</th>
+                        <th style="border:1px solid #000;padding:5px 4px;width:96px;text-align:center;">លេខកូដ</th>
+                    </tr>
+                </thead>`;
+
+            const headerHtml = `
+                <div style="text-align:center;color:#000;line-height:1.55;margin-bottom:6px;">
+                    <div style="font-family:'Moul',serif;font-size:16px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                    <div style="font-family:'Moul',serif;font-size:14px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    <div style="font-size:12px;letter-spacing:3px;">~❖~</div>
+                </div>
+                <div style="text-align:center;color:#1e3a8a;margin-bottom:10px;line-height:1.6;">
+                    <div style="font-family:'Moul',serif;font-size:15.5px;">បញ្ជីឈ្មោះសិស្ស ${escHtml(classTitle)}</div>
+                    <div style="font-family:'Moul',serif;font-size:13.5px;">ឆ្នាំសិក្សា ${escHtml(yearLabel)}</div>
+                </div>`;
+
+            const footerHtml = `
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:14px;font-size:13.5px;color:#000;">
+                    <div style="line-height:1.8;">
+                        <div>បញ្ឈប់បញ្ជីត្រឹមចំនួនសិស្សសរុប៖ <b>${totalCount} នាក់</b></div>
+                        <div>ប្រុស៖ <b>${maleCount} នាក់</b> &nbsp;|&nbsp; ស្រី៖ <b style="color:#dc2626;">${femaleCount} នាក់</b></div>
+                    </div>
+                    <div style="text-align:center;min-width:220px;line-height:1.8;">
+                        <div>ថ្ងៃ............ខែ............ឆ្នាំ............</div>
+                        <div style="font-weight:700;margin-top:4px;">គ្រូបង្រៀន / គ្រូបន្ទុកថ្នាក់</div>
+                    </div>
+                </div>`;
+
+            const stage = document.getElementById('studentsPdfStage');
+            stage.style.width = stageW + 'px';
+            stage.innerHTML = pages.map((pg, idx) => {
+                const isLast = (idx === pages.length - 1);
+                const rowsHtml = pg.rows.map(s => {
+                    if (!isLandscape) {
+                        return `<tr style="height:28px;">
+                            <td style="border:1px solid #000;text-align:center;padding:3px;">${s.no}</td>
+                            <td style="border:1px solid #000;text-align:left;padding:3px 8px;white-space:nowrap;">${escHtml(s.name)}</td>
+                            <td style="border:1px solid #000;text-align:center;padding:3px;">${escHtml(s.gender)}</td>
+                            <td style="border:1px solid #000;text-align:center;padding:3px;">${escHtml(s.cls)}</td>
+                            <td style="border:1px solid #000;text-align:center;padding:3px;color:#1d4ed8;">${escHtml(s.code)}</td>
+                            <td style="border:1px solid #000;text-align:center;padding:3px;">${escHtml(s.status)}</td>
+                        </tr>`;
+                    } else {
+                        const addr = [s.village, s.commune, s.district, s.province].filter(Boolean).join(', ');
+                        const fTxt = [s.father, s.fatherJob ? `(${s.fatherJob})` : ''].filter(Boolean).join(' ');
+                        const mTxt = [s.mother, s.motherJob ? `(${s.motherJob})` : ''].filter(Boolean).join(' ');
+                        return `<tr style="height:26px;">
+                            <td style="border:1px solid #000;text-align:center;padding:2px;">${s.no}</td>
+                            <td style="border:1px solid #000;text-align:left;padding:2px 6px;white-space:nowrap;">${escHtml(s.name)}</td>
+                            <td style="border:1px solid #000;text-align:center;padding:2px;">${escHtml(s.gender)}</td>
+                            <td style="border:1px solid #000;text-align:center;padding:2px;">${escHtml(s.cls)}</td>
+                            <td style="border:1px solid #000;text-align:left;padding:2px 5px;font-size:12px;">${escHtml(addr)}</td>
+                            <td style="border:1px solid #000;text-align:left;padding:2px 5px;font-size:12px;">${escHtml(fTxt)}</td>
+                            <td style="border:1px solid #000;text-align:left;padding:2px 5px;font-size:12px;">${escHtml(mTxt)}</td>
+                            <td style="border:1px solid #000;text-align:center;padding:2px;color:#1d4ed8;">${escHtml(s.code)}</td>
+                        </tr>`;
+                    }
+                }).join('');
+
+                return `
+                    <div class="stu-pdf-page" style="width:${stageW}px;background:#fff;padding:14px 18px;box-sizing:border-box;color:#000;font-family:'Kantumruy Pro','Battambang',sans-serif;">
+                        ${pg.isFirst ? headerHtml : ''}
+                        <table style="width:100%;border-collapse:collapse;font-size:${isLandscape ? 13 : 14}px;color:#000;border:1.4px solid #000;">
+                            ${isLandscape ? theadLandscape : theadPortrait}
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+                        ${isLast ? footerHtml : ''}
+                    </div>`;
+            }).join('');
+
+            const pageEls = Array.from(stage.querySelectorAll('.stu-pdf-page'));
+            Swal.fire({
+                title: 'កំពុងបង្កើតឯកសារ PDF (A4)...',
+                html: `<div id="stuPdfProg">ទំព័រទី <b>1</b> / <b>${pageEls.length}</b></div>`,
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                const orient = isLandscape ? 'landscape' : 'portrait';
+                const pdf = new JsPdfCtor({ orientation: orient, unit: 'mm', format: 'a4' });
+                const pageW = pdf.internal.pageSize.getWidth();
+                const pageH = pdf.internal.pageSize.getHeight();
+                const margin = 5;
+                const maxW = pageW - margin * 2;
+                const maxH = pageH - margin * 2;
+
+                for (let i = 0; i < pageEls.length; i++) {
+                    const prog = document.getElementById('stuPdfProg');
+                    if (prog) prog.innerHTML = `ទំព័រទី <b>${i + 1}</b> / <b>${pageEls.length}</b>`;
+                    const canvas = await html2canvas(pageEls[i], {
+                        scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: stageW, windowWidth: stageW + 40
+                    });
+                    const imgData = canvas.toDataURL('image/jpeg', 0.96);
+                    const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
+                    const drawW = canvas.width * ratio;
+                    const drawH = canvas.height * ratio;
+                    const offsetX = margin + (maxW - drawW) / 2;
+
+                    if (i > 0) pdf.addPage('a4', orient);
+                    pdf.addImage(imgData, 'JPEG', offsetX, margin, drawW, drawH, undefined, 'FAST');
+                    await new Promise(r => setTimeout(r, 15));
+                }
+
+                pdf.save(`StudentList_A4_${selectedCls}_${yearLabel}.pdf`);
+                Swal.close();
+            } catch (e) {
+                console.error(e);
+                Swal.close();
+                Swal.fire('មានបញ្ហា', 'មិនអាចបង្កើត PDF បានទេ សូមសាកល្បងម្តងទៀត។', 'error');
+            } finally {
+                stage.innerHTML = '';
+            }
+        }
+
         async function handleDeleteClassStudents() {
             const selectEl = document.getElementById('classNameSelect');
             let currentSelected = selectEl ? selectEl.value : '';
