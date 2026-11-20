@@ -1,5 +1,5 @@
-// CMS Progressive Web App Service Worker (Network-First, Safe for Live Sessions)
-const CACHE_NAME = 'cms-pwa-v1';
+// CMS Progressive Web App Service Worker (v2 - Android WebAPK & iOS Safe)
+const CACHE_NAME = 'cms-pwa-v2';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon-192.png',
@@ -30,14 +30,10 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
-  // Never intercept cross-origin or dynamic API/auth calls
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/admin/api/') || url.pathname.startsWith('/logout')) {
-    return;
-  }
 
-  // Cache-first for static icons/manifest; network-first for everything else so data is always fresh
-  if (url.pathname.startsWith('/icons/') || url.pathname === '/manifest.json') {
+  // Cache-first for static PWA assets; let navigation & API requests flow directly without breaking 302 redirects
+  if (url.pathname.startsWith('/icons/') || url.pathname === '/manifest.json' || url.pathname === '/js/pwa-install.js') {
     event.respondWith(
       caches.match(req).then((cached) => cached || fetch(req).then((res) => {
         if (res && res.ok) {
@@ -47,10 +43,5 @@ self.addEventListener('fetch', (event) => {
         return res;
       }))
     );
-    return;
   }
-
-  event.respondWith(
-    fetch(req).catch(() => caches.match(req))
-  );
 });

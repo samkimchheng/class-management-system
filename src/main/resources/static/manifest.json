@@ -3,13 +3,14 @@
   "name": "CMS - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន",
   "short_name": "CMS",
   "description": "ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន គ្រូបន្ទុកថ្នាក់ អវត្តមាន និងពិន្ទុសិស្ស (CMS)",
-  "start_url": "/",
+  "start_url": "/login",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0f172a",
   "theme_color": "#1e3a8a",
   "lang": "km",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-192.png",
