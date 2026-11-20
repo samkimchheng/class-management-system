@@ -2,7 +2,10 @@
 <html lang="km" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1e3a8a">
     <title>ស្រង់អវត្តមានតាមខែ (ប្រធានថ្នាក់) - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700;800&family=Battambang:wght@400;700&family=Moul&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -118,6 +121,45 @@
             .att-pdf-table { width: 100% !important; min-width: 100% !important; border-collapse: collapse !important; font-size: 0.8rem !important; }
             .att-pdf-table th, .att-pdf-table td { border: 1px solid #000 !important; position: static !important; box-shadow: none !important; }
             .att-today-badge { display: none !important; }
+        }
+
+        /* Mobile Responsive (Android & iOS Optimized) */
+        html, body { -webkit-text-size-adjust: 100%; }
+        button, a, select, input, .att-cell {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .att-scroll-wrap {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+        }
+        @media screen and (max-width: 768px) {
+            input, select, .form-control { font-size: 16px !important; min-height: 40px; }
+            .topbar {
+                padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
+                gap: 8px;
+            }
+            .topbar h1 { font-size: 0.98rem; }
+            .topbar-actions { width: 100%; justify-content: flex-end; }
+            .container { margin: 10px auto; padding: 0 8px calc(28px + env(safe-area-inset-bottom)); }
+            .panel { padding: 12px 10px; border-radius: 12px; }
+            .toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+            .toolbar > div { width: 100%; }
+            .btn { min-height: 40px; padding: 8px 12px; font-size: 0.85rem; }
+            .att-scroll-wrap { max-height: 68vh; }
+            .att-pdf-table { font-size: 0.88rem; }
+            .att-pdf-table .att-sticky-1 {
+                min-width: 34px; width: 34px; max-width: 34px; font-size: 0.82rem; padding: 4px 2px;
+            }
+            .att-pdf-table .att-sticky-2,
+            .att-pdf-table thead .att-sticky-2 { left: 34px; }
+            .att-pdf-table td.att-name {
+                max-width: 128px; min-width: 112px; overflow: hidden; text-overflow: ellipsis;
+                padding: 5px 6px; font-size: 0.86rem;
+            }
+            .att-pdf-table .att-day-col { min-width: 40px; width: 40px; font-size: 0.85rem; }
+            .att-pdf-table .att-cell { height: 38px; font-size: 0.95rem; }
+            .att-holiday-toggle { width: 18px; height: 18px; }
         }
     </style>
 </head>
@@ -306,7 +348,8 @@
                     wrap.scrollTop = prevTop;
                 } else {
                     const todayEl = document.getElementById('monTodayCol');
-                    if (todayEl) wrap.scrollTo({ left: Math.max(0, todayEl.offsetLeft - 260), behavior: 'smooth' });
+                    const stickyOffset = window.innerWidth <= 768 ? 175 : 260;
+                    if (todayEl) wrap.scrollTo({ left: Math.max(0, todayEl.offsetLeft - stickyOffset), behavior: 'smooth' });
                 }
             }
         }

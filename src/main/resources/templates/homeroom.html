@@ -2,7 +2,10 @@
 <html lang="km" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#1e3a8a">
     <title>ប្រព័ន្ធការងារគ្រូបន្ទុកថ្នាក់ (Homeroom) - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&family=Moul&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -343,15 +346,91 @@
             .page-break { page-break-after: always; }
         }
 
-        /* Mobile Responsive */
+        /* Mobile Responsive (Android & iOS Optimized) */
+        html, body { -webkit-text-size-adjust: 100%; }
+        button, a, select, input, .hr-tab, .att-cell {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .table-wrap, .att-scroll-wrap, .hr-tabs {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+        }
         @media screen and (max-width: 992px) {
-            .sidebar { transform: translateX(-100%); }
+            .sidebar {
+                transform: translateX(-100%);
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
             .sidebar.open { transform: translateX(0); }
             .sidebar-overlay.show { display: block; }
             .main-content { margin-left: 0; width: 100%; }
-            .btn-hamburger { display: inline-flex; }
-            .content { padding: 12px 10px 30px; }
-            .topbar { padding: 10px 12px; }
+            .btn-hamburger {
+                display: inline-flex; align-items: center; justify-content: center;
+                min-width: 42px; min-height: 42px;
+            }
+            .content {
+                padding: 12px 10px calc(36px + env(safe-area-inset-bottom));
+            }
+            .topbar {
+                padding: calc(8px + env(safe-area-inset-top)) 12px 10px;
+                gap: 8px;
+            }
+            .topbar-title { font-size: 0.98rem; line-height: 1.3; }
+        }
+        @media screen and (max-width: 768px) {
+            /* Prevent iOS Safari auto-zoom on form controls */
+            input, select, textarea, .form-control, .class-bar select {
+                font-size: 16px !important;
+            }
+            .topbar { flex-direction: column; align-items: stretch; gap: 8px; }
+            .topbar-left { justify-content: flex-start; gap: 10px; }
+            .class-bar {
+                width: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+            }
+            .class-bar select { flex: 1; min-width: 120px; min-height: 40px; }
+            .class-bar .btn { min-height: 40px; }
+
+            .hr-hero { padding: 12px 14px; border-radius: 12px; margin-bottom: 12px; gap: 8px; }
+            .hr-hero h1 { font-size: 1.05rem; }
+            .hr-hero p { font-size: 0.8rem; line-height: 1.4; }
+
+            .hr-tabs {
+                gap: 6px; padding: 2px 0 8px; margin-bottom: 12px;
+                scroll-snap-type: x proximity;
+            }
+            .hr-tab {
+                min-height: 40px; padding: 8px 12px; font-size: 0.84rem;
+                scroll-snap-align: start; flex-shrink: 0;
+            }
+
+            .panel { padding: 12px 10px; border-radius: 12px; margin-bottom: 14px; }
+            .panel-header { flex-direction: column; align-items: stretch; gap: 8px; }
+            .panel-header > div { width: 100%; }
+            .panel-title { font-size: 0.96rem; }
+            .btn { min-height: 40px; padding: 8px 12px; font-size: 0.86rem; }
+            .btn-sm { min-height: 38px; padding: 7px 11px; font-size: 0.82rem; }
+
+            /* Compact sticky columns on phone so 5+ day columns stay visible & easy to tap */
+            .att-scroll-wrap { max-height: 68vh; border-radius: 8px; }
+            .att-pdf-table { font-size: 0.88rem; }
+            .att-pdf-table .att-sticky-1 {
+                min-width: 34px; width: 34px; max-width: 34px; font-size: 0.82rem; padding: 4px 2px;
+            }
+            .att-pdf-table .att-sticky-2,
+            .att-pdf-table thead .att-sticky-2 { left: 34px; }
+            .att-pdf-table td.att-name {
+                max-width: 128px; min-width: 112px; overflow: hidden; text-overflow: ellipsis;
+                padding: 5px 6px; font-size: 0.86rem;
+            }
+            .att-pdf-table .att-day-col { min-width: 40px; width: 40px; font-size: 0.85rem; }
+            .att-pdf-table .att-cell { height: 38px; font-size: 0.95rem; }
+            .att-holiday-toggle { width: 18px; height: 18px; }
+            .att-summary-bar { font-size: 0.82rem; gap: 8px; }
+
+            /* Allow A4 print previews (Kearik, Reports, Honor Roll) to pan smoothly on mobile */
+            .print-sheet, #kearikPreviewArea { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .form-grid, .idcard-grid { grid-template-columns: 1fr !important; }
         }
     </style>
 </head>
@@ -773,6 +852,6 @@
         </main>
     </div>
 
-    <script src="/js/homeroom.js?v=20261120b"></script>
+    <script src="/js/homeroom.js?v=20261120c"></script>
 </body>
 </html>

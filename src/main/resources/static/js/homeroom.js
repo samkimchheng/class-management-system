@@ -54,7 +54,10 @@ function switchTab(tabId, btn) {
     document.querySelectorAll('.hr-tab').forEach(b => b.classList.remove('active'));
     const pane = document.getElementById(tabId);
     if (pane) pane.classList.add('active');
-    if (btn) btn.classList.add('active');
+    if (btn) {
+        btn.classList.add('active');
+        try { btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch (e) {}
+    }
 
     if (tabId === 'tab-scores') renderScoreEntryTable();
     else if (tabId === 'tab-monthly-att') renderMonthlyAttendance();
@@ -2016,7 +2019,8 @@ function renderMonthlyAttendance(preserveScroll = false) {
 function scrollAttWrapToToday(wrap) {
     const todayEl = document.getElementById('attTodayCol');
     if (!wrap || !todayEl) return;
-    const targetLeft = Math.max(0, todayEl.offsetLeft - 260);
+    const stickyOffset = window.innerWidth <= 768 ? 175 : 260;
+    const targetLeft = Math.max(0, todayEl.offsetLeft - stickyOffset);
     wrap.scrollTo({ left: targetLeft, behavior: 'smooth' });
 }
 
