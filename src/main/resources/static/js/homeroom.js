@@ -526,9 +526,10 @@ function getScorePeriodKhmerLabel(period) {
     const map = {
         SEC: 'តេស្តដើមឆ្នាំ',
         M1: 'ខែវិច្ឆិកា', M2: 'ខែធ្នូ', M3: 'ខែមករា', M4: 'ខែកុម្ភៈ', M5: 'ខែមីនា',
-        EXAM_S1: 'ប្រឡងឆមាសលើកទី១',
+        EXAM_S1: 'ប្រឡងឆមាសលើកទី១', S1: 'ឆមាសទី១',
         M6: 'ខែមេសា', M7: 'ខែឧសភា', M8: 'ខែមិថុនា', M9: 'ខែកក្កដា', M10: 'ខែសីហា',
-        EXAM_S2: 'ប្រឡងឆមាសលើកទី២'
+        EXAM_S2: 'ប្រឡងឆមាសលើកទី២', S2: 'ឆមាសទី២',
+        YEAR: 'ប្រចាំឆ្នាំសិក្សា'
     };
     return map[period] || period;
 }
@@ -915,6 +916,88 @@ function exportScoresExcel() {
     XLSX.writeFile(wb, `Scores_${HR.className}_${period}.xlsx`);
 }
 
+function getMonthlyAttCountsForPeriod(view, student) {
+    const mMap = { M1: 11, M2: 12, M3: 1, M4: 2, M5: 3, M6: 4, M7: 5, M8: 6, M9: 7, M10: 8 };
+    const monthNum = mMap[view];
+    if (monthNum && HR.admin && HR.admin.monthlyAtt) {
+        // Parse academic year start/end to find matching YYYY-MM key in monthlyAtt
+        const ayAscii = String(HR.academicYear || '').replace(/[០-៩]/g, c => '០១២៣៤៥៦៧៨៩'.indexOf(c));
+        const yrs = ayAscii.match(/\d{4}/g);
+        const startY = yrs && yrs.length >= 1 ? parseInt(yrs[0], 10) : new Date().getFullYear();
+        const endY = yrs && yrs.length >= 2 ? parseInt(yrs[1], 10) : startY + 1;
+        const targetY = (monthNum >= 11) ? startY : endY;
+        const key = `${targetY}-${String(monthNum).padStart(2, '0')}`;
+        const mData = HR.admin.monthlyAtt[key];
+        if (mData && mData.marks) {
+            let perm = 0, unex = 0;
+            const prefix = `${student.id}_`;
+            Object.keys(mData.marks).forEach(k => {
+                if (k.startsWith(prefix)) {
+                    const mk = mData.marks[k];
+                    if (mk === 'ច') perm++;
+                    else if (mk === 'អ') unex++;
+                }
+            });
+            return { perm, unex, tot: perm + unex };
+        }
+    }
+    const perm = student.absentPermission || 0;
+    const unex = student.absentUnexcused || 0;
+    return { perm, unex, tot: student.absentTotal != null ? student.absentTotal : (perm + unex) };
+}
+
+async function downloadRankingA4PortraitPdf() {
+    const el = document.getElementById('rankingA4Sheet') || document.querySelector('#rankingsPrintArea .print-sheet');
+    if (!el) return;
+    const JsPdfCtor = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+    if (typeof html2canvas === 'undefined' || !JsPdfCtor) { window.print(); return; }
+
+    if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (e) {}
+    }
+
+    const view = document.getElementById('rankViewSelect').value;
+    const viewLabel = getScorePeriodKhmerLabel(view);
+
+    Swal.fire({
+        title: 'កំពុងបង្កើតឯកសារ PDF (A4 បញ្ឈរ ១សន្លឹក)...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    try {
+        const prevBorder = el.style.border, prevRadius = el.style.borderRadius, prevMaxW = el.style.maxWidth, prevW = el.style.width;
+        el.style.border = 'none'; el.style.borderRadius = '0'; el.style.maxWidth = '960px'; el.style.width = '960px';
+
+        const canvas = await html2canvas(el, {
+            scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: 960, windowWidth: 1000
+        });
+
+        el.style.border = prevBorder; el.style.borderRadius = prevRadius; el.style.maxWidth = prevMaxW; el.style.width = prevW;
+
+        const pdf = new JsPdfCtor({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageW = pdf.internal.pageSize.getWidth();  // 210mm
+        const pageH = pdf.internal.pageSize.getHeight(); // 297mm
+        const margin = 4;
+        const maxW = pageW - margin * 2;
+        const maxH = pageH - margin * 2;
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.96);
+        const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
+        const drawW = canvas.width * ratio;
+        const drawH = canvas.height * ratio;
+        const offsetX = margin + (maxW - drawW) / 2;
+
+        pdf.addImage(imgData, 'JPEG', offsetX, margin, drawW, drawH, undefined, 'FAST');
+        pdf.save(`Ranking_A4_${HR.className}_${viewLabel}_${HR.academicYear}.pdf`);
+        Swal.close();
+    } catch (e) {
+        console.error(e);
+        Swal.close();
+        window.print();
+    }
+}
+
 // ==================== TAB 3: RANKINGS, SEMESTERS, PROMOTION & TEACHER RANKS ====================
 function renderRankingsView() {
     const view = document.getElementById('rankViewSelect').value;
@@ -989,25 +1072,101 @@ function renderRankingsView() {
         return;
     }
 
-    const results = computeResultsForPeriod(view).sort((a, b) => (a.rank || 9999) - (b.rank || 9999));
+    const rawResults = computeResultsForPeriod(view);
+    const results = rawResults.slice().sort((a, b) => (a.rank || 9999) - (b.rank || 9999));
+    const periodKh = getScorePeriodKhmerLabel(view);
     const title = `តារាងចំណាត់ថ្នាក់សិស្ស ${PERIOD_LABELS[view] || view}`;
     const valid = results.filter(r => r.avg !== null);
     const passCount = valid.filter(r => r.avg >= 25).length;
     const subtitle = `សិស្សសរុប៖ ${results.length} នាក់ | ជាប់មធ្យមភាគ៖ ${passCount} នាក់ (${valid.length ? ((passCount / valid.length) * 100).toFixed(1) : 0}%)`;
 
     if (colsMode === '2') {
-        const half = Math.ceil(results.length / 2);
-        const left = results.slice(0, half), right = results.slice(half);
-        const renderHalf = (list) => `
-            <table class="hr-table" style="font-size:0.82rem;">
-                <thead><tr><th>ចំណាត់</th><th>គោត្តនាម និងនាម</th><th>ភេទ</th><th>មធ្យម</th><th>និទ្ទេស</th><th>អវត្ត.</th></tr></thead>
-                <tbody>${list.map(r => `<tr><td style="font-weight:800;">${r.rank || '-'}</td><td class="text-left" style="font-weight:700;">${esc(r.student.name)}</td><td>${esc(r.student.gender)}</td><td style="font-weight:800;">${fmtNum(r.avg)}</td><td><span class="badge badge-${r.mention.code}">${r.mention.code}</span></td><td>${r.student.absentTotal || 0}</td></tr>`).join('')}</tbody>
-            </table>`;
+        // Official MoEYS 1-Page A4 Portrait 2-Column Side-by-Side Ranking Sheet (Exact PDF Format)
+        // Keeps students in roster order 1..N (left: 1..half, right: half+1..N) just like the official PDF
+        const list = rawResults;
+        const half = Math.ceil(list.length / 2);
+        const leftList = list.slice(0, half);
+        const rightList = list.slice(half);
+        const cfg = HR.admin.config || {};
+        const ministry = cfg.ministry || 'មន្ទីរអប់រំ យុវជន និងកីឡា';
+        const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
+
+        const renderCells = (r, no, isRightStart) => {
+            const midCls = isRightStart ? 'rk-mid-border' : '';
+            if (!r) {
+                return `<td class="${midCls}"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>`;
+            }
+            const hasScore = (r.total !== null && r.total !== undefined);
+            const totalTxt = hasScore ? (Number.isInteger(r.total) ? String(r.total) : r.total.toFixed(1)) : '0';
+            const avgTxt = (r.avg !== null && r.avg !== undefined) ? r.avg.toFixed(2) : '0.00';
+            const rankTxt = r.rank ? String(r.rank) : '-';
+            const att = getMonthlyAttCountsForPeriod(view, r.student);
+            return `
+                <td class="${midCls}">${no}</td>
+                <td class="rk-name">${esc(r.student.name)}</td>
+                <td>${getShortGender(r.student.gender)}</td>
+                <td>${totalTxt}</td>
+                <td>${avgTxt}</td>
+                <td class="rk-rank">${rankTxt}</td>
+                <td>${att.perm}</td>
+                <td>${att.unex}</td>
+                <td>${att.tot}</td>`;
+        };
+
+        let rowsHtml = '';
+        for (let i = 0; i < half; i++) {
+            const lItem = leftList[i];
+            const rItem = rightList[i] || null;
+            rowsHtml += `<tr>${renderCells(lItem, i + 1, false)}${renderCells(rItem, half + i + 1, true)}</tr>`;
+        }
+
+        const colgroup = `<colgroup>
+            <col style="width:28px;"><col style="width:118px;"><col style="width:26px;"><col style="width:42px;"><col style="width:44px;"><col style="width:42px;"><col style="width:24px;"><col style="width:28px;"><col style="width:30px;">
+            <col style="width:28px;"><col style="width:118px;"><col style="width:26px;"><col style="width:42px;"><col style="width:44px;"><col style="width:42px;"><col style="width:24px;"><col style="width:28px;"><col style="width:30px;">
+        </colgroup>`;
+
         area.innerHTML = `
-            <div class="print-sheet">
-                ${getOfficialHeader(title, subtitle)}
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">${renderHalf(left)}${renderHalf(right)}</div>
-                ${getOfficialFooter()}
+            <div id="rankingA4Sheet" class="rank-a4-sheet">
+                <div style="text-align:center;color:#000;line-height:1.55;">
+                    <div class="moul" style="font-size:15px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                    <div class="moul" style="font-size:13.5px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    <div style="font-size:12px;letter-spacing:3px;margin-top:-2px;">~❖~</div>
+                </div>
+                <div style="text-align:left;color:#000;margin-top:-18px;margin-bottom:4px;line-height:1.6;">
+                    <div class="moul" style="font-size:12.5px;">${esc(ministry)}</div>
+                    <div class="moul" style="font-size:12.5px;">${esc(school)}</div>
+                </div>
+                <div style="text-align:center;color:#000;margin:2px 0 8px;line-height:1.6;">
+                    <div class="moul" style="font-size:13.5px;">ចំណាត់ថ្នាក់សម្រាប់ ${esc(periodKh)}</div>
+                    <div class="moul" style="font-size:13px;">ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>
+                </div>
+                <table class="rank-a4-table">
+                    ${colgroup}
+                    <thead>
+                        <tr>
+                            <th rowspan="2">ល.រ</th>
+                            <th rowspan="2">គោត្តនាម-នាម</th>
+                            <th rowspan="2">ភេទ</th>
+                            <th rowspan="2">ពិន្ទុសរុប</th>
+                            <th rowspan="2">ម.ភាគ</th>
+                            <th rowspan="2">ចំ.ថ្នាក់</th>
+                            <th colspan="3">អវត្តមាន</th>
+                            <th rowspan="2" class="rk-mid-border">ល.រ</th>
+                            <th rowspan="2">គោត្តនាម-នាម</th>
+                            <th rowspan="2">ភេទ</th>
+                            <th rowspan="2">ពិន្ទុសរុប</th>
+                            <th rowspan="2">ម.ភាគ</th>
+                            <th rowspan="2">ចំ.ថ្នាក់</th>
+                            <th colspan="3">អវត្តមាន</th>
+                        </tr>
+                        <tr>
+                            <th>ច្ប</th><th>អច្ប</th><th>សរុប</th>
+                            <th>ច្ប</th><th>អច្ប</th><th>សរុប</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+                ${buildMoeysGradeSummaryHtml(list)}
             </div>`;
         return;
     }

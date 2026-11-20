@@ -350,6 +350,28 @@
             margin-top: 14px; padding: 0 36px; font-size: 0.95rem; color: #000;
             page-break-inside: avoid;
         }
+
+        /* Official A4 Portrait 2-Column Monthly Ranking Sheet (Matches School PDF) */
+        .rank-a4-sheet {
+            background: #fff; color: #000; padding: 14px 16px; border: 1px solid #cbd5e1;
+            border-radius: 8px; max-width: 980px; margin: 0 auto;
+        }
+        .rank-a4-table {
+            width: 100%; border-collapse: collapse; table-layout: fixed;
+            font-size: 12px; font-weight: 400; color: #000; background: #fff;
+            border: 1.5px solid #000;
+        }
+        .rank-a4-table th, .rank-a4-table td {
+            border: 1px solid #000; padding: 2px 1.5px; text-align: center; vertical-align: middle;
+            line-height: 1.25; overflow: hidden; color: #000;
+        }
+        .rank-a4-table th { font-weight: 700; font-size: 11px; background: #fff; }
+        .rank-a4-table td.rk-name {
+            text-align: left; padding-left: 4px; white-space: nowrap; font-size: 12px; color: #000;
+        }
+        .rank-a4-table td.rk-rank { color: #dc2626; font-weight: 400; }
+        .rank-a4-table .rk-mid-border { border-left: 1.8px solid #000 !important; }
+        .rank-a4-table tbody tr { height: 22px; }
         .att-holiday-toggle {
             cursor: pointer; width: 15px; height: 15px; accent-color: #dc2626; margin: 0; vertical-align: middle;
         }
@@ -770,13 +792,14 @@
                                 <option value="TEACHER_RANKS">រាប់និទ្ទេសតាមមុខវិជ្ជា &amp; ចំណាត់ថ្នាក់គ្រូមុខវិជ្ជា</option>
                             </select>
                             <select id="rankColsMode" class="form-control" style="width:auto;" onchange="renderRankingsView()">
+                                <option value="2" selected>ទម្រង់ ២ ជួរ (A4 បញ្ឈរ ១សន្លឹក)</option>
                                 <option value="1">ទម្រង់ ១ ជួរ (លម្អិត)</option>
-                                <option value="2">ទម្រង់ ២ ជួរ (បិទប្រកាស)</option>
                             </select>
                         </div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-primary btn-sm" onclick="downloadRankingA4PortraitPdf()">📥 ដោនឡូត PDF (A4 បញ្ឈរ)</button>
                             <button class="btn btn-outline btn-sm" onclick="exportRankingsExcel()">📊 Export Excel (ទៅទីចាត់ការ)</button>
-                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន / Save PDF</button>
+                            <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ ព្រីន</button>
                         </div>
                     </div>
                     <div id="rankingsPrintArea"></div>
@@ -935,6 +958,6 @@
         </main>
     </div>
 
-    <script src="/js/homeroom.js?v=20261120m"></script>
+    <script src="/js/homeroom.js?v=20261120n"></script>
 </body>
 </html>
