@@ -2266,12 +2266,37 @@ class ClassroomApplicationTests {
         long scoresBefore = scoreRepository.count();
         long lessonsBefore = lessonRepository.count();
 
-        // 1. Homeroom page loads cleanly for teacher
-        mockMvc.perform(get("/homeroom")
-                .sessionAttr("ACCOUNT_ID", teacher.getId())
-                .sessionAttr("ACCOUNT_ROLE", "TEACHER"))
-                .andExpect(status().isOk())
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.view().name("homeroom"));
+        Boolean origHomeroomPerm = teacher.getHomeroomPermission();
+        try {
+            // 0. Teacher WITHOUT homeroomPermission is strictly blocked (redirect on page, 403 on API)
+            teacher.setHomeroomPermission(false);
+            accountRepository.save(teacher);
+
+            mockMvc.perform(get("/homeroom")
+                    .sessionAttr("ACCOUNT_ID", teacher.getId())
+                    .sessionAttr("ACCOUNT_ROLE", "TEACHER"))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/?homeroomDenied=true"));
+
+            mockMvc.perform(get("/api/homeroom/bootstrap")
+                    .param("className", cls)
+                    .sessionAttr("ACCOUNT_ID", teacher.getId())
+                    .sessionAttr("ACCOUNT_ROLE", "TEACHER"))
+                    .andExpect(status().isForbidden());
+
+            // 0b. Admin enables homeroomPermission via /admin/accounts/toggle-homeroom/{id}
+            mockMvc.perform(post("/admin/accounts/toggle-homeroom/" + teacher.getId())
+                    .sessionAttr("ACCOUNT_ID", 1L)
+                    .sessionAttr("ACCOUNT_ROLE", "ADMIN"))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/admin/accounts"));
+
+            // 1. Homeroom page now loads cleanly for authorized teacher
+            mockMvc.perform(get("/homeroom")
+                    .sessionAttr("ACCOUNT_ID", teacher.getId())
+                    .sessionAttr("ACCOUNT_ROLE", "TEACHER"))
+                    .andExpect(status().isOk())
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.view().name("homeroom"));
 
         // 2. Apply standard MoEYS preset subjects
         mockMvc.perform(post("/api/homeroom/subjects/preset")
@@ -2341,6 +2366,10 @@ class ClassroomApplicationTests {
         assertEquals(studentsBefore, studentRepository.count(), "Existing students count must not change");
         assertEquals(scoresBefore, scoreRepository.count(), "Existing scores count must not change");
         assertEquals(lessonsBefore, lessonRepository.count(), "Existing lessons count must not change");
+        } finally {
+            teacher.setHomeroomPermission(origHomeroomPerm);
+            accountRepository.save(teacher);
+        }
     }
 
     @Test

@@ -52,6 +52,10 @@ public class HomeroomController {
         return (Long) session.getAttribute("ACCOUNT_ID");
     }
 
+    private boolean hasHomeroomAccess(Account acc) {
+        return acc != null && (Boolean.TRUE.equals(acc.getHomeroomPermission()) || "ADMIN".equalsIgnoreCase(acc.getRole()));
+    }
+
     private String resolveAcademicYear(Account acc, String requestedYear) {
         if (requestedYear != null && !requestedYear.trim().isEmpty()) {
             return requestedYear.trim();
@@ -74,6 +78,9 @@ public class HomeroomController {
         Account acc = accountRepository.findById(accountId).orElse(null);
         if (acc == null) {
             return "redirect:/login";
+        }
+        if (!hasHomeroomAccess(acc)) {
+            return "redirect:/?homeroomDenied=true";
         }
 
         String activeYear = resolveAcademicYear(acc, academicYear);
@@ -107,6 +114,9 @@ public class HomeroomController {
         Account acc = accountRepository.findById(accountId).orElse(null);
         if (acc == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Account not found"));
+        }
+        if (!hasHomeroomAccess(acc)) {
+            return ResponseEntity.status(403).body(Map.of("error", "អ្នកមិនទាន់មានសិទ្ធិចូលប្រើផ្ទាំងគ្រូបន្ទុកថ្នាក់ទេ (សូមទាក់ទង Admin)"));
         }
         String activeYear = resolveAcademicYear(acc, academicYear);
 

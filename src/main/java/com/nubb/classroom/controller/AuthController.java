@@ -109,6 +109,9 @@ public class AuthController {
             boolean canAccessVocab = Boolean.TRUE.equals(acc.getVocabularyPermission())
                     || "ADMIN".equalsIgnoreCase(acc.getRole());
             session.setAttribute("VOCABULARY_PERMISSION", canAccessVocab);
+            boolean canAccessHomeroom = Boolean.TRUE.equals(acc.getHomeroomPermission())
+                    || "ADMIN".equalsIgnoreCase(acc.getRole());
+            session.setAttribute("HOMEROOM_PERMISSION", canAccessHomeroom);
             if (acc.getCurrentAcademicYear() != null && !acc.getCurrentAcademicYear().trim().isEmpty()) {
                 session.setAttribute("CURRENT_ACADEMIC_YEAR", acc.getCurrentAcademicYear().trim());
             } else {

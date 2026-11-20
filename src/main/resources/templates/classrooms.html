@@ -598,7 +598,7 @@
         </div>
         <ul class="nav-menu">
             <li class="nav-item"><a href="/" class="nav-link"><span>🏠</span> <span>ទំព័រដើម</span></a></li>
-            <li class="nav-item"><a href="/homeroom" class="nav-link"><span>🎓</span> <span>គ្រូបន្ទុកថ្នាក់ (Homeroom)</span></a></li>
+            <li class="nav-item" th:if="${session.HOMEROOM_PERMISSION == true}"><a href="/homeroom" class="nav-link"><span>🎓</span> <span>គ្រូបន្ទុកថ្នាក់ (Homeroom)</span></a></li>
             <li class="nav-item"><a href="/profile" class="nav-link"><span>👤</span> <span>បំពេញព័ត៌មានផ្ទាល់ខ្លួន</span></a></li>
             <li class="nav-item"><a href="/certificate" class="nav-link"><span>📜</span> <span>វិញ្ញាបនបត្របញ្ជាក់ការសិក្សា</span></a></li>
             <li class="nav-item active"><a href="/classrooms" class="nav-link"><span>🏫</span> <span>បញ្ជីថ្នាក់រៀនខ្ញុំ</span></a></li>

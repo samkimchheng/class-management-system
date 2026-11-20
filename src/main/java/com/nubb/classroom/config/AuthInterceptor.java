@@ -311,6 +311,20 @@ public class AuthInterceptor implements HandlerInterceptor {
                 }
                 boolean canAccessVocab = com.nubb.classroom.controller.PhonicsController.isAuthorizedForPhonics(curr);
                 session.setAttribute("VOCABULARY_PERMISSION", canAccessVocab);
+                boolean canAccessHomeroom = Boolean.TRUE.equals(curr.getHomeroomPermission())
+                        || "ADMIN".equalsIgnoreCase(curr.getRole());
+                session.setAttribute("HOMEROOM_PERMISSION", canAccessHomeroom);
+
+                if (path.equals("/homeroom") || path.startsWith("/homeroom/") || path.startsWith("/api/homeroom")) {
+                    if (!canAccessHomeroom) {
+                        if (path.startsWith("/api/")) {
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Homeroom permission required");
+                        } else {
+                            response.sendRedirect("/?homeroomDenied=true");
+                        }
+                        return false;
+                    }
+                }
             }
         } catch (Exception ignored) {}
 

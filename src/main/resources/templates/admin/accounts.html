@@ -233,6 +233,7 @@
                                 <th style="text-align: center; width: 95px;">តួនាទី</th>
                                 <th style="text-align: center; width: 115px;">ស្ថានភាព</th>
                                 <th style="text-align: center; width: 135px;">សិទ្ធិវាក្យសព្ទ & ប្រកប</th>
+                                <th style="text-align: center; width: 130px;">🎓 សិទ្ធិគ្រូបន្ទុក</th>
                                 <th style="text-align: center; width: 220px;">សកម្មភាព</th>
                             </tr>
                         </thead>
@@ -282,6 +283,21 @@
                                         </form>
                                     </span>
                                 </td>
+                                <td style="text-align: center;">
+                                    <span th:if="${acc.role == 'ADMIN'}" style="background: #ede9fe; color: #6d28d9; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; border: 1px solid #ddd6fe; display: inline-flex; align-items: center; gap: 4px;">
+                                        👑 ពេញលេញ
+                                    </span>
+                                    <span th:if="${acc.role != 'ADMIN'}">
+                                        <form th:action="@{/admin/accounts/toggle-homeroom/{id}(id=${acc.id})}" method="post" style="display:inline; margin:0;">
+                                            <button th:if="${acc.homeroomPermission == true}" type="submit" class="btn" style="background: #dcfce7; color: #166534; padding: 3px 8px; font-size: 0.8rem; border-radius: 20px; font-weight: 700; cursor: pointer; border: 1px solid #86efac;" title="ចុចដើម្បីបិទសិទ្ធិគ្រូបន្ទុកថ្នាក់">
+                                                🟢 បើកសិទ្ធិ
+                                            </button>
+                                            <button th:if="${acc.homeroomPermission != true}" type="submit" class="btn" style="background: #f1f5f9; color: #64748b; padding: 3px 8px; font-size: 0.8rem; border-radius: 20px; font-weight: 700; cursor: pointer; border: 1px solid #cbd5e1;" title="ចុចដើម្បីបើកសិទ្ធិគ្រូបន្ទុកថ្នាក់">
+                                                ⚪ គ្មានសិទ្ធិ
+                                            </button>
+                                        </form>
+                                    </span>
+                                </td>
                                 <td style="text-align: center; white-space: nowrap;">
                                     <!-- Edit Button (Available for all accounts) -->
                                     <button type="button" class="btn"
@@ -295,7 +311,8 @@
                                              th:data-phone="${acc.phone}"
                                              th:data-telegram="${acc.telegram}"
                                              th:data-vocabperm="${acc.vocabularyPermission}"
-                                             onclick="openEditModal(this.getAttribute('data-id'), this.getAttribute('data-fullname'), this.getAttribute('data-username'), this.getAttribute('data-password'), this.getAttribute('data-role'), this.getAttribute('data-subject'), this.getAttribute('data-teachingclasses'), this.getAttribute('data-phone'), this.getAttribute('data-telegram'), this.getAttribute('data-vocabperm'))"
+                                             th:data-homeroomperm="${acc.homeroomPermission}"
+                                             onclick="openEditModal(this.getAttribute('data-id'), this.getAttribute('data-fullname'), this.getAttribute('data-username'), this.getAttribute('data-password'), this.getAttribute('data-role'), this.getAttribute('data-subject'), this.getAttribute('data-teachingclasses'), this.getAttribute('data-phone'), this.getAttribute('data-telegram'), this.getAttribute('data-vocabperm'), this.getAttribute('data-homeroomperm'))"
                                              style="background: #3b82f6; color: white; padding: 6px 12px; font-size: 0.84rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-right: 4px;">
                                         ✏️ កែប្រែ
                                     </button>
@@ -404,6 +421,14 @@
                         </label>
                         <small style="display: block; color: #64748b; margin-top: 4px; margin-left: 28px;">(បើក/បិទ សិទ្ធិឱ្យគ្រូអាចមើលឃើញ និងគ្រប់គ្រងទំព័រ វាក្យសព្ទ (Vocab) ក្នុងប្រព័ន្ធ)</small>
                     </div>
+
+                    <div class="form-group" style="grid-column: span 2; background: #f0fdf4; padding: 12px 14px; border-radius: 8px; border: 1px solid #bbf7d0; margin-top: 2px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0; font-weight: 700; color: #166534;">
+                            <input type="checkbox" id="editHomeroomPerm" name="homeroomPermission" value="true" style="width: 18px; height: 18px; accent-color: #16a34a; cursor: pointer;">
+                            <span>🎓 អនុញ្ញាតឱ្យចូលប្រើផ្ទាំងគ្រូបន្ទុកថ្នាក់ (Homeroom Teacher Permission)</span>
+                        </label>
+                        <small style="display: block; color: #475569; margin-top: 4px; margin-left: 28px;">(បើក/បិទ សិទ្ធិឱ្យគ្រូអាចមើលឃើញ និងចូលប្រើផ្ទាំង គ្រូបន្ទុកថ្នាក់ (Homeroom) បាន)</small>
+                    </div>
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
@@ -415,7 +440,7 @@
     </div>
 
     <script>
-        function openEditModal(id, fullName, username, password, role, subject, teachingClasses, phone, telegram, vocabPerm) {
+        function openEditModal(id, fullName, username, password, role, subject, teachingClasses, phone, telegram, vocabPerm, homeroomPerm) {
             document.getElementById('editAccountId').value = id || '';
             document.getElementById('editFullName').value = fullName || '';
             document.getElementById('editUsername').value = username || '';
@@ -426,6 +451,7 @@
             document.getElementById('editPhone').value = (phone && phone !== 'null') ? phone : '';
             document.getElementById('editTelegram').value = (telegram && telegram !== 'null') ? telegram : '';
             document.getElementById('editVocabPerm').checked = (vocabPerm === 'true' || vocabPerm === true);
+            document.getElementById('editHomeroomPerm').checked = (homeroomPerm === 'true' || homeroomPerm === true);
             
             // Reset password type to password
             document.getElementById('editPassword').type = 'password';

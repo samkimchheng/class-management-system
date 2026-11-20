@@ -159,6 +159,7 @@ public class AdminController {
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "telegram", required = false) String telegram,
             @RequestParam(value = "vocabularyPermission", required = false) Boolean vocabularyPermission,
+            @RequestParam(value = "homeroomPermission", required = false) Boolean homeroomPermission,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
@@ -175,9 +176,8 @@ public class AdminController {
             if (teachingClasses != null) acc.setTeachingClasses(teachingClasses.trim());
             if (phone != null) acc.setPhone(phone.trim());
             if (telegram != null) acc.setTelegram(telegram.trim());
-            if (vocabularyPermission != null) {
-                acc.setVocabularyPermission(vocabularyPermission);
-            }
+            acc.setVocabularyPermission(Boolean.TRUE.equals(vocabularyPermission));
+            acc.setHomeroomPermission(Boolean.TRUE.equals(homeroomPermission));
             accountRepository.save(acc);
 
             // Update session name if Admin edited their own account
@@ -270,6 +270,20 @@ public class AdminController {
             acc.setVocabularyPermission(!current);
             accountRepository.save(acc);
             String state = !current ? "បានបើកសិទ្ធិប្រើប្រាស់វាក្យសព្ទ" : "បានបិទសិទ្ធិប្រើប្រាស់វាក្យសព្ទ";
+            redirectAttributes.addFlashAttribute("successMessage", state + " សម្រាប់ «" + acc.getFullName() + "» ដោយជោគជ័យ!");
+        }
+        return "redirect:/admin/accounts";
+    }
+
+    @PostMapping("/accounts/toggle-homeroom/{id}")
+    public String toggleHomeroomPermission(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Optional<Account> accOpt = accountRepository.findById(id);
+        if (accOpt.isPresent()) {
+            Account acc = accOpt.get();
+            boolean current = Boolean.TRUE.equals(acc.getHomeroomPermission());
+            acc.setHomeroomPermission(!current);
+            accountRepository.save(acc);
+            String state = !current ? "បានបើកសិទ្ធិគ្រូបន្ទុកថ្នាក់" : "បានបិទសិទ្ធិគ្រូបន្ទុកថ្នាក់";
             redirectAttributes.addFlashAttribute("successMessage", state + " សម្រាប់ «" + acc.getFullName() + "» ដោយជោគជ័យ!");
         }
         return "redirect:/admin/accounts";

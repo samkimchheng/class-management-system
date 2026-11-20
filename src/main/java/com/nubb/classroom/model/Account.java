@@ -41,6 +41,7 @@ public class Account {
       // គោត្តនាម និងនាម នាយកសាលា (Principal Full Name)
 
     private Boolean vocabularyPermission = false;
+    private Boolean homeroomPermission = false;
 
     public Account() {}
 
@@ -127,4 +128,7 @@ public class Account {
 
     public Boolean getVocabularyPermission() { return vocabularyPermission != null ? vocabularyPermission : false; }
     public void setVocabularyPermission(Boolean vocabularyPermission) { this.vocabularyPermission = vocabularyPermission; }
+
+    public Boolean getHomeroomPermission() { return homeroomPermission != null ? homeroomPermission : false; }
+    public void setHomeroomPermission(Boolean homeroomPermission) { this.homeroomPermission = homeroomPermission; }
 }
