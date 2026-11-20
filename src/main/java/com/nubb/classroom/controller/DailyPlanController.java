@@ -190,12 +190,60 @@ public class DailyPlanController {
         List<Lesson> teacherLessons = lessonRepository.findByAccountIdOrderByIdAsc(accountId);
         if (teacherLessons == null) teacherLessons = new ArrayList<>();
 
-        // 5. Recent daily plans history (past 20 logs)
+        // 5. Recent daily plans history (deduplicated & aligned with teacher's active weekly schedule slots)
+        Map<Integer, Set<Integer>> scheduledSlotsByCol = new HashMap<>();
+        if (weekly != null) {
+            for (Schedule s : weekly) {
+                if (s == null || s.getSubjectName() == null) continue;
+                String subj = s.getSubjectName().trim();
+                if (subj.isEmpty() || "-".equals(subj)) continue;
+                int cIdx = s.getBlockIndex() % 6;
+                int sIdx = s.getBlockIndex() / 6;
+                if (cIdx >= 0 && cIdx <= 5 && sIdx >= 0 && sIdx < 8) {
+                    scheduledSlotsByCol.computeIfAbsent(cIdx, k -> new HashSet<>()).add(sIdx);
+                }
+            }
+        }
+
         List<DailyTeachingLog> recentLogs = dailyTeachingLogRepository.findByAccountIdOrderByLogDateDescSlotIndexAsc(accountId);
-        // Group recent logs by date
-        Map<LocalDate, List<DailyTeachingLog>> logsByDate = new LinkedHashMap<>();
+        // Group recent logs by date, deduplicating by slotIndex and filtering stale orphan slots
+        Map<LocalDate, List<DailyTeachingLog>> rawByDate = new LinkedHashMap<>();
         for (DailyTeachingLog l : recentLogs) {
-            logsByDate.computeIfAbsent(l.getLogDate(), k -> new ArrayList<>()).add(l);
+            if (l.getLogDate() == null) continue;
+            rawByDate.computeIfAbsent(l.getLogDate(), k -> new ArrayList<>()).add(l);
+        }
+
+        Map<LocalDate, List<DailyTeachingLog>> logsByDate = new LinkedHashMap<>();
+        for (Map.Entry<LocalDate, List<DailyTeachingLog>> entry : rawByDate.entrySet()) {
+            LocalDate d = entry.getKey();
+            List<DailyTeachingLog> dayLogs = entry.getValue();
+            int dayCol = d.getDayOfWeek().getValue() - 1;
+            Set<Integer> activeSlots = scheduledSlotsByCol.get(dayCol);
+
+            // Deduplicate by slotIndex (keep the latest saved entry per slot)
+            Map<Integer, DailyTeachingLog> uniqueBySlot = new LinkedHashMap<>();
+            for (DailyTeachingLog l : dayLogs) {
+                Integer si = l.getSlotIndex() != null ? l.getSlotIndex() : -1;
+                uniqueBySlot.put(si, l);
+            }
+
+            List<DailyTeachingLog> cleaned = new ArrayList<>();
+            if (activeSlots != null && !activeSlots.isEmpty()) {
+                for (DailyTeachingLog l : uniqueBySlot.values()) {
+                    if (l.getSlotIndex() != null && activeSlots.contains(l.getSlotIndex())) {
+                        cleaned.add(l);
+                    }
+                }
+                // Fallback: if none matched (e.g. older semester schedule), keep deduplicated list
+                if (cleaned.isEmpty()) {
+                    cleaned.addAll(uniqueBySlot.values());
+                }
+            } else {
+                cleaned.addAll(uniqueBySlot.values());
+            }
+            if (!cleaned.isEmpty()) {
+                logsByDate.put(d, cleaned);
+            }
         }
 
         // Available academic years
@@ -215,9 +263,9 @@ public class DailyPlanController {
         model.addAttribute("nextDateStr", targetDate.plusDays(1).toString());
         model.addAttribute("khmerDayName", khmerDay);
 
-        long todaySavedCount = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(accountId, today).size();
-        long tomorrowSavedCount = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(accountId, tomorrow).size();
-        long yesterdaySavedCount = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(accountId, yesterday).size();
+        long todaySavedCount = logsByDate.getOrDefault(today, Collections.emptyList()).size();
+        long tomorrowSavedCount = logsByDate.getOrDefault(tomorrow, Collections.emptyList()).size();
+        long yesterdaySavedCount = logsByDate.getOrDefault(yesterday, Collections.emptyList()).size();
         model.addAttribute("todaySavedCount", todaySavedCount);
         model.addAttribute("tomorrowSavedCount", tomorrowSavedCount);
         model.addAttribute("yesterdaySavedCount", yesterdaySavedCount);
@@ -234,6 +282,7 @@ public class DailyPlanController {
 
     @PostMapping("/api/daily-plan/save")
     @ResponseBody
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> saveDailyPlan(@RequestBody Map<String, Object> payload) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
@@ -264,12 +313,14 @@ public class DailyPlanController {
         }
 
         int savedCount = 0;
+        Set<Integer> submittedSlots = new HashSet<>();
         for (Map<String, Object> item : items) {
             Integer slotIndex = null;
             if (item.get("slotIndex") != null) {
                 try { slotIndex = Integer.parseInt(item.get("slotIndex").toString()); } catch (Exception ignored) {}
             }
             if (slotIndex == null) continue;
+            submittedSlots.add(slotIndex);
 
             DailyTeachingLog log = dailyTeachingLogRepository.findByAccountIdAndLogDateAndSlotIndex(accountId, logDate, slotIndex)
                     .orElse(new DailyTeachingLog());
@@ -292,6 +343,18 @@ public class DailyPlanController {
 
             dailyTeachingLogRepository.save(log);
             savedCount++;
+        }
+
+        // Remove any stale/orphan slots for this date that are no longer on the teacher's schedule
+        List<DailyTeachingLog> allForDate = dailyTeachingLogRepository.findByAccountIdAndLogDateOrderBySlotIndexAsc(accountId, logDate);
+        List<DailyTeachingLog> orphans = new ArrayList<>();
+        for (DailyTeachingLog existing : allForDate) {
+            if (existing.getSlotIndex() == null || !submittedSlots.contains(existing.getSlotIndex())) {
+                orphans.add(existing);
+            }
+        }
+        if (!orphans.isEmpty()) {
+            dailyTeachingLogRepository.deleteAll(orphans);
         }
 
         return ResponseEntity.ok(Map.of(
