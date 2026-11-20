@@ -692,7 +692,7 @@ function onScoreInputLive(input) {
     if (footer) footer.innerHTML = buildMoeysGradeSummaryHtml(results);
 }
 
-function makeVerticalKhmerHeaderImg(text, isBold = false, heightPx = 118, widthPx = 30) {
+function makeVerticalKhmerHeaderImg(text, isBold = false, heightPx = 118, widthPx = 30, fontSizePx = 14) {
     const scale = 3; // 3x HiDPI for razor-sharp Khmer text in A3 PDF
     const c = document.createElement('canvas');
     c.width = widthPx * scale;
@@ -700,12 +700,12 @@ function makeVerticalKhmerHeaderImg(text, isBold = false, heightPx = 118, widthP
     const ctx = c.getContext('2d');
     ctx.scale(scale, scale);
     ctx.fillStyle = '#000000';
-    ctx.font = `${isBold ? '600' : '400'} 14px "Kantumruy Pro", "Battambang", sans-serif`;
+    ctx.font = `${isBold ? '600' : '400'} ${fontSizePx}px "Kantumruy Pro", "Battambang", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.translate(widthPx / 2, heightPx / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillText(String(text || ''), 0, 0, heightPx - 8);
+    ctx.fillText(String(text || ''), 0, 0, heightPx - 6);
     return `<img src="${c.toDataURL('image/png')}" alt="${esc(text)}" style="width:${widthPx}px;height:${heightPx}px;display:block;margin:0 auto;">`;
 }
 
@@ -725,36 +725,35 @@ async function downloadMoeysScoreSheetPdf() {
     const totalCount = results.length;
     const femaleCount = results.filter(r => getShortGender(r.student.gender) === 'ស').length;
 
-    // Put ALL students (e.g. #1 to #47) on Page 1 of A3 Landscape (420mm x 297mm) filling 100% edge-to-edge left & right
-    // At 1720px width, A3 Landscape printable ratio is 1.43 -> max height for 100% full width is ~1190px
-    const stageW = 1720;
-    const includeFooterOnPage1 = (totalCount <= 34);
-    const availRowsH = includeFooterOnPage1 ? 740 : 960;
-    const rowH = Math.max(17, Math.min(28, Math.floor(availRowsH / Math.max(totalCount, 1))));
-    const rowFont = rowH <= 18 ? 12.5 : (rowH <= 21 ? 13.5 : 14.5);
-    const cellPad = rowH <= 20 ? '1px 2px' : '2px 2px';
+    // Put ALL students (e.g. #1 to #47) on Page 1 of A3 Landscape (420mm x 297mm) filling 100% edge-to-edge left & right with larger text
+    const stageW = 1920;
+    const includeFooterOnPage1 = (totalCount <= 32);
+    const availRowsH = includeFooterOnPage1 ? 820 : 1140;
+    const rowH = Math.max(21, Math.min(32, Math.floor(availRowsH / Math.max(totalCount, 1))));
+    const rowFont = rowH <= 22 ? 15 : 16;
+    const cellPad = '1px 3px';
 
-    // Use 3x HiDPI canvas-rendered vertical Khmer labels so html2canvas renders them 100% crisp like on screen
-    const vTotalImg = makeVerticalKhmerHeaderImg('ពិន្ទុសរុប', true, 96, 30);
-    const vAvgImg = makeVerticalKhmerHeaderImg('មធ្យមភាគ', true, 96, 30);
-    const vRankImg = makeVerticalKhmerHeaderImg('ចំណាត់ថ្នាក់', true, 96, 30);
-    const vMentionImg = makeVerticalKhmerHeaderImg('និទ្ទេស', true, 96, 30);
-    const subImgs = HR.subjects.map(s => makeVerticalKhmerHeaderImg(s.subjectName, false, 92, 28));
+    // Use 3x HiDPI canvas-rendered vertical Khmer labels (larger, razor-sharp)
+    const vTotalImg = makeVerticalKhmerHeaderImg('ពិន្ទុសរុប', true, 102, 34, 16);
+    const vAvgImg = makeVerticalKhmerHeaderImg('មធ្យមភាគ', true, 102, 34, 16);
+    const vRankImg = makeVerticalKhmerHeaderImg('ចំណាត់ថ្នាក់', true, 102, 34, 16);
+    const vMentionImg = makeVerticalKhmerHeaderImg('និទ្ទេស', true, 102, 34, 16);
+    const subImgs = HR.subjects.map(s => makeVerticalKhmerHeaderImg(s.subjectName, false, 98, 32, 15.5));
 
     const theadHtml = `
         <thead>
             <tr>
-                <th rowspan="3" class="ms-shade" style="width:40px;font-size:14.5px;">ល.រ</th>
-                <th rowspan="3" class="ms-shade" style="width:195px;font-size:15px;">គោត្តនាម-នាម</th>
-                <th rowspan="3" class="ms-shade" style="width:44px;font-size:14.5px;">ភេទ</th>
-                <th colspan="${HR.subjects.length}" style="font-weight:700;font-size:15.5px;background:#fff;padding:5px;">តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</th>
-                <th rowspan="3" class="ms-shade" style="width:60px;padding:2px;">${vTotalImg}</th>
-                <th rowspan="3" class="ms-shade" style="width:66px;padding:2px;">${vAvgImg}</th>
-                <th rowspan="3" class="ms-shade" style="width:58px;padding:2px;">${vRankImg}</th>
-                <th rowspan="3" class="ms-shade" style="width:58px;padding:2px;">${vMentionImg}</th>
+                <th rowspan="3" class="ms-shade" style="width:46px;font-size:16px;">ល.រ</th>
+                <th rowspan="3" class="ms-shade" style="width:225px;font-size:16.5px;">គោត្តនាម-នាម</th>
+                <th rowspan="3" class="ms-shade" style="width:48px;font-size:16px;">ភេទ</th>
+                <th colspan="${HR.subjects.length}" style="font-weight:700;font-size:17px;background:#fff;padding:5px;">តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</th>
+                <th rowspan="3" class="ms-shade" style="width:66px;padding:2px;">${vTotalImg}</th>
+                <th rowspan="3" class="ms-shade" style="width:74px;padding:2px;">${vAvgImg}</th>
+                <th rowspan="3" class="ms-shade" style="width:64px;padding:2px;">${vRankImg}</th>
+                <th rowspan="3" class="ms-shade" style="width:64px;padding:2px;">${vMentionImg}</th>
             </tr>
             <tr>
-                ${HR.subjects.map(s => `<th style="font-size:13.5px;background:#fff;padding:3px 2px;font-weight:400;">${s.maxScore != null ? s.maxScore : 0}</th>`).join('')}
+                ${HR.subjects.map(s => `<th style="font-size:15px;background:#fff;padding:3px 2px;font-weight:400;">${s.maxScore != null ? s.maxScore : 0}</th>`).join('')}
             </tr>
             <tr>
                 ${subImgs.map(img => `<th style="background:#fff;padding:2px 1px;">${img}</th>`).join('')}
@@ -762,21 +761,21 @@ async function downloadMoeysScoreSheetPdf() {
         </thead>`;
 
     const bannerHtml = `
-        <div class="moeys-top-banner" style="font-size:16.5px;padding:6px 14px;margin-bottom:5px;">
+        <div class="moeys-top-banner" style="font-size:18px;padding:6px 14px;margin-bottom:4px;">
             <span>តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</span>
             <span>ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</span>
             <span>-បញ្ឈប់បញ្ជីត្រឹមចំនួនសិស្ស ${totalCount}នាក់ ស្រី ${femaleCount}នាក់</span>
         </div>`;
 
     const colgroupHtml = `<colgroup>
-        <col style="width:40px;">
-        <col style="width:195px;">
-        <col style="width:44px;">
+        <col style="width:46px;">
+        <col style="width:225px;">
+        <col style="width:48px;">
         ${HR.subjects.map(() => `<col>`).join('')}
-        <col style="width:60px;">
         <col style="width:66px;">
-        <col style="width:58px;">
-        <col style="width:58px;">
+        <col style="width:74px;">
+        <col style="width:64px;">
+        <col style="width:64px;">
     </colgroup>`;
 
     const allBodyRows = results.map((r, ri) => {
@@ -788,7 +787,7 @@ async function downloadMoeysScoreSheetPdf() {
         return `
             <tr style="height:${rowH}px;">
                 <td style="padding:${cellPad};line-height:1.12;">${ri + 1}</td>
-                <td class="ms-name" style="position:static;box-shadow:none;font-size:${rowFont}px;padding:${cellPad} 8px;line-height:1.12;">${esc(r.student.name)}</td>
+                <td class="ms-name" style="position:static;box-shadow:none;font-size:${rowFont + 0.5}px;padding:${cellPad} 10px;line-height:1.12;">${esc(r.student.name)}</td>
                 <td style="padding:${cellPad};line-height:1.12;">${getShortGender(r.student.gender)}</td>
                 ${HR.subjects.map(sub => {
                     const v = r.subScores[sub.id];
@@ -804,7 +803,7 @@ async function downloadMoeysScoreSheetPdf() {
     const stage = document.getElementById('moeysPdfStage');
     stage.style.width = stageW + 'px';
     let stageHtml = `
-        <div class="moeys-pdf-page" style="width:${stageW}px;background:#fff;padding:4px 4px 6px 4px;box-sizing:border-box;">
+        <div class="moeys-pdf-page" style="width:${stageW}px;background:#fff;padding:2px 2px 4px 2px;box-sizing:border-box;">
             ${bannerHtml}
             <table class="moeys-score-table" style="width:100%;min-width:100%;border-collapse:collapse;table-layout:fixed;font-size:${rowFont}px;">
                 ${colgroupHtml}
@@ -833,9 +832,9 @@ async function downloadMoeysScoreSheetPdf() {
         const pdf = new JsPdfCtor({ orientation: 'landscape', unit: 'mm', format: 'a3' });
         const pageW = pdf.internal.pageSize.getWidth();  // 420mm
         const pageH = pdf.internal.pageSize.getHeight(); // 297mm
-        const marginX = 3;
-        const maxW = pageW - marginX * 2;
-        const maxH = pageH - 6;
+        const marginX = 2.5;
+        const maxW = pageW - marginX * 2; // 415mm full edge-to-edge width!
+        const maxH = pageH - 5;
 
         const canvases = [];
         for (let i = 0; i < pages.length; i++) {
@@ -848,22 +847,16 @@ async function downloadMoeysScoreSheetPdf() {
             await new Promise(r => setTimeout(r, 15));
         }
 
-        let commonRatio = Infinity;
-        canvases.forEach(cv => {
-            const r = Math.min(maxW / cv.width, maxH / cv.height);
-            if (r < commonRatio) commonRatio = r;
-        });
-
         for (let i = 0; i < canvases.length; i++) {
             const cv = canvases[i];
             const imgData = cv.toDataURL('image/jpeg', 0.96);
-            const drawW = cv.width * commonRatio;
-            const drawH = cv.height * commonRatio;
-            const offsetX = marginX + (maxW - drawW) / 2;
-            const topY = (i === 0) ? 3 : 5;
+            // Always span 100% edge-to-edge left & right (415mm) while clamping height to maxH cleanly
+            const drawW = maxW;
+            const drawH = Math.min(maxH, cv.height * (maxW / cv.width));
+            const topY = (i === 0) ? 2.5 : 5;
 
             if (i > 0) pdf.addPage('a3', 'landscape');
-            pdf.addImage(imgData, 'JPEG', offsetX, topY, drawW, drawH, undefined, 'FAST');
+            pdf.addImage(imgData, 'JPEG', marginX, topY, drawW, drawH, undefined, 'FAST');
         }
 
         pdf.save(`ScoreSheet_A3_Landscape_${HR.className}_${periodKh}_${HR.academicYear}.pdf`);
