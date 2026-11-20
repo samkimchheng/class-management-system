@@ -1086,8 +1086,8 @@ function renderRankingsView() {
         const isYear = (view === 'YEAR');
         const isSemOrYear = (isSem1 || isSem2 || isYear);
 
-        // Semester & Annual sheets are sorted by Rank (1, 2, 3...) matching the official PDF; Monthly keeps roster order 1..N
-        const list = isSemOrYear ? results : rawResults;
+        // Always sort by Rank ascending (1, 2, 3...) for Monthly, Semester 1/2, and Annual rankings
+        const list = results;
         const half = Math.ceil(list.length / 2);
         const leftList = list.slice(0, half);
         const rightList = list.slice(half);
