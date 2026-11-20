@@ -1111,10 +1111,10 @@
 
             const emptyDayCells = dayInfos.map(di => `<td class="${di.isSun ? 'att-sun-cell' : ''}"></td>`).join('') + '<td></td><td></td>';
 
-            // Paginate so Page 1 fills the full A4 landscape height cleanly (26 rows at 27px each)
+            // Paginate: Page 1 = 26 rows (fills A4 landscape); last page has exactly 2 blank rows
             const pages = [];
             if (students.length <= 24) {
-                pages.push({ isFirst: true, startNo: 1, students: students.slice(0), padTo: 24 });
+                pages.push({ isFirst: true, startNo: 1, students: students.slice(0), padTo: students.length + 2 });
             } else {
                 pages.push({ isFirst: true, startNo: 1, students: students.slice(0, 26), padTo: 26 });
                 let idx = 26;
@@ -1125,7 +1125,7 @@
                         isFirst: false,
                         startNo: idx + 1,
                         students: chunk,
-                        padTo: isLastChunk ? Math.max(chunk.length + 2, 25) : 26
+                        padTo: isLastChunk ? (chunk.length + 2) : 26
                     });
                     idx += 26;
                 }
