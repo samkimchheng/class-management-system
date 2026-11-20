@@ -37,21 +37,23 @@
         }
         .table-wrap { overflow-x: auto; }
 
-        .att-pdf-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; background: #fff; color: #000; }
-        .att-pdf-table th, .att-pdf-table td { border: 1px solid #000; padding: 3px 2px; text-align: center; vertical-align: middle; }
-        .att-pdf-table td.att-name { text-align: left; padding: 3px 6px; white-space: nowrap; font-weight: 600; min-width: 135px; }
-        .att-pdf-table .att-day-col { width: 25px; min-width: 25px; font-size: 0.72rem; }
+        .att-pdf-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; background: #fff; color: #000; }
+        .att-pdf-table th, .att-pdf-table td { border: 1px solid #000; padding: 5px 3px; text-align: center; vertical-align: middle; }
+        .att-pdf-table th.att-col-fit, .att-pdf-table td.att-col-fit { width: 1%; white-space: nowrap; }
+        .att-pdf-table td.att-name { text-align: left; padding: 5px 10px; white-space: nowrap; font-weight: 600; font-size: 0.96rem; width: 1%; }
+        .att-pdf-table .att-day-col { min-width: 34px; width: auto; font-size: 0.88rem; }
+        .att-pdf-table .att-day-wd { font-size: 0.8rem; }
         .att-pdf-table .att-holiday {
             background-color: #ff0000 !important; color: #ffffff !important;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
-        .att-pdf-table .att-cell { cursor: pointer; user-select: none; font-weight: 800; font-size: 0.8rem; }
+        .att-pdf-table .att-cell { cursor: pointer; user-select: none; font-weight: 800; font-size: 0.95rem; height: 30px; }
         .att-pdf-table .att-cell:hover:not(.att-holiday) { background: #e0f2fe; }
         .att-pdf-table .att-cell-p { color: #1d4ed8; background: #eff6ff; }
         .att-pdf-table .att-cell-a { color: #dc2626; background: #fef2f2; }
         .att-pdf-table .att-vhead {
             writing-mode: vertical-rl; transform: rotate(180deg);
-            white-space: nowrap; font-weight: 800; font-size: 0.74rem; padding: 5px 2px; height: 64px;
+            white-space: nowrap; font-weight: 800; font-size: 0.86rem; padding: 5px 2px; height: 72px;
         }
         .att-holiday-toggle { cursor: pointer; width: 15px; height: 15px; accent-color: #dc2626; margin: 0; }
         .att-summary-bar {
@@ -215,15 +217,15 @@
                                 <th colspan="3"></th>
                             </tr>
                             <tr>
-                                <th rowspan="2">ល.រ</th>
-                                <th rowspan="2">គោត្តនាម-នាម</th>
-                                <th rowspan="2">ភេទ</th>
+                                <th rowspan="2" class="att-col-fit" style="padding:4px 6px;">ល.រ</th>
+                                <th rowspan="2" class="att-col-fit" style="padding:4px 10px;">គោត្តនាម និងនាម</th>
+                                <th rowspan="2" class="att-col-fit" style="padding:4px 6px;">ភេទ</th>
                                 ${days.map(d => `<th class="att-day-col ${d.isHoliday ? 'att-holiday' : ''}">${d.label}</th>`).join('')}
-                                <th rowspan="2"><div class="att-vhead">មានច្បាប់</div></th>
-                                <th rowspan="2"><div class="att-vhead">ឥតច្បាប់</div></th>
-                                <th rowspan="2"><div class="att-vhead">សរុប</div></th>
+                                <th rowspan="2" class="att-col-fit"><div class="att-vhead">មានច្បាប់</div></th>
+                                <th rowspan="2" class="att-col-fit"><div class="att-vhead">ឥតច្បាប់</div></th>
+                                <th rowspan="2" class="att-col-fit"><div class="att-vhead">សរុប</div></th>
                             </tr>
-                            <tr>${days.map(d => `<th class="att-day-col ${d.isHoliday ? 'att-holiday' : ''}" style="font-size:0.65rem;">${d.weekday}</th>`).join('')}</tr>
+                            <tr>${days.map(d => `<th class="att-day-col att-day-wd ${d.isHoliday ? 'att-holiday' : ''}">${d.weekday}</th>`).join('')}</tr>
                         </thead>
                         <tbody>${rowsHtml}</tbody>
                     </table>

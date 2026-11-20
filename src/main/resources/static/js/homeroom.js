@@ -1941,16 +1941,16 @@ function renderMonthlyAttendance() {
                             <th colspan="3"></th>
                         </tr>
                         <tr>
-                            <th rowspan="2" style="width:28px;">ល.រ</th>
-                            <th rowspan="2" style="min-width:135px;">គោត្តនាម-នាម</th>
-                            <th rowspan="2" style="width:28px;">ភេទ</th>
+                            <th rowspan="2" class="att-col-fit" style="padding:4px 6px;">ល.រ</th>
+                            <th rowspan="2" class="att-col-fit" style="padding:4px 10px;">គោត្តនាម និងនាម</th>
+                            <th rowspan="2" class="att-col-fit" style="padding:4px 6px;">ភេទ</th>
                             ${days.map(d => `<th class="att-day-col ${d.isHoliday ? 'att-holiday' : ''}">${d.label}</th>`).join('')}
-                            <th rowspan="2" style="width:26px;"><div class="att-vhead">មានច្បាប់</div></th>
-                            <th rowspan="2" style="width:26px;"><div class="att-vhead">ឥតច្បាប់</div></th>
-                            <th rowspan="2" style="width:26px;"><div class="att-vhead">សរុប</div></th>
+                            <th rowspan="2" class="att-col-fit"><div class="att-vhead">មានច្បាប់</div></th>
+                            <th rowspan="2" class="att-col-fit"><div class="att-vhead">ឥតច្បាប់</div></th>
+                            <th rowspan="2" class="att-col-fit"><div class="att-vhead">សរុប</div></th>
                         </tr>
                         <tr>
-                            ${days.map(d => `<th class="att-day-col ${d.isHoliday ? 'att-holiday' : ''}" style="font-size:0.65rem;">${d.weekday}</th>`).join('')}
+                            ${days.map(d => `<th class="att-day-col att-day-wd ${d.isHoliday ? 'att-holiday' : ''}">${d.weekday}</th>`).join('')}
                         </tr>
                     </thead>
                     <tbody>

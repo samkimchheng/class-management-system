@@ -212,21 +212,23 @@
         .seat-box select { width: 100%; font-size: 0.8rem; padding: 4px; border-radius: 6px; border: 1px solid #cbd5e1; }
 
         /* Monthly Attendance Sheet (Exact MoEYS PDF Layout) */
-        .att-pdf-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; background: #fff; color: #000; }
-        .att-pdf-table th, .att-pdf-table td { border: 1px solid #000; padding: 3px 2px; text-align: center; vertical-align: middle; }
-        .att-pdf-table td.att-name { text-align: left; padding: 3px 6px; white-space: nowrap; font-weight: 600; min-width: 135px; }
-        .att-pdf-table .att-day-col { width: 24px; min-width: 24px; font-size: 0.72rem; }
+        .att-pdf-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; background: #fff; color: #000; }
+        .att-pdf-table th, .att-pdf-table td { border: 1px solid #000; padding: 5px 3px; text-align: center; vertical-align: middle; }
+        .att-pdf-table th.att-col-fit, .att-pdf-table td.att-col-fit { width: 1%; white-space: nowrap; }
+        .att-pdf-table td.att-name { text-align: left; padding: 5px 10px; white-space: nowrap; font-weight: 600; font-size: 0.96rem; width: 1%; }
+        .att-pdf-table .att-day-col { min-width: 34px; width: auto; font-size: 0.88rem; }
+        .att-pdf-table .att-day-wd { font-size: 0.8rem; }
         .att-pdf-table .att-holiday {
             background-color: #ff0000 !important; color: #ffffff !important;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
-        .att-pdf-table .att-cell { cursor: pointer; user-select: none; font-weight: 800; font-size: 0.78rem; transition: background 0.12s; }
+        .att-pdf-table .att-cell { cursor: pointer; user-select: none; font-weight: 800; font-size: 0.95rem; height: 30px; transition: background 0.12s; }
         .att-pdf-table .att-cell:hover:not(.att-holiday) { background: #e0f2fe; }
         .att-pdf-table .att-cell-p { color: #1d4ed8; background: #eff6ff; }
         .att-pdf-table .att-cell-a { color: #dc2626; background: #fef2f2; }
         .att-pdf-table .att-vhead {
             writing-mode: vertical-rl; transform: rotate(180deg);
-            white-space: nowrap; font-weight: 800; font-size: 0.74rem; padding: 5px 2px; height: 64px;
+            white-space: nowrap; font-weight: 800; font-size: 0.86rem; padding: 5px 2px; height: 72px;
         }
         .att-holiday-toggle {
             cursor: pointer; width: 15px; height: 15px; accent-color: #dc2626; margin: 0; vertical-align: middle;
@@ -282,8 +284,10 @@
             .tab-pane.active { display: block !important; }
             .panel { border: none !important; box-shadow: none !important; padding: 0 !important; }
             .print-sheet { border: none !important; padding: 4px !important; }
-            .att-pdf-table { font-size: 0.7rem !important; }
-            .att-pdf-table .att-day-col { width: 20px !important; min-width: 18px !important; }
+            .att-pdf-table { font-size: 0.82rem !important; }
+            .att-pdf-table td.att-name { font-size: 0.84rem !important; padding: 3px 7px !important; width: 1% !important; }
+            .att-pdf-table .att-day-col { min-width: 26px !important; width: auto !important; font-size: 0.76rem !important; }
+            .att-pdf-table .att-day-wd { font-size: 0.68rem !important; }
             .page-break { page-break-after: always; }
         }
 
@@ -716,6 +720,6 @@
         </main>
     </div>
 
-    <script src="/js/homeroom.js"></script>
+    <script src="/js/homeroom.js?v=20261120"></script>
 </body>
 </html>
