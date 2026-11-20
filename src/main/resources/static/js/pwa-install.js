@@ -32,12 +32,14 @@
                     .topbar, header.topbar {
                         padding-top: max(10px, env(safe-area-inset-top, 10px)) !important;
                     }
-                    .main-content, .content, .container, .panel, .card, .login-card {
-                        max-width: 100% !important;
+                    .main-content, .content, .container, .panel, .card {
                         box-sizing: border-box !important;
                     }
                 }
                 @media screen and (max-width: 768px) {
+                    .main-content, .content, .container, .panel, .card {
+                        max-width: 100% !important;
+                    }
                     .login-card {
                         width: calc(100% - 28px) !important;
                         max-width: 400px !important;

@@ -1,5 +1,5 @@
-// CMS Progressive Web App Service Worker (v3 - Android WebAPK & iOS Mobile Fit)
-const CACHE_NAME = 'cms-pwa-v3';
+// CMS Progressive Web App Service Worker (v4 - Clean Login Card Width in Standalone App)
+const CACHE_NAME = 'cms-pwa-v4';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon-192.png',
