@@ -2342,4 +2342,73 @@ class ClassroomApplicationTests {
         assertEquals(scoresBefore, scoreRepository.count(), "Existing scores count must not change");
         assertEquals(lessonsBefore, lessonRepository.count(), "Existing lessons count must not change");
     }
+
+    @Test
+    void testAdminScoreSheetModule() throws Exception {
+        long studentsBefore = studentRepository.count();
+        long scoresBefore = scoreRepository.count();
+        long lessonsBefore = lessonRepository.count();
+
+        // 1. Non-admin (TEACHER) is blocked from /admin/score-sheets
+        Account teacher = accountRepository.findByUsername("samkimchheng").orElse(null);
+        assertNotNull(teacher);
+        mockMvc.perform(get("/admin/score-sheets")
+                .sessionAttr("ACCOUNT_ID", teacher.getId())
+                .sessionAttr("ACCOUNT_ROLE", "TEACHER"))
+                .andExpect(status().is3xxRedirection());
+
+        // 2. ADMIN can access /admin/score-sheets page
+        mockMvc.perform(get("/admin/score-sheets")
+                .sessionAttr("ACCOUNT_ID", 1L)
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN")
+                .sessionAttr("ACCOUNT_NAME", "Admin"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.view().name("admin/score-sheets"));
+
+        // 3. Create an Admin Score Sheet class
+        String createClassResponse = mockMvc.perform(post("/admin/api/score-sheets/classes")
+                .sessionAttr("ACCOUNT_ID", 1L)
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"className\":\"៨D-TEST\",\"schoolName\":\"វិទ្យាល័យហ៊ុនសែន១០មករា\",\"academicYear\":\"២០២៥-២០២៦\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.sheetClass.className").value("៨D-TEST"))
+                .andReturn().getResponse().getContentAsString();
+
+        com.fasterxml.jackson.databind.JsonNode root = new com.fasterxml.jackson.databind.ObjectMapper().readTree(createClassResponse);
+        long classId = root.get("sheetClass").get("id").asLong();
+
+        // 4. Add bulk students to that class and verify gender normalization
+        mockMvc.perform(post("/admin/api/score-sheets/classes/" + classId + "/students")
+                .sessionAttr("ACCOUNT_ID", 1L)
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"students\":[{\"fullName\":\"សុខ ដារ៉ា\",\"gender\":\"ប្រុស\"},{\"fullName\":\"ចាន់ ស្រីពៅ\",\"gender\":\"ស្រី\"}]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.added").value(2))
+                .andExpect(jsonPath("$.students[0].gender").value("ប"))
+                .andExpect(jsonPath("$.students[1].gender").value("ស"));
+
+        // 5. Fetch students for the PDF score sheet
+        mockMvc.perform(get("/admin/api/score-sheets/classes/" + classId + "/students")
+                .sessionAttr("ACCOUNT_ID", 1L)
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sheetClass.className").value("៨D-TEST"))
+                .andExpect(jsonPath("$.students.length()").value(2));
+
+        // 6. Cleanup test class and students
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/admin/api/score-sheets/classes/" + classId)
+                .sessionAttr("ACCOUNT_ID", 1L)
+                .sessionAttr("ACCOUNT_ROLE", "ADMIN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        // 7. Existing system tables remain 100% untouched
+        assertEquals(studentsBefore, studentRepository.count(), "Existing students count must not change");
+        assertEquals(scoresBefore, scoreRepository.count(), "Existing scores count must not change");
+        assertEquals(lessonsBefore, lessonRepository.count(), "Existing lessons count must not change");
+    }
 }
