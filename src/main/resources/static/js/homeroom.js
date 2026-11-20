@@ -521,47 +521,144 @@ async function saveClassConfig() {
     await saveAdminField('configJson', JSON.stringify(HR.admin.config));
 }
 
-// ==================== TAB 2: SCORE ENTRY ====================
+// ==================== TAB 2: SCORE ENTRY (EXACT MOEYS SCHOOL PDF FORMAT) ====================
+function getScorePeriodKhmerLabel(period) {
+    const map = {
+        SEC: 'តេស្តដើមឆ្នាំ',
+        M1: 'ខែវិច្ឆិកា', M2: 'ខែធ្នូ', M3: 'ខែមករា', M4: 'ខែកុម្ភៈ', M5: 'ខែមីនា',
+        EXAM_S1: 'ប្រឡងឆមាសលើកទី១',
+        M6: 'ខែមេសា', M7: 'ខែឧសភា', M8: 'ខែមិថុនា', M9: 'ខែកក្កដា', M10: 'ខែសីហា',
+        EXAM_S2: 'ប្រឡងឆមាសលើកទី២'
+    };
+    return map[period] || period;
+}
+
+function buildMoeysGradeSummaryHtml(results) {
+    const total = results.length;
+    const female = results.filter(r => getShortGender(r.student.gender) === 'ស').length;
+    const counts = {
+        A: { t: 0, f: 0 }, B: { t: 0, f: 0 }, C: { t: 0, f: 0 },
+        D: { t: 0, f: 0 }, E: { t: 0, f: 0 }, F: { t: 0, f: 0 },
+        NONE: { t: 0, f: 0 }
+    };
+    results.forEach(r => {
+        const isF = getShortGender(r.student.gender) === 'ស';
+        const code = (r.avg !== null && r.avg !== undefined && r.mention && r.mention.code && r.mention.code !== '-') ? r.mention.code : 'NONE';
+        if (counts[code]) {
+            counts[code].t++;
+            if (isF) counts[code].f++;
+        }
+    });
+    const pct = n => total > 0 ? Math.round((n / total) * 100) : 0;
+    const cfg = HR.admin.config || {};
+    const lunarDate = cfg.lunarDate || 'ថ្ងៃ............ខែ............ឆ្នាំ............ ព.ស. ២៥......';
+    const solarDate = cfg.solarDate || '............, ថ្ងៃទី...... ខែ............ ឆ្នាំ២០២......';
+    const principalName = cfg.principalName || HR.teacher.principalName || '';
+    const teacherName = HR.teacher.fullName || '';
+
+    return `
+        <div class="moeys-summary-grid">
+            <div>
+                <div>-បញ្ឈប់បញ្ជីត្រឹមចំនួនសិស្ស <b>${total}នាក់</b> ស្រី <b>${female}នាក់</b></div>
+                <div>-សិស្សនិទ្ទេស A &nbsp;&nbsp; សរុប៖ ${counts.A.t}នាក់ ស្រី ${counts.A.f}នាក់ ស្មើនឹង ${pct(counts.A.t)}%</div>
+                <div>-សិស្សនិទ្ទេស B &nbsp;&nbsp; សរុប៖ ${counts.B.t}នាក់ ស្រី ${counts.B.f}នាក់ ស្មើនឹង ${pct(counts.B.t)}%</div>
+                <div>-សិស្សនិទ្ទេស C &nbsp;&nbsp; សរុប៖ ${counts.C.t}នាក់ ស្រី ${counts.C.f}នាក់ ស្មើនឹង ${pct(counts.C.t)}%</div>
+            </div>
+            <div>
+                <div>-សិស្សនិទ្ទេស D &nbsp;&nbsp; សរុប៖ ${counts.D.t}នាក់ ស្រី ${counts.D.f}នាក់ ស្មើនឹង ${pct(counts.D.t)}%</div>
+                <div>-សិស្សនិទ្ទេស E &nbsp;&nbsp; សរុប៖ ${counts.E.t}នាក់ ស្រី ${counts.E.f}នាក់ ស្មើនឹង ${pct(counts.E.t)}%</div>
+                <div>-សិស្សនិទ្ទេស F &nbsp;&nbsp; សរុប៖ ${counts.F.t}នាក់ ស្រី ${counts.F.f}នាក់ ស្មើនឹង ${pct(counts.F.t)}%</div>
+                <div>-គ្មានចំណាត់ថ្នាក់ &nbsp; សរុប៖ ${counts.NONE.t}នាក់ ស្រី ${counts.NONE.f}នាក់ ស្មើនឹង ${pct(counts.NONE.t)}%</div>
+            </div>
+        </div>
+        <div class="moeys-sig-row">
+            <div style="text-align:center;min-width:220px;padding-top:24px;">
+                <div>បានឃើញ និងឯកភាព</div>
+                <div style="margin-top:4px;font-weight:700;">នាយកសាលា</div>
+                <div class="moul" style="margin-top:48px;font-size:0.92rem;">${esc(principalName)}</div>
+            </div>
+            <div style="text-align:center;min-width:260px;">
+                <div>${esc(lunarDate)}</div>
+                <div style="margin-top:2px;">${esc(solarDate)}</div>
+                <div style="margin-top:4px;font-weight:700;">គ្រូបន្ទុកថ្នាក់</div>
+                <div class="moul" style="margin-top:44px;font-size:0.92rem;">${esc(teacherName)}</div>
+            </div>
+        </div>`;
+}
+
 function renderScoreEntryTable() {
     const period = document.getElementById('scorePeriodSelect').value;
+    const periodKh = getScorePeriodKhmerLabel(period);
+    const banner = document.getElementById('scoreSheetTopBanner');
     const thead = document.getElementById('scoreEntryHead');
     const tbody = document.getElementById('scoreEntryBody');
+    const footer = document.getElementById('scoreSheetFooter');
 
     if (HR.subjects.length === 0) {
+        if (banner) banner.innerHTML = '';
         thead.innerHTML = '';
         tbody.innerHTML = `<tr><td style="padding:24px;color:#64748b;">សូមចូល Tab <b>«១. រៀបចំថ្នាក់ &amp; មុខវិជ្ជា»</b> ដើម្បីបង្កើតមុខវិជ្ជាជាមុនសិន។</td></tr>`;
+        if (footer) footer.innerHTML = '';
         return;
+    }
+
+    const results = computeSinglePeriod(period);
+    const totalCount = results.length;
+    const femaleCount = results.filter(r => getShortGender(r.student.gender) === 'ស').length;
+
+    if (banner) {
+        banner.innerHTML = `
+            <div class="moeys-top-banner">
+                <span>តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</span>
+                <span>ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</span>
+                <span>-បញ្ឈប់បញ្ជីត្រឹមចំនួនសិស្ស ${totalCount}នាក់ ស្រី ${femaleCount}នាក់</span>
+            </div>`;
     }
 
     thead.innerHTML = `
         <tr>
-            <th>ល.រ</th>
-            <th style="min-width:165px;">គោត្តនាម និងនាម</th>
-            <th>ភេទ</th>
-            ${HR.subjects.map(s => `<th>${esc(s.subjectName)}<br><small style="color:#64748b;">(${s.maxScore})</small></th>`).join('')}
-            <th>សរុប</th>
-            <th>មធ្យមភាគ</th>
-            <th>និទ្ទេស</th>
-            <th>ចំណាត់ថ្នាក់</th>
+            <th rowspan="3" class="ms-shade ms-sticky-1">ល.រ</th>
+            <th rowspan="3" class="ms-shade ms-sticky-2" style="min-width:165px;">គោត្តនាម-នាម</th>
+            <th rowspan="3" class="ms-shade" style="width:42px;">ភេទ</th>
+            <th colspan="${HR.subjects.length}" style="font-weight:700;font-size:0.95rem;background:#fff;padding:6px;">តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</th>
+            <th rowspan="3" class="ms-shade" style="width:46px;"><div class="ms-vsum">ពិន្ទុសរុប</div></th>
+            <th rowspan="3" class="ms-shade" style="width:52px;"><div class="ms-vsum">មធ្យមភាគ</div></th>
+            <th rowspan="3" class="ms-shade" style="width:46px;"><div class="ms-vsum">ចំណាត់ថ្នាក់</div></th>
+            <th rowspan="3" class="ms-shade" style="width:46px;"><div class="ms-vsum">និទ្ទេស</div></th>
+        </tr>
+        <tr>
+            ${HR.subjects.map(s => `<th class="ms-sub-col" style="font-size:0.86rem;background:#fff;padding:3px 2px;">${s.maxScore != null ? s.maxScore : 0}</th>`).join('')}
+        </tr>
+        <tr>
+            ${HR.subjects.map(s => `<th class="ms-sub-col" style="background:#fff;padding:2px;"><div class="ms-vsub">${esc(s.subjectName)}</div></th>`).join('')}
         </tr>
     `;
 
-    const results = computeSinglePeriod(period);
-    tbody.innerHTML = results.map((r, i) => `
+    tbody.innerHTML = results.map((r, i) => {
+        const hasScore = (r.total !== null && r.total !== undefined);
+        const totalTxt = hasScore ? (Number.isInteger(r.total) ? String(r.total) : r.total.toFixed(2)) : '0';
+        const avgTxt = (r.avg !== null && r.avg !== undefined) ? r.avg.toFixed(2) : '0.00';
+        const rankTxt = r.rank ? String(r.rank) : '-';
+        const mentionTxt = (r.avg !== null && r.avg !== undefined && r.mention) ? r.mention.code : '-';
+        return `
         <tr data-student-id="${r.student.id}">
-            <td>${i + 1}</td>
-            <td class="text-left" style="font-weight:700;">${esc(r.student.name)}</td>
-            <td>${esc(r.student.gender)}</td>
+            <td class="ms-sticky-1">${i + 1}</td>
+            <td class="ms-name ms-sticky-2">${esc(r.student.name)}</td>
+            <td>${getShortGender(r.student.gender)}</td>
             ${HR.subjects.map(sub => {
                 const v = r.subScores[sub.id];
-                return `<td><input type="number" step="0.25" min="0" max="${sub.maxScore}" class="score-input" data-sid="${r.student.id}" data-subid="${sub.id}" value="${v !== null && v !== undefined ? v : ''}" oninput="onScoreInputLive(this)"></td>`;
+                return `<td class="ms-sub-col"><input type="number" step="0.25" min="0" max="${sub.maxScore}" class="score-input moeys-score-inp" data-sid="${r.student.id}" data-subid="${sub.id}" value="${v !== null && v !== undefined ? v : ''}" oninput="onScoreInputLive(this)"></td>`;
             }).join('')}
-            <td class="cell-total" style="font-weight:800;">${fmtNum(r.total)}</td>
-            <td class="cell-avg" style="font-weight:800;color:#1d4ed8;">${fmtNum(r.avg)}</td>
-            <td class="cell-mention"><span class="badge badge-${r.mention.code}">${r.mention.code}</span></td>
-            <td class="cell-rank" style="font-weight:800;">${r.rank || '-'}</td>
-        </tr>
-    `).join('');
+            <td class="cell-total">${totalTxt}</td>
+            <td class="cell-avg">${avgTxt}</td>
+            <td class="cell-rank ms-rank">${rankTxt}</td>
+            <td class="cell-mention ms-mention">${mentionTxt}</td>
+        </tr>`;
+    }).join('');
+
+    if (footer) {
+        footer.innerHTML = buildMoeysGradeSummaryHtml(results);
+    }
 }
 
 function onScoreInputLive(input) {
@@ -578,19 +675,150 @@ function onScoreInputLive(input) {
     if (val === null || isNaN(val)) delete HR.scoreMap[key];
     else HR.scoreMap[key] = val;
 
-    // Live update row total/avg/mention
-    const { totalCoeff } = getTotalMaxCoeff();
-    let total = 0, hasAny = false;
-    HR.subjects.forEach(s => {
-        const v = HR.scoreMap[`${period}_${sid}_${s.id}`];
-        if (v !== undefined) { total += v; hasAny = true; }
+    // Live recalculate totals, averages, ranks, mentions, and bottom summary
+    const results = computeSinglePeriod(period);
+    const byId = {};
+    results.forEach(r => { byId[String(r.student.id)] = r; });
+    document.querySelectorAll('#scoreEntryBody tr[data-student-id]').forEach(tr => {
+        const r = byId[tr.getAttribute('data-student-id')];
+        if (!r) return;
+        const hasScore = (r.total !== null && r.total !== undefined);
+        tr.querySelector('.cell-total').textContent = hasScore ? (Number.isInteger(r.total) ? String(r.total) : r.total.toFixed(2)) : '0';
+        tr.querySelector('.cell-avg').textContent = (r.avg !== null && r.avg !== undefined) ? r.avg.toFixed(2) : '0.00';
+        tr.querySelector('.cell-rank').textContent = r.rank ? String(r.rank) : '-';
+        tr.querySelector('.cell-mention').textContent = (r.avg !== null && r.avg !== undefined && r.mention) ? r.mention.code : '-';
     });
-    const avg = hasAny ? (total / totalCoeff) : null;
-    const m = getMentionByAvg50(avg);
-    const tr = input.closest('tr');
-    tr.querySelector('.cell-total').textContent = fmtNum(hasAny ? total : null);
-    tr.querySelector('.cell-avg').textContent = fmtNum(avg);
-    tr.querySelector('.cell-mention').innerHTML = `<span class="badge badge-${m.code}">${m.code}</span>`;
+    const footer = document.getElementById('scoreSheetFooter');
+    if (footer) footer.innerHTML = buildMoeysGradeSummaryHtml(results);
+}
+
+async function downloadMoeysScoreSheetPdf() {
+    if (HR.subjects.length === 0) return;
+    const JsPdfCtor = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+    if (typeof html2canvas === 'undefined' || !JsPdfCtor) { window.print(); return; }
+
+    const period = document.getElementById('scorePeriodSelect').value;
+    const periodKh = getScorePeriodKhmerLabel(period);
+    const results = computeSinglePeriod(period);
+    const totalCount = results.length;
+    const femaleCount = results.filter(r => getShortGender(r.student.gender) === 'ស').length;
+
+    // Paginate cleanly: 22 students on Page 1 (matching PDF), 24 students per subsequent page
+    const pagesData = [];
+    if (results.length <= 22) {
+        pagesData.push({ isFirst: true, startNo: 1, rows: results.slice(0) });
+    } else {
+        pagesData.push({ isFirst: true, startNo: 1, rows: results.slice(0, 22) });
+        let idx = 22;
+        while (idx < results.length) {
+            pagesData.push({ isFirst: false, startNo: idx + 1, rows: results.slice(idx, idx + 24) });
+            idx += 24;
+        }
+    }
+
+    const theadHtml = `
+        <thead>
+            <tr>
+                <th rowspan="3" class="ms-shade" style="width:32px;">ល.រ</th>
+                <th rowspan="3" class="ms-shade" style="width:155px;">គោត្តនាម-នាម</th>
+                <th rowspan="3" class="ms-shade" style="width:36px;">ភេទ</th>
+                <th colspan="${HR.subjects.length}" style="font-weight:700;font-size:14px;background:#fff;padding:5px;">តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</th>
+                <th rowspan="3" class="ms-shade" style="width:44px;"><div class="ms-vsum">ពិន្ទុសរុប</div></th>
+                <th rowspan="3" class="ms-shade" style="width:50px;"><div class="ms-vsum">មធ្យមភាគ</div></th>
+                <th rowspan="3" class="ms-shade" style="width:44px;"><div class="ms-vsum">ចំណាត់ថ្នាក់</div></th>
+                <th rowspan="3" class="ms-shade" style="width:44px;"><div class="ms-vsum">និទ្ទេស</div></th>
+            </tr>
+            <tr>
+                ${HR.subjects.map(s => `<th style="font-size:12.5px;background:#fff;padding:3px 1px;">${s.maxScore != null ? s.maxScore : 0}</th>`).join('')}
+            </tr>
+            <tr>
+                ${HR.subjects.map(s => `<th style="background:#fff;padding:2px 1px;"><div class="ms-vsub">${esc(s.subjectName)}</div></th>`).join('')}
+            </tr>
+        </thead>`;
+
+    const bannerHtml = `
+        <div class="moeys-top-banner" style="font-size:14.5px;padding:7px 14px;margin-bottom:6px;">
+            <span>តារាងស្រង់ពិន្ទុសម្រាប់${esc(periodKh)}</span>
+            <span>ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</span>
+            <span>-បញ្ឈប់បញ្ជីត្រឹមចំនួនសិស្ស ${totalCount}នាក់ ស្រី ${femaleCount}នាក់</span>
+        </div>`;
+
+    const stage = document.getElementById('moeysPdfStage');
+    stage.innerHTML = pagesData.map((pg, pIdx) => {
+        const isLast = (pIdx === pagesData.length - 1);
+        const bodyRows = pg.rows.map((r, ri) => {
+            const hasScore = (r.total !== null && r.total !== undefined);
+            const totalTxt = hasScore ? (Number.isInteger(r.total) ? String(r.total) : r.total.toFixed(2)) : '0';
+            const avgTxt = (r.avg !== null && r.avg !== undefined) ? r.avg.toFixed(2) : '0.00';
+            const rankTxt = r.rank ? String(r.rank) : '-';
+            const mentionTxt = (r.avg !== null && r.avg !== undefined && r.mention) ? r.mention.code : '-';
+            return `
+                <tr style="height:27px;">
+                    <td>${pg.startNo + ri}</td>
+                    <td class="ms-name" style="position:static;box-shadow:none;">${esc(r.student.name)}</td>
+                    <td>${getShortGender(r.student.gender)}</td>
+                    ${HR.subjects.map(sub => {
+                        const v = r.subScores[sub.id];
+                        return `<td>${v !== null && v !== undefined ? v : ''}</td>`;
+                    }).join('')}
+                    <td>${totalTxt}</td>
+                    <td>${avgTxt}</td>
+                    <td class="ms-rank">${rankTxt}</td>
+                    <td class="ms-mention">${mentionTxt}</td>
+                </tr>`;
+        }).join('');
+        return `
+            <div class="moeys-pdf-page" style="width:1260px;background:#fff;padding:12px 14px;box-sizing:border-box;">
+                ${pg.isFirst ? bannerHtml : ''}
+                <table class="moeys-score-table" style="width:100%;min-width:100%;border-collapse:collapse;font-size:14px;">
+                    ${pg.isFirst ? theadHtml : ''}
+                    <tbody>${bodyRows}</tbody>
+                </table>
+                ${isLast ? buildMoeysGradeSummaryHtml(results) : ''}
+            </div>`;
+    }).join('');
+
+    const pages = Array.from(stage.querySelectorAll('.moeys-pdf-page'));
+    Swal.fire({
+        title: 'កំពុងបង្កើតឯកសារ PDF តារាងពិន្ទុ...',
+        html: `<div id="moeysPdfProg">ទំព័រទី <b>1</b> / <b>${pages.length}</b></div>`,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    try {
+        const pdf = new JsPdfCtor({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+        const margin = 4;
+        const maxW = pageW - margin * 2;
+        const maxH = pageH - margin * 2;
+
+        for (let i = 0; i < pages.length; i++) {
+            const prog = document.getElementById('moeysPdfProg');
+            if (prog) prog.innerHTML = `ទំព័រទី <b>${i + 1}</b> / <b>${pages.length}</b>`;
+            const canvas = await html2canvas(pages[i], {
+                scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: 1260, windowWidth: 1300
+            });
+            const imgData = canvas.toDataURL('image/jpeg', 0.96);
+            const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
+            const drawW = canvas.width * ratio;
+            const drawH = canvas.height * ratio;
+            const offsetX = margin + (maxW - drawW) / 2;
+            if (i > 0) pdf.addPage('a4', 'landscape');
+            pdf.addImage(imgData, 'JPEG', offsetX, margin, drawW, drawH, undefined, 'FAST');
+            await new Promise(r => setTimeout(r, 15));
+        }
+
+        pdf.save(`ScoreSheet_${HR.className}_${periodKh}_${HR.academicYear}.pdf`);
+        Swal.close();
+    } catch (e) {
+        console.error(e);
+        Swal.close();
+        window.print();
+    } finally {
+        stage.innerHTML = '';
+    }
 }
 
 async function saveCurrentPeriodScores() {
