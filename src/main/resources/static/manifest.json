@@ -1,0 +1,39 @@
+{
+  "id": "/",
+  "name": "CMS - ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន",
+  "short_name": "CMS",
+  "description": "ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន គ្រូបន្ទុកថ្នាក់ អវត្តមាន និងពិន្ទុសិស្ស (CMS)",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#1e3a8a",
+  "lang": "km",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
