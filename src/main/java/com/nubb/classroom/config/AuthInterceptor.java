@@ -5,6 +5,7 @@ import com.nubb.classroom.model.ExternalLearner;
 import com.nubb.classroom.model.Student;
 import com.nubb.classroom.repository.AccountRepository;
 import com.nubb.classroom.repository.ExternalLearnerRepository;
+import com.nubb.classroom.repository.HomeroomClassAdminRepository;
 import com.nubb.classroom.repository.StudentRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Autowired(required = false)
     private ExternalLearnerRepository externalLearnerRepository;
+
+    @Autowired(required = false)
+    private HomeroomClassAdminRepository homeroomClassAdminRepository;
 
     @Autowired
     private TokenSecurityService tokenSecurityService;
@@ -188,6 +192,12 @@ public class AuthInterceptor implements HandlerInterceptor {
         // If a student is logged in, strictly enforce student boundary and prevent access to teacher management views
         if (session.getAttribute("loggedInStudent") != null) {
             session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+            try {
+                Student curStu = (Student) session.getAttribute("loggedInStudent");
+                boolean isMon = com.nubb.classroom.controller.HomeroomController
+                        .resolveAuthorizedMonitorAdmin(curStu, studentRepository, homeroomClassAdminRepository) != null;
+                session.setAttribute("IS_CLASS_MONITOR", isMon);
+            } catch (Exception ignored) {}
             // If student visits root "/", redirect to their student portal /test/take
             if ("/".equals(path)) {
                 response.sendRedirect("/test/take");

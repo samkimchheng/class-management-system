@@ -585,6 +585,9 @@
                 <a href="/test/take" class="nav-btn nav-btn-exam">
                     <span>📝</span> <span>ចូលប្រឡង</span>
                 </a>
+                <a th:if="${session.IS_CLASS_MONITOR == true}" href="/test/monthly-attendance" class="nav-btn" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;">
+                    <span>👑</span> <span>ស្រង់អវត្តមានតាមខែ (ប្រធានថ្នាក់)</span>
+                </a>
                 <a href="/test/scores" class="nav-btn" style="background: #e0e7ff; color: #4361ee; border: 1px solid #c7d2fe;">
                     <span>📊</span> <span>ពិន្ទុ & និទ្ទេស</span>
                 </a>

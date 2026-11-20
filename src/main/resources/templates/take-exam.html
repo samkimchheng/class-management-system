@@ -429,12 +429,12 @@
                 </h2>
                 <div style="margin:6px 0 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <span style="color: #64748b; font-size: 0.92rem;">ថ្នាក់ - <span th:text="${student.className}" id="studentClass" style="font-weight: bold; color: var(--primary);">10A</span></span>
+                    <a th:if="${session.IS_CLASS_MONITOR == true or isClassMonitor == true}" href="/test/monthly-attendance" style="color: #b91c1c; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #fee2e2; padding: 3px 10px; border-radius: 6px; border: 1px solid #fca5a5;">👑 ស្រង់អវត្តមានតាមខែ (ប្រធានថ្នាក់)</a>
                     <a href="/test/scores" style="color: #4361ee; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #e0e7ff; padding: 3px 10px; border-radius: 6px;">📊 ពិន្ទុ & និទ្ទេស</a>
                     <a href="/lessons" style="color: #0284c7; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #e0f2fe; padding: 3px 10px; border-radius: 6px;">📚 មើលមេរៀន</a>
                     <a th:if="${student != null and student.vocabularyAccessAllowed == true}" href="/test/vocabulary" style="color: #7c3aed; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #ede9fe; padding: 3px 10px; border-radius: 6px;">🔤 រៀនពាក្យ (Vocab)</a>
                     <a th:if="${student != null and student.phonicsAccessAllowed == true}" href="/test/phonics" style="color: #0f766e; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #ccfbf1; padding: 3px 10px; border-radius: 6px;">🗣️ រៀនប្រកបអង់គ្លេស (Phonics)</a>
                     <a href="/test/leave" style="color: #059669; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #d1fae5; padding: 3px 10px; border-radius: 6px;">📋 សុំច្បាប់</a>
-                    <a th:if="${isClassMonitor == true}" href="/test/monthly-attendance" style="color: #b91c1c; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #fee2e2; padding: 3px 10px; border-radius: 6px; border: 1px solid #fca5a5;">👑 ស្រង់អវត្តមានតាមខែ (ប្រធានថ្នាក់)</a>
                     <a href="/certificate" style="color: #b45309; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #fef3c7; padding: 3px 10px; border-radius: 6px;">🎓 វិញ្ញាបនបត្រ</a>
                     <a href="/test/logout" style="color: #b91c1c; text-decoration: none; font-weight: bold; font-size: 0.88rem; background: #fee2e2; padding: 3px 10px; border-radius: 6px;">🚪 ចាកចេញ</a>
                 </div>

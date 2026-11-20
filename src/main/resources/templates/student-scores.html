@@ -332,6 +332,9 @@
                 <a href="/test/take" class="nav-pill" style="background: #e0f2fe; color: #0284c7;">
                     <span>📝</span> <span>ធ្វើតេស្តប្រឡង</span>
                 </a>
+                <a th:if="${session.IS_CLASS_MONITOR == true}" href="/test/monthly-attendance" class="nav-pill" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;">
+                    <span>👑</span> <span>ស្រង់អវត្តមានតាមខែ (ប្រធានថ្នាក់)</span>
+                </a>
                 <a href="/test/scores" class="nav-pill active">
                     <span>📊</span> <span>ពិន្ទុ & និទ្ទេស</span>
                 </a>

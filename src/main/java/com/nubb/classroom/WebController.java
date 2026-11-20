@@ -3429,6 +3429,9 @@ return "scores";
             session.removeAttribute("CURRENT_ACADEMIC_YEAR");
             session.setAttribute("loggedInStudent", student);
             session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+            boolean isMonLogin = com.nubb.classroom.controller.HomeroomController
+                    .resolveAuthorizedMonitorAdmin(student, studentRepository, homeroomClassAdminRepository) != null;
+            session.setAttribute("IS_CLASS_MONITOR", isMonLogin);
 
             String studentToken = tokenSecurityService.generateStudentToken(student);
             boolean isHttps = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
