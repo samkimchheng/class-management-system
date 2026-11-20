@@ -153,41 +153,41 @@
         .att-ornament { font-size: 11px; color: #1d4ed8; letter-spacing: 2px; margin-top: 2px; font-weight: 700; }
         .pdf-att-table {
             width: 100%; border-collapse: collapse; table-layout: fixed;
-            font-size: 11.5px; color: #000; background: #fff; border: 1.4px solid #000;
+            font-size: 13.5px; font-weight: 400; color: #000; background: #fff; border: 1.4px solid #000;
         }
         .pdf-att-table th, .pdf-att-table td {
             border: 1.15px solid #000; padding: 2px 1px; text-align: center; vertical-align: middle;
-            line-height: 1.25; overflow: hidden;
+            line-height: 1.28; overflow: hidden; font-weight: 400; color: #000;
         }
         .pdf-att-table th.att-th-blue {
-            color: #1d4ed8; font-weight: 700; font-size: 12px; background: #fff;
+            color: #1d4ed8; font-weight: 600; font-size: 13px; background: #fff;
         }
         .pdf-att-table th.att-day-num {
-            font-weight: 700; font-size: 11px; color: #000; background: #fff; height: 21px;
+            font-weight: 400; font-size: 12px; color: #000; background: #fff; height: 23px;
         }
         .pdf-att-table th.att-day-name {
-            font-weight: 600; font-size: 9.8px; color: #000; background: #fff; height: 20px;
+            font-weight: 400; font-size: 10.5px; color: #000; background: #fff; height: 22px;
         }
         .pdf-att-table .att-sun-cell {
             background: #ff0000 !important; color: #000 !important;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
         .pdf-att-table td.col-name {
-            text-align: left; padding-left: 6px; white-space: nowrap; font-size: 12px; color: #000;
+            text-align: left; padding-left: 7px; white-space: nowrap; font-size: 14px; font-weight: 400; color: #000;
         }
-        .pdf-att-table tr.att-stu-row td { height: 23px; }
+        .pdf-att-table tr.att-stu-row td { height: 27px; font-weight: 400; color: #000; }
         .att-footer-row {
             display: flex; justify-content: space-between; align-items: flex-start;
-            margin-top: 10px; color: #000; font-size: 12px;
+            margin-top: 10px; color: #000; font-size: 13.5px; font-weight: 400;
         }
-        .att-footer-left { width: 230px; padding-left: 48px; line-height: 1.75; font-weight: 700; }
+        .att-footer-left { width: 250px; padding-left: 48px; line-height: 1.75; font-weight: 400; color: #000; }
         .att-legend-box {
             background: #fcd34d !important; border: 1px solid #d97706;
-            padding: 5px 16px; font-size: 11.5px; font-style: italic; font-weight: 700; color: #111;
+            padding: 5px 16px; font-size: 12.5px; font-style: italic; font-weight: 400; color: #000;
             margin-top: 2px; white-space: nowrap;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
-        .att-footer-right { width: 240px; text-align: center; font-weight: 700; font-size: 12.5px; padding-top: 2px; }
+        .att-footer-right { width: 240px; text-align: center; font-weight: 400; font-size: 13.5px; padding-top: 2px; color: #000; }
 
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
@@ -1083,15 +1083,15 @@
             const totalCount = students.length;
             const femaleCount = students.filter(s => s.gender === 'ស').length;
 
-            // Column widths (fits 1260px cleanly)
-            const dayWidth = Math.floor((1204 - 28 - 148 - 38 - 30 - 34) / daysInMonth);
+            // Column widths (fits 1260px cleanly with wider name column for larger text)
+            const dayWidth = Math.floor((1224 - 30 - 168 - 38 - 32 - 36) / daysInMonth);
             const colgroup = `<colgroup>
-                <col style="width:28px;">
-                <col style="width:148px;">
+                <col style="width:30px;">
+                <col style="width:168px;">
                 <col style="width:38px;">
                 ${dayInfos.map(() => `<col style="width:${dayWidth}px;">`).join('')}
-                <col style="width:30px;">
-                <col style="width:34px;">
+                <col style="width:32px;">
+                <col style="width:36px;">
             </colgroup>`;
 
             const thead = `<thead>
@@ -1100,34 +1100,34 @@
                     <th rowspan="2" class="att-th-blue">គោត្តនាម និងនាម</th>
                     <th rowspan="2" class="att-th-blue">ភេទ</th>
                     ${dayInfos.map(di => `<th class="att-day-num">${di.numStr}</th>`).join('')}
-                    <th colspan="2" style="font-weight:700;font-size:11px;color:#000;background:#fff;">សរុប</th>
+                    <th colspan="2" style="font-weight:400;font-size:12px;color:#000;background:#fff;">សរុប</th>
                 </tr>
                 <tr>
                     ${dayInfos.map(di => `<th class="att-day-name ${di.isSun ? 'att-sun-cell' : ''}">${di.wd}</th>`).join('')}
-                    <th style="font-weight:700;font-size:10.5px;color:#000;background:#fff;">ច្ប</th>
-                    <th style="font-weight:700;font-size:10.5px;color:#000;background:#fff;">អ.ច្ប</th>
+                    <th style="font-weight:400;font-size:11.5px;color:#000;background:#fff;">ច្ប</th>
+                    <th style="font-weight:400;font-size:11.5px;color:#000;background:#fff;">អ.ច្ប</th>
                 </tr>
             </thead>`;
 
             const emptyDayCells = dayInfos.map(di => `<td class="${di.isSun ? 'att-sun-cell' : ''}"></td>`).join('') + '<td></td><td></td>';
 
-            // Paginate exactly like the official 2-page PDF: 26 rows on Page 1, 24 rows on Page 2+
+            // Paginate so Page 1 fills the full A4 landscape height cleanly (26 rows at 27px each)
             const pages = [];
-            if (students.length <= 26) {
-                pages.push({ isFirst: true, startNo: 1, students: students.slice(0), padTo: Math.max(students.length + 2, 22) });
+            if (students.length <= 24) {
+                pages.push({ isFirst: true, startNo: 1, students: students.slice(0), padTo: 24 });
             } else {
                 pages.push({ isFirst: true, startNo: 1, students: students.slice(0, 26), padTo: 26 });
                 let idx = 26;
                 while (idx < students.length) {
-                    const chunk = students.slice(idx, idx + 24);
-                    const isLastChunk = (idx + 24 >= students.length);
+                    const chunk = students.slice(idx, idx + 26);
+                    const isLastChunk = (idx + 26 >= students.length);
                     pages.push({
                         isFirst: false,
                         startNo: idx + 1,
                         students: chunk,
-                        padTo: isLastChunk ? Math.max(chunk.length + 2, 24) : 24
+                        padTo: isLastChunk ? Math.max(chunk.length + 2, 25) : 26
                     });
-                    idx += 24;
+                    idx += 26;
                 }
             }
 
