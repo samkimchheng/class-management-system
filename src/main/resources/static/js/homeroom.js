@@ -772,10 +772,26 @@ async function downloadMoeysScoreSheetPdf() {
             <span>-បញ្ឈប់បញ្ជីត្រឹមចំនួនសិស្ស ${totalCount}នាក់ ស្រី ${femaleCount}នាក់</span>
         </div>`;
 
+    const subColW = Math.floor((1400 - 32 - 36 - 175 - 40 - 52 - 58 - 52 - 52) / Math.max(HR.subjects.length, 1));
+    const colgroupHtml = `<colgroup>
+        <col style="width:36px;">
+        <col style="width:175px;">
+        <col style="width:40px;">
+        ${HR.subjects.map(() => `<col style="width:${subColW}px;">`).join('')}
+        <col style="width:52px;">
+        <col style="width:58px;">
+        <col style="width:52px;">
+        <col style="width:52px;">
+    </colgroup>`;
+
     const stage = document.getElementById('moeysPdfStage');
     stage.innerHTML = pagesData.map((pg, pIdx) => {
         const isLast = (pIdx === pagesData.length - 1);
-        const rowH = pg.isFirst ? 24.5 : 26;
+        // Page 1: 30 students filling A3 landscape cleanly; Page 2: compact remaining student block (~20% of A3 sheet height)
+        const targetP2TableH = 200; // ~20% of 990px A3 landscape height
+        const rowH = pg.isFirst ? 24.5 : Math.max(17, Math.min(22, Math.floor(targetP2TableH / Math.max(pg.rows.length, 1))));
+        const rowFont = pg.isFirst ? 14.5 : (rowH <= 18 ? 12 : 13);
+        const cellPad = pg.isFirst ? '2px 2px' : '1px 2px';
         const bodyRows = pg.rows.map((r, ri) => {
             const hasScore = (r.total !== null && r.total !== undefined);
             const totalTxt = hasScore ? (Number.isInteger(r.total) ? String(r.total) : r.total.toFixed(2)) : '0';
@@ -784,23 +800,24 @@ async function downloadMoeysScoreSheetPdf() {
             const mentionTxt = (r.avg !== null && r.avg !== undefined && r.mention) ? r.mention.code : '-';
             return `
                 <tr style="height:${rowH}px;">
-                    <td style="width:36px;">${pg.startNo + ri}</td>
-                    <td class="ms-name" style="position:static;box-shadow:none;width:175px;font-size:14.5px;">${esc(r.student.name)}</td>
-                    <td style="width:40px;">${getShortGender(r.student.gender)}</td>
+                    <td style="padding:${cellPad};line-height:1.15;">${pg.startNo + ri}</td>
+                    <td class="ms-name" style="position:static;box-shadow:none;font-size:${rowFont}px;padding:${cellPad} 8px;line-height:1.15;">${esc(r.student.name)}</td>
+                    <td style="padding:${cellPad};line-height:1.15;">${getShortGender(r.student.gender)}</td>
                     ${HR.subjects.map(sub => {
                         const v = r.subScores[sub.id];
-                        return `<td>${v !== null && v !== undefined ? v : ''}</td>`;
+                        return `<td style="padding:${cellPad};line-height:1.15;">${v !== null && v !== undefined ? v : ''}</td>`;
                     }).join('')}
-                    <td style="width:52px;">${totalTxt}</td>
-                    <td style="width:58px;">${avgTxt}</td>
-                    <td class="ms-rank" style="width:52px;">${rankTxt}</td>
-                    <td class="ms-mention" style="width:52px;">${mentionTxt}</td>
+                    <td style="padding:${cellPad};line-height:1.15;">${totalTxt}</td>
+                    <td style="padding:${cellPad};line-height:1.15;">${avgTxt}</td>
+                    <td class="ms-rank" style="padding:${cellPad};line-height:1.15;">${rankTxt}</td>
+                    <td class="ms-mention" style="padding:${cellPad};line-height:1.15;">${mentionTxt}</td>
                 </tr>`;
         }).join('');
         return `
             <div class="moeys-pdf-page" style="width:1400px;background:#fff;padding:12px 16px;box-sizing:border-box;">
                 ${pg.isFirst ? bannerHtml : ''}
-                <table class="moeys-score-table" style="width:100%;min-width:100%;border-collapse:collapse;table-layout:fixed;font-size:14.5px;">
+                <table class="moeys-score-table" style="width:100%;min-width:100%;border-collapse:collapse;table-layout:fixed;font-size:${rowFont}px;">
+                    ${colgroupHtml}
                     ${pg.isFirst ? theadHtml : ''}
                     <tbody>${bodyRows}</tbody>
                 </table>
