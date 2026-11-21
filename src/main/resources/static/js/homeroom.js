@@ -2842,11 +2842,11 @@ function buildSingleSalakabatHalf(s, school, lunarDate, solarDate, isSecondCopy)
                     <div style="white-space:nowrap;">គោត្តនាម នាម៖ <span class="moul" style="font-size:16.5px;margin-left:10px;">${esc(s.name)}</span></div>
                     <div style="white-space:nowrap;">(អក្សរឡាតាំង) <strong style="margin-left:6px;">${esc(latinName)}</strong></div>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
-                    <div>ភេទ <strong style="margin-left:8px;">${esc(s.gender || '-')}</strong></div>
-                    <div>ជនជាតិ <strong style="margin-left:6px;">ខ្មែរ</strong></div>
-                    <div>សញ្ជាតិ <strong style="margin-left:6px;">ខ្មែរ</strong></div>
-                    <div>ថ្ងៃខែឆ្នាំកំណើត <strong style="margin-left:6px;">${esc(s.dob || '......................')}</strong></div>
+                <div style="display:flex;align-items:baseline;gap:24px;flex-wrap:nowrap;">
+                    <div style="white-space:nowrap;">ភេទ <strong style="margin-left:6px;">${esc(s.gender || '-')}</strong></div>
+                    <div style="white-space:nowrap;">ជនជាតិ <strong style="margin-left:6px;">ខ្មែរ</strong></div>
+                    <div style="white-space:nowrap;">សញ្ជាតិ <strong style="margin-left:6px;">ខ្មែរ</strong></div>
+                    <div style="white-space:nowrap;">ថ្ងៃខែឆ្នាំកំណើត <strong style="margin-left:6px;">${esc(s.dob || '......................')}</strong></div>
                 </div>
                 <div>ទីកន្លែងកំណើត៖ <span style="margin-left:10px;">${esc(s.pob || '...........................................................................')}</span></div>
                 <div>ជាសិស្ស &nbsp; ថ្នាក់ទី <strong>"${esc(HR.className)}"</strong> នៃសាលា &nbsp; <span class="moul" style="font-size:15px;">${esc(school)}</span></div>
