@@ -1807,8 +1807,9 @@ function renderTamdanPages(period, singleStudentId) {
     });
 
     const subCount = displaySubjects.length || 1;
-    const cellPad = subCount >= 18 ? '3px 5px' : (subCount >= 14 ? '4.5px 5px' : (subCount >= 10 ? '6.5px 5px' : '8.5px 5px'));
-    const tableFont = subCount >= 18 ? '13px' : '13.5px';
+    const rowH = Math.min(48, Math.max(25, Math.floor(505 / subCount)));
+    const tableFont = subCount <= 13 ? '14.5px' : (subCount >= 18 ? '13px' : '13.5px');
+    const rowStyle = `height:${rowH}px;padding:2px 5px;`;
 
     area.innerHTML = list.map((r, idx) => {
         const st = r.student;
@@ -1833,13 +1834,13 @@ function renderTamdanPages(period, singleStudentId) {
             }
             return `
                 <tr>
-                    <td style="padding:${cellPad};">${si + 1}</td>
-                    <td style="padding:${cellPad};text-align:center;">${esc(sub.subjectName)}</td>
-                    <td style="padding:${cellPad};">${sub.maxScore}</td>
-                    <td style="padding:${cellPad};font-weight:700;">${val !== undefined ? fmtNum(val) : '0'}</td>
-                    <td class="td-red" style="padding:${cellPad};">${rk || '-'}</td>
-                    <td class="td-red" style="padding:${cellPad};">${mCode}</td>
-                    <td style="padding:${cellPad};">${remarkHtml}</td>
+                    <td style="${rowStyle}">${si + 1}</td>
+                    <td style="${rowStyle}text-align:center;">${esc(sub.subjectName)}</td>
+                    <td style="${rowStyle}">${sub.maxScore}</td>
+                    <td style="${rowStyle}font-weight:700;">${val !== undefined ? fmtNum(val) : '0'}</td>
+                    <td class="td-red" style="${rowStyle}">${rk || '-'}</td>
+                    <td class="td-red" style="${rowStyle}">${mCode}</td>
+                    <td style="${rowStyle}">${remarkHtml}</td>
                 </tr>
             `;
         }).join('');
@@ -1988,10 +1989,11 @@ function renderPritibatMonthPages(period, singleStudentId) {
     const scorePeriodKey = (period === 'S1') ? 'EXAM_S1' : (period === 'S2' ? 'EXAM_S2' : period);
     const displaySubjects = getReportDisplaySubjects();
 
-    // Dynamically adjust row padding so table fills A4 Portrait cleanly whether there are 8 or 20 subjects
+    // Dynamically calculate exact row height so table fills A4 Portrait cleanly with zero empty gap below
     const subCount = displaySubjects.length || 1;
-    const cellPad = subCount >= 18 ? '3.5px 5px' : (subCount >= 14 ? '5px 5px' : (subCount >= 10 ? '7px 5px' : '9px 5px'));
-    const tableFont = subCount >= 18 ? '13px' : '13.8px';
+    const rowH = Math.min(46, Math.max(24, Math.floor(495 / subCount)));
+    const tableFont = subCount <= 13 ? '14.5px' : (subCount >= 18 ? '13px' : '13.8px');
+    const rowStyle = `height:${rowH}px;padding:2px 5px;`;
 
     area.innerHTML = list.map((r, idx) => {
         const st = r.student;
@@ -2014,15 +2016,15 @@ function renderPritibatMonthPages(period, singleStudentId) {
             const scoreDisplay = val !== undefined ? fmtNum(val) : '';
             return `
                 <tr>
-                    <td class="pm-sub" style="padding:${cellPad};">${esc(sub.subjectName)}</td>
-                    <td style="padding:${cellPad};">${sub.maxScore}</td>
-                    <td style="padding:${cellPad};font-weight:700;">${scoreDisplay}</td>
-                    <td style="padding:${cellPad};font-weight:700;">${m === 'A' ? 'A' : ''}</td>
-                    <td style="padding:${cellPad};font-weight:700;">${m === 'B' ? 'B' : ''}</td>
-                    <td style="padding:${cellPad};font-weight:700;">${m === 'C' ? 'C' : ''}</td>
-                    <td style="padding:${cellPad};font-weight:700;">${m === 'D' ? 'D' : ''}</td>
-                    <td style="padding:${cellPad};font-weight:700;">${m === 'E' ? 'E' : ''}</td>
-                    <td class="pm-red" style="padding:${cellPad};">${m === 'F' ? 'F' : ''}</td>
+                    <td class="pm-sub" style="${rowStyle}">${esc(sub.subjectName)}</td>
+                    <td style="${rowStyle}">${sub.maxScore}</td>
+                    <td style="${rowStyle}font-weight:700;">${scoreDisplay}</td>
+                    <td style="${rowStyle}font-weight:700;">${m === 'A' ? 'A' : ''}</td>
+                    <td style="${rowStyle}font-weight:700;">${m === 'B' ? 'B' : ''}</td>
+                    <td style="${rowStyle}font-weight:700;">${m === 'C' ? 'C' : ''}</td>
+                    <td style="${rowStyle}font-weight:700;">${m === 'D' ? 'D' : ''}</td>
+                    <td style="${rowStyle}font-weight:700;">${m === 'E' ? 'E' : ''}</td>
+                    <td class="pm-red" style="${rowStyle}">${m === 'F' ? 'F' : ''}</td>
                 </tr>
             `;
         }).join('');
@@ -2213,8 +2215,10 @@ function renderPritibatYearPages(singleStudentId) {
     }
 
     const subCount = displaySubjects.length || 1;
-    const cellPad = subCount >= 18 ? '2.5px 4px' : (subCount >= 14 ? '3.5px 4px' : (subCount >= 10 ? '5px 4px' : '6.5px 4px'));
-    const tableFont = subCount >= 18 ? '12.5px' : '13px';
+    const rowH = Math.min(42, Math.max(22, Math.floor(455 / subCount)));
+    const cellPad = subCount >= 18 ? '2.5px 4px' : (subCount >= 14 ? '3.5px 4px' : '5px 4px');
+    const rowStyle = `height:${rowH}px;padding:2px 4px;`;
+    const tableFont = subCount <= 13 ? '13.8px' : (subCount >= 18 ? '12.5px' : '13px');
 
     area.innerHTML = targetStudents.map((st, idx) => {
         const r1 = s1M[st.id] || {}, r2 = s2M[st.id] || {}, ry = yrM[st.id] || {};
@@ -2235,15 +2239,15 @@ function renderPritibatYearPages(singleStudentId) {
             const rky = subRankYr[sub.id] ? subRankYr[sub.id][st.id] : null;
             return `
                 <tr>
-                    <td style="padding:${cellPad};">${si + 1}</td>
-                    <td class="py-left" style="padding:${cellPad};">${esc(sub.subjectName)}</td>
-                    <td style="padding:${cellPad};">${v1 !== undefined ? fmtNum(v1) : '-'}</td>
-                    <td class="py-rank" style="padding:${cellPad};">${rk1 || '-'}</td>
-                    <td style="padding:${cellPad};">${v2 !== undefined ? fmtNum(v2) : '-'}</td>
-                    <td class="py-rank" style="padding:${cellPad};">${rk2 || '-'}</td>
-                    <td style="padding:${cellPad};">${vy !== undefined ? fmtNum(vy) : '-'}</td>
-                    <td class="py-rank" style="padding:${cellPad};">${rky || '-'}</td>
-                    <td class="py-left" style="padding:${cellPad};font-size:12px;color:#334155;">${esc(sub.teacherName || '')}</td>
+                    <td style="${rowStyle}">${si + 1}</td>
+                    <td class="py-left" style="${rowStyle}">${esc(sub.subjectName)}</td>
+                    <td style="${rowStyle}">${v1 !== undefined ? fmtNum(v1) : '-'}</td>
+                    <td class="py-rank" style="${rowStyle}">${rk1 || '-'}</td>
+                    <td style="${rowStyle}">${v2 !== undefined ? fmtNum(v2) : '-'}</td>
+                    <td class="py-rank" style="${rowStyle}">${rk2 || '-'}</td>
+                    <td style="${rowStyle}">${vy !== undefined ? fmtNum(vy) : '-'}</td>
+                    <td class="py-rank" style="${rowStyle}">${rky || '-'}</td>
+                    <td class="py-left" style="${rowStyle}font-size:12px;color:#334155;">${esc(sub.teacherName || '')}</td>
                 </tr>
             `;
         }).join('');
