@@ -3138,28 +3138,44 @@ function renderAdminSubTab() {
         let cells = '';
         for (let r = 1; r <= rows; r++) {
             for (let c = 1; c <= cols; c++) {
-                const key = `${r}_${c}`;
-                const val = seats[key] || '';
+                const keyL = `${r}_${c}_L`;
+                const keyR = `${r}_${c}_R`;
+                const valL = (seats[keyL] !== undefined) ? seats[keyL] : (seats[`${r}_${c}`] || '');
+                const valR = seats[keyR] || '';
+                const optsL = HR.students.map(s => `<option value="${esc(s.name)}" ${valL === s.name ? 'selected' : ''}>${esc(s.name)}</option>`).join('');
+                const optsR = HR.students.map(s => `<option value="${esc(s.name)}" ${valR === s.name ? 'selected' : ''}>${esc(s.name)}</option>`).join('');
                 cells += `
-                    <div class="seat-box">
-                        <div style="font-size:0.72rem;color:#64748b;font-weight:700;">ជួរ ${r} - តុ ${c}</div>
-                        <select onchange="HR.admin.seating.seats['${key}']=this.value">
-                            <option value="">-- ទំនេរ --</option>
-                            ${HR.students.map(s => `<option value="${esc(s.name)}" ${val === s.name ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}
-                        </select>
+                    <div class="seat-box" style="padding:7px 6px;border:1.5px solid #475569;border-radius:8px;background:#f8fafc;">
+                        <div style="font-size:0.78rem;color:#1e293b;font-weight:800;text-align:center;margin-bottom:5px;border-bottom:1px dashed #cbd5e1;padding-bottom:3px;">ជួរ ${r} - តុ ${c} (២ នាក់)</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+                            <div>
+                                <div style="font-size:0.68rem;color:#64748b;text-align:center;margin-bottom:2px;">១. ឆ្វេង</div>
+                                <select style="width:100%;font-size:0.82rem;padding:4px 3px;font-weight:600;border:1px solid #cbd5e1;border-radius:5px;background:#fff;" onchange="HR.admin.seating.seats['${keyL}']=this.value">
+                                    <option value="">-- ទំនេរ --</option>
+                                    ${optsL}
+                                </select>
+                            </div>
+                            <div style="border-left:1px dashed #cbd5e1;padding-left:5px;">
+                                <div style="font-size:0.68rem;color:#64748b;text-align:center;margin-bottom:2px;">២. ស្តាំ</div>
+                                <select style="width:100%;font-size:0.82rem;padding:4px 3px;font-weight:600;border:1px solid #cbd5e1;border-radius:5px;background:#fff;" onchange="HR.admin.seating.seats['${keyR}']=this.value">
+                                    <option value="">-- ទំនេរ --</option>
+                                    ${optsR}
+                                </select>
+                            </div>
+                        </div>
                     </div>`;
             }
         }
         area.innerHTML = `
             <div class="print-sheet">
-                ${getOfficialHeader('ប្លង់តុអង្គុយរបស់សិស្សប្រចាំថ្នាក់', `ថ្នាក់ទី ${HR.className}`)}
+                ${getOfficialHeader('ប្លង់តុអង្គុយរបស់សិស្សប្រចាំថ្នាក់', `ថ្នាក់ទី ${HR.className} (១ តុ អង្គុយ ២ នាក់)`)}
                 <div class="no-print" style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-                    <label>ចំនួនជួរ៖ <input type="number" min="2" max="12" value="${rows}" style="width:60px;" onchange="HR.admin.seating.rows=Number(this.value);renderAdminSubTab()"></label>
-                    <label>ចំនួនតុ/ជួរ៖ <input type="number" min="2" max="8" value="${cols}" style="width:60px;" onchange="HR.admin.seating.cols=Number(this.value);renderAdminSubTab()"></label>
-                    <button class="btn btn-outline btn-sm" onclick="autoFillSeating()">⚡ រៀបតុសិស្សស្វ័យប្រវត្តិ</button>
+                    <label>ចំនួនជួរ៖ <input type="number" min="2" max="15" value="${rows}" style="width:60px;" onchange="HR.admin.seating.rows=Number(this.value);renderAdminSubTab()"></label>
+                    <label>ចំនួនតុ/ជួរ៖ <input type="number" min="2" max="6" value="${cols}" style="width:60px;" onchange="HR.admin.seating.cols=Number(this.value);renderAdminSubTab()"></label>
+                    <button class="btn btn-outline btn-sm" onclick="autoFillSeating()">⚡ រៀបតុសិស្សស្វ័យប្រវត្តិ (២ នាក់/តុ)</button>
                 </div>
                 <div class="seating-board">ក្តារខៀន (WHITEBOARD / តុគ្រូ)</div>
-                <div class="seating-grid" style="grid-template-columns:repeat(${cols}, 1fr);">${cells}</div>
+                <div class="seating-grid" style="grid-template-columns:repeat(${cols}, 1fr);gap:10px;">${cells}</div>
                 ${getOfficialFooter()}
             </div>`;
         return;
@@ -3217,13 +3233,21 @@ function autoDistributeCleaning() {
 }
 
 function autoFillSeating() {
-    const { rows, cols } = HR.admin.seating;
+    let { rows, cols } = HR.admin.seating;
+    const neededRows = Math.ceil(HR.students.length / (cols * 2));
+    if (neededRows > rows) {
+        rows = neededRows;
+        HR.admin.seating.rows = rows;
+    }
     const seats = {};
     let idx = 0;
     for (let r = 1; r <= rows; r++) {
         for (let c = 1; c <= cols; c++) {
             if (idx < HR.students.length) {
-                seats[`${r}_${c}`] = HR.students[idx++].name;
+                seats[`${r}_${c}_L`] = HR.students[idx++].name;
+            }
+            if (idx < HR.students.length) {
+                seats[`${r}_${c}_R`] = HR.students[idx++].name;
             }
         }
     }
