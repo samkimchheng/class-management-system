@@ -2838,9 +2838,9 @@ function buildSingleSalakabatHalf(s, school, lunarDate, solarDate, isSecondCopy)
 
             <!-- STUDENT BIO LINES (EXACT PDF MATCH) -->
             <div style="font-size:16px;line-height:1.78;margin-top:2px;">
-                <div style="display:grid;grid-template-columns:1.05fr 1fr;gap:10px;align-items:baseline;">
-                    <div>គោត្តនាម នាម៖ <span class="moul" style="font-size:16.5px;margin-left:10px;">${esc(s.name)}</span></div>
-                    <div>(អក្សរឡាតាំង) <strong style="margin-left:8px;">${esc(latinName)}</strong></div>
+                <div style="display:flex;align-items:baseline;gap:28px;flex-wrap:nowrap;">
+                    <div style="white-space:nowrap;">គោត្តនាម នាម៖ <span class="moul" style="font-size:16.5px;margin-left:10px;">${esc(s.name)}</span></div>
+                    <div style="white-space:nowrap;">(អក្សរឡាតាំង) <strong style="margin-left:6px;">${esc(latinName)}</strong></div>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
                     <div>ភេទ <strong style="margin-left:8px;">${esc(s.gender || '-')}</strong></div>
