@@ -2306,7 +2306,7 @@ function renderPritibatYearPages(singleStudentId) {
                             <!-- SUMMARY ROWS -->
                             <tr>
                                 <td style="padding:${cellPad};"></td>
-                                <td class="py-left" style="padding:${cellPad};font-weight:700;">ពិន្ទុប្រឡងឆមាស</td>
+                                <td class="py-left" style="padding:${cellPad};font-weight:700;white-space:nowrap;">ពិន្ទុប្រឡងឆមាស</td>
                                 <td style="padding:${cellPad};font-weight:700;">${fmtNum(e1.total)}</td>
                                 <td style="padding:${cellPad};"></td>
                                 <td style="padding:${cellPad};font-weight:700;">${fmtNum(e2.total)}</td>
@@ -2317,7 +2317,7 @@ function renderPritibatYearPages(singleStudentId) {
                             </tr>
                             <tr>
                                 <td style="padding:${cellPad};"></td>
-                                <td class="py-left" style="padding:${cellPad};font-weight:700;">ម.ពិន្ទុប្រឡងឆមាស</td>
+                                <td class="py-left" style="padding:${cellPad};font-weight:700;white-space:nowrap;">ម.ពិន្ទុប្រឡងឆមាស</td>
                                 <td style="padding:${cellPad};font-weight:700;">${fmtNum(e1.avg)}</td>
                                 <td class="py-rank" style="padding:${cellPad};">${e1.rank || '-'}</td>
                                 <td style="padding:${cellPad};font-weight:700;">${fmtNum(e2.avg)}</td>
@@ -2328,7 +2328,7 @@ function renderPritibatYearPages(singleStudentId) {
                             </tr>
                             <tr>
                                 <td style="padding:${cellPad};"></td>
-                                <td class="py-left" style="padding:${cellPad};font-weight:700;">ម.ពិន្ទុខែប្រចាំឆមាស</td>
+                                <td class="py-left" style="padding:${cellPad};font-weight:700;white-space:nowrap;">ម.ពិន្ទុខែប្រចាំឆមាស</td>
                                 <td style="padding:${cellPad};font-weight:700;">${fmtNum(r1.avgMonths)}</td>
                                 <td class="py-rank" style="padding:${cellPad};">${m1.rank || '-'}</td>
                                 <td style="padding:${cellPad};font-weight:700;">${fmtNum(r2.avgMonths)}</td>
@@ -2339,7 +2339,7 @@ function renderPritibatYearPages(singleStudentId) {
                             </tr>
                             <tr>
                                 <td style="padding:${cellPad};"></td>
-                                <td class="py-left" style="padding:${cellPad};font-weight:700;">ម.ពិន្ទុប្រចាំឆមាស</td>
+                                <td class="py-left" style="padding:${cellPad};font-weight:700;white-space:nowrap;">ម.ពិន្ទុប្រចាំឆមាស</td>
                                 <td style="padding:${cellPad};font-weight:700;">${fmtNum(r1.avg)}</td>
                                 <td class="py-rank" style="padding:${cellPad};">${r1.rank || '-'}</td>
                                 <td style="padding:${cellPad};font-weight:700;">${fmtNum(r2.avg)}</td>
@@ -2547,25 +2547,25 @@ function renderKearikPages(singleStudentId) {
                             <tbody>
                                 ${subjectRowsHtml}
                                 <tr>
-                                    <td>១៨</td><td class="k-left" style="font-weight:700;">ពិន្ទុប្រឡងឆមាស</td>
+                                    <td>១៨</td><td class="k-left" style="font-weight:700;white-space:nowrap;">ពិន្ទុប្រឡងឆមាស</td>
                                     <td style="font-weight:700;">${fmtNum(e1.total)}</td><td></td><td></td>
                                     <td style="font-weight:700;">${fmtNum(e2.total)}</td><td></td><td></td>
                                     <td></td><td></td><td></td><td></td>
                                 </tr>
                                 <tr>
-                                    <td>១៩</td><td class="k-left" style="font-weight:700;">ម.ពិន្ទុប្រឡងឆមាស</td>
+                                    <td>១៩</td><td class="k-left" style="font-weight:700;white-space:nowrap;">ម.ពិន្ទុប្រឡងឆមាស</td>
                                     <td style="font-weight:700;">${fmtNum(e1.avg)}</td><td class="k-red">${e1.rank || '-'}</td><td class="k-blue">${e1Mention.code}</td>
                                     <td style="font-weight:700;">${fmtNum(e2.avg)}</td><td class="k-red">${e2.rank || '-'}</td><td class="k-blue">${e2Mention.code}</td>
                                     <td></td><td></td><td></td><td></td>
                                 </tr>
                                 <tr>
-                                    <td>២០</td><td class="k-left" style="font-weight:700;">ម.ពិន្ទុខែប្រចាំឆមាស</td>
+                                    <td>២០</td><td class="k-left" style="font-weight:700;white-space:nowrap;">ម.ពិន្ទុខែប្រចាំឆមាស</td>
                                     <td style="font-weight:700;">${fmtNum(r1.avgMonths)}</td><td class="k-red">${m1.rank || '-'}</td><td class="k-blue">${m1Mention.code}</td>
                                     <td style="font-weight:700;">${fmtNum(r2.avgMonths)}</td><td class="k-red">${m2.rank || '-'}</td><td class="k-blue">${m2Mention.code}</td>
                                     <td></td><td></td><td></td><td></td>
                                 </tr>
                                 <tr>
-                                    <td>២១</td><td class="k-left" style="font-weight:800;">ម.ពិន្ទុប្រចាំឆមាស</td>
+                                    <td>២១</td><td class="k-left" style="font-weight:800;white-space:nowrap;">ម.ពិន្ទុប្រចាំឆមាស</td>
                                     <td style="font-weight:800;">${fmtNum(r1.avg)}</td><td class="k-red">${r1.rank || '-'}</td><td class="k-blue">${r1.mention?.code || '-'}</td>
                                     <td style="font-weight:800;">${fmtNum(r2.avg)}</td><td class="k-red">${r2.rank || '-'}</td><td class="k-blue">${r2.mention?.code || '-'}</td>
                                     <td style="font-weight:800;">${fmtNum(ry.avg)}</td><td class="k-red">${ry.rank || '-'}</td><td class="k-blue">${ry.mention?.code || '-'}</td>
