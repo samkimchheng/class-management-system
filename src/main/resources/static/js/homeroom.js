@@ -3103,19 +3103,25 @@ function renderAdminSubTab() {
             HR.admin.cleaning = days.map(d => ({ day: d, leader: '', members: '' }));
         }
         area.innerHTML = `
-            <div class="print-sheet">
+            <div class="print-sheet" style="font-size:16.5px;">
                 ${getOfficialHeader('តារាងវេនសម្អាតថ្នាក់រៀនប្រចាំសប្តាហ៍', `ថ្នាក់ទី ${HR.className}`)}
-                <div class="no-print" style="margin-bottom:10px;">
+                <div class="no-print" style="margin-bottom:12px;">
                     <button class="btn btn-outline btn-sm" onclick="autoDistributeCleaning()">⚡ ចែកវេនសម្អាតស្វ័យប្រវត្តិគ្រប់សិស្ស</button>
                 </div>
-                <table class="hr-table">
-                    <thead><tr><th style="width:16%;">ថ្ងៃ</th><th style="width:24%;">ប្រធានក្រុមវេន</th><th>សមាជិកក្រុមសម្អាត</th></tr></thead>
+                <table class="hr-table" style="font-size:17px;border:1.5px solid #000;">
+                    <thead>
+                        <tr style="font-size:17.5px;">
+                            <th style="width:16%;padding:10px 8px;border:1px solid #000;">ថ្ងៃ</th>
+                            <th style="width:26%;padding:10px 8px;border:1px solid #000;">ប្រធានក្រុមវេន</th>
+                            <th style="padding:10px 8px;border:1px solid #000;">សមាជិកក្រុមសម្អាត</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         ${HR.admin.cleaning.map((c, i) => `
                             <tr>
-                                <td style="font-weight:800;">${esc(c.day)}</td>
-                                <td><input type="text" class="form-control" value="${esc(c.leader)}" oninput="HR.admin.cleaning[${i}].leader=this.value"></td>
-                                <td><textarea class="form-control" rows="2" oninput="HR.admin.cleaning[${i}].members=this.value">${esc(c.members)}</textarea></td>
+                                <td style="font-weight:800;font-size:17.5px;padding:10px 8px;border:1px solid #000;">${esc(c.day)}</td>
+                                <td style="padding:8px;border:1px solid #000;"><input type="text" class="form-control" style="font-size:17px;font-weight:700;padding:8px 10px;color:#0f172a;" value="${esc(c.leader)}" oninput="HR.admin.cleaning[${i}].leader=this.value"></td>
+                                <td style="padding:8px;border:1px solid #000;"><textarea class="form-control" rows="3" style="font-size:16.5px;line-height:1.65;padding:8px 10px;color:#0f172a;" oninput="HR.admin.cleaning[${i}].members=this.value">${esc(c.members)}</textarea></td>
                             </tr>`).join('')}
                     </tbody>
                 </table>
