@@ -458,6 +458,85 @@
         .k-red { color: #dc2626 !important; font-weight: 400; }
         .k-teal { color: #0f766e !important; font-size: 14.5px; }
 
+        /* Official A4 Portrait Report Cards (ព្រឹត្តិបត្រពិន្ទុ ប្រចាំខែ/ឆមាស & ប្រចាំឆ្នាំសិក្សា) */
+        .pritibat-a4-page {
+            width: 840px;
+            min-height: 1172px;
+            margin: 0 auto 24px auto;
+            background: #ffffff;
+            padding: 20px 28px 18px 28px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+        }
+        .pritibat-month-page {
+            color: #1d4ed8;
+        }
+        .pritibat-month-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #1d4ed8;
+            font-size: 13.5px;
+        }
+        .pritibat-month-table th, .pritibat-month-table td {
+            border: 1px solid #1d4ed8;
+            padding: 4px 5px;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 1.3;
+        }
+        .pritibat-month-table th {
+            font-weight: 700;
+            background: #ffffff;
+        }
+        .pritibat-month-table td.pm-sub {
+            text-align: left;
+            padding-left: 8px;
+            font-weight: 600;
+        }
+        .pritibat-month-table .pm-red {
+            color: #dc2626 !important;
+            font-weight: 700;
+        }
+        .pritibat-year-page {
+            color: #000000;
+        }
+        .pritibat-year-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #000000;
+            font-size: 13px;
+        }
+        .pritibat-year-table th, .pritibat-year-table td {
+            border: 1px solid #000000;
+            padding: 3.5px 4px;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 1.28;
+        }
+        .pritibat-year-table th {
+            font-weight: 700;
+            background: #ffffff;
+        }
+        .pritibat-year-table td.py-left {
+            text-align: left;
+            padding-left: 7px;
+        }
+        .pritibat-year-table .py-rank {
+            color: #dc2626 !important;
+            font-weight: 700;
+        }
+        .pritibat-dotted-line {
+            border-bottom: 1.5px dotted #1d4ed8;
+            height: 22px;
+            width: 100%;
+        }
+
         /* Print Mode */
         @media print {
             @page { size: A4 landscape; margin: 4mm; }
@@ -912,10 +991,12 @@
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                             <h3 class="panel-title">📋 ព្រឹត្តិបត្រពិន្ទុ សៀវភៅតាមដាន &amp; សិក្ខាគារិក</h3>
                             <select id="reportDocType" class="form-control" style="width:auto;font-weight:700;" onchange="renderReportDocs()">
-                                <option value="KEARIK_ONE">សៀវភៅសិក្ខាគារិក (សិស្សម្នាក់ - ទម្រង់ PDF)</option>
+                                <option value="PRITIBAT_MONTH_ONE" selected>📄 ព្រឹត្តិបត្រពិន្ទុ ប្រចាំខែ/ឆមាស (សិស្សម្នាក់ - A4 បញ្ឈរ)</option>
+                                <option value="PRITIBAT_MONTH_ALL">📚 ព្រឹត្តិបត្រពិន្ទុ ប្រចាំខែ/ឆមាស (សិស្សទាំងអស់ - A4 បញ្ឈរ)</option>
+                                <option value="PRITIBAT_YEAR_ONE">📄 ព្រឹត្តិបត្រពិន្ទុ ប្រចាំឆ្នាំសិក្សា (សិស្សម្នាក់ - A4 បញ្ឈរ)</option>
+                                <option value="PRITIBAT_YEAR_ALL">📚 ព្រឹត្តិបត្រពិន្ទុ ប្រចាំឆ្នាំសិក្សា (សិស្សទាំងអស់ - A4 បញ្ឈរ)</option>
+                                <option value="KEARIK_ONE">សៀវភៅសិក្ខាគារិក (សិស្សម្នាក់ - A4 ផ្តេក)</option>
                                 <option value="KEARIK_ALL">សៀវភៅសិក្ខាគារិក (សិស្សទាំងអស់ - ១ នាក់ ១ ទំព័រ)</option>
-                                <option value="PRITIBAT_ONE">ព្រឹត្តិបត្រពិន្ទុ (សិស្សម្នាក់)</option>
-                                <option value="PRITIBAT_ALL">ព្រឹត្តិបត្រពិន្ទុ (សិស្សទាំងអស់)</option>
                                 <option value="TAMDAN">សៀវភៅតាមដានការសិក្សា (សង្ខេបថ្នាក់)</option>
                             </select>
                             <select id="reportPeriodSelect" class="form-control" style="width:auto;" onchange="renderReportDocs()">
@@ -924,19 +1005,23 @@
                                 <option value="M3">ខែមករា</option>
                                 <option value="M4">ខែកុម្ភៈ</option>
                                 <option value="M5">ខែមីនា</option>
-                                <option value="S1" selected>ឆមាសទី១</option>
-                                <option value="S2">ឆមាសទី២</option>
-                                <option value="YEAR">ប្រចាំឆ្នាំសិក្សា</option>
+                                <option value="S1" selected>ប្រចាំឆមាសទី១</option>
+                                <option value="M6">ខែមេសា</option>
+                                <option value="M7">ខែឧសភា</option>
+                                <option value="M8">ខែមិថុនា</option>
+                                <option value="M9">ខែកក្កដា</option>
+                                <option value="M10">ខែសីហា</option>
+                                <option value="S2">ប្រចាំឆមាសទី២</option>
                             </select>
                             <select id="reportStudentSelect" class="form-control" style="width:auto;" onchange="renderReportDocs()"></select>
                         </div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
                             <button class="btn btn-success btn-sm" onclick="downloadReportDocsPdf()">📥 ដោនឡូត PDF</button>
                             <button class="btn btn-warning btn-sm" onclick="downloadAllStudentsReportPdf()" title="ដោនឡូតឯកសារ PDF សម្រាប់សិស្សទាំងអស់ក្នុងថ្នាក់ម្តងតែមួយ">📚 ដោនឡូតសិស្សទាំងអស់ (PDF)</button>
-                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន (A4 ផ្តេក)</button>
+                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន</button>
                         </div>
                     </div>
-                    <div id="reportDocsArea"></div>
+                    <div id="reportDocsArea" style="overflow-x:auto;"></div>
                 </div>
             </section>
 
@@ -1024,6 +1109,6 @@
         </main>
     </div>
 
-    <script src="/js/homeroom.js?v=20261120u"></script>
+    <script src="/js/homeroom.js?v=20261121a"></script>
 </body>
 </html>

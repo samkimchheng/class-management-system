@@ -1612,65 +1612,85 @@ function getStudentSemesterAttendance(student) {
     return { s1P, s1U, s2P, s2U, yrP: s1P + s2P, yrU: s1U + s2U };
 }
 
+function getStudentPeriodAttendance(student, period) {
+    const periodToMonthNum = {
+        M1: 11, M2: 12, M3: 1, M4: 2, M5: 3,
+        M6: 4, M7: 5, M8: 6, M9: 7, M10: 8
+    };
+    if (period === 'S1' || period === 'S2' || period === 'YEAR') {
+        const sem = getStudentSemesterAttendance(student);
+        if (period === 'S1') return { p: sem.s1P, u: sem.s1U, t: sem.s1P + sem.s1U };
+        if (period === 'S2') return { p: sem.s2P, u: sem.s2U, t: sem.s2P + sem.s2U };
+        return { p: sem.yrP, u: sem.yrU, t: sem.yrP + sem.yrU };
+    }
+    const targetM = periodToMonthNum[period];
+    if (targetM) {
+        let p = 0, u = 0, found = false;
+        const mAtt = HR.admin.monthlyAtt || {};
+        Object.keys(mAtt).forEach(k => {
+            const parts = k.split('-');
+            const mNum = parts.length === 2 ? parseInt(parts[1], 10) : 0;
+            if (mNum === targetM) {
+                const marks = (mAtt[k] && mAtt[k].marks) ? mAtt[k].marks : {};
+                Object.keys(marks).forEach(mkKey => {
+                    if (mkKey.startsWith(`${student.id}_`)) {
+                        found = true;
+                        const val = marks[mkKey];
+                        if (val === 'ច') p++;
+                        else if (val === 'អ') u++;
+                    }
+                });
+            }
+        });
+        if (!found && student.absentByMonth && student.absentByMonth[String(targetM)]) {
+            const arr = student.absentByMonth[String(targetM)] || [0, 0, 0];
+            p = arr[0] || 0;
+            u = arr[1] || 0;
+        }
+        return { p, u, t: p + u };
+    }
+    const p = student.absentPermission || 0;
+    const u = student.absentUnexcused || 0;
+    return { p, u, t: p + u };
+}
+
+function getAutoTeacherComment(mentionCode, customComment) {
+    if (customComment && customComment.trim()) return customComment.trim();
+    switch (mentionCode) {
+        case 'A': return 'សិស្សល្អប្រសើរ សូមបន្តខិតខំប្រឹងប្រែងរក្សាលទ្ធផលដ៏ល្អនេះជារៀងរហូត។';
+        case 'B': return 'សិស្សល្អណាស់ សូមបន្តខិតខំប្រឹងប្រែងរៀនសូត្របន្ថែមទៀតដើម្បីទទួលបាននិទ្ទេស A។';
+        case 'C': return 'សិស្សល្អ សូមបន្តខិតខំប្រឹងប្រែងរៀនសូត្រ និងយកចិត្តទុកដាក់បន្ថែមទៀត។';
+        case 'D': return 'សិស្សល្អបង្គួរ សូមខិតខំប្រឹងប្រែងរៀនសូត្រ និងរំលឹកមេរៀនឱ្យបានទៀងទាត់។';
+        case 'E': return 'សិស្សមធ្យម សូមខិតខំប្រឹងប្រែងរៀនសូត្របន្ថែមទៀត និងកាត់បន្ថយអវត្តមាន។';
+        case 'F': return 'សិស្សខ្សោយ សូមអាណាព្យាបាលជួយជំរុញ និងតាមដានការសិក្សារបស់ប្អូនបន្ថែមទៀត។';
+        default: return 'សូមបន្តខិតខំប្រឹងប្រែងរៀនសូត្រ និងគោរពវិន័យសាលាឱ្យបានល្អ។';
+    }
+}
+
 function renderReportDocs() {
     const docType = document.getElementById('reportDocType').value;
     const period = document.getElementById('reportPeriodSelect').value;
     const stuId = document.getElementById('reportStudentSelect').value;
     const area = document.getElementById('reportDocsArea');
-    document.getElementById('reportStudentSelect').style.display =
-        (docType === 'PRITIBAT_ONE' || docType === 'KEARIK_ONE') ? 'inline-block' : 'none';
-    document.getElementById('reportPeriodSelect').style.display =
-        (docType === 'KEARIK_ONE' || docType === 'KEARIK_ALL' || docType === 'TAMDAN') ? 'none' : 'inline-block';
 
-    if (docType === 'KEARIK_ONE' || docType === 'KEARIK_ALL') {
-        renderKearikPages(docType === 'KEARIK_ONE' ? stuId : null);
+    const isSingleStu = (docType === 'PRITIBAT_MONTH_ONE' || docType === 'PRITIBAT_YEAR_ONE' || docType === 'KEARIK_ONE');
+    const needsPeriod = (docType === 'PRITIBAT_MONTH_ONE' || docType === 'PRITIBAT_MONTH_ALL');
+
+    document.getElementById('reportStudentSelect').style.display = isSingleStu ? 'inline-block' : 'none';
+    document.getElementById('reportPeriodSelect').style.display = needsPeriod ? 'inline-block' : 'none';
+
+    if (docType === 'PRITIBAT_MONTH_ONE' || docType === 'PRITIBAT_MONTH_ALL') {
+        renderPritibatMonthPages(period, docType === 'PRITIBAT_MONTH_ONE' ? stuId : null);
         return;
     }
 
-    const results = computeResultsForPeriod(period);
-    if (docType === 'PRITIBAT_ONE' || docType === 'PRITIBAT_ALL') {
-        const list = docType === 'PRITIBAT_ONE' ? results.filter(r => String(r.student.id) === String(stuId)) : results;
-        const singleScoresPeriod = (period === 'S1') ? 'EXAM_S1' : (period === 'S2' ? 'EXAM_S2' : (period === 'YEAR' ? 'EXAM_S2' : period));
+    if (docType === 'PRITIBAT_YEAR_ONE' || docType === 'PRITIBAT_YEAR_ALL') {
+        renderPritibatYearPages(docType === 'PRITIBAT_YEAR_ONE' ? stuId : null);
+        return;
+    }
 
-        area.innerHTML = list.map((r, idx) => `
-            <div class="print-sheet ${idx < list.length - 1 ? 'page-break' : ''}">
-                ${getOfficialHeader('ព្រឹត្តិបត្រពិន្ទុ និងតាមដានការសិក្សាសិស្ស', `${PERIOD_LABELS[period] || period}`)}
-                <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#f8fafc;padding:10px 14px;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:12px;font-size:0.88rem;">
-                    <div><strong>គោត្តនាម-នាម៖</strong> <span class="moul" style="color:#0f766e;">${esc(r.student.name)}</span></div>
-                    <div><strong>ភេទ៖</strong> ${esc(r.student.gender)}</div>
-                    <div><strong>អត្តលេខ៖</strong> ${esc(r.student.studentCode)}</div>
-                    <div><strong>ថ្នាក់ទី៖</strong> ${esc(HR.className)}</div>
-                </div>
-                <table class="hr-table">
-                    <thead><tr><th>ល.រ</th><th>មុខវិជ្ជា</th><th>ពិន្ទុពេញ</th><th>ពិន្ទុទទួលបាន</th><th>និទ្ទេស</th><th>គ្រូមុខវិជ្ជា</th></tr></thead>
-                    <tbody>
-                        ${HR.subjects.map((sub, si) => {
-                            const val = HR.scoreMap[`${singleScoresPeriod}_${r.student.id}_${sub.id}`];
-                            const m = getSubjectMention(val, sub.maxScore);
-                            return `<tr><td>${si + 1}</td><td class="text-left" style="font-weight:700;">${esc(sub.subjectName)}</td><td>${sub.maxScore}</td><td style="font-weight:800;">${val !== undefined ? val : '-'}</td><td><span class="badge badge-${m}">${m}</span></td><td class="text-left">${esc(sub.teacherName || '-')}</td></tr>`;
-                        }).join('')}
-                        <tr style="background:#eff6ff;font-weight:800;">
-                            <td colspan="3" class="text-left">លទ្ធផលសរុប (${PERIOD_LABELS[period] || period})</td>
-                            <td style="color:#1d4ed8;">មធ្យមភាគ៖ ${fmtNum(r.avg)}</td>
-                            <td>និទ្ទេស៖ ${r.mention.code} (${r.mention.kh})</td>
-                            <td>ចំណាត់ថ្នាក់៖ ${r.rank || '-'} / ${HR.students.length}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;font-size:0.85rem;">
-                    <div style="border:1px solid #cbd5e1;border-radius:8px;padding:10px;">
-                        <strong>📅 សង្ខេបអវត្តមាន៖</strong> មានច្បាប់ ${r.student.absentPermission || 0} ដង | គ្មានច្បាប់ ${r.student.absentUnexcused || 0} ដង | សរុប ${r.student.absentTotal || 0} ដង
-                        <div style="margin-top:6px;"><strong>📝 មតិគ្រូបន្ទុកថ្នាក់៖</strong> ${esc(r.student.teacherComment || 'សូមបន្តខិតខំប្រឹងប្រែងរៀនសូត្របន្ថែមទៀត។')}</div>
-                    </div>
-                    <div style="border:1px solid #cbd5e1;border-radius:8px;padding:10px;text-align:center;">
-                        <strong>មតិ និងហត្ថលេខាអាណាព្យាបាលសិស្ស</strong>
-                        <div style="height:44px;"></div>
-                        <div>ហត្ថលេខា៖ ......................................</div>
-                    </div>
-                </div>
-                ${getOfficialFooter()}
-            </div>
-        `).join('');
+    if (docType === 'KEARIK_ONE' || docType === 'KEARIK_ALL') {
+        renderKearikPages(docType === 'KEARIK_ONE' ? stuId : null);
         return;
     }
 
@@ -1692,6 +1712,448 @@ function renderReportDocs() {
             </table>
             ${getOfficialFooter()}
         </div>`;
+}
+
+// ==================== OFFICIAL MONTHLY / SEMESTER REPORT CARD (A4 PORTRAIT - BLUE/RED PDF) ====================
+function renderPritibatMonthPages(period, singleStudentId) {
+    const area = document.getElementById('reportDocsArea');
+    const results = computeResultsForPeriod(period);
+    const list = singleStudentId
+        ? results.filter(r => String(r.student.id) === String(singleStudentId))
+        : results;
+
+    if (list.length === 0) {
+        area.innerHTML = '<div style="text-align:center;color:#64748b;padding:24px;">គ្មានទិន្នន័យសិស្ស</div>';
+        return;
+    }
+
+    const cfg = HR.admin.config || {};
+    const ministry = cfg.ministry || 'មន្ទីរអប់រំយុវជន និងកីឡា';
+    const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
+    const principal = cfg.principal || HR.teacher.principalName || '';
+    const teacherName = HR.teacher.fullName || '';
+    const lunarDate = cfg.lunarDate || 'ថ្ងៃ............ ....កើត/រោច ខែ............ ឆ្នាំ............ ព.ស. ២៥៦៩';
+    const solarDate = cfg.solarDate || `${school.replace(/^វិទ្យាល័យ\s*/, '')}, ថ្ងៃទី ...... ខែ ............ ឆ្នាំ ២០២៦`;
+
+    const totalStu = HR.students.length;
+    const femaleStu = HR.students.filter(s => s.gender === 'ស្រី' || s.gender === 'F').length;
+    const rawPeriodLabel = PERIOD_LABELS[period] || period;
+    const periodTitle = rawPeriodLabel.startsWith('ប្រចាំ') ? rawPeriodLabel : `ប្រចាំ${rawPeriodLabel}`;
+    const attTitle = (period === 'S1' || period === 'S2') ? 'អវត្តមានប្រចាំឆមាស' : 'អវត្តមានប្រចាំខែ';
+
+    // For S1/S2 display exam scores per subject; for monthly periods display that month's scores
+    const scorePeriodKey = (period === 'S1') ? 'EXAM_S1' : (period === 'S2' ? 'EXAM_S2' : period);
+
+    // Dynamically adjust row padding so table fills A4 Portrait cleanly whether there are 8 or 20 subjects
+    const subCount = HR.subjects.length || 1;
+    const cellPad = subCount >= 18 ? '3.5px 5px' : (subCount >= 14 ? '5px 5px' : (subCount >= 10 ? '7px 5px' : '9px 5px'));
+    const tableFont = subCount >= 18 ? '13px' : '13.8px';
+
+    area.innerHTML = list.map((r, idx) => {
+        const st = r.student;
+        const att = getStudentPeriodAttendance(st, period);
+        const totalScoreVal = (r.total !== undefined && r.total !== null)
+            ? fmtNum(r.total)
+            : (() => {
+                let sum = 0, hasAny = false;
+                HR.subjects.forEach(sub => {
+                    const v = HR.scoreMap[`${scorePeriodKey}_${st.id}_${sub.id}`];
+                    if (v !== undefined) { sum += v; hasAny = true; }
+                });
+                return hasAny ? fmtNum(sum) : '-';
+            })();
+
+        const subjectRowsHtml = HR.subjects.map(sub => {
+            const val = HR.scoreMap[`${scorePeriodKey}_${st.id}_${sub.id}`];
+            const m = getSubjectMention(val, sub.maxScore);
+            const scoreDisplay = val !== undefined ? fmtNum(val) : '';
+            return `
+                <tr>
+                    <td class="pm-sub" style="padding:${cellPad};">${esc(sub.subjectName)}</td>
+                    <td style="padding:${cellPad};">${sub.maxScore}</td>
+                    <td style="padding:${cellPad};font-weight:700;">${scoreDisplay}</td>
+                    <td style="padding:${cellPad};font-weight:700;">${m === 'A' ? 'A' : ''}</td>
+                    <td style="padding:${cellPad};font-weight:700;">${m === 'B' ? 'B' : ''}</td>
+                    <td style="padding:${cellPad};font-weight:700;">${m === 'C' ? 'C' : ''}</td>
+                    <td style="padding:${cellPad};font-weight:700;">${m === 'D' ? 'D' : ''}</td>
+                    <td style="padding:${cellPad};font-weight:700;">${m === 'E' ? 'E' : ''}</td>
+                    <td class="pm-red" style="padding:${cellPad};">${m === 'F' ? 'F' : ''}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const commentText = getAutoTeacherComment(r.mention?.code, st.teacherComment);
+
+        return `
+            <div class="pritibat-a4-page pritibat-month-page ${idx < list.length - 1 ? 'page-break' : ''}">
+                <!-- TOP HEADER -->
+                <div>
+                    <div style="text-align:center;line-height:1.55;">
+                        <div class="moul" style="font-size:16px;color:#1d4ed8;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                        <div class="moul" style="font-size:14.5px;color:#1d4ed8;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    </div>
+                    <div style="margin-top:2px;line-height:1.55;">
+                        <div class="moul" style="font-size:13.5px;color:#1d4ed8;">${esc(ministry)}</div>
+                        <div class="moul" style="font-size:13.5px;color:#1d4ed8;">${esc(school)}</div>
+                    </div>
+                    <div style="text-align:center;margin-top:4px;line-height:1.45;">
+                        <div class="moul" style="font-size:20px;color:#dc2626;">ព្រឹត្តិបត្រពិន្ទុ ${esc(periodTitle)}</div>
+                        <div class="moul" style="font-size:13.5px;color:#1d4ed8;margin-top:2px;">ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>
+                    </div>
+
+                    <!-- STUDENT INFO -->
+                    <div style="margin-top:10px;font-size:13.5px;color:#1d4ed8;line-height:1.75;">
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">
+                            <div>ព្រឹត្តិបត្រពិន្ទុសិស្សឈ្មោះ <span class="moul" style="font-size:14.5px;margin-left:8px;">${esc(st.name)}</span></div>
+                            <div>ភេទ <strong style="margin-left:6px;">${esc(st.gender || '-')}</strong></div>
+                            <div>ថ្ងៃខែឆ្នាំកំណើត៖ <strong style="margin-left:4px;">${esc(st.dob || '-')}</strong></div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">
+                            <div><strong class="moul" style="font-size:13px;">ថ្នាក់ទី "${esc(HR.className)}"</strong> នៃ <span>${esc(school)}</span></div>
+                            <div>សិស្សសរុប <strong>${totalStu}</strong> នាក់</div>
+                            <div>ស្រី <strong>${femaleStu}</strong> នាក់</div>
+                        </div>
+                    </div>
+
+                    <!-- SUBJECT SCORE TABLE -->
+                    <table class="pritibat-month-table" style="margin-top:8px;font-size:${tableFont};">
+                        <thead>
+                            <tr>
+                                <th style="width:24%;padding:6px 5px;">មុខវិជ្ជា</th>
+                                <th style="width:11%;padding:6px 4px;">ពិន្ទុអតិបរមា</th>
+                                <th style="width:12%;padding:6px 4px;">ពិន្ទុទទួលបាន</th>
+                                <th style="width:8.8%;padding:6px 3px;">និទ្ទេសA</th>
+                                <th style="width:8.8%;padding:6px 3px;">និទ្ទេសB</th>
+                                <th style="width:8.8%;padding:6px 3px;">និទ្ទេសC</th>
+                                <th style="width:8.8%;padding:6px 3px;">និទ្ទេសD</th>
+                                <th style="width:8.8%;padding:6px 3px;">និទ្ទេសE</th>
+                                <th class="pm-red" style="width:9%;padding:6px 3px;">និទ្ទេសF</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${subjectRowsHtml}
+                        </tbody>
+                    </table>
+
+                    <!-- SUMMARY ROWS -->
+                    <div style="margin-top:10px;padding:0 12px;font-size:13.5px;color:#1d4ed8;line-height:1.85;">
+                        <div style="display:grid;grid-template-columns:1.1fr 1.1fr 1.1fr 1.1fr;gap:8px;">
+                            <div>ពិន្ទុសរុប <strong style="margin-left:8px;">${totalScoreVal}</strong></div>
+                            <div>មធ្យមភាគ <strong style="margin-left:8px;">${fmtNum(r.avg)}</strong></div>
+                            <div>ចំណាត់ថ្នាក់ <strong style="margin-left:8px;color:#dc2626;font-size:14.5px;">${r.rank || '-'}</strong></div>
+                            <div>និទ្ទេស <strong style="margin-left:8px;">${esc(r.mention?.code || '-')} ${r.mention?.kh ? '(' + esc(r.mention.kh) + ')' : ''}</strong></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1.1fr 1.1fr 1.1fr 1.1fr;gap:8px;">
+                            <div>${attTitle}</div>
+                            <div>មានច្បាប់៖ <strong style="margin-left:6px;">${att.p}</strong></div>
+                            <div>អត់ច្បាប់៖ <strong style="margin-left:6px;">${att.u}</strong></div>
+                            <div>សរុប ៖ <strong style="margin-left:6px;">${att.t}</strong></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1.1fr 3.3fr;gap:8px;">
+                            <div>សីលធម៌ រស់នៅ</div>
+                            <div><strong>ល្អ</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MIDDLE & BOTTOM: COMMENT, SIGNATURES, PARENT COMMENT -->
+                <div>
+                    <div style="text-align:center;margin-top:8px;">
+                        <div class="moul" style="font-size:13.5px;color:#1d4ed8;">មូលវិចាររបស់គ្រូទទួលបន្ទុកថ្នាក់</div>
+                        <div style="margin-top:4px;font-size:13.5px;color:#1d4ed8;min-height:22px;">${esc(commentText)}</div>
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:10px;padding:0 18px;">
+                        <div style="text-align:center;width:42%;padding-top:16px;">
+                            <div class="moul" style="font-size:13.5px;color:#1d4ed8;">បានឃើញ និងឯកភាព</div>
+                            <div class="moul" style="font-size:13.5px;color:#1d4ed8;margin-top:3px;">នាយកសាលា</div>
+                            <div style="height:44px;"></div>
+                            <div class="moul" style="font-size:13.5px;color:#1d4ed8;">${esc(principal)}</div>
+                        </div>
+                        <div style="text-align:center;width:54%;">
+                            <div style="font-size:13px;color:#1d4ed8;line-height:1.55;">${esc(lunarDate)}</div>
+                            <div style="font-size:13px;color:#1d4ed8;line-height:1.55;">${esc(solarDate)}</div>
+                            <div class="moul" style="font-size:13.5px;color:#1d4ed8;margin-top:3px;">គ្រូទទួលបន្ទុកថ្នាក់</div>
+                            <div style="height:38px;"></div>
+                            <div class="moul" style="font-size:14px;color:#1d4ed8;">${esc(teacherName)}</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:8px;">
+                        <div class="moul" style="text-align:center;font-size:13.5px;color:#1d4ed8;">មតិរបស់អាណាព្យាបាលសិស្ស</div>
+                        <div class="pritibat-dotted-line"></div>
+                        <div class="pritibat-dotted-line"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ==================== OFFICIAL ANNUAL REPORT CARD (A4 PORTRAIT - CLASSIC BLACK PDF) ====================
+function renderPritibatYearPages(singleStudentId) {
+    const area = document.getElementById('reportDocsArea');
+    const s1List = computeSemester(1), s2List = computeSemester(2), yrList = computeAnnual();
+    const ex1List = computeSinglePeriod('EXAM_S1'), ex2List = computeSinglePeriod('EXAM_S2');
+
+    // Monthly average ranks for S1 & S2
+    const s1MthRankRows = s1List.map(r => ({ student: r.student, avg: r.avgMonths, rank: null }));
+    assignRanks(s1MthRankRows);
+    const s2MthRankRows = s2List.map(r => ({ student: r.student, avg: r.avgMonths, rank: null }));
+    assignRanks(s2MthRankRows);
+
+    const mapBy = (arr) => { const m = {}; arr.forEach(x => m[x.student.id] = x); return m; };
+    const s1M = mapBy(s1List), s2M = mapBy(s2List), yrM = mapBy(yrList);
+    const ex1M = mapBy(ex1List), ex2M = mapBy(ex2List);
+    const s1MthM = mapBy(s1MthRankRows), s2MthM = mapBy(s2MthRankRows);
+
+    // Precompute per-subject ranks for S1, S2, and Annual
+    const subRankS1 = {}, subRankS2 = {}, subRankYr = {}, subValYr = {};
+    HR.subjects.forEach(sub => {
+        subRankS1[sub.id] = computeSubjectRanksForPeriod('EXAM_S1', sub.id);
+        subRankS2[sub.id] = computeSubjectRanksForPeriod('EXAM_S2', sub.id);
+        const yrArr = [];
+        subValYr[sub.id] = {};
+        HR.students.forEach(st => {
+            const v1 = HR.scoreMap[`EXAM_S1_${st.id}_${sub.id}`];
+            const v2 = HR.scoreMap[`EXAM_S2_${st.id}_${sub.id}`];
+            if (v1 !== undefined && v2 !== undefined) {
+                const av = (v1 + v2) / 2;
+                subValYr[sub.id][st.id] = av;
+                yrArr.push({ sid: st.id, val: av });
+            } else if (v1 !== undefined) {
+                subValYr[sub.id][st.id] = v1;
+                yrArr.push({ sid: st.id, val: v1 });
+            } else if (v2 !== undefined) {
+                subValYr[sub.id][st.id] = v2;
+                yrArr.push({ sid: st.id, val: v2 });
+            }
+        });
+        yrArr.sort((a, b) => b.val - a.val);
+        const rMap = {};
+        let lastV = null, lastR = 0;
+        yrArr.forEach((x, idx) => {
+            if (lastV !== null && Math.round(x.val * 100) === Math.round(lastV * 100)) {
+                rMap[x.sid] = lastR;
+            } else {
+                rMap[x.sid] = idx + 1;
+                lastR = idx + 1;
+                lastV = x.val;
+            }
+        });
+        subRankYr[sub.id] = rMap;
+    });
+
+    const cfg = HR.admin.config || {};
+    const ministry = cfg.ministry || 'មន្ទីរអប់រំយុវជន និងកីឡា';
+    const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
+    const principal = cfg.principal || HR.teacher.principalName || '';
+    const teacherName = HR.teacher.fullName || '';
+    const lunarDate = cfg.lunarDate || 'ថ្ងៃ............ ....កើត/រោច ខែ............ ឆ្នាំ............ ព.ស. ២៥៦៩';
+    const solarDate = cfg.solarDate || `${school.replace(/^វិទ្យាល័យ\s*/, '')}, ថ្ងៃទី ...... ខែ ............ ឆ្នាំ ២០២៦`;
+    const totalStu = HR.students.length;
+
+    const targetStudents = singleStudentId
+        ? HR.students.filter(s => String(s.id) === String(singleStudentId))
+        : HR.students;
+
+    if (targetStudents.length === 0) {
+        area.innerHTML = '<div style="text-align:center;color:#64748b;padding:24px;">គ្មានទិន្នន័យសិស្ស</div>';
+        return;
+    }
+
+    const subCount = HR.subjects.length || 1;
+    const cellPad = subCount >= 18 ? '2.5px 4px' : (subCount >= 14 ? '3.5px 4px' : (subCount >= 10 ? '5px 4px' : '6.5px 4px'));
+    const tableFont = subCount >= 18 ? '12.5px' : '13px';
+
+    area.innerHTML = targetStudents.map((st, idx) => {
+        const r1 = s1M[st.id] || {}, r2 = s2M[st.id] || {}, ry = yrM[st.id] || {};
+        const e1 = ex1M[st.id] || {}, e2 = ex2M[st.id] || {};
+        const m1 = s1MthM[st.id] || {}, m2 = s2MthM[st.id] || {};
+        const att = getStudentSemesterAttendance(st);
+
+        const yrTotalExam = (e1.total !== undefined && e2.total !== undefined)
+            ? fmtNum((e1.total + e2.total) / 2)
+            : (e1.total !== undefined ? fmtNum(e1.total) : (e2.total !== undefined ? fmtNum(e2.total) : '-'));
+
+        const subjectRowsHtml = HR.subjects.map((sub, si) => {
+            const v1 = HR.scoreMap[`EXAM_S1_${st.id}_${sub.id}`];
+            const v2 = HR.scoreMap[`EXAM_S2_${st.id}_${sub.id}`];
+            const vy = subValYr[sub.id] ? subValYr[sub.id][st.id] : undefined;
+            const rk1 = subRankS1[sub.id] ? subRankS1[sub.id][st.id] : null;
+            const rk2 = subRankS2[sub.id] ? subRankS2[sub.id][st.id] : null;
+            const rky = subRankYr[sub.id] ? subRankYr[sub.id][st.id] : null;
+            return `
+                <tr>
+                    <td style="padding:${cellPad};">${si + 1}</td>
+                    <td class="py-left" style="padding:${cellPad};">${esc(sub.subjectName)}</td>
+                    <td style="padding:${cellPad};">${v1 !== undefined ? fmtNum(v1) : '-'}</td>
+                    <td class="py-rank" style="padding:${cellPad};">${rk1 || '-'}</td>
+                    <td style="padding:${cellPad};">${v2 !== undefined ? fmtNum(v2) : '-'}</td>
+                    <td class="py-rank" style="padding:${cellPad};">${rk2 || '-'}</td>
+                    <td style="padding:${cellPad};">${vy !== undefined ? fmtNum(vy) : '-'}</td>
+                    <td class="py-rank" style="padding:${cellPad};">${rky || '-'}</td>
+                    <td class="py-left" style="padding:${cellPad};font-size:12px;color:#334155;">${esc(sub.teacherName || '')}</td>
+                </tr>
+            `;
+        }).join('');
+
+        return `
+            <div class="pritibat-a4-page pritibat-year-page ${idx < targetStudents.length - 1 ? 'page-break' : ''}">
+                <!-- TOP HEADER & TABLE -->
+                <div>
+                    <div style="text-align:center;line-height:1.5;">
+                        <div class="moul" style="font-size:16px;color:#000;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                        <div class="moul" style="font-size:14px;color:#000;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                        <div style="font-size:12px;letter-spacing:3px;color:#000;">~❖~</div>
+                    </div>
+                    <div style="margin-top:-12px;line-height:1.5;">
+                        <div class="moul" style="font-size:13px;color:#000;">${esc(ministry)}</div>
+                        <div class="moul" style="font-size:13px;color:#000;">${esc(school)}</div>
+                    </div>
+                    <div style="text-align:center;margin-top:4px;">
+                        <div class="moul" style="font-size:17px;color:#000;">ព្រឹត្តិបត្រពិន្ទុ ប្រចាំឆ្នាំសិក្សា</div>
+                    </div>
+
+                    <!-- STUDENT INFO -->
+                    <div style="margin-top:8px;font-size:13.5px;color:#000;line-height:1.7;">
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;">
+                            <div>ឈ្មោះសិស្ស <span class="moul" style="font-size:14.5px;margin-left:10px;">${esc(st.name)}</span></div>
+                            <div>ភេទ <strong>${esc(st.gender || '-')}</strong></div>
+                            <div>ថ្នាក់ទី <strong>${esc(HR.className)}</strong></div>
+                            <div>ឆ្នាំសិក្សា <strong>${esc(HR.academicYear)}</strong></div>
+                            <div>ចំនួនសិស្សសរុប <strong>${totalStu}</strong>នាក់</div>
+                        </div>
+                        <div style="text-align:center;">ជាសិស្សនៃ${esc(school)}</div>
+                    </div>
+
+                    <!-- ANNUAL 9-COLUMN BLACK TABLE -->
+                    <table class="pritibat-year-table" style="margin-top:6px;font-size:${tableFont};">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width:5%;">ល.រ</th>
+                                <th rowspan="2" style="width:21%;">មុខវិជ្ជា</th>
+                                <th colspan="2" style="width:15%;">ឆមាសទី១</th>
+                                <th colspan="2" style="width:15%;">ឆមាសទី២</th>
+                                <th colspan="2" style="width:15%;">ប្រចាំឆ្នាំ</th>
+                                <th rowspan="2" style="width:29%;">មូលវិចារ ហត្ថលេខា និងឈ្មោះគ្រូ</th>
+                            </tr>
+                            <tr>
+                                <th style="width:7.5%;">ពិន្ទុ</th>
+                                <th style="width:7.5%;">ចំ.ថ្នាក់</th>
+                                <th style="width:7.5%;">ពិន្ទុ</th>
+                                <th style="width:7.5%;">ចំ.ថ្នាក់</th>
+                                <th style="width:7.5%;">ពិន្ទុ</th>
+                                <th style="width:7.5%;">ចំ.ថ្នាក់</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${subjectRowsHtml}
+                            <!-- SUMMARY ROWS -->
+                            <tr>
+                                <td style="padding:${cellPad};"></td>
+                                <td class="py-left" style="padding:${cellPad};font-weight:700;">ពិន្ទុប្រឡងឆមាស</td>
+                                <td style="padding:${cellPad};font-weight:700;">${fmtNum(e1.total)}</td>
+                                <td style="padding:${cellPad};"></td>
+                                <td style="padding:${cellPad};font-weight:700;">${fmtNum(e2.total)}</td>
+                                <td style="padding:${cellPad};"></td>
+                                <td style="padding:${cellPad};font-weight:700;">${yrTotalExam}</td>
+                                <td style="padding:${cellPad};"></td>
+                                <td style="padding:${cellPad};"></td>
+                            </tr>
+                            <tr>
+                                <td style="padding:${cellPad};"></td>
+                                <td class="py-left" style="padding:${cellPad};font-weight:700;">ម.ពិន្ទុប្រឡងឆមាស</td>
+                                <td style="padding:${cellPad};font-weight:700;">${fmtNum(e1.avg)}</td>
+                                <td class="py-rank" style="padding:${cellPad};">${e1.rank || '-'}</td>
+                                <td style="padding:${cellPad};font-weight:700;">${fmtNum(e2.avg)}</td>
+                                <td class="py-rank" style="padding:${cellPad};">${e2.rank || '-'}</td>
+                                <td style="padding:${cellPad};"></td>
+                                <td style="padding:${cellPad};"></td>
+                                <td style="padding:${cellPad};"></td>
+                            </tr>
+                            <tr>
+                                <td style="padding:${cellPad};"></td>
+                                <td class="py-left" style="padding:${cellPad};font-weight:700;">ម.ពិន្ទុខែប្រចាំឆមាស</td>
+                                <td style="padding:${cellPad};font-weight:700;">${fmtNum(r1.avgMonths)}</td>
+                                <td class="py-rank" style="padding:${cellPad};">${m1.rank || '-'}</td>
+                                <td style="padding:${cellPad};font-weight:700;">${fmtNum(r2.avgMonths)}</td>
+                                <td class="py-rank" style="padding:${cellPad};">${m2.rank || '-'}</td>
+                                <td style="padding:${cellPad};"></td>
+                                <td style="padding:${cellPad};"></td>
+                                <td style="padding:${cellPad};"></td>
+                            </tr>
+                            <tr>
+                                <td style="padding:${cellPad};"></td>
+                                <td class="py-left" style="padding:${cellPad};font-weight:700;">ម.ពិន្ទុប្រចាំឆមាស</td>
+                                <td style="padding:${cellPad};font-weight:700;">${fmtNum(r1.avg)}</td>
+                                <td class="py-rank" style="padding:${cellPad};">${r1.rank || '-'}</td>
+                                <td style="padding:${cellPad};font-weight:700;">${fmtNum(r2.avg)}</td>
+                                <td class="py-rank" style="padding:${cellPad};">${r2.rank || '-'}</td>
+                                <td style="padding:${cellPad};font-weight:700;">${fmtNum(ry.avg)}</td>
+                                <td class="py-rank" style="padding:${cellPad};">${ry.rank || '-'}</td>
+                                <td style="padding:${cellPad};font-weight:700;">${ry.mention?.code ? `និទ្ទេស ${esc(ry.mention.code)} (${esc(ry.mention.kh)})` : ''}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:${cellPad};"></td>
+                                <td class="py-left" style="padding:${cellPad};">សីលធម៌រស់នៅ</td>
+                                <td colspan="7" class="py-left" style="padding:${cellPad};padding-left:14px;">ល្អ</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:${cellPad};"></td>
+                                <td class="py-left" style="padding:${cellPad};">ពលកម្ម-បង្កបង្កើនផល</td>
+                                <td colspan="7" class="py-left" style="padding:${cellPad};padding-left:14px;">ល្អ</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:${cellPad};"></td>
+                                <td class="py-left" style="padding:${cellPad};">សុខភាព-អនាម័យ</td>
+                                <td colspan="7" class="py-left" style="padding:${cellPad};padding-left:14px;">ល្អ</td>
+                            </tr>
+                            <!-- ABSENCE SUB-TABLE -->
+                            <tr>
+                                <td colspan="2" style="padding:${cellPad};font-weight:700;">ចំនួនអវត្តមាន</td>
+                                <td colspan="2" style="padding:${cellPad};font-weight:700;">ឆមាសទី១</td>
+                                <td colspan="2" style="padding:${cellPad};font-weight:700;">ឆមាសទី២</td>
+                                <td colspan="2" style="padding:${cellPad};font-weight:700;">ប្រចាំឆ្នាំ</td>
+                                <td style="padding:${cellPad};"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding:${cellPad};">មានច្បាប់</td>
+                                <td colspan="2" style="padding:${cellPad};">${att.s1P}</td>
+                                <td colspan="2" style="padding:${cellPad};">${att.s2P}</td>
+                                <td colspan="2" style="padding:${cellPad};font-weight:700;">${att.yrP}</td>
+                                <td style="padding:${cellPad};"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding:${cellPad};">ឥតច្បាប់</td>
+                                <td colspan="2" style="padding:${cellPad};">${att.s1U}</td>
+                                <td colspan="2" style="padding:${cellPad};">${att.s2U}</td>
+                                <td colspan="2" style="padding:${cellPad};font-weight:700;">${att.yrU}</td>
+                                <td style="padding:${cellPad};"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SIGNATURES (KEPT CLEANLY ON PAGE 1) -->
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:12px;padding:0 18px;">
+                    <div style="text-align:center;width:40%;padding-top:26px;">
+                        <div style="font-size:13.5px;color:#000;">បានឃើញ និងឯកភាព</div>
+                        <div class="moul" style="font-size:13.5px;color:#000;margin-top:3px;">នាយកសាលា</div>
+                        <div style="height:44px;"></div>
+                        <div class="moul" style="font-size:13.5px;color:#000;">${esc(principal)}</div>
+                    </div>
+                    <div style="text-align:center;width:56%;">
+                        <div style="font-size:13px;color:#000;line-height:1.55;">${esc(lunarDate)}</div>
+                        <div style="font-size:13px;color:#000;line-height:1.55;">${esc(solarDate)}</div>
+                        <div style="font-size:13.5px;color:#000;margin-top:3px;font-weight:700;">គ្រូបន្ទុកថ្នាក់</div>
+                        <div style="height:40px;"></div>
+                        <div class="moul" style="font-size:14px;color:#000;">${esc(teacherName)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 function renderKearikPages(singleStudentId) {
@@ -1958,12 +2420,16 @@ async function downloadAllStudentsReportPdf() {
     const docSel = document.getElementById('reportDocType');
     if (!docSel) return;
     const cur = docSel.value;
-    if (cur === 'KEARIK_ONE') {
-        docSel.value = 'KEARIK_ALL';
+    if (cur === 'PRITIBAT_MONTH_ONE') {
+        docSel.value = 'PRITIBAT_MONTH_ALL';
         renderReportDocs();
         await new Promise(r => setTimeout(r, 120));
-    } else if (cur === 'PRITIBAT_ONE') {
-        docSel.value = 'PRITIBAT_ALL';
+    } else if (cur === 'PRITIBAT_YEAR_ONE') {
+        docSel.value = 'PRITIBAT_YEAR_ALL';
+        renderReportDocs();
+        await new Promise(r => setTimeout(r, 120));
+    } else if (cur === 'KEARIK_ONE') {
+        docSel.value = 'KEARIK_ALL';
         renderReportDocs();
         await new Promise(r => setTimeout(r, 120));
     }
@@ -1981,9 +2447,14 @@ async function downloadReportDocsPdf() {
         return;
     }
 
-    // Select individual pages (.kearik-page or .print-sheet) to render ONE-BY-ONE
+    const isPortraitReport = (
+        docType === 'PRITIBAT_MONTH_ONE' || docType === 'PRITIBAT_MONTH_ALL' ||
+        docType === 'PRITIBAT_YEAR_ONE' || docType === 'PRITIBAT_YEAR_ALL'
+    );
+
+    // Select individual pages to render ONE-BY-ONE
     // Avoids browser max-canvas-height blank page bug AND guarantees 0 trailing blank pages!
-    let pages = Array.from(area.querySelectorAll('.kearik-page, .print-sheet'));
+    let pages = Array.from(area.querySelectorAll('.pritibat-a4-page, .kearik-page, .print-sheet'));
     if (pages.length === 0) pages = [area];
 
     Swal.fire({
@@ -1994,12 +2465,13 @@ async function downloadReportDocsPdf() {
     });
 
     try {
-        const pdf = new JsPdfCtor({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-        const pageW = pdf.internal.pageSize.getWidth();   // 297mm
-        const pageH = pdf.internal.pageSize.getHeight();  // 210mm
-        const margin = 3;
-        const maxW = pageW - margin * 2;  // 291mm
-        const maxH = pageH - margin * 2;  // 204mm
+        const orientation = isPortraitReport ? 'portrait' : 'landscape';
+        const pdf = new JsPdfCtor({ orientation, unit: 'mm', format: 'a4' });
+        const pageW = pdf.internal.pageSize.getWidth();   // 210mm (portrait) or 297mm (landscape)
+        const pageH = pdf.internal.pageSize.getHeight();  // 297mm (portrait) or 210mm (landscape)
+        const margin = isPortraitReport ? 4 : 3;
+        const maxW = pageW - margin * 2;
+        const maxH = pageH - margin * 2;
 
         for (let i = 0; i < pages.length; i++) {
             const progEl = document.getElementById('pdfProgText');
@@ -2010,26 +2482,34 @@ async function downloadReportDocsPdf() {
             const el = pages[i];
             const prevBorder = el.style.border;
             const prevRadius = el.style.borderRadius;
+            const prevShadow = el.style.boxShadow;
             const prevMargin = el.style.marginBottom;
             const prevPadding = el.style.padding;
             const prevWidth = el.style.width;
+
             el.style.border = 'none';
             el.style.borderRadius = '0';
+            el.style.boxShadow = 'none';
             el.style.marginBottom = '0';
-            el.style.padding = '2px';
-            el.style.width = '1220px';
+
+            const renderW = isPortraitReport ? 840 : 1220;
+            if (!isPortraitReport) {
+                el.style.padding = '2px';
+            }
+            el.style.width = `${renderW}px`;
 
             const canvas = await html2canvas(el, {
-                scale: pages.length > 15 ? 1.6 : 2,
+                scale: pages.length > 20 ? 1.5 : 2,
                 useCORS: true,
                 backgroundColor: '#ffffff',
                 logging: false,
-                width: 1220,
-                windowWidth: 1280
+                width: renderW,
+                windowWidth: renderW + 60
             });
 
             el.style.border = prevBorder;
             el.style.borderRadius = prevRadius;
+            el.style.boxShadow = prevShadow;
             el.style.marginBottom = prevMargin;
             el.style.padding = prevPadding;
             el.style.width = prevWidth;
@@ -2041,16 +2521,18 @@ async function downloadReportDocsPdf() {
             const drawW = imgW * ratio;
             const drawH = imgH * ratio;
             const offsetX = margin + (maxW - drawW) / 2;
-            const offsetY = margin + (maxH - drawH) / 2;
+            const offsetY = isPortraitReport ? margin : (margin + (maxH - drawH) / 2);
 
-            if (i > 0) pdf.addPage('a4', 'landscape');
+            if (i > 0) pdf.addPage('a4', orientation);
             pdf.addImage(imgData, 'JPEG', offsetX, offsetY, drawW, drawH, undefined, 'FAST');
 
             // Yield briefly so UI progress stays smooth on large classes
             await new Promise(r => setTimeout(r, 10));
         }
 
-        pdf.save(`${docType}_${HR.className}_${HR.academicYear}.pdf`);
+        const periodSuffix = (docType === 'PRITIBAT_MONTH_ONE' || docType === 'PRITIBAT_MONTH_ALL')
+            ? `_${document.getElementById('reportPeriodSelect').value}` : '';
+        pdf.save(`${docType}${periodSuffix}_${HR.className}_${HR.academicYear}.pdf`);
         Swal.close();
     } catch (e) {
         console.error('PDF generation error:', e);
