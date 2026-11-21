@@ -1758,7 +1758,7 @@ function renderTamdanPages(period, singleStudentId) {
     const principal = cfg.principal || HR.teacher.principalName || '';
     const teacherName = HR.teacher.fullName || '';
     const lunarDate = cfg.lunarDate || 'ថ្ងៃ............ ....កើត/រោច ខែ............ ឆ្នាំ............ ព.ស. ២៥៦៩';
-    const solarDate = cfg.solarDate || `${school.replace(/^វិទ្យាល័យ\s*/, '')}, ថ្ងៃទី ...... ខែ ............ ឆ្នាំ ២០២៦`;
+    const solarDate = getDefaultSolarDate(cfg, school);
 
     const totalStuKh = toKhmerNum(HR.students.length);
     const femaleStuKh = toKhmerNum(HR.students.filter(s => s.gender === 'ស្រី' || s.gender === 'F').length);
@@ -1977,7 +1977,7 @@ function renderPritibatMonthPages(period, singleStudentId) {
     const principal = cfg.principal || HR.teacher.principalName || '';
     const teacherName = HR.teacher.fullName || '';
     const lunarDate = cfg.lunarDate || 'ថ្ងៃ............ ....កើត/រោច ខែ............ ឆ្នាំ............ ព.ស. ២៥៦៩';
-    const solarDate = cfg.solarDate || `${school.replace(/^វិទ្យាល័យ\s*/, '')}, ថ្ងៃទី ...... ខែ ............ ឆ្នាំ ២០២៦`;
+    const solarDate = getDefaultSolarDate(cfg, school);
 
     const totalStu = HR.students.length;
     const femaleStu = HR.students.filter(s => s.gender === 'ស្រី' || s.gender === 'F').length;
@@ -2202,7 +2202,7 @@ function renderPritibatYearPages(singleStudentId) {
     const principal = cfg.principal || HR.teacher.principalName || '';
     const teacherName = HR.teacher.fullName || '';
     const lunarDate = cfg.lunarDate || 'ថ្ងៃ............ ....កើត/រោច ខែ............ ឆ្នាំ............ ព.ស. ២៥៦៩';
-    const solarDate = cfg.solarDate || `${school.replace(/^វិទ្យាល័យ\s*/, '')}, ថ្ងៃទី ...... ខែ ............ ឆ្នាំ ២០២៦`;
+    const solarDate = getDefaultSolarDate(cfg, school);
     const totalStu = HR.students.length;
 
     const targetStudents = singleStudentId
@@ -2806,10 +2806,18 @@ async function downloadReportDocsPdf() {
     }
 }
 
+function getDefaultSolarDate(cfg, school) {
+    if (cfg && cfg.solarDate && cfg.solarDate.trim()) return cfg.solarDate.trim();
+    const loc = (school && school.includes('១០មករា'))
+        ? '១០មករា'
+        : (school || '').replace(/^វិទ្យាល័យ\s*/, '').trim() || '១០មករា';
+    return `${loc}, ថ្ងៃទី ...... ខែ ............ ឆ្នាំ ២០២៦`;
+}
+
 // ==================== TAB 6: STUDENT EXTRA, ID CARDS & SALAKABAT ====================
 function buildSingleSalakabatHalf(s, school, lunarDate, solarDate, isSecondCopy) {
-    const latinName = s.latinName || s.englishName || '........................................';
-    const address = [s.village, s.commune, s.district, s.province].filter(Boolean).join(', ') || '...........................................................................';
+    const latinName = s.latinName || s.englishName || '..............................';
+    const address = [s.village, s.commune, s.district, s.province].filter(Boolean).join(', ') || '......................................................................';
     const photoHtml = (s.photoUrl && s.photoUrl.trim())
         ? `<img src="${esc(s.photoUrl)}" alt="Photo">`
         : '';
@@ -2819,52 +2827,52 @@ function buildSingleSalakabatHalf(s, school, lunarDate, solarDate, isSecondCopy)
             <!-- HEADER & PHOTO BOX -->
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
                 <div style="flex:1;">
-                    <div style="text-align:center;padding-left:90px;line-height:1.7;">
-                        <div class="moul" style="font-size:16px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
-                        <div class="moul" style="font-size:14.5px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    <div style="text-align:center;padding-left:92px;line-height:1.65;">
+                        <div class="moul" style="font-size:17.5px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                        <div class="moul" style="font-size:15.5px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
                     </div>
-                    <div class="${schoolCls}" style="font-size:14px;margin-top:2px;line-height:1.6;">${esc(school)}</div>
-                    <div class="moul" style="text-align:center;padding-left:90px;font-size:15.5px;margin-top:2px;line-height:1.7;">សលាកបត្រឯកត្តជន</div>
+                    <div class="${schoolCls}" style="font-size:15px;margin-top:1px;line-height:1.55;">${esc(school)}</div>
+                    <div class="moul" style="text-align:center;padding-left:92px;font-size:16.5px;margin-top:1px;line-height:1.65;">សលាកបត្រឯកត្តជន</div>
                 </div>
                 <div class="salakabat-photo-box">${photoHtml}</div>
             </div>
 
             <!-- STUDENT BIO LINES (EXACT PDF MATCH) -->
-            <div style="font-size:14.5px;line-height:1.85;margin-top:4px;">
-                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">
-                    <div>គោត្តនាម នាម៖ <span class="moul" style="font-size:15px;margin-left:14px;">${esc(s.name)}</span></div>
+            <div style="font-size:16px;line-height:1.78;margin-top:2px;">
+                <div style="display:grid;grid-template-columns:1.05fr 1fr;gap:10px;align-items:baseline;">
+                    <div>គោត្តនាម នាម៖ <span class="moul" style="font-size:16.5px;margin-left:10px;">${esc(s.name)}</span></div>
                     <div>(អក្សរឡាតាំង) <strong style="margin-left:8px;">${esc(latinName)}</strong></div>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">
-                    <div>ភេទ <strong style="margin-left:10px;">${esc(s.gender || '-')}</strong></div>
-                    <div>ជនជាតិ <strong style="margin-left:8px;">ខ្មែរ</strong></div>
-                    <div>សញ្ជាតិ <strong style="margin-left:8px;">ខ្មែរ</strong></div>
-                    <div>ថ្ងៃខែឆ្នាំកំណើត <strong style="margin-left:8px;">${esc(s.dob || '........................')}</strong></div>
+                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+                    <div>ភេទ <strong style="margin-left:8px;">${esc(s.gender || '-')}</strong></div>
+                    <div>ជនជាតិ <strong style="margin-left:6px;">ខ្មែរ</strong></div>
+                    <div>សញ្ជាតិ <strong style="margin-left:6px;">ខ្មែរ</strong></div>
+                    <div>ថ្ងៃខែឆ្នាំកំណើត <strong style="margin-left:6px;">${esc(s.dob || '......................')}</strong></div>
                 </div>
-                <div>ទីកន្លែងកំណើត៖ <span style="margin-left:12px;">${esc(s.pob || '..................................................................................')}</span></div>
-                <div>ជាសិស្ស &nbsp; ថ្នាក់ទី <strong>"${esc(HR.className)}"</strong> នៃសាលា &nbsp; <span class="moul" style="font-size:14px;">${esc(school)}</span></div>
-                <div>ជ្រើសយកភាសា៖ <span style="margin-left:28px;">អង់គ្លេស</span> <span style="margin-left:36px;">សំរាប់មុខវិជ្ជាភាសាបរទេស</span></div>
-                <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:10px;padding-left:26px;">
-                    <div>ឈ្មោះឪពុក៖ <strong style="margin-left:12px;">${esc(s.fatherName || '........................')}</strong></div>
-                    <div>មុខរបរ <span style="margin-left:16px;">${esc(s.fatherOccupation || '........................')}</span></div>
+                <div>ទីកន្លែងកំណើត៖ <span style="margin-left:10px;">${esc(s.pob || '...........................................................................')}</span></div>
+                <div>ជាសិស្ស &nbsp; ថ្នាក់ទី <strong>"${esc(HR.className)}"</strong> នៃសាលា &nbsp; <span class="moul" style="font-size:15px;">${esc(school)}</span></div>
+                <div>ជ្រើសយកភាសា៖ <span style="margin-left:24px;">អង់គ្លេស</span> <span style="margin-left:32px;">សំរាប់មុខវិជ្ជាភាសាបរទេស</span></div>
+                <div style="display:grid;grid-template-columns:1.05fr 1fr;gap:10px;padding-left:24px;">
+                    <div>ឈ្មោះឪពុក៖ <strong style="margin-left:10px;">${esc(s.fatherName || '......................')}</strong></div>
+                    <div>មុខរបរ <span style="margin-left:14px;">${esc(s.fatherOccupation || '......................')}</span></div>
                 </div>
-                <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:10px;padding-left:26px;">
-                    <div>ឈ្មោះម្ដាយ៖ <strong style="margin-left:12px;">${esc(s.motherName || '........................')}</strong></div>
-                    <div>មុខរបរ <span style="margin-left:16px;">${esc(s.motherOccupation || '........................')}</span></div>
+                <div style="display:grid;grid-template-columns:1.05fr 1fr;gap:10px;padding-left:24px;">
+                    <div>ឈ្មោះម្ដាយ៖ <strong style="margin-left:10px;">${esc(s.motherName || '......................')}</strong></div>
+                    <div>មុខរបរ <span style="margin-left:14px;">${esc(s.motherOccupation || '......................')}</span></div>
                 </div>
-                <div>អាសយដ្ឋានបច្ចុប្បន្នបេក្ខជន៖ <span style="margin-left:10px;">${esc(address)}</span></div>
+                <div>អាសយដ្ឋានបច្ចុប្បន្នបេក្ខជន៖ <span style="margin-left:8px;">${esc(address)}</span></div>
             </div>
 
             <!-- DATE, SIGNATURE & PHONE LINES -->
-            <div style="margin-top:4px;font-size:14px;line-height:1.65;">
+            <div style="margin-top:2px;font-size:15.5px;line-height:1.6;">
                 <div style="text-align:center;margin-left:44%;">
                     <div>${esc(lunarDate)}</div>
                     <div>${esc(solarDate)}</div>
                     <div style="margin-top:2px;">ហត្ថលេខា និងឈ្មោះ</div>
                 </div>
-                <div style="margin-top:-10px;line-height:1.85;">
-                    <div>លេខទូរស័ព្ទផ្ទាល់ខ្លួន <span style="margin-left:6px;">${esc(s.phone || '..................................................')}</span></div>
-                    <div>លេខទូរស័ព្ទអាណាព្យាបាល <span style="margin-left:6px;">${esc(s.parentPhone || '............................................')}</span></div>
+                <div style="margin-top:-12px;line-height:1.78;">
+                    <div>លេខទូរស័ព្ទផ្ទាល់ខ្លួន <span style="margin-left:6px;">${esc(s.phone || '.............................................')}</span></div>
+                    <div>លេខទូរស័ព្ទអាណាព្យាបាល <span style="margin-left:6px;">${esc(s.parentPhone || '.......................................')}</span></div>
                 </div>
             </div>
         </div>
@@ -2915,7 +2923,7 @@ function renderCardsTab() {
     const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
     const principal = cfg.principal || HR.teacher.principalName || '';
     const lunarDate = cfg.lunarDate || 'ថ្ងៃ............ ....កើត/រោច ខែ............ ឆ្នាំ............ ព.ស. ២៥៦៩';
-    const solarDate = cfg.solarDate || `${school.replace(/^វិទ្យាល័យ\s*/, '')}, ថ្ងៃទី ...... ខែ ............ ឆ្នាំ ២០២៦`;
+    const solarDate = getDefaultSolarDate(cfg, school);
 
     if (mode === 'ID_CARDS') {
         area.innerHTML = `
