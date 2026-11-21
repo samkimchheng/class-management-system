@@ -1720,6 +1720,26 @@ function getMentionKhFromCode(code) {
     }
 }
 
+function getReportDisplaySubjects() {
+    if (HR.subjects && HR.subjects.length > 0) return HR.subjects;
+    const defaultMax = {
+        'ភាសាខ្មែរ': 100, 'គណិតវិទ្យា': 100, 'ភាសាបរទេស': 100
+    };
+    return STANDARD_KEARIK_SUBJECTS.map((s, idx) => ({
+        id: `STD_${idx}`,
+        subjectName: s.label,
+        maxScore: defaultMax[s.label] || 50,
+        teacherName: ''
+    }));
+}
+
+function formatMentionDisplay(mention) {
+    if (!mention || !mention.code || mention.code === '-') return '-';
+    return (mention.kh && mention.kh !== '-')
+        ? `${esc(mention.code)} (${esc(mention.kh)})`
+        : esc(mention.code);
+}
+
 function renderTamdanPages(period, singleStudentId) {
     const area = document.getElementById('reportDocsArea');
     const results = computeResultsForPeriod(period);
@@ -1732,6 +1752,7 @@ function renderTamdanPages(period, singleStudentId) {
         return;
     }
 
+    const displaySubjects = getReportDisplaySubjects();
     const cfg = HR.admin.config || {};
     const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
     const principal = cfg.principal || HR.teacher.principalName || '';
@@ -1748,7 +1769,12 @@ function renderTamdanPages(period, singleStudentId) {
     const scorePeriodKey = (period === 'S1') ? 'EXAM_S1' : (period === 'S2' ? 'EXAM_S2' : period);
     const subRankMap = {};
     const subValMap = {};
-    HR.subjects.forEach(sub => {
+    displaySubjects.forEach(sub => {
+        if (String(sub.id).startsWith('STD_')) {
+            subRankMap[sub.id] = {};
+            subValMap[sub.id] = {};
+            return;
+        }
         if (period === 'YEAR') {
             const arr = [];
             subValMap[sub.id] = {};
@@ -1780,7 +1806,7 @@ function renderTamdanPages(period, singleStudentId) {
         }
     });
 
-    const subCount = HR.subjects.length || 1;
+    const subCount = displaySubjects.length || 1;
     const cellPad = subCount >= 18 ? '3px 5px' : (subCount >= 14 ? '4.5px 5px' : (subCount >= 10 ? '6.5px 5px' : '8.5px 5px'));
     const tableFont = subCount >= 18 ? '13px' : '13.5px';
 
@@ -1789,10 +1815,12 @@ function renderTamdanPages(period, singleStudentId) {
         const att = getStudentPeriodAttendance(st, period);
 
         let totalScoreSum = 0, hasAnyScore = false;
-        const subjectRowsHtml = HR.subjects.map((sub, si) => {
-            const val = (period === 'YEAR')
-                ? (subValMap[sub.id] ? subValMap[sub.id][st.id] : undefined)
-                : HR.scoreMap[`${scorePeriodKey}_${st.id}_${sub.id}`];
+        const subjectRowsHtml = displaySubjects.map((sub, si) => {
+            const val = String(sub.id).startsWith('STD_')
+                ? undefined
+                : ((period === 'YEAR')
+                    ? (subValMap[sub.id] ? subValMap[sub.id][st.id] : undefined)
+                    : HR.scoreMap[`${scorePeriodKey}_${st.id}_${sub.id}`]);
             if (val !== undefined) { totalScoreSum += val; hasAnyScore = true; }
             const rk = subRankMap[sub.id] ? subRankMap[sub.id][st.id] : null;
             const mCode = (val !== undefined && sub.maxScore > 0) ? getSubjectMention(val, sub.maxScore) : '-';
@@ -1838,9 +1866,9 @@ function renderTamdanPages(period, singleStudentId) {
                         <div class="moul" style="font-size:20px;color:#0f172a;">សៀវភៅតាមដានការសិក្សា</div>
                         <div class="moul" style="font-size:13.5px;color:#0f172a;margin-top:4px;">
                             លទ្ធផលសិក្សាសម្រាប់
-                            <span style="color:#dc2626;margin:0 14px;">${esc(periodShort)}</span>
+                            <span class="moul" style="color:#dc2626;margin:0 14px;">${esc(periodShort)}</span>
                             ឆ្នាំសិក្សា
-                            <span style="color:#dc2626;margin-left:10px;">${esc(HR.academicYear)}</span>
+                            <span class="moul" style="color:#dc2626;margin-left:10px;">${esc(HR.academicYear)}</span>
                         </div>
                         <div style="font-size:14px;color:#000;margin-top:3px;display:flex;justify-content:center;gap:34px;">
                             <span>ថ្នាក់ទី <strong>"${esc(HR.className)}"</strong></span>
@@ -1875,7 +1903,7 @@ function renderTamdanPages(period, singleStudentId) {
                                         <span>ពិន្ទុសរុប <span class="td-red" style="margin-left:10px;">${totalScoreDisplay}</span></span>
                                         <span>មធ្យមភាគ <span class="td-red" style="margin-left:10px;">${fmtNum(r.avg)}</span></span>
                                         <span>ចំណាត់ថ្នាក់ <span class="td-red" style="margin-left:10px;">${r.rank || '-'}</span></span>
-                                        <span>និទ្ទេសរួម <span class="td-red" style="margin-left:10px;">${esc(r.mention?.code || '-')} ${r.mention?.kh ? '(' + esc(r.mention.kh) + ')' : ''}</span></span>
+                                        <span>និទ្ទេសរួម <span class="td-red" style="margin-left:10px;">${formatMentionDisplay(r.mention)}</span></span>
                                     </div>
                                 </td>
                             </tr>
@@ -1958,9 +1986,10 @@ function renderPritibatMonthPages(period, singleStudentId) {
 
     // For S1/S2 display exam scores per subject; for monthly periods display that month's scores
     const scorePeriodKey = (period === 'S1') ? 'EXAM_S1' : (period === 'S2' ? 'EXAM_S2' : period);
+    const displaySubjects = getReportDisplaySubjects();
 
     // Dynamically adjust row padding so table fills A4 Portrait cleanly whether there are 8 or 20 subjects
-    const subCount = HR.subjects.length || 1;
+    const subCount = displaySubjects.length || 1;
     const cellPad = subCount >= 18 ? '3.5px 5px' : (subCount >= 14 ? '5px 5px' : (subCount >= 10 ? '7px 5px' : '9px 5px'));
     const tableFont = subCount >= 18 ? '13px' : '13.8px';
 
@@ -1971,15 +2000,16 @@ function renderPritibatMonthPages(period, singleStudentId) {
             ? fmtNum(r.total)
             : (() => {
                 let sum = 0, hasAny = false;
-                HR.subjects.forEach(sub => {
+                displaySubjects.forEach(sub => {
+                    if (String(sub.id).startsWith('STD_')) return;
                     const v = HR.scoreMap[`${scorePeriodKey}_${st.id}_${sub.id}`];
                     if (v !== undefined) { sum += v; hasAny = true; }
                 });
                 return hasAny ? fmtNum(sum) : '-';
             })();
 
-        const subjectRowsHtml = HR.subjects.map(sub => {
-            const val = HR.scoreMap[`${scorePeriodKey}_${st.id}_${sub.id}`];
+        const subjectRowsHtml = displaySubjects.map(sub => {
+            const val = String(sub.id).startsWith('STD_') ? undefined : HR.scoreMap[`${scorePeriodKey}_${st.id}_${sub.id}`];
             const m = getSubjectMention(val, sub.maxScore);
             const scoreDisplay = val !== undefined ? fmtNum(val) : '';
             return `
@@ -2056,7 +2086,7 @@ function renderPritibatMonthPages(period, singleStudentId) {
                             <div>ពិន្ទុសរុប <strong style="margin-left:8px;">${totalScoreVal}</strong></div>
                             <div>មធ្យមភាគ <strong style="margin-left:8px;">${fmtNum(r.avg)}</strong></div>
                             <div>ចំណាត់ថ្នាក់ <strong style="margin-left:8px;color:#dc2626;font-size:14.5px;">${r.rank || '-'}</strong></div>
-                            <div>និទ្ទេស <strong style="margin-left:8px;">${esc(r.mention?.code || '-')} ${r.mention?.kh ? '(' + esc(r.mention.kh) + ')' : ''}</strong></div>
+                            <div>និទ្ទេស <strong style="margin-left:8px;">${formatMentionDisplay(r.mention)}</strong></div>
                         </div>
                         <div style="display:grid;grid-template-columns:1.1fr 1.1fr 1.1fr 1.1fr;gap:8px;">
                             <div>${attTitle}</div>
@@ -2123,8 +2153,13 @@ function renderPritibatYearPages(singleStudentId) {
     const s1MthM = mapBy(s1MthRankRows), s2MthM = mapBy(s2MthRankRows);
 
     // Precompute per-subject ranks for S1, S2, and Annual
+    const displaySubjects = getReportDisplaySubjects();
     const subRankS1 = {}, subRankS2 = {}, subRankYr = {}, subValYr = {};
-    HR.subjects.forEach(sub => {
+    displaySubjects.forEach(sub => {
+        if (String(sub.id).startsWith('STD_')) {
+            subRankS1[sub.id] = {}; subRankS2[sub.id] = {}; subRankYr[sub.id] = {}; subValYr[sub.id] = {};
+            return;
+        }
         subRankS1[sub.id] = computeSubjectRanksForPeriod('EXAM_S1', sub.id);
         subRankS2[sub.id] = computeSubjectRanksForPeriod('EXAM_S2', sub.id);
         const yrArr = [];
@@ -2177,7 +2212,7 @@ function renderPritibatYearPages(singleStudentId) {
         return;
     }
 
-    const subCount = HR.subjects.length || 1;
+    const subCount = displaySubjects.length || 1;
     const cellPad = subCount >= 18 ? '2.5px 4px' : (subCount >= 14 ? '3.5px 4px' : (subCount >= 10 ? '5px 4px' : '6.5px 4px'));
     const tableFont = subCount >= 18 ? '12.5px' : '13px';
 
@@ -2191,9 +2226,9 @@ function renderPritibatYearPages(singleStudentId) {
             ? fmtNum((e1.total + e2.total) / 2)
             : (e1.total !== undefined ? fmtNum(e1.total) : (e2.total !== undefined ? fmtNum(e2.total) : '-'));
 
-        const subjectRowsHtml = HR.subjects.map((sub, si) => {
-            const v1 = HR.scoreMap[`EXAM_S1_${st.id}_${sub.id}`];
-            const v2 = HR.scoreMap[`EXAM_S2_${st.id}_${sub.id}`];
+        const subjectRowsHtml = displaySubjects.map((sub, si) => {
+            const v1 = String(sub.id).startsWith('STD_') ? undefined : HR.scoreMap[`EXAM_S1_${st.id}_${sub.id}`];
+            const v2 = String(sub.id).startsWith('STD_') ? undefined : HR.scoreMap[`EXAM_S2_${st.id}_${sub.id}`];
             const vy = subValYr[sub.id] ? subValYr[sub.id][st.id] : undefined;
             const rk1 = subRankS1[sub.id] ? subRankS1[sub.id][st.id] : null;
             const rk2 = subRankS2[sub.id] ? subRankS2[sub.id][st.id] : null;
@@ -2307,7 +2342,7 @@ function renderPritibatYearPages(singleStudentId) {
                                 <td class="py-rank" style="padding:${cellPad};">${r2.rank || '-'}</td>
                                 <td style="padding:${cellPad};font-weight:700;">${fmtNum(ry.avg)}</td>
                                 <td class="py-rank" style="padding:${cellPad};">${ry.rank || '-'}</td>
-                                <td style="padding:${cellPad};font-weight:700;">${ry.mention?.code ? `និទ្ទេស ${esc(ry.mention.code)} (${esc(ry.mention.kh)})` : ''}</td>
+                                <td style="padding:${cellPad};font-weight:700;">${(ry.mention?.code && ry.mention.code !== '-') ? `និទ្ទេស ${formatMentionDisplay(ry.mention)}` : ''}</td>
                             </tr>
                             <tr>
                                 <td style="padding:${cellPad};"></td>
