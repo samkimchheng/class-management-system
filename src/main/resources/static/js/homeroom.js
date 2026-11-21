@@ -191,24 +191,23 @@ async function saveClassMonitorPermission() {
 
 function getOfficialHeader(docTitle, subtitle = '') {
     const cfg = HR.admin.config || {};
-    const ministry = cfg.ministry || (HR.teacher.province ? `មន្ទីរអប់រំ យុវជន និងកីឡា ${HR.teacher.province}` : 'មន្ទីរអប់រំ យុវជន និងកីឡា');
-    const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
+    const ministry = cfg.ministry || (HR.teacher.province ? `មន្ទីរអប់រំយុវជន និងកីឡា ${HR.teacher.province}` : 'មន្ទីរអប់រំយុវជន និងកីឡា');
+    const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ ហ៊ុន សែន ១០មករា បឹងកន្ទួត';
     return `
-        <div class="moeys-header">
-            <div class="moeys-ministry">
-                <div>${esc(ministry)}</div>
-                <div>${esc(school)}</div>
-                <div>ថ្នាក់ទី៖ ${esc(HR.className)} | ឆ្នាំសិក្សា៖ ${esc(HR.academicYear)}</div>
+        <div style="margin-bottom:14px;color:#000;">
+            <div style="text-align:center;line-height:1.75;">
+                <div class="moul" style="font-size:18px;color:#000;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                <div class="moul" style="font-size:16px;color:#000;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                <div style="font-size:12.5px;letter-spacing:3px;color:#000;margin-top:-2px;">~❖~</div>
             </div>
-            <div class="moeys-kingdom">
-                <div class="moul">ព្រះរាជាណាចក្រកម្ពុជា</div>
-                <div class="moul" style="font-size:0.9rem;margin-top:2px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
-                <div style="margin-top:2px;letter-spacing:3px;">***</div>
+            <div style="text-align:left;margin-top:-8px;line-height:1.75;">
+                <div class="moul" style="font-size:15px;color:#000;">${esc(ministry)}</div>
+                <div class="moul" style="font-size:15px;color:#000;">${esc(school)}</div>
             </div>
-        </div>
-        <div style="text-align:center;margin:8px 0 14px;">
-            <div class="moul" style="font-size:1.05rem;color:#0f172a;">${esc(docTitle)}</div>
-            ${subtitle ? `<div style="font-weight:700;color:#334155;margin-top:4px;font-size:0.9rem;">${esc(subtitle)}</div>` : ''}
+            <div style="text-align:center;margin-top:8px;line-height:1.75;">
+                <div class="moul" style="font-size:17px;color:#000;">${esc(docTitle)}</div>
+                ${subtitle ? `<div class="moul" style="color:#1e293b;margin-top:3px;font-size:14.5px;">${esc(subtitle)} &nbsp; ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>` : ''}
+            </div>
         </div>
     `;
 }
