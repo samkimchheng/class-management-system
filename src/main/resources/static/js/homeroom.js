@@ -1863,15 +1863,15 @@ function renderTamdanPages(period, singleStudentId) {
                         <div class="moul" style="font-size:15px;color:#0f172a;">${esc(school)}</div>
                     </div>
 
-                    <div style="text-align:center;margin-top:4px;line-height:1.55;">
-                        <div class="moul" style="font-size:21px;color:#0f172a;">សៀវភៅតាមដានការសិក្សា</div>
-                        <div class="moul" style="font-size:15.5px;color:#0f172a;margin-top:4px;">
+                    <div style="text-align:center;margin-top:6px;line-height:1.85;">
+                        <div class="moul" style="font-size:20px;color:#0f172a;line-height:1.85;">សៀវភៅតាមដានការសិក្សា</div>
+                        <div class="moul" style="font-size:15.5px;color:#0f172a;margin-top:6px;line-height:1.8;">
                             លទ្ធផលសិក្សាសម្រាប់
                             <span class="moul" style="color:#dc2626;margin:0 14px;">${esc(periodShort)}</span>
                             ឆ្នាំសិក្សា
                             <span class="moul" style="color:#dc2626;margin-left:10px;">${esc(HR.academicYear)}</span>
                         </div>
-                        <div style="font-size:15px;color:#000;margin-top:4px;display:flex;justify-content:center;gap:34px;">
+                        <div style="font-size:15px;color:#000;margin-top:6px;display:flex;justify-content:center;gap:34px;">
                             <span>ថ្នាក់ទី <strong>"${esc(HR.className)}"</strong></span>
                             <span>ចំនួនសិស្សសរុប <strong>${totalStuKh} នាក់</strong></span>
                             <span>ស្រី <strong>${femaleStuKh} នាក់</strong></span>
@@ -1991,7 +1991,7 @@ function renderPritibatMonthPages(period, singleStudentId) {
 
     // Dynamically calculate exact row height so table fills A4 Portrait cleanly with zero empty gap below
     const subCount = displaySubjects.length || 1;
-    const rowH = Math.min(44, Math.max(24, Math.floor(470 / subCount)));
+    const rowH = Math.min(42, Math.max(24, Math.floor(445 / subCount)));
     const tableFont = subCount >= 18 ? '14px' : '15px';
     const rowStyle = `height:${rowH}px;padding:2px 5px;`;
 
@@ -2035,17 +2035,17 @@ function renderPritibatMonthPages(period, singleStudentId) {
             <div class="pritibat-a4-page pritibat-month-page ${idx < list.length - 1 ? 'page-break' : ''}">
                 <!-- TOP HEADER -->
                 <div>
-                    <div style="text-align:center;line-height:1.55;">
+                    <div style="text-align:center;line-height:1.8;">
                         <div class="moul" style="font-size:18px;color:#1d4ed8;">ព្រះរាជាណាចក្រកម្ពុជា</div>
-                        <div class="moul" style="font-size:16px;color:#1d4ed8;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                        <div class="moul" style="font-size:16px;color:#1d4ed8;margin-top:2px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
                     </div>
-                    <div style="margin-top:2px;line-height:1.55;">
+                    <div style="margin-top:4px;line-height:1.8;">
                         <div class="moul" style="font-size:15px;color:#1d4ed8;">${esc(ministry)}</div>
-                        <div class="moul" style="font-size:15px;color:#1d4ed8;">${esc(school)}</div>
+                        <div class="moul" style="font-size:15px;color:#1d4ed8;margin-top:2px;">${esc(school)}</div>
                     </div>
-                    <div style="text-align:center;margin-top:4px;line-height:1.45;">
-                        <div class="moul" style="font-size:21px;color:#dc2626;">ព្រឹត្តិបត្រពិន្ទុ ${esc(periodTitle)}</div>
-                        <div class="moul" style="font-size:15.5px;color:#1d4ed8;margin-top:2px;">ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>
+                    <div style="text-align:center;margin-top:6px;line-height:1.85;">
+                        <div class="moul" style="font-size:20px;color:#dc2626;line-height:1.85;">ព្រឹត្តិបត្រពិន្ទុ ${esc(periodTitle)}</div>
+                        <div class="moul" style="font-size:15.5px;color:#1d4ed8;margin-top:6px;line-height:1.8;">ថ្នាក់ទី ${esc(HR.className)} &nbsp; ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>
                     </div>
 
                     <!-- STUDENT INFO -->
