@@ -1807,8 +1807,8 @@ function renderTamdanPages(period, singleStudentId) {
     });
 
     const subCount = displaySubjects.length || 1;
-    const rowH = Math.min(48, Math.max(25, Math.floor(505 / subCount)));
-    const tableFont = subCount <= 13 ? '14.5px' : (subCount >= 18 ? '13px' : '13.5px');
+    const rowH = Math.min(46, Math.max(25, Math.floor(485 / subCount)));
+    const tableFont = subCount >= 18 ? '14px' : '15px';
     const rowStyle = `height:${rowH}px;padding:2px 5px;`;
 
     area.innerHTML = list.map((r, idx) => {
@@ -1854,24 +1854,24 @@ function renderTamdanPages(period, singleStudentId) {
             <div class="pritibat-a4-page pritibat-year-page ${idx < list.length - 1 ? 'page-break' : ''}">
                 <!-- TOP HEADER & MAIN TABLE -->
                 <div>
-                    <div style="text-align:center;line-height:1.5;">
-                        <div class="moul" style="font-size:16px;color:#0f172a;">ព្រះរាជាណាចក្រកម្ពុជា</div>
-                        <div class="moul" style="font-size:14.5px;color:#0f172a;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
-                        <div style="font-size:12px;letter-spacing:3px;color:#0f172a;">~❖~</div>
+                    <div style="text-align:center;line-height:1.55;">
+                        <div class="moul" style="font-size:18px;color:#0f172a;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                        <div class="moul" style="font-size:16px;color:#0f172a;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                        <div style="font-size:12.5px;letter-spacing:3px;color:#0f172a;">~❖~</div>
                     </div>
-                    <div style="margin-top:-10px;line-height:1.5;">
-                        <div class="moul" style="font-size:13.5px;color:#0f172a;">${esc(school)}</div>
+                    <div style="margin-top:-12px;line-height:1.55;">
+                        <div class="moul" style="font-size:15px;color:#0f172a;">${esc(school)}</div>
                     </div>
 
                     <div style="text-align:center;margin-top:4px;line-height:1.55;">
-                        <div class="moul" style="font-size:20px;color:#0f172a;">សៀវភៅតាមដានការសិក្សា</div>
-                        <div class="moul" style="font-size:13.5px;color:#0f172a;margin-top:4px;">
+                        <div class="moul" style="font-size:21px;color:#0f172a;">សៀវភៅតាមដានការសិក្សា</div>
+                        <div class="moul" style="font-size:15.5px;color:#0f172a;margin-top:4px;">
                             លទ្ធផលសិក្សាសម្រាប់
                             <span class="moul" style="color:#dc2626;margin:0 14px;">${esc(periodShort)}</span>
                             ឆ្នាំសិក្សា
                             <span class="moul" style="color:#dc2626;margin-left:10px;">${esc(HR.academicYear)}</span>
                         </div>
-                        <div style="font-size:14px;color:#000;margin-top:3px;display:flex;justify-content:center;gap:34px;">
+                        <div style="font-size:15px;color:#000;margin-top:4px;display:flex;justify-content:center;gap:34px;">
                             <span>ថ្នាក់ទី <strong>"${esc(HR.className)}"</strong></span>
                             <span>ចំនួនសិស្សសរុប <strong>${totalStuKh} នាក់</strong></span>
                             <span>ស្រី <strong>${femaleStuKh} នាក់</strong></span>
@@ -1882,10 +1882,10 @@ function renderTamdanPages(period, singleStudentId) {
                     <table class="tamdan-a4-table" style="margin-top:8px;font-size:${tableFont};">
                         <thead>
                             <tr>
-                                <th colspan="5" style="padding:6px 8px;border-right:none;text-align:right;padding-right:16px;" class="moul">លទ្ធផលនៃការសិក្សា របស់សិស្សឈ្មោះ</th>
-                                <th colspan="2" style="padding:6px 10px;border-left:none;text-align:left;color:#dc2626;font-size:15px;" class="moul">${esc(st.name)}</th>
+                                <th colspan="5" style="padding:7px 8px;border-right:none;text-align:right;padding-right:16px;font-size:15px;" class="moul">លទ្ធផលនៃការសិក្សា របស់សិស្សឈ្មោះ</th>
+                                <th colspan="2" style="padding:7px 10px;border-left:none;text-align:left;color:#dc2626;font-size:16px;" class="moul">${esc(st.name)}</th>
                             </tr>
-                            <tr>
+                            <tr style="font-size:14.5px;">
                                 <th style="width:6%;padding:6px 4px;">ល.រ</th>
                                 <th style="width:22%;padding:6px 5px;">មុខវិជ្ជា</th>
                                 <th style="width:13%;padding:6px 4px;">ពិន្ទុអតិបរមា</th>
@@ -1899,7 +1899,7 @@ function renderTamdanPages(period, singleStudentId) {
                             ${subjectRowsHtml}
                             <!-- INTEGRATED SUMMARY ROW 1 -->
                             <tr>
-                                <td colspan="7" style="padding:6px 12px;border-top:1.5px solid #000;">
+                                <td colspan="7" style="padding:7px 12px;border-top:1.5px solid #000;font-size:15px;">
                                     <div style="display:flex;justify-content:space-between;align-items:center;font-weight:700;">
                                         <span>ពិន្ទុសរុប <span class="td-red" style="margin-left:10px;">${totalScoreDisplay}</span></span>
                                         <span>មធ្យមភាគ <span class="td-red" style="margin-left:10px;">${fmtNum(r.avg)}</span></span>
@@ -1910,7 +1910,7 @@ function renderTamdanPages(period, singleStudentId) {
                             </tr>
                             <!-- INTEGRATED SUMMARY ROW 2 -->
                             <tr>
-                                <td colspan="7" style="padding:6px 12px;">
+                                <td colspan="7" style="padding:7px 12px;font-size:15px;">
                                     <div style="display:flex;justify-content:space-between;align-items:center;font-weight:700;">
                                         <span>អវត្តមានមានច្បាប់ <span class="td-red" style="margin-left:14px;">${att.p}</span></span>
                                         <span>អវត្តមានឥតច្បាប់ <span class="td-red" style="margin-left:14px;">${att.u}</span></span>
@@ -1922,7 +1922,7 @@ function renderTamdanPages(period, singleStudentId) {
                     </table>
 
                     <!-- TEACHER COMMENT -->
-                    <div style="margin-top:10px;display:flex;align-items:flex-start;gap:14px;font-size:13.5px;line-height:1.7;">
+                    <div style="margin-top:10px;display:flex;align-items:flex-start;gap:14px;font-size:15px;line-height:1.7;">
                         <div style="white-space:nowrap;font-weight:700;color:#000;">មូលវិចារគ្រូបន្ទុកថ្នាក់៖</div>
                         <div style="color:#0369a1;flex:1;">${esc(commentText)}</div>
                     </div>
@@ -1930,24 +1930,24 @@ function renderTamdanPages(period, singleStudentId) {
 
                 <!-- SIGNATURES & PARENT COMMENT -->
                 <div>
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:10px;padding:0 22px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:8px;padding:0 22px;">
                         <div style="text-align:center;width:40%;padding-top:34px;">
-                            <div style="font-size:13.5px;color:#000;">បានឃើញ និងឯកភាព</div>
-                            <div class="moul" style="font-size:13.5px;color:#000;margin-top:4px;">នាយកសាលា</div>
-                            <div style="height:44px;"></div>
-                            <div class="moul" style="font-size:13.5px;color:#000;">${esc(principal)}</div>
+                            <div style="font-size:15px;color:#000;">បានឃើញ និងឯកភាព</div>
+                            <div class="moul" style="font-size:15px;color:#000;margin-top:4px;">នាយកសាលា</div>
+                            <div style="height:40px;"></div>
+                            <div class="moul" style="font-size:15px;color:#000;">${esc(principal)}</div>
                         </div>
                         <div style="text-align:center;width:56%;">
-                            <div style="font-size:13px;color:#000;line-height:1.55;">${esc(lunarDate)}</div>
-                            <div style="font-size:13px;color:#000;line-height:1.55;">${esc(solarDate)}</div>
-                            <div style="font-size:13.5px;color:#000;margin-top:4px;font-weight:700;">គ្រូបន្ទុកថ្នាក់</div>
-                            <div style="height:44px;"></div>
-                            <div class="moul" style="font-size:14px;color:#000;">${esc(teacherName)}</div>
+                            <div style="font-size:14.5px;color:#000;line-height:1.55;">${esc(lunarDate)}</div>
+                            <div style="font-size:14.5px;color:#000;line-height:1.55;">${esc(solarDate)}</div>
+                            <div style="font-size:15px;color:#000;margin-top:4px;font-weight:700;">គ្រូបន្ទុកថ្នាក់</div>
+                            <div style="height:40px;"></div>
+                            <div class="moul" style="font-size:15.5px;color:#000;">${esc(teacherName)}</div>
                         </div>
                     </div>
 
                     <div style="margin-top:8px;">
-                        <div style="text-align:center;font-size:14px;font-weight:700;color:#000;">មតិរបស់អាណាព្យាបាល</div>
+                        <div style="text-align:center;font-size:15.5px;font-weight:700;color:#000;">មតិរបស់អាណាព្យាបាល</div>
                         <div class="tamdan-dotted-line"></div>
                         <div class="tamdan-dotted-line"></div>
                         <div class="tamdan-dotted-line"></div>
@@ -1991,8 +1991,8 @@ function renderPritibatMonthPages(period, singleStudentId) {
 
     // Dynamically calculate exact row height so table fills A4 Portrait cleanly with zero empty gap below
     const subCount = displaySubjects.length || 1;
-    const rowH = Math.min(46, Math.max(24, Math.floor(495 / subCount)));
-    const tableFont = subCount <= 13 ? '14.5px' : (subCount >= 18 ? '13px' : '13.8px');
+    const rowH = Math.min(44, Math.max(24, Math.floor(470 / subCount)));
+    const tableFont = subCount >= 18 ? '14px' : '15px';
     const rowStyle = `height:${rowH}px;padding:2px 5px;`;
 
     area.innerHTML = list.map((r, idx) => {
@@ -2036,27 +2036,27 @@ function renderPritibatMonthPages(period, singleStudentId) {
                 <!-- TOP HEADER -->
                 <div>
                     <div style="text-align:center;line-height:1.55;">
-                        <div class="moul" style="font-size:16px;color:#1d4ed8;">ព្រះរាជាណាចក្រកម្ពុជា</div>
-                        <div class="moul" style="font-size:14.5px;color:#1d4ed8;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                        <div class="moul" style="font-size:18px;color:#1d4ed8;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                        <div class="moul" style="font-size:16px;color:#1d4ed8;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
                     </div>
                     <div style="margin-top:2px;line-height:1.55;">
-                        <div class="moul" style="font-size:13.5px;color:#1d4ed8;">${esc(ministry)}</div>
-                        <div class="moul" style="font-size:13.5px;color:#1d4ed8;">${esc(school)}</div>
+                        <div class="moul" style="font-size:15px;color:#1d4ed8;">${esc(ministry)}</div>
+                        <div class="moul" style="font-size:15px;color:#1d4ed8;">${esc(school)}</div>
                     </div>
                     <div style="text-align:center;margin-top:4px;line-height:1.45;">
-                        <div class="moul" style="font-size:20px;color:#dc2626;">ព្រឹត្តិបត្រពិន្ទុ ${esc(periodTitle)}</div>
-                        <div class="moul" style="font-size:13.5px;color:#1d4ed8;margin-top:2px;">ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>
+                        <div class="moul" style="font-size:21px;color:#dc2626;">ព្រឹត្តិបត្រពិន្ទុ ${esc(periodTitle)}</div>
+                        <div class="moul" style="font-size:15.5px;color:#1d4ed8;margin-top:2px;">ថ្នាក់ទី ${esc(HR.className)} ឆ្នាំសិក្សា ${esc(HR.academicYear)}</div>
                     </div>
 
                     <!-- STUDENT INFO -->
-                    <div style="margin-top:10px;font-size:13.5px;color:#1d4ed8;line-height:1.75;">
+                    <div style="margin-top:8px;font-size:15px;color:#1d4ed8;line-height:1.75;">
                         <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">
-                            <div>ព្រឹត្តិបត្រពិន្ទុសិស្សឈ្មោះ <span class="moul" style="font-size:14.5px;margin-left:8px;">${esc(st.name)}</span></div>
+                            <div>ព្រឹត្តិបត្រពិន្ទុសិស្សឈ្មោះ <span class="moul" style="font-size:15.5px;margin-left:8px;">${esc(st.name)}</span></div>
                             <div>ភេទ <strong style="margin-left:6px;">${esc(st.gender || '-')}</strong></div>
                             <div>ថ្ងៃខែឆ្នាំកំណើត៖ <strong style="margin-left:4px;">${esc(st.dob || '-')}</strong></div>
                         </div>
                         <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">
-                            <div><strong class="moul" style="font-size:13px;">ថ្នាក់ទី "${esc(HR.className)}"</strong> នៃ <span>${esc(school)}</span></div>
+                            <div><strong class="moul" style="font-size:14.5px;">ថ្នាក់ទី "${esc(HR.className)}"</strong> នៃ <span>${esc(school)}</span></div>
                             <div>សិស្សសរុប <strong>${totalStu}</strong> នាក់</div>
                             <div>ស្រី <strong>${femaleStu}</strong> នាក់</div>
                         </div>
@@ -2065,7 +2065,7 @@ function renderPritibatMonthPages(period, singleStudentId) {
                     <!-- SUBJECT SCORE TABLE -->
                     <table class="pritibat-month-table" style="margin-top:8px;font-size:${tableFont};">
                         <thead>
-                            <tr>
+                            <tr style="font-size:14px;">
                                 <th style="width:24%;padding:6px 5px;">មុខវិជ្ជា</th>
                                 <th style="width:11%;padding:6px 4px;">ពិន្ទុអតិបរមា</th>
                                 <th style="width:12%;padding:6px 4px;">ពិន្ទុទទួលបាន</th>
@@ -2083,20 +2083,20 @@ function renderPritibatMonthPages(period, singleStudentId) {
                     </table>
 
                     <!-- SUMMARY ROWS -->
-                    <div style="margin-top:10px;padding:0 12px;font-size:13.5px;color:#1d4ed8;line-height:1.85;">
-                        <div style="display:grid;grid-template-columns:1.1fr 1.1fr 1.1fr 1.1fr;gap:8px;">
-                            <div>ពិន្ទុសរុប <strong style="margin-left:8px;">${totalScoreVal}</strong></div>
-                            <div>មធ្យមភាគ <strong style="margin-left:8px;">${fmtNum(r.avg)}</strong></div>
-                            <div>ចំណាត់ថ្នាក់ <strong style="margin-left:8px;color:#dc2626;font-size:14.5px;">${r.rank || '-'}</strong></div>
-                            <div>និទ្ទេស <strong style="margin-left:8px;">${formatMentionDisplay(r.mention)}</strong></div>
+                    <div style="margin-top:10px;padding:0 10px;font-size:15px;color:#1d4ed8;line-height:1.85;">
+                        <div style="display:grid;grid-template-columns:1.05fr 1.05fr 1.05fr 1.15fr;gap:8px;">
+                            <div>ពិន្ទុសរុប <strong style="margin-left:6px;">${totalScoreVal}</strong></div>
+                            <div>មធ្យមភាគ <strong style="margin-left:6px;">${fmtNum(r.avg)}</strong></div>
+                            <div>ចំណាត់ថ្នាក់ <strong style="margin-left:6px;color:#dc2626;font-size:16px;">${r.rank || '-'}</strong></div>
+                            <div>និទ្ទេស <strong style="margin-left:6px;">${formatMentionDisplay(r.mention)}</strong></div>
                         </div>
-                        <div style="display:grid;grid-template-columns:1.1fr 1.1fr 1.1fr 1.1fr;gap:8px;">
+                        <div style="display:grid;grid-template-columns:1.05fr 1.05fr 1.05fr 1.15fr;gap:8px;">
                             <div>${attTitle}</div>
                             <div>មានច្បាប់៖ <strong style="margin-left:6px;">${att.p}</strong></div>
                             <div>អត់ច្បាប់៖ <strong style="margin-left:6px;">${att.u}</strong></div>
                             <div>សរុប ៖ <strong style="margin-left:6px;">${att.t}</strong></div>
                         </div>
-                        <div style="display:grid;grid-template-columns:1.1fr 3.3fr;gap:8px;">
+                        <div style="display:grid;grid-template-columns:1.05fr 3.25fr;gap:8px;">
                             <div>សីលធម៌ រស់នៅ</div>
                             <div><strong>ល្អ</strong></div>
                         </div>
@@ -2105,29 +2105,29 @@ function renderPritibatMonthPages(period, singleStudentId) {
 
                 <!-- MIDDLE & BOTTOM: COMMENT, SIGNATURES, PARENT COMMENT -->
                 <div>
-                    <div style="text-align:center;margin-top:8px;">
-                        <div class="moul" style="font-size:13.5px;color:#1d4ed8;">មូលវិចាររបស់គ្រូទទួលបន្ទុកថ្នាក់</div>
-                        <div style="margin-top:4px;font-size:13.5px;color:#1d4ed8;min-height:22px;">${esc(commentText)}</div>
+                    <div style="text-align:center;margin-top:6px;">
+                        <div class="moul" style="font-size:15px;color:#1d4ed8;">មូលវិចាររបស់គ្រូទទួលបន្ទុកថ្នាក់</div>
+                        <div style="margin-top:4px;font-size:15px;color:#1d4ed8;min-height:22px;">${esc(commentText)}</div>
                     </div>
 
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:10px;padding:0 18px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:8px;padding:0 18px;">
                         <div style="text-align:center;width:42%;padding-top:16px;">
-                            <div class="moul" style="font-size:13.5px;color:#1d4ed8;">បានឃើញ និងឯកភាព</div>
-                            <div class="moul" style="font-size:13.5px;color:#1d4ed8;margin-top:3px;">នាយកសាលា</div>
-                            <div style="height:44px;"></div>
-                            <div class="moul" style="font-size:13.5px;color:#1d4ed8;">${esc(principal)}</div>
+                            <div class="moul" style="font-size:15px;color:#1d4ed8;">បានឃើញ និងឯកភាព</div>
+                            <div class="moul" style="font-size:15px;color:#1d4ed8;margin-top:3px;">នាយកសាលា</div>
+                            <div style="height:38px;"></div>
+                            <div class="moul" style="font-size:15px;color:#1d4ed8;">${esc(principal)}</div>
                         </div>
                         <div style="text-align:center;width:54%;">
-                            <div style="font-size:13px;color:#1d4ed8;line-height:1.55;">${esc(lunarDate)}</div>
-                            <div style="font-size:13px;color:#1d4ed8;line-height:1.55;">${esc(solarDate)}</div>
-                            <div class="moul" style="font-size:13.5px;color:#1d4ed8;margin-top:3px;">គ្រូទទួលបន្ទុកថ្នាក់</div>
-                            <div style="height:38px;"></div>
-                            <div class="moul" style="font-size:14px;color:#1d4ed8;">${esc(teacherName)}</div>
+                            <div style="font-size:14.5px;color:#1d4ed8;line-height:1.55;">${esc(lunarDate)}</div>
+                            <div style="font-size:14.5px;color:#1d4ed8;line-height:1.55;">${esc(solarDate)}</div>
+                            <div class="moul" style="font-size:15px;color:#1d4ed8;margin-top:3px;">គ្រូទទួលបន្ទុកថ្នាក់</div>
+                            <div style="height:34px;"></div>
+                            <div class="moul" style="font-size:15.5px;color:#1d4ed8;">${esc(teacherName)}</div>
                         </div>
                     </div>
 
-                    <div style="margin-top:8px;">
-                        <div class="moul" style="text-align:center;font-size:13.5px;color:#1d4ed8;">មតិរបស់អាណាព្យាបាលសិស្ស</div>
+                    <div style="margin-top:6px;">
+                        <div class="moul" style="text-align:center;font-size:15px;color:#1d4ed8;">មតិរបស់អាណាព្យាបាលសិស្ស</div>
                         <div class="pritibat-dotted-line"></div>
                         <div class="pritibat-dotted-line"></div>
                     </div>
@@ -2215,10 +2215,10 @@ function renderPritibatYearPages(singleStudentId) {
     }
 
     const subCount = displaySubjects.length || 1;
-    const rowH = Math.min(42, Math.max(22, Math.floor(455 / subCount)));
-    const cellPad = subCount >= 18 ? '2.5px 4px' : (subCount >= 14 ? '3.5px 4px' : '5px 4px');
+    const rowH = Math.min(40, Math.max(22, Math.floor(435 / subCount)));
+    const cellPad = subCount >= 18 ? '2.5px 4px' : (subCount >= 14 ? '3.5px 4px' : '4.5px 4px');
     const rowStyle = `height:${rowH}px;padding:2px 4px;`;
-    const tableFont = subCount <= 13 ? '13.8px' : (subCount >= 18 ? '12.5px' : '13px');
+    const tableFont = subCount >= 18 ? '13.5px' : '14.8px';
 
     area.innerHTML = targetStudents.map((st, idx) => {
         const r1 = s1M[st.id] || {}, r2 = s2M[st.id] || {}, ry = yrM[st.id] || {};
@@ -2257,22 +2257,22 @@ function renderPritibatYearPages(singleStudentId) {
                 <!-- TOP HEADER & TABLE -->
                 <div>
                     <div style="text-align:center;line-height:1.5;">
-                        <div class="moul" style="font-size:16px;color:#000;">ព្រះរាជាណាចក្រកម្ពុជា</div>
-                        <div class="moul" style="font-size:14px;color:#000;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
-                        <div style="font-size:12px;letter-spacing:3px;color:#000;">~❖~</div>
+                        <div class="moul" style="font-size:18px;color:#000;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                        <div class="moul" style="font-size:16px;color:#000;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                        <div style="font-size:12.5px;letter-spacing:3px;color:#000;">~❖~</div>
                     </div>
-                    <div style="margin-top:-12px;line-height:1.5;">
-                        <div class="moul" style="font-size:13px;color:#000;">${esc(ministry)}</div>
-                        <div class="moul" style="font-size:13px;color:#000;">${esc(school)}</div>
+                    <div style="margin-top:-14px;line-height:1.5;">
+                        <div class="moul" style="font-size:15px;color:#000;">${esc(ministry)}</div>
+                        <div class="moul" style="font-size:15px;color:#000;">${esc(school)}</div>
                     </div>
                     <div style="text-align:center;margin-top:4px;">
-                        <div class="moul" style="font-size:17px;color:#000;">ព្រឹត្តិបត្រពិន្ទុ ប្រចាំឆ្នាំសិក្សា</div>
+                        <div class="moul" style="font-size:18.5px;color:#000;">ព្រឹត្តិបត្រពិន្ទុ ប្រចាំឆ្នាំសិក្សា</div>
                     </div>
 
                     <!-- STUDENT INFO -->
-                    <div style="margin-top:8px;font-size:13.5px;color:#000;line-height:1.7;">
+                    <div style="margin-top:6px;font-size:15px;color:#000;line-height:1.7;">
                         <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;">
-                            <div>ឈ្មោះសិស្ស <span class="moul" style="font-size:14.5px;margin-left:10px;">${esc(st.name)}</span></div>
+                            <div>ឈ្មោះសិស្ស <span class="moul" style="font-size:15.5px;margin-left:8px;">${esc(st.name)}</span></div>
                             <div>ភេទ <strong>${esc(st.gender || '-')}</strong></div>
                             <div>ថ្នាក់ទី <strong>${esc(HR.className)}</strong></div>
                             <div>ឆ្នាំសិក្សា <strong>${esc(HR.academicYear)}</strong></div>
@@ -2390,19 +2390,19 @@ function renderPritibatYearPages(singleStudentId) {
                 </div>
 
                 <!-- SIGNATURES (KEPT CLEANLY ON PAGE 1) -->
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:12px;padding:0 18px;">
-                    <div style="text-align:center;width:40%;padding-top:26px;">
-                        <div style="font-size:13.5px;color:#000;">បានឃើញ និងឯកភាព</div>
-                        <div class="moul" style="font-size:13.5px;color:#000;margin-top:3px;">នាយកសាលា</div>
-                        <div style="height:44px;"></div>
-                        <div class="moul" style="font-size:13.5px;color:#000;">${esc(principal)}</div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:10px;padding:0 18px;">
+                    <div style="text-align:center;width:40%;padding-top:24px;">
+                        <div style="font-size:15px;color:#000;">បានឃើញ និងឯកភាព</div>
+                        <div class="moul" style="font-size:15px;color:#000;margin-top:3px;">នាយកសាលា</div>
+                        <div style="height:40px;"></div>
+                        <div class="moul" style="font-size:15px;color:#000;">${esc(principal)}</div>
                     </div>
                     <div style="text-align:center;width:56%;">
-                        <div style="font-size:13px;color:#000;line-height:1.55;">${esc(lunarDate)}</div>
-                        <div style="font-size:13px;color:#000;line-height:1.55;">${esc(solarDate)}</div>
-                        <div style="font-size:13.5px;color:#000;margin-top:3px;font-weight:700;">គ្រូបន្ទុកថ្នាក់</div>
-                        <div style="height:40px;"></div>
-                        <div class="moul" style="font-size:14px;color:#000;">${esc(teacherName)}</div>
+                        <div style="font-size:14.5px;color:#000;line-height:1.55;">${esc(lunarDate)}</div>
+                        <div style="font-size:14.5px;color:#000;line-height:1.55;">${esc(solarDate)}</div>
+                        <div style="font-size:15px;color:#000;margin-top:3px;font-weight:700;">គ្រូបន្ទុកថ្នាក់</div>
+                        <div style="height:36px;"></div>
+                        <div class="moul" style="font-size:15.5px;color:#000;">${esc(teacherName)}</div>
                     </div>
                 </div>
             </div>
