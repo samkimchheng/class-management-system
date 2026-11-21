@@ -569,6 +569,51 @@
             height: 24px;
             width: 100%;
         }
+        /* Official A4 Portrait Salakabat (សលាកបត្រឯកត្តជន - 2 Copies per A4 Page) */
+        .salakabat-a4-page {
+            width: 840px;
+            height: 1180px;
+            margin: 0 auto 24px auto;
+            background: #ffffff;
+            color: #000000;
+            padding: 18px 34px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+        }
+        .salakabat-half {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+        .salakabat-cut-line {
+            border-top: 2px dashed #000000;
+            margin: 8px 0;
+            width: 100%;
+        }
+        .salakabat-photo-box {
+            width: 104px;
+            height: 126px;
+            border: 1.5px solid #000000;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .salakabat-photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
         /* Print Mode */
         @media print {
@@ -1069,13 +1114,18 @@
                             <select id="cardModeSelect" class="form-control" style="width:auto;font-weight:700;" onchange="renderCardsTab()">
                                 <option value="EDIT_EXTRA">បំពេញព័ត៌មានបន្ថែម &amp; Upload រូបថតសិស្ស</option>
                                 <option value="ID_CARDS">ព្រីនប័ណ្ណសម្គាល់ខ្លួនសិស្ស (កាតសិស្ស)</option>
-                                <option value="SALAKABAT">ព្រីនសលាកបត្រឯកត្តជន (Salakabat)</option>
+                                <option value="SALAKABAT">📄 សលាកបត្រឯកត្តជន (សិស្សម្នាក់ - A4 បញ្ឈរ)</option>
+                                <option value="SALAKABAT_ALL">📚 សលាកបត្រឯកត្តជន (សិស្សទាំងអស់ - A4 បញ្ឈរ)</option>
                             </select>
                             <select id="salakabatStudentSelect" class="form-control" style="width:auto;display:none;" onchange="renderCardsTab()"></select>
                         </div>
-                        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន / Save PDF</button>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button id="btnSalakabatPdf" class="btn btn-success btn-sm" style="display:none;" onclick="downloadSalakabatPdf(false)">📥 ដោនឡូត PDF</button>
+                            <button id="btnSalakabatAllPdf" class="btn btn-warning btn-sm" style="display:none;" onclick="downloadSalakabatPdf(true)">📚 ដោនឡូតសិស្សទាំងអស់ (PDF)</button>
+                            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ ព្រីន</button>
+                        </div>
                     </div>
-                    <div id="cardsTabArea"></div>
+                    <div id="cardsTabArea" style="overflow-x:auto;"></div>
                 </div>
             </section>
 
@@ -1144,6 +1194,6 @@
         </main>
     </div>
 
-    <script src="/js/homeroom.js?v=20261121h"></script>
+    <script src="/js/homeroom.js?v=20261121i"></script>
 </body>
 </html>

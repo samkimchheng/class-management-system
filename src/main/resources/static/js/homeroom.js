@@ -2807,10 +2807,80 @@ async function downloadReportDocsPdf() {
 }
 
 // ==================== TAB 6: STUDENT EXTRA, ID CARDS & SALAKABAT ====================
+function buildSingleSalakabatHalf(s, school, lunarDate, solarDate, isSecondCopy) {
+    const latinName = s.latinName || s.englishName || '........................................';
+    const address = [s.village, s.commune, s.district, s.province].filter(Boolean).join(', ') || '...........................................................................';
+    const photoHtml = (s.photoUrl && s.photoUrl.trim())
+        ? `<img src="${esc(s.photoUrl)}" alt="Photo">`
+        : '';
+    const schoolCls = isSecondCopy ? '' : 'moul';
+    return `
+        <div class="salakabat-half">
+            <!-- HEADER & PHOTO BOX -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+                <div style="flex:1;">
+                    <div style="text-align:center;padding-left:90px;line-height:1.7;">
+                        <div class="moul" style="font-size:16px;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                        <div class="moul" style="font-size:14.5px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    </div>
+                    <div class="${schoolCls}" style="font-size:14px;margin-top:2px;line-height:1.6;">${esc(school)}</div>
+                    <div class="moul" style="text-align:center;padding-left:90px;font-size:15.5px;margin-top:2px;line-height:1.7;">សលាកបត្រឯកត្តជន</div>
+                </div>
+                <div class="salakabat-photo-box">${photoHtml}</div>
+            </div>
+
+            <!-- STUDENT BIO LINES (EXACT PDF MATCH) -->
+            <div style="font-size:14.5px;line-height:1.85;margin-top:4px;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">
+                    <div>គោត្តនាម នាម៖ <span class="moul" style="font-size:15px;margin-left:14px;">${esc(s.name)}</span></div>
+                    <div>(អក្សរឡាតាំង) <strong style="margin-left:8px;">${esc(latinName)}</strong></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">
+                    <div>ភេទ <strong style="margin-left:10px;">${esc(s.gender || '-')}</strong></div>
+                    <div>ជនជាតិ <strong style="margin-left:8px;">ខ្មែរ</strong></div>
+                    <div>សញ្ជាតិ <strong style="margin-left:8px;">ខ្មែរ</strong></div>
+                    <div>ថ្ងៃខែឆ្នាំកំណើត <strong style="margin-left:8px;">${esc(s.dob || '........................')}</strong></div>
+                </div>
+                <div>ទីកន្លែងកំណើត៖ <span style="margin-left:12px;">${esc(s.pob || '..................................................................................')}</span></div>
+                <div>ជាសិស្ស &nbsp; ថ្នាក់ទី <strong>"${esc(HR.className)}"</strong> នៃសាលា &nbsp; <span class="moul" style="font-size:14px;">${esc(school)}</span></div>
+                <div>ជ្រើសយកភាសា៖ <span style="margin-left:28px;">អង់គ្លេស</span> <span style="margin-left:36px;">សំរាប់មុខវិជ្ជាភាសាបរទេស</span></div>
+                <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:10px;padding-left:26px;">
+                    <div>ឈ្មោះឪពុក៖ <strong style="margin-left:12px;">${esc(s.fatherName || '........................')}</strong></div>
+                    <div>មុខរបរ <span style="margin-left:16px;">${esc(s.fatherOccupation || '........................')}</span></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:10px;padding-left:26px;">
+                    <div>ឈ្មោះម្ដាយ៖ <strong style="margin-left:12px;">${esc(s.motherName || '........................')}</strong></div>
+                    <div>មុខរបរ <span style="margin-left:16px;">${esc(s.motherOccupation || '........................')}</span></div>
+                </div>
+                <div>អាសយដ្ឋានបច្ចុប្បន្នបេក្ខជន៖ <span style="margin-left:10px;">${esc(address)}</span></div>
+            </div>
+
+            <!-- DATE, SIGNATURE & PHONE LINES -->
+            <div style="margin-top:4px;font-size:14px;line-height:1.65;">
+                <div style="text-align:center;margin-left:44%;">
+                    <div>${esc(lunarDate)}</div>
+                    <div>${esc(solarDate)}</div>
+                    <div style="margin-top:2px;">ហត្ថលេខា និងឈ្មោះ</div>
+                </div>
+                <div style="margin-top:-10px;line-height:1.85;">
+                    <div>លេខទូរស័ព្ទផ្ទាល់ខ្លួន <span style="margin-left:6px;">${esc(s.phone || '..................................................')}</span></div>
+                    <div>លេខទូរស័ព្ទអាណាព្យាបាល <span style="margin-left:6px;">${esc(s.parentPhone || '............................................')}</span></div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 function renderCardsTab() {
     const mode = document.getElementById('cardModeSelect').value;
     const salaSel = document.getElementById('salakabatStudentSelect');
+    const btnPdf = document.getElementById('btnSalakabatPdf');
+    const btnAllPdf = document.getElementById('btnSalakabatAllPdf');
+    const isSalakabat = (mode === 'SALAKABAT' || mode === 'SALAKABAT_ALL');
+
     salaSel.style.display = mode === 'SALAKABAT' ? 'inline-block' : 'none';
+    if (btnPdf) btnPdf.style.display = isSalakabat ? 'inline-flex' : 'none';
+    if (btnAllPdf) btnAllPdf.style.display = isSalakabat ? 'inline-flex' : 'none';
     const area = document.getElementById('cardsTabArea');
 
     if (mode === 'EDIT_EXTRA') {
@@ -2844,6 +2914,8 @@ function renderCardsTab() {
     const cfg = HR.admin.config || {};
     const school = cfg.school || HR.teacher.schoolName || 'វិទ្យាល័យ';
     const principal = cfg.principal || HR.teacher.principalName || '';
+    const lunarDate = cfg.lunarDate || 'ថ្ងៃ............ ....កើត/រោច ខែ............ ឆ្នាំ............ ព.ស. ២៥៦៩';
+    const solarDate = cfg.solarDate || `${school.replace(/^វិទ្យាល័យ\s*/, '')}, ថ្ងៃទី ...... ខែ ............ ឆ្នាំ ២០២៦`;
 
     if (mode === 'ID_CARDS') {
         area.innerHTML = `
@@ -2871,29 +2943,110 @@ function renderCardsTab() {
         return;
     }
 
-    // SALAKABAT (សលាកបត្រឯកត្តជន)
-    const s = HR.students.find(x => String(x.id) === String(salaSel.value)) || HR.students[0];
-    if (!s) { area.innerHTML = 'គ្មានសិស្ស'; return; }
-    area.innerHTML = `
-        <div class="print-sheet">
-            ${getOfficialHeader('សលាកបត្រឯកត្តជនសិស្ស', `ឆ្នាំសិក្សា ${HR.academicYear}`)}
-            <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:16px;">
-                <img src="${esc(s.photoUrl || 'https://ui-avatars.com/api/?background=e2e8f0&color=334155&name=' + encodeURIComponent(s.name))}" style="width:110px;height:135px;object-fit:cover;border:2px solid #94a3b8;border-radius:8px;">
-                <table class="hr-table" style="flex:1;">
-                    <tbody>
-                        <tr><th class="text-left" style="width:30%;">គោត្តនាម និងនាម</th><td class="text-left moul" style="color:#0f766e;">${esc(s.name)}</td><th style="width:15%;">ភេទ</th><td>${esc(s.gender)}</td></tr>
-                        <tr><th class="text-left">អត្តលេខសិស្ស</th><td class="text-left">${esc(s.studentCode)}</td><th>ថ្នាក់ទី</th><td>${esc(HR.className)}</td></tr>
-                        <tr><th class="text-left">ថ្ងៃខែឆ្នាំកំណើត</th><td class="text-left" colspan="3">${esc(s.dob || '........................................')}</td></tr>
-                        <tr><th class="text-left">ទីកន្លែងកំណើត</th><td class="text-left" colspan="3">${esc(s.pob || '........................................')}</td></tr>
-                        <tr><th class="text-left">អាសយដ្ឋានបច្ចុប្បន្ន</th><td class="text-left" colspan="3">${esc([s.village, s.commune, s.district, s.province].filter(Boolean).join(', ') || '........................................')}</td></tr>
-                        <tr><th class="text-left">ឈ្មោះឪពុក / មុខរបរ</th><td class="text-left" colspan="3">${esc(s.fatherName || '-')} / ${esc(s.fatherOccupation || '-')}</td></tr>
-                        <tr><th class="text-left">ឈ្មោះម្ដាយ / មុខរបរ</th><td class="text-left" colspan="3">${esc(s.motherName || '-')} / ${esc(s.motherOccupation || '-')}</td></tr>
-                        <tr><th class="text-left">លេខទូរស័ព្ទទំនាក់ទំនង</th><td class="text-left" colspan="3">${esc(s.phone || '-')}</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            ${getOfficialFooter()}
-        </div>`;
+    // SALAKABAT (សលាកបត្រឯកត្តជន - Official 2-Copy A4 Portrait PDF)
+    const targetList = (mode === 'SALAKABAT_ALL')
+        ? HR.students
+        : [HR.students.find(x => String(x.id) === String(salaSel.value)) || HR.students[0]].filter(Boolean);
+
+    if (targetList.length === 0) {
+        area.innerHTML = '<div style="text-align:center;color:#64748b;padding:24px;">គ្មានទិន្នន័យសិស្ស</div>';
+        return;
+    }
+
+    area.innerHTML = targetList.map((s, idx) => `
+        <div class="salakabat-a4-page ${idx < targetList.length - 1 ? 'page-break' : ''}">
+            ${buildSingleSalakabatHalf(s, school, lunarDate, solarDate, false)}
+            <div class="salakabat-cut-line"></div>
+            ${buildSingleSalakabatHalf(s, school, lunarDate, solarDate, true)}
+        </div>
+    `).join('');
+}
+
+async function downloadSalakabatPdf(allStudents) {
+    const modeSel = document.getElementById('cardModeSelect');
+    if (allStudents && modeSel && modeSel.value !== 'SALAKABAT_ALL') {
+        modeSel.value = 'SALAKABAT_ALL';
+        renderCardsTab();
+        await new Promise(r => setTimeout(r, 120));
+    }
+
+    const area = document.getElementById('cardsTabArea');
+    const pages = Array.from(area.querySelectorAll('.salakabat-a4-page'));
+    if (pages.length === 0) return;
+
+    const JsPdfCtor = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+    if (typeof html2canvas === 'undefined' || !JsPdfCtor) {
+        window.print();
+        return;
+    }
+
+    Swal.fire({
+        title: 'កំពុងបង្កើតឯកសារសលាកបត្រ PDF...',
+        html: `<div id="salaPdfProg">កំពុងដំណើរការទំព័រទី <b>1</b> / <b>${pages.length}</b> ...</div>`,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    try {
+        const pdf = new JsPdfCtor({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageW = pdf.internal.pageSize.getWidth();   // 210mm
+        const pageH = pdf.internal.pageSize.getHeight();  // 297mm
+        const margin = 4;
+        const maxW = pageW - margin * 2;
+        const maxH = pageH - margin * 2;
+
+        for (let i = 0; i < pages.length; i++) {
+            const prog = document.getElementById('salaPdfProg');
+            if (prog) prog.innerHTML = `កំពុងដំណើរការទំព័រទី <b>${i + 1}</b> / <b>${pages.length}</b> ...`;
+
+            const el = pages[i];
+            const prevBorder = el.style.border;
+            const prevRadius = el.style.borderRadius;
+            const prevShadow = el.style.boxShadow;
+            const prevMargin = el.style.marginBottom;
+
+            el.style.border = 'none';
+            el.style.borderRadius = '0';
+            el.style.boxShadow = 'none';
+            el.style.marginBottom = '0';
+
+            const canvas = await html2canvas(el, {
+                scale: pages.length > 20 ? 1.5 : 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                width: 840,
+                windowWidth: 900
+            });
+
+            el.style.border = prevBorder;
+            el.style.borderRadius = prevRadius;
+            el.style.boxShadow = prevShadow;
+            el.style.marginBottom = prevMargin;
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
+            const drawW = canvas.width * ratio;
+            const drawH = canvas.height * ratio;
+            const offsetX = margin + (maxW - drawW) / 2;
+
+            if (i > 0) pdf.addPage('a4', 'portrait');
+            pdf.addImage(imgData, 'JPEG', offsetX, margin, drawW, drawH, undefined, 'FAST');
+            await new Promise(r => setTimeout(r, 10));
+        }
+
+        const modeName = modeSel ? modeSel.value : 'SALAKABAT';
+        pdf.save(`${modeName}_${HR.className}_${HR.academicYear}.pdf`);
+        Swal.close();
+    } catch (e) {
+        console.error('Salakabat PDF error:', e);
+        Swal.close();
+        Swal.fire({
+            icon: 'warning',
+            title: 'សូមប្រើប៊ូតុងព្រីន (Save as PDF)',
+            text: 'មានបញ្ហាក្នុងការបង្កើត PDF ដោយផ្ទាល់។ សូមចុច «🖨️ ព្រីន» រួចជ្រើស Save as PDF។'
+        });
+    }
 }
 
 async function saveStudentExtraRow(studentId) {
