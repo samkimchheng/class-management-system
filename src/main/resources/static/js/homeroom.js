@@ -2504,7 +2504,7 @@ function renderKearikPages(singleStudentId) {
             <div class="kearik-page ${pageIdx < targetStudents.length - 1 ? 'page-break' : ''}">
                 <div class="kearik-grid">
                     <!-- LEFT COLUMN -->
-                    <div>
+                    <div class="kearik-left-box">
                         <table class="kearik-table">
                             <thead>
                                 <tr>
@@ -2528,7 +2528,7 @@ function renderKearikPages(singleStudentId) {
 
                         <div class="kearik-title-bar moul">លទ្ធផលនៃការសិក្សា</div>
 
-                        <table class="kearik-table" style="border-top:none;">
+                        <table class="kearik-table kearik-study-table" style="border-top:none;">
                             <thead>
                                 <tr>
                                     <th rowspan="2" style="width:24px;">ល.រ</th>
