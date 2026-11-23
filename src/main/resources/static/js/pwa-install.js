@@ -1,6 +1,6 @@
-// CMS App (PWA) Installer v3 — Mobile Standalone Screen-Fit + Smart Installer (Android, iOS, Desktop)
+// CMS App (PWA) Installer v5 — Universal Mobile Screen-Fit (Browser + Installed App on Android, iOS, Desktop)
 (function () {
-    // 1. Ensure clean mobile viewport & standalone fit CSS on EVERY page of CMS App
+    // 1. Ensure clean mobile viewport & universal screen-fit CSS on EVERY page of CMS
     (function applyMobileAppFit() {
         let vp = document.querySelector('meta[name="viewport"]');
         if (!vp) {
@@ -8,7 +8,7 @@
             vp.name = 'viewport';
             document.head.appendChild(vp);
         }
-        vp.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
+        vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover';
 
         const isStandaloneNow = window.matchMedia('(display-mode: standalone)').matches
             || window.navigator.standalone === true;
@@ -17,13 +17,28 @@
             const st = document.createElement('style');
             st.id = 'cmsPwaMobileFit';
             st.textContent = `
-                html { -webkit-text-size-adjust: 100%; max-width: 100vw; overflow-x: hidden; }
-                body { max-width: 100vw; overflow-x: hidden; }
+                html {
+                    -webkit-text-size-adjust: 100%;
+                    width: 100%;
+                    max-width: 100vw;
+                    overflow-x: clip;
+                }
+                body {
+                    width: 100%;
+                    max-width: 100vw;
+                    overflow-x: clip;
+                }
+                .cms-mob-table-scroll {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    overflow-x: auto !important;
+                    -webkit-overflow-scrolling: touch !important;
+                }
                 @media all and (display-mode: standalone) {
                     html, body {
                         width: 100% !important;
                         max-width: 100vw !important;
-                        overflow-x: hidden !important;
+                        overflow-x: clip !important;
                         min-height: 100dvh;
                     }
                     body {
@@ -32,13 +47,89 @@
                     .topbar, header.topbar {
                         padding-top: max(10px, env(safe-area-inset-top, 10px)) !important;
                     }
-                    .main-content, .content, .container, .panel, .card {
+                }
+                @media screen and (max-width: 992px) {
+                    html, body {
+                        width: 100% !important;
+                        max-width: 100vw !important;
+                        overflow-x: clip !important;
+                    }
+                    .sidebar {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        bottom: 0 !important;
+                        width: 275px !important;
+                        max-width: 84vw !important;
+                        height: 100dvh !important;
+                        transform: translateX(-100%) !important;
+                        transition: transform 0.28s ease !important;
+                        z-index: 1050 !important;
+                    }
+                    .sidebar.mobile-open,
+                    .sidebar.open {
+                        transform: translateX(0) !important;
+                    }
+                    .main-content {
+                        margin-left: 0 !important;
+                        width: 100% !important;
+                        max-width: 100vw !important;
+                        min-width: 0 !important;
+                        overflow-x: clip !important;
                         box-sizing: border-box !important;
                     }
+                    .content, .container, .panel, .card, .table-container, .table-wrap {
+                        max-width: 100% !important;
+                        min-width: 0 !important;
+                        box-sizing: border-box !important;
+                    }
+                    .topbar, header.topbar {
+                        width: 100% !important;
+                        max-width: 100vw !important;
+                        box-sizing: border-box !important;
+                        padding-left: 10px !important;
+                        padding-right: 10px !important;
+                    }
+                    .topbar-left {
+                        flex: 1 1 0% !important;
+                        min-width: 0 !important;
+                        overflow: hidden !important;
+                    }
+                    .topbar-left h1, .topbar-left h2, .topbar-left h3 {
+                        overflow: hidden !important;
+                        text-overflow: ellipsis !important;
+                        white-space: nowrap !important;
+                        max-width: 100% !important;
+                        font-size: 0.94rem !important;
+                    }
+                    .mobile-menu-btn, .btn-hamburger {
+                        display: inline-flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        width: 36px !important;
+                        height: 36px !important;
+                        min-width: 36px !important;
+                        flex-shrink: 0 !important;
+                        background: #f1f5f9 !important;
+                        border: 1px solid #cbd5e1 !important;
+                        border-radius: 8px !important;
+                        color: #0f172a !important;
+                        font-size: 1.2rem !important;
+                        cursor: pointer !important;
+                    }
+                    .mobile-sidebar-backdrop {
+                        position: fixed; inset: 0;
+                        background: rgba(15, 23, 42, 0.58);
+                        z-index: 1040; display: none;
+                    }
+                    .mobile-sidebar-backdrop.active { display: block !important; opacity: 1 !important; visibility: visible !important; }
                 }
                 @media screen and (max-width: 768px) {
-                    .main-content, .content, .container, .panel, .card {
-                        max-width: 100% !important;
+                    .content {
+                        padding: 12px 10px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+                    }
+                    .card-grid, .kpi-grid, .form-grid {
+                        grid-template-columns: 1fr !important;
                     }
                     .login-card {
                         width: calc(100% - 28px) !important;
@@ -49,11 +140,76 @@
                     }
                     input[type="text"], input[type="password"], input[type="number"], input[type="date"], select, textarea {
                         font-size: 16px;
+                        max-width: 100%;
+                    }
+                    #cmsPwaInstallWrap {
+                        max-width: calc(100vw - 24px) !important;
+                        right: 12px !important;
+                        font-size: 0.82rem !important;
+                        padding: 8px 10px 8px 12px !important;
+                    }
+                }
+                @media screen and (max-width: 576px) {
+                    .btn-logout-header span:last-child {
+                        display: none !important;
+                    }
+                    .btn-logout-header {
+                        padding: 5px 8px !important;
                     }
                 }
             `;
             document.head.appendChild(st);
         }
+
+        // Auto-wire mobile sidebar toggle on any page with .sidebar + .topbar missing a menu button,
+        // and auto-wrap unwrapped wide tables on mobile so ZERO pages overflow horizontally
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const sidebar = document.querySelector('.sidebar');
+                const topbar = document.querySelector('.topbar');
+                if (sidebar && topbar && !topbar.querySelector('.mobile-menu-btn, .btn-hamburger, .btn-menu-mob')) {
+                    let backdrop = document.querySelector('.mobile-sidebar-backdrop');
+                    if (!backdrop) {
+                        backdrop = document.createElement('div');
+                        backdrop.className = 'mobile-sidebar-backdrop';
+                        document.body.appendChild(backdrop);
+                    }
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'mobile-menu-btn';
+                    btn.setAttribute('aria-label', 'បើកម៉ឺនុយ');
+                    btn.textContent = '☰';
+                    const toggle = (open) => {
+                        sidebar.classList.toggle('mobile-open', open);
+                        sidebar.classList.toggle('open', open);
+                        backdrop.classList.toggle('active', open);
+                    };
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggle(!sidebar.classList.contains('mobile-open') && !sidebar.classList.contains('open'));
+                    });
+                    backdrop.addEventListener('click', () => toggle(false));
+                    const left = topbar.querySelector('.topbar-left') || topbar;
+                    left.insertBefore(btn, left.firstChild);
+                }
+
+                if (window.innerWidth <= 992) {
+                    document.querySelectorAll('table').forEach((tbl) => {
+                        if (tbl.closest('.table-container, .table-wrap, .table-responsive, .att-scroll-wrap, .cms-mob-table-scroll, .pritibat-a4-page, .kearik-page, .rank-a4-sheet, .honor-a4-sheet, .salakabat-a4-page')) {
+                            return;
+                        }
+                        const parent = tbl.parentElement;
+                        if (!parent) return;
+                        const cs = window.getComputedStyle(parent);
+                        if (cs.overflowX === 'auto' || cs.overflowX === 'scroll') return;
+                        const wrap = document.createElement('div');
+                        wrap.className = 'cms-mob-table-scroll';
+                        parent.insertBefore(wrap, tbl);
+                        wrap.appendChild(tbl);
+                    });
+                }
+            } catch (e) {}
+        });
 
         if (isStandaloneNow) {
             document.documentElement.classList.add('cms-standalone');

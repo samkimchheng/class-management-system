@@ -6,7 +6,7 @@
     <title>ប្រព័ន្ធគ្រប់គ្រងថ្នាក់រៀន - Dashboard</title>
     <!-- Google Fonts for Khmer OS Battambang -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css?v=20261029h}" href="../static/css/style.css?v=20261029h">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20261124a" href="../static/css/style.css?v=20261124a">
     <style>
         .dashboard-filter-group {
             display: flex;
@@ -158,16 +158,26 @@
         @media screen and (max-width: 640px) {
             .dashboard-filter-group {
                 width: 100%;
+                max-width: 100%;
                 flex-direction: column;
                 align-items: stretch;
             }
             .date-picker-bar {
                 width: 100%;
+                max-width: 100%;
                 justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 5px;
             }
             .date-input-wrapper {
-                flex: 1;
+                flex: 1 1 160px;
+                min-width: 0;
                 justify-content: center;
+                padding: 4px 6px;
+            }
+            .date-input-wrapper input[type="date"] {
+                min-width: 0;
+                max-width: 145px;
             }
         }
     </style>
@@ -179,7 +189,7 @@
     <meta name="apple-mobile-web-app-title" content="CMS">
     <meta name="application-name" content="CMS">
     <meta name="theme-color" content="#1e3a8a">
-    <script src="/js/pwa-install.js" defer></script>
+    <script src="/js/pwa-install.js?v=20261124a" defer></script>
 </head>
 <body>
     <!-- Sidebar -->

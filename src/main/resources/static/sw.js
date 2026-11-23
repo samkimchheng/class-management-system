@@ -1,11 +1,10 @@
-// CMS Progressive Web App Service Worker (v4 - Clean Login Card Width in Standalone App)
-const CACHE_NAME = 'cms-pwa-v4';
+// CMS Progressive Web App Service Worker (v5 - Network-First Mobile Screen-Fit Assets)
+const CACHE_NAME = 'cms-pwa-v5';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
-  '/icons/apple-touch-icon.png',
-  '/js/pwa-install.js'
+  '/icons/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -32,8 +31,22 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // Cache-first for static PWA assets; let navigation & API requests flow directly without breaking 302 redirects
-  if (url.pathname.startsWith('/icons/') || url.pathname === '/manifest.json' || url.pathname === '/js/pwa-install.js') {
+  // Network-first for JS/CSS so mobile screen-fit updates reach phones immediately
+  if (url.pathname === '/js/pwa-install.js' || url.pathname === '/css/style.css') {
+    event.respondWith(
+      fetch(req).then((res) => {
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
+        }
+        return res;
+      }).catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Cache-first for static PWA icons & manifest
+  if (url.pathname.startsWith('/icons/') || url.pathname === '/manifest.json') {
     event.respondWith(
       caches.match(req).then((cached) => cached || fetch(req).then((res) => {
         if (res && res.ok) {
