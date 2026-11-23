@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>សៀវភៅណែនាំការប្រើប្រាស់ប្រព័ន្ធគ្រូបន្ទុកថ្នាក់ (Homeroom Suite 2027)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700;800&family=Moul&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Kantumruy Pro', sans-serif;
+            background: #e2e8f0;
+            color: #0f172a;
+            line-height: 1.75;
+            font-size: 14.5px;
+        }
+        .toolbar {
+            position: sticky; top: 0; z-index: 100;
+            background: #0f172a; color: #fff;
+            padding: 12px 22px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+        }
+        .toolbar-title { font-weight: 800; font-size: 1rem; color: #fde68a; }
+        .toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .tbtn {
+            border: none; border-radius: 8px; padding: 8px 14px;
+            font-family: inherit; font-weight: 700; font-size: 0.88rem;
+            text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .tbtn-back { background: #334155; color: #fff; }
+        .tbtn-pdf { background: #16a34a; color: #fff; }
+        .tbtn-print { background: #2563eb; color: #fff; }
+        .tbtn-tg { background: #0284c7; color: #fff; }
+
+        .sheet {
+            max-width: 860px;
+            margin: 24px auto 48px;
+            background: #ffffff;
+            padding: 38px 46px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+        }
+        .moul { font-family: 'Moul', serif; font-weight: 400; }
+
+        .cover-top { text-align: center; line-height: 1.8; margin-bottom: 18px; }
+        .cover-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #0f766e 100%);
+            color: #fff; padding: 28px 24px; border-radius: 14px; text-align: center;
+            margin: 18px 0 22px; border: 2px solid #fbbf24;
+        }
+        .cover-hero h1 { font-family: 'Moul', serif; font-weight: 400; font-size: 1.55rem; margin: 0 0 10px; color: #fde68a; line-height: 1.75; }
+        .cover-hero p { margin: 0; font-size: 0.98rem; color: #e0f2fe; }
+
+        .meta-box {
+            background: #f8fafc; border: 1.5px solid #cbd5e1; border-left: 5px solid #2563eb;
+            border-radius: 10px; padding: 14px 18px; margin-bottom: 22px;
+        }
+
+        h2.chap {
+            background: linear-gradient(90deg, #1e3a8a, #2563eb);
+            color: #fff; padding: 9px 16px; border-radius: 8px;
+            font-size: 1.08rem; font-weight: 800; margin: 26px 0 12px;
+            page-break-after: avoid;
+        }
+        h3.sec {
+            color: #1e3a8a; font-size: 0.98rem; font-weight: 800;
+            margin: 14px 0 6px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 3px;
+            page-break-after: avoid;
+        }
+        ul.steps { margin: 6px 0 12px; padding-left: 22px; }
+        ul.steps li { margin-bottom: 6px; }
+        .tip-box {
+            background: #fefce8; border: 1px solid #fde047; border-left: 5px solid #eab308;
+            border-radius: 8px; padding: 11px 15px; margin: 10px 0 14px; font-size: 0.92rem;
+        }
+        .ok-box {
+            background: #f0fdf4; border: 1px solid #86efac; border-left: 5px solid #16a34a;
+            border-radius: 8px; padding: 11px 15px; margin: 10px 0 14px; font-size: 0.92rem;
+        }
+        table.toc {
+            width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 0.92rem;
+        }
+        table.toc th, table.toc td {
+            border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left;
+        }
+        table.toc th { background: #eff6ff; color: #1e3a8a; font-weight: 800; }
+        .page-break { page-break-after: always; }
+
+        @media print {
+            body { background: #fff !important; font-size: 12.5px; }
+            .toolbar { display: none !important; }
+            .sheet { max-width: 100%; margin: 0; padding: 12px 18px; box-shadow: none; border-radius: 0; }
+            @page { size: A4 portrait; margin: 10mm; }
+        }
+        @media (max-width: 680px) {
+            .sheet { padding: 20px 16px; margin: 12px; }
+        }
+    </style>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+</head>
+<body>
+    <div class="toolbar">
+        <a href="/homeroom" class="tbtn tbtn-back">← ត្រឡប់ទៅគ្រូបន្ទុកថ្នាក់</a>
+        <div class="toolbar-title">🎓 សៀវភៅណែនាំការប្រើប្រាស់ប្រព័ន្ធគ្រូបន្ទុកថ្នាក់ (១០០%)</div>
+        <div class="toolbar-actions">
+            <a href="/docs/homeroom-guide.pdf" download="Homeroom_Teacher_Guide_CMS_2027.pdf" class="tbtn tbtn-pdf">📥 ដោនឡូត PDF</a>
+            <button onclick="window.print()" class="tbtn tbtn-print">🖨️ បោះពុម្ព</button>
+            <a href="/guide" class="tbtn tbtn-back">📘 ណែនាំគ្រូទូទៅ</a>
+            <a href="https://t.me/Kimchheng12" target="_blank" class="tbtn tbtn-tg">✈️ Telegram ជំនួយ</a>
+        </div>
+    </div>
+
+    <div class="sheet">
+        <!-- COVER -->
+        <div class="cover-top">
+            <div class="moul" style="font-size:1.15rem;color:#1e3a8a;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+            <div class="moul" style="font-size:1rem;color:#1e3a8a;">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+            <div style="letter-spacing:3px;color:#64748b;">~❖~</div>
+        </div>
+
+        <div class="cover-hero">
+            <h1>សៀវភៅណែនាំការប្រើប្រាស់ប្រព័ន្ធគ្រូបន្ទុកថ្នាក់<br>(Homeroom Management Suite 2027)</h1>
+            <p>មគ្គទេសក៍លម្អិតទាំង ៩ ផ្នែក — ជួយគ្រូបន្ទុកថ្នាក់ប្រើប្រាស់ប្រព័ន្ធប្រកបដោយប្រសិទ្ធភាព ១០០% តាមស្តង់ដារក្រសួងអប់រំ យុវជន និងកីឡា</p>
+        </div>
+
+        <div class="meta-box">
+            <div>🌐 <b>គេហទំព័រផ្លូវការ៖</b> <a href="https://class.mitpukae.com">https://class.mitpukae.com</a> (អាចដំឡើងជាកម្មវិធី App ឈ្មោះ <b>CMS</b> លើ Android, iOS &amp; កុំព្យូទ័រ)</div>
+            <div>✍️ <b>រៀបចំ និងចងក្រងដោយ៖</b> លោកគ្រូ <b>សំ គឹមឆេង (Sam Kimchheng)</b></div>
+            <div>✈️ <b>Telegram ជំនួយផ្ទាល់៖</b> <a href="https://t.me/Kimchheng12">t.me/Kimchheng12</a> (<b>@Kimchheng12</b>)</div>
+            <div>📅 <b>ឆ្នាំសិក្សា៖</b> ២០២៦ - ២០២៧ (កំណែទម្រង់ចុងក្រោយពេញលេញ)</div>
+        </div>
+
+        <h3 class="sec">មាតិកាមុខងារទាំង ៩ ក្នុងប្រព័ន្ធគ្រូបន្ទុកថ្នាក់</h3>
+        <table class="toc">
+            <thead>
+                <tr><th style="width:20%;">ផ្នែក / Tab</th><th>មុខងារសំខាន់ៗ និងឯកសារ PDF ដែលផលិតបាន</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><b>Tab ១</b></td><td>ទិដ្ឋភាពទូទៅ, កំណត់មុខវិជ្ជាស្តង់ដារ ១ ចុច, និងព័ត៌មានក្បាលលិខិតសាលា</td></tr>
+                <tr><td><b>Tab ២</b></td><td>បញ្ចូលពិន្ទុប្រចាំខែ-ឆមាស និងដោនឡូត <b>តារាងស្រង់ពិន្ទុរួម (PDF A3 ផ្តេក)</b></td></tr>
+                <tr><td><b>Tab ៣</b></td><td>ស្រង់អវត្តមានតាមខែ, <b>ផ្តល់សិទ្ធិប្រធានថ្នាក់</b> និងដោនឡូត <b>PDF A3 ផ្តេក</b></td></tr>
+                <tr><td><b>Tab ៤</b></td><td><b>តារាងចំណាត់ថ្នាក់ (A4 បញ្ឈរ)</b>, <b>តារាងកិត្តិយស ២ ទម្រង់</b> និងប័ណ្ណសរសើរ</td></tr>
+                <tr><td><b>Tab ៥</b></td><td><b>សៀវភៅតាមដាន</b>, <b>ព្រឹត្តិបត្រពិន្ទុ (ខែ/ឆមាស &amp; ឆ្នាំ)</b>, <b>សិក្ខាគារិក</b> + ដោនឡូតសិស្សទាំងអស់ PDF</td></tr>
+                <tr><td><b>Tab ៦</b></td><td>Upload រូបថតសិស្ស, កាតសិស្ស, និង <b>សលាកបត្រឯកត្តជន (A4 បញ្ឈរ ២ ច្បាប់)</b></td></tr>
+                <tr><td><b>Tab ៧</b></td><td>វេនសម្អាតប្រចាំសប្តាហ៍, <b>ប្លង់តុអង្គុយ (១ តុ ២ នាក់)</b> និងក្រុមប្រឹក្សាយុវជន</td></tr>
+                <tr><td><b>Tab ៨ &amp; ៩</b></td><td>បញ្ជីសម្ភារៈថ្នាក់, ខ្ចី-សងសៀវភៅពុម្ព, ផែនការ GEIP និងកំណត់ហេតុប្រជុំ</td></tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <!-- TAB 1 -->
+        <h2 class="chap">ផ្នែកទី ១ (Tab ១)៖ ការចាប់ផ្តើមដំបូង — កំណត់មុខវិជ្ជា និងព័ត៌មានសាលា</h2>
+        <ul class="steps">
+            <li><b>ជំហានទី ១ (ជ្រើសថ្នាក់ និងឆ្នាំសិក្សា)៖</b> នៅរបារខាងលើបង្អស់ សូមជ្រើសថ្នាក់ដែលលោកគ្រូទទួលបន្ទុក (ឧ. <code>10E</code>) និងឆ្នាំសិក្សា (ឧ. <code>២០២៦-២០២៧</code>)។ *(បញ្ជីសិស្សត្រូវបញ្ចូលជាមុនក្នុងម៉ឺនុយ «បញ្ជីឈ្មោះសិស្ស»)*។</li>
+            <li><b>ជំហានទី ២ (បង្កើតមុខវិជ្ជាក្នុង ១ ចុច)៖</b> ចុចប៊ូតុង <b>⚡ ថ្នាក់ទី៧-៩</b>, <b>⚡ ថ្នាក់ទី១០</b> ឬ <b>⚡ ថ្នាក់ទី១១-១២</b> ដើម្បីបង្កើតមុខវិជ្ជាស្តង់ដារក្រសួងអប់រំ ពិន្ទុពេញ និងមេគុណដោយស្វ័យប្រវត្តិ។ អាចចុច <b>✏️ កែ</b> ដើម្បីបំពេញឈ្មោះគ្រូតាមមុខវិជ្ជានីមួយៗ។</li>
+            <li><b>ជំហានទី ៣ (ព័ត៌មានក្បាលលិខិតផ្លូវការ)៖</b> បំពេញឈ្មោះ <code>មន្ទីរអប់រំ</code>, <code>ឈ្មោះសាលា</code>, <code>ឈ្មោះនាយកសាលា</code>, <code>កាលបរិច្ឆេទចន្ទគតិ-សុរិយគតិ</code> រួចចុច <b>💾 រក្សាទុកការកំណត់</b>។ ទិន្នន័យនេះនឹងលោតចូលគ្រប់ឯកសារ PDF ទាំងអស់ដោយស្វ័យប្រវត្តិ!</li>
+        </ul>
+
+        <!-- TAB 2 -->
+        <h2 class="chap">ផ្នែកទី ២ (Tab ២)៖ បញ្ចូលពិន្ទុប្រចាំខែ-ឆមាស &amp; តារាងស្រង់ពិន្ទុរួម (A3 PDF)</h2>
+        <ul class="steps">
+            <li>ជ្រើសរើសរយៈពេលពិន្ទុ៖ <b>ខែវិច្ឆិកា (M1) ដល់ ខែសីហា (M10)</b>, <b>ប្រឡងឆមាសទី១ (EXAM_S1)</b> ឬ <b>ប្រឡងឆមាសទី២ (EXAM_S2)</b>។</li>
+            <li>បញ្ចូលពិន្ទុតាមមុខវិជ្ជានីមួយៗ — ប្រព័ន្ធនឹងគណនា <b>ពិន្ទុសរុប, មធ្យមភាគ, និទ្ទេស (A–F), ចំណាត់ថ្នាក់</b> និងស្ថិតិជាប់/ធ្លាក់ភ្លាមៗ។</li>
+            <li>ចុច <b>💾 រក្សាទុកពិន្ទុ</b> រាល់ពេលបញ្ចូលរួច។</li>
+            <li>ចុច <b>📥 ដោនឡូត PDF (A3 ផ្តេក)</b> ដើម្បីទាញយកតារាងស្រង់ពិន្ទុរួមផ្លូវការក្រសួងអប់រំ ១០០% ពេញទំព័រ A3 ផ្តេកស្អាត។</li>
+        </ul>
+
+        <!-- TAB 3 -->
+        <h2 class="chap">ផ្នែកទី ៣ (Tab ៣)៖ បញ្ជីស្រង់អវត្តមានតាមខែ &amp; ផ្តល់សិទ្ធិប្រធានថ្នាក់</h2>
+        <ul class="steps">
+            <li>ជ្រើសរើសខែដែលត្រូវស្រង់ → ចុចលើប្រអប់ថ្ងៃទី ១–៣១ របស់សិស្សម្នាក់ៗ ដើម្បីប្តូរស្ថានភាព៖ <b>ទទេ (មករៀន) → ច (មានច្បាប់) → អ (អត់ច្បាប់)</b>។</li>
+            <li>ឈ្មោះសិស្ស និងលេខរៀងនៅជាប់ខាងឆ្វេងជានិច្ច ហើយអាចអូសថ្ងៃទី ១ ដល់ថ្ងៃចុងខែមកកៀកឈ្មោះសិស្សបានយ៉ាងងាយស្រួលទាំងលើទូរស័ព្ទ និងកុំព្យូទ័រ។</li>
+            <li><b>👑 ផ្តល់សិទ្ធិឱ្យប្រធានថ្នាក់ជួយស្រង់៖</b> ជ្រើសឈ្មោះប្រធានថ្នាក់ក្នុងប្រអប់ <b>«ប្រធានថ្នាក់»</b> រួចចុច <b>💾 កំណត់ប្រធានថ្នាក់</b>។ ពេលសិស្សនោះចូលគណនីសិស្ស (<code>/test</code>) គាត់នឹងឃើញប៊ូតុង <b>📋 ស្រង់អវត្តមានតាមខែ (ប្រធានថ្នាក់)</b> នៅខាងឆ្វេងប៊ូតុង «ពិន្ទុ &amp; និទ្ទេស» ដើម្បីជួយស្រង់រៀងរាល់ថ្ងៃ។</li>
+            <li>ចុច <b>💾 រក្សាទុកអវត្តមានខែនេះ</b> និងចុច <b>📥 ដោនឡូត PDF (A3 ផ្តេក)</b> ដើម្បីបោះពុម្ពតារាងវត្តមានប្រចាំខែ។</li>
+        </ul>
+
+        <!-- TAB 4 -->
+        <h2 class="chap">ផ្នែកទី ៤ (Tab ៤)៖ ចំណាត់ថ្នាក់ តារាងកិត្តិយស &amp; ប័ណ្ណសរសើរ</h2>
+        <ul class="steps">
+            <li><b>តារាងចំណាត់ថ្នាក់ (ខែ / ឆមាស / ប្រចាំឆ្នាំ)៖</b> ទិន្នន័យរៀបតាមលំដាប់ចំណាត់ថ្នាក់ពី <b>លេខ ១ ដល់ចុងក្រោយ</b> ជាទម្រង់ ២ ជួរឈរលើក្រដាស <b>A4 បញ្ឈរ ១ សន្លឹកពេញស្អាត</b> ព្រមទាំងតារាងសង្ខេបនិទ្ទេស A–F។</li>
+            <li><b>តារាងកិត្តិយស (២ ទម្រង់ផ្លូវការ A4 បញ្ឈរ)៖</b>
+                <ul>
+                    <li><b>ទម្រង់ទី ១ (គ្មានរូបថត)</b>៖ ប្រើបានភ្លាមៗសម្រាប់ Top 5 ប្រចាំខែ ឆមាស ឬឆ្នាំ។</li>
+                    <li><b>ទម្រង់ទី ២ (មានប្រអប់រូបថត ៤×៦)</b>៖ ទាញយករូបថតសិស្ស Top 5 ដោយស្វ័យប្រវត្តិពី <b>Tab ៦</b>!</li>
+                </ul>
+            </li>
+            <li><b>ប័ណ្ណសរសើរ៖</b> អាចបង្កើតសម្រាប់ Top 5 ទាំងអស់ ឬជ្រើសសិស្សម្នាក់ៗ ដោយជ្រើសពណ៌ស៊ុម (ខៀវ / ក្រហម / មាស)។</li>
+        </ul>
+
+        <!-- TAB 5 -->
+        <h2 class="chap">ផ្នែកទី ៥ (Tab ៥)៖ ព្រឹត្តិបត្រពិន្ទុ សៀវភៅតាមដាន &amp; សិក្ខាគារិក (១-Click All PDF)</h2>
+        <ul class="steps">
+            <li><b>📘 សៀវភៅតាមដានការសិក្សា (A4 បញ្ឈរ ១ សន្លឹក)៖</b> ជ្រើសខែ/ឆមាស/ឆ្នាំ មានពិន្ទុ ចំណាត់ថ្នាក់តាមមុខវិជ្ជា និទ្ទេស អវត្តមាន មូលវិចារគ្រូ និងមតិអាណាព្យាបាលពេញក្រដាសស្អាត។</li>
+            <li><b>📄 ព្រឹត្តិបត្រពិន្ទុ ប្រចាំខែ / ឆមាស (A4 បញ្ឈរ ពណ៌ខៀវ-ក្រហម)៖</b> តារាង ៩ ជួរឈរ (`និទ្ទេស A–F`), ពិន្ទុសរុប, មធ្យមភាគ, ចំណាត់ថ្នាក់, អវត្តមាន និងមតិអាណាព្យាបាល។</li>
+            <li><b>📄 ព្រឹត្តិបត្រពិន្ទុ ប្រចាំឆ្នាំសិក្សា (A4 បញ្ឈរ ស៊ុមខ្មៅ)៖</b> បង្ហាញពិន្ទុ និងចំណាត់ថ្នាក់ `ឆមាសទី១ / ឆមាសទី២ / ប្រចាំឆ្នាំ`, សីលធម៌, ពលកម្ម, សុខភាព និងអវត្តមានសរុប។</li>
+            <li><b>📕 សៀវភៅសិក្ខាគារិក (A4 ផ្តេក ២ ជួរឈរស្មើគ្នា)៖</b> ទម្រង់ផ្លូវការក្រសួងអប់រំ ១ សិស្ស = ១ ទំព័រ A4 ផ្តេក។</li>
+        </ul>
+        <div class="ok-box">
+            💡 <b>ប៊ូតុងពិសេស 📚 ដោនឡូតសិស្សទាំងអស់ (PDF)៖</b> លោកគ្រូមិនបាច់ដោនឡូតម្តងម្នាក់ទេ! ចុចតែ ១ ដង ប្រព័ន្ធនឹងបង្កើតឯកសារ PDF រួមមួយសម្រាប់សិស្សទាំងអស់ក្នុងថ្នាក់ (១ សិស្ស = ១ ទំព័រ គ្មានទំព័រទទេ) រួចអាចព្រីនតែម្តង!
+        </div>
+
+        <!-- TAB 6 -->
+        <h2 class="chap">ផ្នែកទី ៦ (Tab ៦)៖ Upload រូបថតសិស្ស កាតសិស្ស &amp; សលាកបត្រឯកត្តជន</h2>
+        <ul class="steps">
+            <li><b>បំពេញប្រវត្តិបន្ថែម &amp; Upload រូបថត៖</b> ចុច <code>Choose File</code> ដើម្បី Upload រូបថតសិស្ស — រូបថតនឹងលោតចូល <b>តារាងកិត្តិយស ទម្រង់ទី ២</b>, <b>កាតសិស្ស</b> និង <b>សលាកបត្រឯកត្តជន</b> ដោយស្វ័យប្រវត្តិ។ អាចបំពេញថ្ងៃកំណើត ទីកន្លែងកំណើត លេខទូរស័ព្ទ និងមតិគ្រូបន្ទុកថ្នាក់ រួចចុច <b>💾</b>។</li>
+            <li><b>📄 សលាកបត្រឯកត្តជន (Salakabat A4 បញ្ឈរ ២ ច្បាប់)៖</b> រៀបចំ ២ ច្បាប់លើក្រដាស A4 បញ្ឈរ ១ សន្លឹក ខណ្ឌដោយបន្ទាត់កាត់ — ចុច <b>📥 ដោនឡូត PDF</b> (សិស្សម្នាក់) ឬ <b>📚 ដោនឡូតសិស្សទាំងអស់ (PDF)</b>។</li>
+        </ul>
+
+        <!-- TAB 7, 8, 9 -->
+        <h2 class="chap">ផ្នែកទី ៧, ៨ &amp; ៩៖ រដ្ឋបាលថ្នាក់ សម្ភារៈ សៀវភៅពុម្ព GEIP &amp; កំណត់ហេតុប្រជុំ</h2>
+        <ul class="steps">
+            <li><b>Tab ៧ (វេនសម្អាត ប្លង់តុ &amp; ក្រុមប្រឹក្សាយុវជន)៖</b> ចុច <b>⚡ ចែកវេនសម្អាតស្វ័យប្រវត្តិ</b>, រៀប <b>ប្លង់តុអង្គុយ ១ តុ ២ នាក់ (ឆ្វេង-ស្តាំ)</b> ដោយចុច <b>⚡ រៀបតុសិស្សស្វ័យប្រវត្តិ</b>, និងកត់ត្រាគណៈកម្មការថ្នាក់ រួចចុច <b>💾 រក្សាទុក</b>។</li>
+            <li><b>Tab ៨ (សម្ភារៈ &amp; សៀវភៅពុម្ព)៖</b> គ្រប់គ្រងបញ្ជីសម្ភារៈក្នុងថ្នាក់ (តុ កៅអី ក្តារខៀន កង្ហារ...) និងតាមដានការខ្ចី-សងសៀវភៅពុម្ពរបស់សិស្សម្នាក់ៗ។</li>
+            <li><b>Tab ៩ (ផែនការ GEIP &amp; កំណត់ហេតុប្រជុំ)៖</b> រៀបចំផែនការសិស្ស GEIP (៣ឆ្នាំ / ១ឆ្នាំ / ត្រីមាស ១–៤) និងកត់ត្រាសៀវភៅកំណត់ហេតុប្រជុំជីវភាពថ្នាក់។</li>
+        </ul>
+
+        <div class="tip-box">
+            <b>🏆 លំដាប់ការងារណែនាំដើម្បីប្រសិទ្ធភាព ១០០%៖</b><br>
+            ១. <b>ដើមឆ្នាំសិក្សា៖</b> បញ្ចូលសិស្ស → Tab ១ កំណត់មុខវិជ្ជា &amp; ក្បាលលិខិត → Tab ៣ កំណត់ប្រធានថ្នាក់ → Tab ៦ Upload រូបថតសិស្ស → Tab ៧ រៀបវេនសម្អាត &amp; ប្លង់តុ។<br>
+            ២. <b>ប្រចាំខែ៖</b> ប្រធានថ្នាក់ស្រង់អវត្តមានប្រចាំថ្ងៃ → ចុងខែគ្រូបញ្ចូលពិន្ទុ Tab ២ → ចុចដោនឡូត PDF ភ្លាមៗ (តារាងពិន្ទុ, វត្តមាន, ចំណាត់ថ្នាក់, តារាងកិត្តិយស, សៀវភៅតាមដាន/ព្រឹត្តិបត្រពិន្ទុ)។<br>
+            ៣. <b>ចុងឆមាស / ចុងឆ្នាំ៖</b> បញ្ចូលពិន្ទុប្រឡងឆមាស → ចុច <b>📚 ដោនឡូតសិស្សទាំងអស់ (PDF)</b> សម្រាប់ព្រឹត្តិបត្រពិន្ទុប្រចាំឆ្នាំ និងសៀវភៅសិក្ខាគារិកក្នុងតែ ១ ចុច!
+        </div>
+    </div>
+</body>
+</html>

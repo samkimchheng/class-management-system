@@ -465,6 +465,11 @@ public class WebController {
         return "guide";
     }
 
+    @GetMapping({"/homeroom/guide", "/homeroom-guide"})
+    public String homeroomGuidePage() {
+        return "homeroom-guide";
+    }
+
     public boolean checkTeacherHasTeaching(Long accountId, String classNameFilter, java.time.LocalDate targetDate, java.util.concurrent.atomic.AtomicReference<String> reasonRef) {
         if (targetDate == null) {
             targetDate = java.time.LocalDate.now();

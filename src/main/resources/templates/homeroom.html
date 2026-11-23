@@ -768,6 +768,7 @@
             <li class="nav-item"><a href="/lessons" class="nav-link"><span>📚</span> <span>មើលមេរៀន</span></a></li>
             <li class="nav-item"><a href="/schedule" class="nav-link"><span>🗓️</span> <span>កាលវិភាគ</span></a></li>
             <li class="nav-item"><a href="/report" class="nav-link"><span>📑</span> <span>របាយការណ៍</span></a></li>
+            <li class="nav-item"><a href="/homeroom/guide" class="nav-link" style="color:#fde68a;"><span>📖</span> <span>សៀវភៅណែនាំគ្រូបន្ទុក (.pdf)</span></a></li>
             <li class="nav-item"><a href="/logout" class="nav-link" style="color:#fca5a5;"><span>🚪</span> <span>ចាកចេញ</span></a></li>
         </ul>
     </aside>
@@ -787,6 +788,7 @@
                 </select>
                 <input type="hidden" id="hrAcademicYear" th:value="${academicYear}">
                 <span class="hr-badge" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;" th:text="'ឆ្នាំសិក្សា ' + ${academicYear}">ឆ្នាំសិក្សា ២០២៦-២០២៧</span>
+                <a href="/homeroom/guide" class="btn btn-primary btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">📖 សៀវភៅណែនាំការប្រើប្រាស់ (.pdf)</a>
                 <button class="btn btn-outline btn-sm" onclick="downloadJsonBackup()">💾 រក្សាទុកបម្រុង</button>
             </div>
         </header>
