@@ -1,5 +1,5 @@
-// CMS Progressive Web App Service Worker (v5 - Network-First Mobile Screen-Fit Assets)
-const CACHE_NAME = 'cms-pwa-v5';
+// CMS Progressive Web App Service Worker (v6 - Mobile Bottom Nav + Network-First Assets)
+const CACHE_NAME = 'cms-pwa-v6';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon-192.png',

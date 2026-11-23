@@ -157,40 +157,198 @@
                         padding: 5px 8px !important;
                     }
                 }
+                /* Native-Style Mobile Bottom Navigation Bar (Matches Mitpukae App UI) */
+                #cmsMobileBottomNav {
+                    display: none;
+                }
+                @media screen and (max-width: 992px) {
+                    body.cms-has-bottom-nav .content {
+                        padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+                    }
+                    body.cms-has-bottom-nav #cmsPwaInstallWrap {
+                        bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
+                    }
+                    #cmsMobileBottomNav {
+                        display: flex !important;
+                        position: fixed;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        width: 100%;
+                        max-width: 100vw;
+                        background: #ffffff;
+                        border-top: 1px solid #e2e8f0;
+                        box-shadow: 0 -4px 18px rgba(15, 23, 42, 0.08);
+                        padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)) 4px;
+                        z-index: 1030;
+                        align-items: stretch;
+                        justify-content: space-around;
+                        box-sizing: border-box;
+                    }
+                    .cms-bnav-item {
+                        flex: 1 1 0%;
+                        min-width: 0;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 3px;
+                        padding: 4px 2px 3px;
+                        text-decoration: none !important;
+                        color: #64748b;
+                        background: transparent;
+                        border: none;
+                        font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+                        cursor: pointer;
+                        position: relative;
+                        -webkit-tap-highlight-color: transparent;
+                        transition: color 0.15s ease, transform 0.12s ease;
+                    }
+                    .cms-bnav-item:active {
+                        transform: scale(0.94);
+                    }
+                    .cms-bnav-item.active {
+                        color: #1d4ed8 !important;
+                        font-weight: 800;
+                    }
+                    .cms-bnav-item.active::before {
+                        content: '';
+                        position: absolute;
+                        top: -6px;
+                        left: 22%;
+                        right: 22%;
+                        height: 3px;
+                        border-radius: 0 0 4px 4px;
+                        background: #2563eb;
+                    }
+                    .cms-bnav-icon {
+                        font-size: 1.32rem;
+                        line-height: 1.15;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        height: 26px;
+                    }
+                    .cms-bnav-label {
+                        font-size: 0.72rem;
+                        font-weight: 700;
+                        line-height: 1.2;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        max-width: 100%;
+                    }
+                }
+                @media print {
+                    #cmsMobileBottomNav { display: none !important; }
+                }
             `;
             document.head.appendChild(st);
         }
 
-        // Auto-wire mobile sidebar toggle on any page with .sidebar + .topbar missing a menu button,
-        // and auto-wrap unwrapped wide tables on mobile so ZERO pages overflow horizontally
+        // Auto-wire mobile sidebar toggle, bottom navigation bar, and table scroll wrappers
         document.addEventListener('DOMContentLoaded', () => {
             try {
                 const sidebar = document.querySelector('.sidebar');
                 const topbar = document.querySelector('.topbar');
-                if (sidebar && topbar && !topbar.querySelector('.mobile-menu-btn, .btn-hamburger, .btn-menu-mob')) {
-                    let backdrop = document.querySelector('.mobile-sidebar-backdrop');
+
+                const openCloseSidebar = (open) => {
+                    if (!sidebar) return;
+                    if (typeof window.toggleSidebar === 'function') {
+                        window.toggleSidebar(open);
+                        return;
+                    }
+                    let backdrop = document.querySelector('.mobile-sidebar-backdrop, .sidebar-overlay');
                     if (!backdrop) {
                         backdrop = document.createElement('div');
                         backdrop.className = 'mobile-sidebar-backdrop';
                         document.body.appendChild(backdrop);
+                        backdrop.addEventListener('click', () => openCloseSidebar(false));
                     }
+                    sidebar.classList.toggle('mobile-open', open);
+                    sidebar.classList.toggle('open', open);
+                    backdrop.classList.toggle('active', open);
+                    backdrop.classList.toggle('show', open);
+                };
+
+                if (sidebar && topbar && !topbar.querySelector('.mobile-menu-btn, .btn-hamburger, .btn-menu-mob')) {
                     const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'mobile-menu-btn';
                     btn.setAttribute('aria-label', 'បើកម៉ឺនុយ');
                     btn.textContent = '☰';
-                    const toggle = (open) => {
-                        sidebar.classList.toggle('mobile-open', open);
-                        sidebar.classList.toggle('open', open);
-                        backdrop.classList.toggle('active', open);
-                    };
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        toggle(!sidebar.classList.contains('mobile-open') && !sidebar.classList.contains('open'));
+                        const isOpen = sidebar.classList.contains('mobile-open') || sidebar.classList.contains('open');
+                        openCloseSidebar(!isOpen);
                     });
-                    backdrop.addEventListener('click', () => toggle(false));
                     const left = topbar.querySelector('.topbar-left') || topbar;
                     left.insertBefore(btn, left.firstChild);
+                }
+
+                // Inject Mobile Bottom Navigation Bar on all dashboard pages that have a .sidebar
+                if (sidebar && !document.getElementById('cmsMobileBottomNav') && !document.body.classList.contains('is-student')) {
+                    const p = window.location.pathname || '/';
+                    const isAdminPage = p.startsWith('/admin');
+                    const hasHomeroom = !!sidebar.querySelector('a[href="/homeroom"]');
+
+                    let navItems;
+                    if (isAdminPage) {
+                        navItems = [
+                            { href: '/admin', icon: '📊', label: 'ទំព័រដើម', match: (path) => path === '/admin' || path === '/admin/' },
+                            { href: '/admin/teacher-activity', icon: '📈', label: 'តាមដានគ្រូ', match: (path) => path.startsWith('/admin/teacher-activity') },
+                            { href: '/admin/accounts', icon: '👥', label: 'គណនីគ្រូ', match: (path) => path.startsWith('/admin/accounts') },
+                            { href: '/admin/score-sheets', icon: '📋', label: 'ស្រង់ពិន្ទុ', match: (path) => path.startsWith('/admin/score-sheets') },
+                            { action: 'menu', icon: '☰', label: 'ម៉ឺនុយ', match: () => false }
+                        ];
+                    } else if (hasHomeroom) {
+                        navItems = [
+                            { href: '/', icon: '📊', label: 'ទំព័រដើម', match: (path) => path === '/' },
+                            { href: '/students', icon: '🎓', label: 'សិស្ស', match: (path) => path.startsWith('/students') },
+                            { href: '/attendance', icon: '✅', label: 'វត្តមាន', match: (path) => path.startsWith('/attendance') },
+                            { href: '/homeroom', icon: '📋', label: 'គ្រូបន្ទុក', match: (path) => path.startsWith('/homeroom') },
+                            { action: 'menu', icon: '☰', label: 'ម៉ឺនុយ', match: () => false }
+                        ];
+                    } else {
+                        navItems = [
+                            { href: '/', icon: '📊', label: 'ទំព័រដើម', match: (path) => path === '/' },
+                            { href: '/students', icon: '🎓', label: 'សិស្ស', match: (path) => path.startsWith('/students') },
+                            { href: '/attendance', icon: '✅', label: 'វត្តមាន', match: (path) => path.startsWith('/attendance') },
+                            { href: '/report', icon: '📋', label: 'របាយការណ៍', match: (path) => path.startsWith('/report') },
+                            { action: 'menu', icon: '☰', label: 'ម៉ឺនុយ', match: () => false }
+                        ];
+                    }
+
+                    const nav = document.createElement('nav');
+                    nav.id = 'cmsMobileBottomNav';
+                    nav.className = 'no-print';
+                    nav.setAttribute('aria-label', 'ម៉ឺនុយខាងក្រោម');
+
+                    navItems.forEach((item) => {
+                        const isActive = item.match(p);
+                        if (item.action === 'menu') {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'cms-bnav-item';
+                            btn.innerHTML = `<span class="cms-bnav-icon">${item.icon}</span><span class="cms-bnav-label">${item.label}</span>`;
+                            btn.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const isOpen = sidebar.classList.contains('mobile-open') || sidebar.classList.contains('open');
+                                openCloseSidebar(!isOpen);
+                            });
+                            nav.appendChild(btn);
+                        } else {
+                            const a = document.createElement('a');
+                            a.href = item.href;
+                            a.className = 'cms-bnav-item' + (isActive ? ' active' : '');
+                            a.innerHTML = `<span class="cms-bnav-icon">${item.icon}</span><span class="cms-bnav-label">${item.label}</span>`;
+                            nav.appendChild(a);
+                        }
+                    });
+
+                    document.body.appendChild(nav);
+                    document.body.classList.add('cms-has-bottom-nav');
                 }
 
                 if (window.innerWidth <= 992) {
