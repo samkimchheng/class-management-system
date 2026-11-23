@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="km" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>តាមដានការប្រើប្រាស់គ្រូ - Admin CMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Kantumruy Pro', sans-serif; background-color: #f0f2f5; display: flex; }
+
+        .sidebar { width: 260px; background-color: #1e293b; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.2); position: fixed; height: 100vh; z-index: 100; color: white; transition: transform 0.25s ease; }
+        .sidebar-header { padding: 25px 20px; text-align: center; background-color: #0f172a; border-bottom: 1px solid #334155; }
+        .sidebar-header h2 { margin: 0; font-size: 1.4rem; font-weight: 700; color: #38bdf8; }
+        .nav-menu { list-style: none; padding: 0; margin: 0; flex: 1; overflow-y: auto; }
+        .nav-item { border-bottom: 1px solid #334155; }
+        .nav-link { display: block; padding: 14px 20px; color: #cbd5e1; text-decoration: none; font-weight: 600; font-size: 0.96rem; border-left: 4px solid transparent; transition: all 0.2s; }
+        .nav-link:hover { background-color: #334155; color: white; }
+        .nav-item.active .nav-link { background-color: #334155; color: white; border-left-color: #6366f1; }
+
+        .main-content { margin-left: 260px; flex: 1; min-height: 100vh; width: calc(100% - 260px); }
+        .topbar { background: white; padding: 14px 26px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; position: sticky; top: 0; z-index: 50; }
+        .topbar h3 { margin: 0; color: var(--dark); font-size: 1.15rem; }
+        .content { padding: 22px 26px 40px; }
+
+        .filter-bar {
+            background: #fff; border-radius: 12px; padding: 14px 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 18px;
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+        }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .range-btn {
+            border: 1.5px solid #cbd5e1; background: #f8fafc; color: #334155;
+            padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 0.88rem;
+            cursor: pointer; font-family: inherit; transition: all 0.15s;
+        }
+        .range-btn.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; box-shadow: 0 3px 10px rgba(29,78,216,0.28); }
+        .filter-input {
+            padding: 7px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px;
+            font-family: inherit; font-size: 0.88rem; background: #fff; color: #0f172a;
+        }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(225px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .kpi-card {
+            background: #fff; border-radius: 12px; padding: 18px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid var(--primary);
+        }
+        .kpi-label { font-size: 0.88rem; font-weight: 700; color: #64748b; margin-bottom: 6px; }
+        .kpi-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+        .kpi-val { font-size: 1.65rem; font-weight: 800; color: #0f172a; }
+        .kpi-pct { font-size: 1.15rem; font-weight: 800; padding: 2px 10px; border-radius: 999px; }
+        .bar-track { width: 100%; height: 9px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 10px; }
+        .bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+
+        .panel { background: #fff; border-radius: 12px; padding: 18px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .panel-title { margin: 0 0 14px 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+        .feature-stat-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; }
+        .feature-stat-top { display: flex; justify-content: space-between; align-items: center; font-size: 0.86rem; font-weight: 700; color: #1e293b; gap: 6px; }
+
+        .table-wrap { overflow-x: auto; }
+        table.act-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        table.act-table th {
+            background: #f1f5f9; color: #1e293b; font-weight: 800; text-align: left;
+            padding: 11px 10px; border-bottom: 2px solid #cbd5e1; white-space: nowrap;
+        }
+        table.act-table td {
+            padding: 11px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: top; color: #1e293b;
+        }
+        table.act-table tr:hover td { background: #f8fafc; }
+
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+        .badge-hr { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .badge-reg { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        .badge-on { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .badge-off { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+
+        .feat-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+        .feat-pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;
+            padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+        }
+        .feat-pill.hr-pill { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+        .feat-pill .cnt { background: #1d4ed8; color: #fff; border-radius: 999px; padding: 0 5px; font-size: 0.7rem; }
+        .feat-pill.hr-pill .cnt { background: #d97706; }
+
+        .mini-pct-wrap { min-width: 115px; }
+        .mini-pct-label { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 3px; }
+        .mini-bar { height: 7px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+        .mini-bar-fill { height: 100%; border-radius: 999px; }
+
+        .sys-mini { font-size: 0.78rem; color: #475569; line-height: 1.55; }
+        .btn-menu-mob { display: none; background: #1e293b; color: #fff; border: none; border-radius: 8px; padding: 7px 12px; font-size: 1.1rem; cursor: pointer; }
+
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; width: 100%; }
+            .btn-menu-mob { display: inline-block; }
+            .content { padding: 14px 12px 30px; }
+        }
+    </style>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <script src="/js/pwa-install.js" defer></script>
+</head>
+<body>
+    <div class="sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <h2>អ្នកគ្រប់គ្រងប្រព័ន្ធ</h2>
+            <div style="margin-top: 10px; font-size: 0.92rem; color: #a5b4fc; text-align: center;">
+                <span th:if="${session.ACCOUNT_NAME != null}">សួស្តី, <b th:text="${session.ACCOUNT_NAME}">Admin</b></span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/admin" class="nav-link"><span>📊</span> <span>Dashboard ទូទៅ</span></a></li>
+            <li class="nav-item active"><a href="/admin/teacher-activity" class="nav-link"><span>📈</span> <span>តាមដានការប្រើប្រាស់គ្រូ</span></a></li>
+            <li class="nav-item"><a href="/admin/accounts" class="nav-link"><span>👥</span> <span>គ្រប់គ្រងគណនីគ្រូ</span></a></li>
+            <li class="nav-item"><a href="/admin/score-sheets" class="nav-link"><span>📋</span> <span>បញ្ជីស្រង់ពិន្ទុសិស្ស (PDF)</span></a></li>
+            <li class="nav-item"><a href="/admin/english-learners" class="nav-link"><span>🎓</span> <span>អ្នករៀនអង់គ្លេសក្រៅថ្នាក់</span></a></li>
+            <li class="nav-item"><a href="/admin/feedbacks" class="nav-link"><span>💬</span> <span>មតិកែលម្អពីគ្រូៗ</span></a></li>
+            <li class="nav-item"><a href="/phonics" class="nav-link"><span>🗣️</span> <span>គ្រប់គ្រងប្រកបអង់គ្លេស (Phonics)</span></a></li>
+            <li class="nav-item"><a href="/vocabulary" class="nav-link"><span>🔤</span> <span>គ្រប់គ្រងវាក្យសព្ទ (Vocab)</span></a></li>
+            <li class="nav-item"><a href="/" target="_blank" class="nav-link"><span>🏫</span> <span>ចូលមើលទំព័រសាលា &nearr;</span></a></li>
+        </ul>
+        <div class="sidebar-bottom" style="border-top: 1px solid #334155; background-color: #0f172a; margin-top: auto;">
+            <ul class="nav-menu" style="overflow-y: visible; flex: none;">
+                <li class="nav-item"><a href="/logout" class="nav-link" style="color: #ef4444;"><span>🚪</span> <span>ចាកចេញ (Logout)</span></a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <button class="btn-menu-mob" onclick="document.getElementById('adminSidebar').classList.toggle('open')">☰</button>
+                <h3>📈 តាមដានការប្រើប្រាស់ប្រព័ន្ធរបស់គ្រូបង្រៀន និងគ្រូបន្ទុកថ្នាក់</h3>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <button class="range-btn active" onclick="loadActivityData()">🔄 ផ្ទុកឡើងវិញ</button>
+                <a href="/logout" style="background:#fee2e2;color:#b91c1c;text-decoration:none;font-weight:700;padding:7px 14px;border-radius:8px;font-size:0.86rem;border:1px solid #fecaca;">🚪 ចាកចេញ</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- FILTER BAR -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <button class="range-btn active" data-range="TODAY" onclick="selectRange('TODAY', this)">📅 ថ្ងៃនេះ</button>
+                    <button class="range-btn" data-range="7D" onclick="selectRange('7D', this)">📆 ៧ ថ្ងៃចុងក្រោយ</button>
+                    <button class="range-btn" data-range="30D" onclick="selectRange('30D', this)">🗓️ ៣០ ថ្ងៃចុងក្រោយ</button>
+                    <button class="range-btn" data-range="ALL" onclick="selectRange('ALL', this)">🌐 សរុបទាំងអស់</button>
+                    <input type="date" id="datePicker" class="filter-input" onchange="selectExactDate(this.value)" title="ជ្រើសថ្ងៃជាក់លាក់">
+                </div>
+                <div class="filter-group">
+                    <select id="roleFilter" class="filter-input" onchange="renderFilteredTable()">
+                        <option value="ALL">តួនាទី៖ ទាំងអស់</option>
+                        <option value="HOMEROOM">👑 គ្រូបន្ទុកថ្នាក់</option>
+                        <option value="REGULAR">👨‍🏫 គ្រូបង្រៀនធម្មតា</option>
+                    </select>
+                    <select id="statusFilter" class="filter-input" onchange="renderFilteredTable()">
+                        <option value="ALL">ស្ថានភាព៖ ទាំងអស់</option>
+                        <option value="USED">🟢 បានចូលប្រើ</option>
+                        <option value="NOT_USED">⚪ មិនទាន់ចូលប្រើ</option>
+                    </select>
+                    <input type="text" id="searchTeacher" class="filter-input" placeholder="🔍 ស្វែងរកឈ្មោះគ្រូ..." oninput="renderFilteredTable()">
+                </div>
+            </div>
+
+            <!-- KPI CARDS -->
+            <div class="kpi-grid">
+                <div class="kpi-card" style="border-left-color:#2563eb;">
+                    <div class="kpi-label">👥 ការចូលប្រើប្រាស់សរុប (<span id="lblRange">ថ្ងៃនេះ</span>)</div>
+                    <div class="kpi-row">
+                        <div class="kpi-val"><span id="kpiActive">0</span> / <span id="kpiTotal">0</span> នាក់</div>
+                        <div class="kpi-pct" id="kpiPct" style="background:#dbeafe;color:#1d4ed8;">0%</div>
+                    </div>
+                    <div class="bar-track"><div class="bar-fill" id="kpiBar" style="width:0%;background:#2563eb;"></div></div>
+                </div>
+
+                <div class="kpi-card" style="border-left-color:#f59e0b;">
+                    <div class="kpi-label">👑 គ្រូបន្ទុកថ្នាក់បានចូលប្រើ</div>
+                    <div class="kpi-row">
+                        <div class="kpi-val"><span id="kpiHrActive">0</span> / <span id="kpiHrTotal">0</span> នាក់</div>
+                        <div class="kpi-pct" id="kpiHrPct" style="background:#fef3c7;color:#b45309;">0%</div>
+                    </div>
+                    <div class="bar-track"><div class="bar-fill" id="kpiHrBar" style="width:0%;background:#f59e0b;"></div></div>
+                </div>
+
+                <div class="kpi-card" style="border-left-color:#10b981;">
+                    <div class="kpi-label">👨‍🏫 គ្រូបង្រៀនធម្មតាបានចូលប្រើ</div>
+                    <div class="kpi-row">
+                        <div class="kpi-val"><span id="kpiRegActive">0</span> / <span id="kpiRegTotal">0</span> នាក់</div>
+                        <div class="kpi-pct" id="kpiRegPct" style="background:#dcfce7;color:#15803d;">0%</div>
+                    </div>
+                    <div class="bar-track"><div class="bar-fill" id="kpiRegBar" style="width:0%;background:#10b981;"></div></div>
+                </div>
+
+                <div class="kpi-card" style="border-left-color:#8b5cf6;">
+                    <div class="kpi-label">⚡ សកម្មភាពប្រើប្រាស់សរុប (ដង)</div>
+                    <div class="kpi-row">
+                        <div class="kpi-val" id="kpiHits">0</div>
+                        <div class="kpi-pct" style="background:#ede9fe;color:#6d28d9;">សកម្ម</div>
+                    </div>
+                    <div style="font-size:0.78rem;color:#64748b;margin-top:8px;">រាប់បញ្ចូលការបើកទំព័រ និងការរក្សាទុកទិន្នន័យ</div>
+                </div>
+            </div>
+
+            <!-- FEATURE USAGE BREAKDOWN -->
+            <div class="panel">
+                <h4 class="panel-title">
+                    <span>📌 មុខងារដែលគ្រូៗបានចូលប្រើច្រើនជាងគេ</span>
+                    <span id="featureCountNote" style="font-size:0.82rem;color:#64748b;font-weight:600;"></span>
+                </h4>
+                <div id="featureStatsGrid" class="feature-grid">
+                    <div style="color:#64748b;font-size:0.88rem;">កំពុងផ្ទុកទិន្នន័យ...</div>
+                </div>
+            </div>
+
+            <!-- TEACHER DETAILED TABLE -->
+            <div class="panel">
+                <h4 class="panel-title">
+                    <span>📋 បញ្ជីតាមដានលម្អិតតាមគណនីគ្រូម្នាក់ៗ</span>
+                    <span id="tableCountNote" style="font-size:0.84rem;color:#64748b;font-weight:600;"></span>
+                </h4>
+                <div class="table-wrap">
+                    <table class="act-table">
+                        <thead>
+                            <tr>
+                                <th style="width:45px;">ល.រ</th>
+                                <th>ឈ្មោះគ្រូ &amp; គណនី</th>
+                                <th>តួនាទី</th>
+                                <th>ស្ថានភាព</th>
+                                <th>មុខងារដែលបានចូលប្រើ</th>
+                                <th>ភាគរយថ្ងៃ/អំឡុងនេះ</th>
+                                <th>ភាគរយសរុបក្នុងប្រព័ន្ធ</th>
+                                <th>ចូលប្រើចុងក្រោយ</th>
+                                <th>ទិន្នន័យសរុបក្នុងប្រព័ន្ធ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacherTableBody">
+                            <tr><td colspan="9" style="text-align:center;padding:24px;color:#64748b;">កំពុងផ្ទុកទិន្នន័យ...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRange = 'TODAY';
+        let currentDate = '';
+        let cachedData = null;
+
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function getPctColor(pct) {
+            if (pct >= 70) return '#16a34a';
+            if (pct >= 35) return '#2563eb';
+            if (pct > 0) return '#f59e0b';
+            return '#94a3b8';
+        }
+
+        function selectRange(range, btn) {
+            currentRange = range;
+            currentDate = '';
+            document.getElementById('datePicker').value = '';
+            document.querySelectorAll('.range-btn[data-range]').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            loadActivityData();
+        }
+
+        function selectExactDate(val) {
+            if (!val) return;
+            currentRange = 'DATE';
+            currentDate = val;
+            document.querySelectorAll('.range-btn[data-range]').forEach(b => b.classList.remove('active'));
+            loadActivityData();
+        }
+
+        async function loadActivityData() {
+            const url = `/admin/api/teacher-activity?range=${encodeURIComponent(currentRange)}${currentDate ? '&date=' + encodeURIComponent(currentDate) : ''}`;
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                cachedData = await res.json();
+                renderSummary(cachedData.summary);
+                renderFeatureStats(cachedData.featureStats || []);
+                renderFilteredTable();
+            } catch (e) {
+                console.error(e);
+                document.getElementById('teacherTableBody').innerHTML =
+                    '<tr><td colspan="9" style="text-align:center;color:#dc2626;padding:20px;">មានបញ្ហាក្នុងការទាញទិន្នន័យ សូមផ្ទុកឡើងវិញ!</td></tr>';
+            }
+        }
+
+        function renderSummary(s) {
+            document.getElementById('lblRange').textContent = s.rangeLabel || '';
+            document.getElementById('kpiActive').textContent = s.activeTeachersInRange;
+            document.getElementById('kpiTotal').textContent = s.totalTeachers;
+            document.getElementById('kpiPct').textContent = s.overallUsagePct + '%';
+            document.getElementById('kpiBar').style.width = s.overallUsagePct + '%';
+
+            document.getElementById('kpiHrActive').textContent = s.activeHomeroomInRange;
+            document.getElementById('kpiHrTotal').textContent = s.totalHomeroom;
+            document.getElementById('kpiHrPct').textContent = s.homeroomUsagePct + '%';
+            document.getElementById('kpiHrBar').style.width = s.homeroomUsagePct + '%';
+
+            document.getElementById('kpiRegActive').textContent = s.activeRegularInRange;
+            document.getElementById('kpiRegTotal').textContent = s.totalRegular;
+            document.getElementById('kpiRegPct').textContent = s.regularUsagePct + '%';
+            document.getElementById('kpiRegBar').style.width = s.regularUsagePct + '%';
+
+            document.getElementById('kpiHits').textContent = (s.totalHits || 0).toLocaleString();
+        }
+
+        function renderFeatureStats(list) {
+            const box = document.getElementById('featureStatsGrid');
+            document.getElementById('featureCountNote').textContent = `សរុប ${list.length} មុខងារត្រូវបានចូលប្រើ`;
+            if (!list.length) {
+                box.innerHTML = '<div style="color:#64748b;font-size:0.88rem;">មិនទាន់មានកំណត់ត្រាការចូលប្រើក្នុងអំឡុងពេលនេះនៅឡើយទេ (ប្រព័ន្ធនឹងកត់ត្រាស្វ័យប្រវត្តិភ្លាមៗពេលគ្រូៗចូលប្រើ)។</div>';
+                return;
+            }
+            box.innerHTML = list.map(f => {
+                const col = getPctColor(f.teacherPct);
+                return `
+                    <div class="feature-stat-item">
+                        <div class="feature-stat-top">
+                            <span>${esc(f.label)}</span>
+                            <span style="color:${col};">${f.teacherPct}% (${f.teacherCount} នាក់)</span>
+                        </div>
+                        <div class="mini-bar" style="margin-top:6px;">
+                            <div class="mini-bar-fill" style="width:${f.teacherPct}%;background:${col};"></div>
+                        </div>
+                        <div style="font-size:0.75rem;color:#64748b;margin-top:4px;">ចូលប្រើសរុប ${f.totalHits} ដង</div>
+                    </div>`;
+            }).join('');
+        }
+
+        function renderFilteredTable() {
+            if (!cachedData) return;
+            const roleF = document.getElementById('roleFilter').value;
+            const statF = document.getElementById('statusFilter').value;
+            const q = (document.getElementById('searchTeacher').value || '').trim().toLowerCase();
+
+            const list = (cachedData.teachers || []).filter(t => {
+                if (roleF === 'HOMEROOM' && !t.isHomeroom) return false;
+                if (roleF === 'REGULAR' && t.isHomeroom) return false;
+                if (statF === 'USED' && !t.usedInRange) return false;
+                if (statF === 'NOT_USED' && t.usedInRange) return false;
+                if (q) {
+                    const hay = `${t.fullName || ''} ${t.username || ''}`.toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+
+            document.getElementById('tableCountNote').textContent = `បង្ហាញ ${list.length} / ${(cachedData.teachers || []).length} គណនី`;
+            const tbody = document.getElementById('teacherTableBody');
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:#64748b;">គ្មានទិន្នន័យគ្រូត្រូវនឹងលក្ខខណ្ឌស្វែងរក</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = list.map((t, idx) => {
+                const pCol = getPctColor(t.periodUsagePct);
+                const sCol = getPctColor(t.systemUsagePct);
+                const pills = (t.featuresUsed && t.featuresUsed.length)
+                    ? `<div class="feat-pills">${t.featuresUsed.map(f => {
+                        const isHr = f.key && f.key.startsWith('HOMEROOM');
+                        return `<span class="feat-pill ${isHr ? 'hr-pill' : ''}" title="ចុងក្រោយ៖ ${esc(f.lastTime)}">${esc(f.label)} <span class="cnt">${f.hits}</span></span>`;
+                    }).join('')}</div>`
+                    : '<span style="color:#94a3b8;font-size:0.82rem;">មិនទាន់មានសកម្មភាព</span>';
+
+                const sc = t.systemCounts || {};
+                const sysInfo = `
+                    <div class="sys-mini">
+                        ថ្នាក់: <b>${sc.classes || 0}</b> • សិស្ស: <b>${sc.students || 0}</b><br>
+                        វត្តមាន: <b>${sc.attendance || 0}</b> • ពិន្ទុ: <b>${(sc.scores || 0) + (sc.homeroomScores || 0)}</b><br>
+                        ផែនការ: <b>${sc.dailyPlans || 0}</b> • តេស្ត: <b>${sc.exams || 0}</b>
+                    </div>`;
+
+                return `
+                    <tr>
+                        <td style="font-weight:700;color:#64748b;">${idx + 1}</td>
+                        <td>
+                            <div style="font-weight:800;color:#0f172a;">${esc(t.fullName)}</div>
+                            <div style="font-size:0.78rem;color:#64748b;">@${esc(t.username)} ${!t.active ? '<span style="color:#dc2626;font-weight:700;">(បិទគណនី)</span>' : ''}</div>
+                        </td>
+                        <td>${t.isHomeroom ? '<span class="badge badge-hr">👑 គ្រូបន្ទុកថ្នាក់</span>' : '<span class="badge badge-reg">👨‍🏫 គ្រូបង្រៀន</span>'}</td>
+                        <td>${t.usedInRange ? `<span class="badge badge-on">🟢 បានចូលប្រើ (${t.totalHits})</span>` : '<span class="badge badge-off">⚪ មិនទាន់ចូល</span>'}</td>
+                        <td style="max-width:340px;">${pills}</td>
+                        <td>
+                            <div class="mini-pct-wrap">
+                                <div class="mini-pct-label">
+                                    <span style="color:${pCol};">${t.periodUsagePct}%</span>
+                                    <span style="color:#64748b;font-weight:500;">${t.featureCount} មុខងារ</span>
+                                </div>
+                                <div class="mini-bar"><div class="mini-bar-fill" style="width:${t.periodUsagePct}%;background:${pCol};"></div></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="mini-pct-wrap">
+                                <div class="mini-pct-label">
+                                    <span style="color:${sCol};">${t.systemUsagePct}%</span>
+                                    <span style="color:#64748b;font-weight:500;">ក្នុងប្រព័ន្ធ</span>
+                                </div>
+                                <div class="mini-bar"><div class="mini-bar-fill" style="width:${t.systemUsagePct}%;background:${sCol};"></div></div>
+                            </div>
+                        </td>
+                        <td style="white-space:nowrap;font-size:0.83rem;color:#334155;">${esc(t.lastUsedAt)}</td>
+                        <td>${sysInfo}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        loadActivityData();
+    </script>
+</body>
+</html>

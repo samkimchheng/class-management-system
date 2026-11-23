@@ -3,10 +3,12 @@ package com.nubb.classroom.config;
 import com.nubb.classroom.model.Account;
 import com.nubb.classroom.model.ExternalLearner;
 import com.nubb.classroom.model.Student;
+import com.nubb.classroom.model.TeacherActivityLog;
 import com.nubb.classroom.repository.AccountRepository;
 import com.nubb.classroom.repository.ExternalLearnerRepository;
 import com.nubb.classroom.repository.HomeroomClassAdminRepository;
 import com.nubb.classroom.repository.StudentRepository;
+import com.nubb.classroom.repository.TeacherActivityLogRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,6 +19,9 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 @Component
@@ -34,8 +39,13 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Autowired(required = false)
     private HomeroomClassAdminRepository homeroomClassAdminRepository;
 
+    @Autowired(required = false)
+    private TeacherActivityLogRepository teacherActivityLogRepository;
+
     @Autowired
     private TokenSecurityService tokenSecurityService;
+
+    private static final ZoneId CAMBODIA_ZONE = ZoneId.of("Asia/Phnom_Penh");
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -256,6 +266,11 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
             if (session.getAttribute("loggedInStudent") != null) {
                 session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+            } else if (session.getAttribute("ACCOUNT_ID") != null) {
+                String r = (String) session.getAttribute("ACCOUNT_ROLE");
+                if (r == null || !"ADMIN".equalsIgnoreCase(r)) {
+                    recordTeacherActivity((Long) session.getAttribute("ACCOUNT_ID"), path);
+                }
             }
             return true;
         }
@@ -283,6 +298,11 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
             if (session.getAttribute("loggedInStudent") != null) {
                 session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
+            } else if (session.getAttribute("ACCOUNT_ID") != null) {
+                String r = (String) session.getAttribute("ACCOUNT_ROLE");
+                if (r == null || !"ADMIN".equalsIgnoreCase(r)) {
+                    recordTeacherActivity((Long) session.getAttribute("ACCOUNT_ID"), path);
+                }
             }
             return true;
         }
@@ -338,9 +358,72 @@ public class AuthInterceptor implements HandlerInterceptor {
                         return false;
                     }
                 }
+                if (!"ADMIN".equalsIgnoreCase(curr.getRole())) {
+                    recordTeacherActivity(curr.getId(), path);
+                }
             }
         } catch (Exception ignored) {}
 
         return true;
+    }
+
+    private void recordTeacherActivity(Long accountId, String path) {
+        if (teacherActivityLogRepository == null || accountId == null || path == null) return;
+        try {
+            String[] feature = resolveTeacherFeature(path);
+            if (feature == null) return;
+            String featureKey = feature[0];
+            String featureLabel = feature[1];
+            LocalDateTime now = LocalDateTime.now(CAMBODIA_ZONE);
+            LocalDate today = now.toLocalDate();
+
+            synchronized (("TAL_" + accountId + "_" + featureKey).intern()) {
+                Optional<TeacherActivityLog> existingOpt =
+                        teacherActivityLogRepository.findByAccountIdAndActivityDateAndFeatureKey(accountId, today, featureKey);
+                if (existingOpt.isPresent()) {
+                    TeacherActivityLog log = existingOpt.get();
+                    log.setHitCount((log.getHitCount() == null ? 0 : log.getHitCount()) + 1);
+                    log.setLastUsedAt(now);
+                    log.setLastPath(path.length() > 250 ? path.substring(0, 250) : path);
+                    teacherActivityLogRepository.save(log);
+                } else {
+                    TeacherActivityLog log = new TeacherActivityLog(
+                            accountId, today, featureKey, featureLabel, now,
+                            path.length() > 250 ? path.substring(0, 250) : path
+                    );
+                    teacherActivityLogRepository.save(log);
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private String[] resolveTeacherFeature(String path) {
+        if (path.startsWith("/css") || path.startsWith("/js") || path.startsWith("/images")
+                || path.startsWith("/icons") || path.startsWith("/uploads") || path.startsWith("/docs")
+                || path.startsWith("/api/tts") || path.startsWith("/api/diagnostic")
+                || path.equals("/logout") || path.equals("/login") || path.equals("/manifest.json")
+                || path.equals("/sw.js") || path.equals("/favicon.ico")) {
+            return null;
+        }
+        if ("/".equals(path)) return new String[]{"DASHBOARD", "🏠 ទំព័រដើម (Dashboard)"};
+        if (path.startsWith("/api/homeroom/scores")) return new String[]{"HOMEROOM_SCORES", "👑 បញ្ចូលពិន្ទុគ្រូបន្ទុក"};
+        if (path.startsWith("/api/homeroom/admin")) return new String[]{"HOMEROOM_ADMIN", "👑 វត្តមានតាមខែ & រដ្ឋបាលថ្នាក់"};
+        if (path.startsWith("/api/homeroom/student-extra")) return new String[]{"HOMEROOM_CARDS", "👑 ប្រវត្តិសិស្ស & កាតសិស្ស"};
+        if (path.equals("/homeroom") || path.startsWith("/homeroom/") || path.startsWith("/api/homeroom")) {
+            return new String[]{"HOMEROOM_MAIN", "👑 ប្រព័ន្ធគ្រូបន្ទុកថ្នាក់"};
+        }
+        if (path.startsWith("/classrooms") || path.startsWith("/api/classrooms")) return new String[]{"CLASSROOMS", "🏫 បញ្ជីថ្នាក់រៀន"};
+        if (path.startsWith("/students") || path.startsWith("/api/students")) return new String[]{"STUDENTS", "👥 គ្រប់គ្រងសិស្ស"};
+        if (path.startsWith("/attendance") || path.startsWith("/api/attendance")) return new String[]{"ATTENDANCE", "📅 ស្រង់វត្តមាន"};
+        if (path.startsWith("/scores") || path.startsWith("/api/scores")) return new String[]{"SCORES", "📊 ពិន្ទុសិស្ស"};
+        if (path.startsWith("/schedule") || path.startsWith("/api/schedules")) return new String[]{"SCHEDULE", "🗓️ កាលវិភាគបង្រៀន"};
+        if (path.startsWith("/daily-plan") || path.startsWith("/api/daily-plan")) return new String[]{"DAILY_PLAN", "📝 ផែនការប្រចាំថ្ងៃ"};
+        if (path.startsWith("/exams") || path.startsWith("/api/exams")) return new String[]{"EXAMS", "✍️ ប្រឡងអនឡាញ"};
+        if (path.startsWith("/lessons") || path.startsWith("/api/lessons")) return new String[]{"LESSONS", "📖 មេរៀនអនឡាញ"};
+        if (path.startsWith("/certificate") || path.startsWith("/api/certificate")) return new String[]{"CERTIFICATE", "🎓 ប័ណ្ណសរសើរ"};
+        if (path.startsWith("/vocabulary") || path.startsWith("/api/vocabulary")) return new String[]{"VOCABULARY", "🔤 វាក្យសព្ទអង់គ្លេស"};
+        if (path.startsWith("/phonics") || path.startsWith("/api/phonics")) return new String[]{"PHONICS", "🔊 ការអានសំឡេង (Phonics)"};
+        if (path.startsWith("/feedback")) return new String[]{"FEEDBACK", "💬 មតិកែលម្អ"};
+        return null;
     }
 }
