@@ -240,7 +240,22 @@
                     }
                 }
                 @media print {
-                    #cmsMobileBottomNav { display: none !important; }
+                    #cmsMobileBottomNav, #cmsTopNavProgress { display: none !important; }
+                }
+                @keyframes cmsTopBarPulse {
+                    0% { width: 12%; }
+                    55% { width: 78%; }
+                    100% { width: 92%; }
+                }
+                #cmsTopNavProgress {
+                    position: fixed; top: 0; left: 0; height: 3px; width: 0;
+                    background: linear-gradient(90deg, #2563eb, #38bdf8, #10b981);
+                    z-index: 99999; pointer-events: none; transition: opacity 0.2s;
+                    opacity: 0;
+                }
+                #cmsTopNavProgress.loading {
+                    opacity: 1;
+                    animation: cmsTopBarPulse 1.8s ease-out forwards;
                 }
             `;
             document.head.appendChild(st);
@@ -343,6 +358,20 @@
                             a.href = item.href;
                             a.className = 'cms-bnav-item' + (isActive ? ' active' : '');
                             a.innerHTML = `<span class="cms-bnav-icon">${item.icon}</span><span class="cms-bnav-label">${item.label}</span>`;
+                            a.addEventListener('click', () => {
+                                if (a.classList.contains('active')) return;
+                                nav.querySelectorAll('.cms-bnav-item').forEach(el => el.classList.remove('active'));
+                                a.classList.add('active');
+                                let bar = document.getElementById('cmsTopNavProgress');
+                                if (!bar) {
+                                    bar = document.createElement('div');
+                                    bar.id = 'cmsTopNavProgress';
+                                    document.body.appendChild(bar);
+                                }
+                                bar.classList.remove('loading');
+                                void bar.offsetWidth;
+                                bar.classList.add('loading');
+                            });
                             nav.appendChild(a);
                         }
                     });

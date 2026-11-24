@@ -1339,6 +1339,42 @@ public class WebController {
         }
     }
 
+    private String resolveDefaultClassForFastLoad(Long accountId, String className, String currentYear) {
+        if (className != null && !className.trim().isEmpty()) {
+            String trimmed = className.trim();
+            if (!"ថ្នាក់រៀនទាំងអស់".equals(trimmed)) {
+                session.setAttribute("LAST_SELECTED_CLASS", trimmed);
+            }
+            return trimmed;
+        }
+        try {
+            List<Classroom> myClasses = classroomRepository.findByAccountIdAndAcademicYear(accountId, currentYear);
+            if (myClasses == null || myClasses.isEmpty()) {
+                myClasses = classroomRepository.findByAccountId(accountId);
+            }
+            if (myClasses != null && !myClasses.isEmpty()) {
+                Object lastObj = session.getAttribute("LAST_SELECTED_CLASS");
+                if (lastObj instanceof String lastCls && !lastCls.isBlank()) {
+                    boolean stillExists = myClasses.stream()
+                            .anyMatch(c -> c.getClassName() != null && c.getClassName().equals(lastCls));
+                    if (stillExists) return lastCls;
+                }
+                myClasses.sort((a, b) -> {
+                    int g1 = extractClassGradeOrder(a.getClassName());
+                    int g2 = extractClassGradeOrder(b.getClassName());
+                    if (g1 != g2) return Integer.compare(g1, g2);
+                    return normalizeClassSuffix(a.getClassName()).compareTo(normalizeClassSuffix(b.getClassName()));
+                });
+                String firstCls = myClasses.get(0).getClassName();
+                if (firstCls != null && !firstCls.isBlank()) {
+                    session.setAttribute("LAST_SELECTED_CLASS", firstCls);
+                    return firstCls;
+                }
+            }
+        } catch (Exception ignored) {}
+        return className;
+    }
+
     @GetMapping("/attendance")
     public String attendance(
             @RequestParam(required = false) String className,
@@ -1351,15 +1387,21 @@ public class WebController {
         }
 
         String currentYear = getCurrentAcademicYear();
+        className = resolveDefaultClassForFastLoad(accountId, className, currentYear);
         int[] years = parseAcademicYearNumbers(currentYear);
         if (month == null || month.trim().isEmpty()) {
-            month = "ខែវិច្ឆិកា " + toKhmerNumber(years[0]);
+            LocalDate nowD = LocalDate.now();
+            String[] khMonths = {"", "ខែមករា", "ខែកុម្ភៈ", "ខែមីនា", "ខែមេសា", "ខែឧសភា", "ខែមិថុនា", "ខែកក្កដា", "ខែសីហា", "ខែកញ្ញា", "ខែតុលា", "ខែវិច្ឆិកា", "ខែធ្នូ"};
+            int mIdx = nowD.getMonthValue();
+            int mYr = (mIdx >= 11) ? years[0] : years[1];
+            month = khMonths[mIdx] + " " + toKhmerNumber(mYr);
         } else {
             month = month.trim();
         }
 
         boolean isKhmerSorted = isKhmerSortActive(accountId, null);
         List<Student> students = getOrderedStudentsForTeacher(accountId, className, currentYear, isKhmerSorted);
+        List<com.nubb.classroom.model.LeaveRequest> teacherLeaveRequests = getLeaveRequestsForTeacher(accountId, className);
 
         boolean isYearly = "ប្រចាំឆ្នាំ".equals(month);
         boolean isSemester1 = "ឆមាសទី១".equals(month);
@@ -1433,7 +1475,7 @@ public class WebController {
                 }
             }
 
-            List<com.nubb.classroom.model.LeaveRequest> leaveRequests = getLeaveRequestsForTeacher(accountId, className);
+            List<com.nubb.classroom.model.LeaveRequest> leaveRequests = teacherLeaveRequests;
             Map<String, String> leaveReasonTooltips = new HashMap<>();
             if (leaveRequests != null) {
                 for (com.nubb.classroom.model.LeaveRequest lr : leaveRequests) {
@@ -1471,7 +1513,6 @@ public class WebController {
             model.addAttribute("studentTotalCounts", studentTotalCounts);
         }
 
-        List<com.nubb.classroom.model.LeaveRequest> teacherLeaveRequests = getLeaveRequestsForTeacher(accountId, className);
         long pendingLeaveCount = teacherLeaveRequests.stream().filter(com.nubb.classroom.model.LeaveRequest::isPending).count();
 
         long studyingCount = (students != null) ? students.stream().filter(Student::isStudying).count() : 0;
@@ -1974,6 +2015,7 @@ public class WebController {
             return "redirect:/login";
         }
         String currentYear = getCurrentAcademicYear();
+        className = resolveDefaultClassForFastLoad(accountId, className, currentYear);
 
         boolean isKhmerSorted = isKhmerSortActive(accountId, sort);
         List<Student> students = getOrderedStudentsForTeacher(accountId, className, currentYear, isKhmerSorted);

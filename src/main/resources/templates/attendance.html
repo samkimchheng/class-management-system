@@ -811,55 +811,64 @@
             if (monthSelect) monthSelect.addEventListener('change', navigateFilter);
             if (classSelect) classSelect.addEventListener('change', navigateFilter);
 
-            const rows = document.querySelectorAll('tbody tr');
-            
-            // --- Feature 1: Live Calculate Row Totals (ច្បាប់, គ្មានច្បាប់, សរុប) ---
+            const tbody = document.querySelector('tbody');
+
+            // --- Feature 1: Live Calculate Row Totals (ច្បាប់, គ្មានច្បាប់, សរុប) via Fast Event Delegation ---
             function updateRowTotals(row) {
+                if (!row) return;
                 const selects = row.querySelectorAll('select.att-select');
                 const permSpan = row.querySelector('.total-perm');
                 const unexSpan = row.querySelector('.total-unex');
                 const allSpan = row.querySelector('.total-all');
-                
+
                 let perm = 0;
                 let unex = 0;
-                selects.forEach(s => {
+                for (let i = 0; i < selects.length; i++) {
+                    const s = selects[i];
                     const val = s.value;
-                    s.classList.remove('att-permission', 'att-unexcused', 'att-present');
+                    if (!val) {
+                        if (s.classList.contains('att-permission') || s.classList.contains('att-unexcused') || s.classList.contains('att-present')) {
+                            s.classList.remove('att-permission', 'att-unexcused', 'att-present');
+                        }
+                        continue;
+                    }
                     if (val.endsWith('_PERMISSION')) {
+                        s.classList.remove('att-unexcused', 'att-present');
                         s.classList.add('att-permission');
                         perm++;
                     } else if (val.endsWith('_UNEXCUSED')) {
+                        s.classList.remove('att-permission', 'att-present');
                         s.classList.add('att-unexcused');
                         unex++;
                     } else if (val.endsWith('_PRESENT')) {
+                        s.classList.remove('att-permission', 'att-unexcused');
                         s.classList.add('att-present');
                     }
-                });
-                
+                }
+
                 if (permSpan) permSpan.textContent = perm;
                 if (unexSpan) unexSpan.textContent = unex;
                 if (allSpan) allSpan.textContent = (perm + unex);
             }
 
-            rows.forEach(row => {
-                const selects = row.querySelectorAll('select.att-select');
-                selects.forEach(s => {
-                    s.addEventListener('change', function() {
-                        updateRowTotals(row);
-                    });
+            // Single delegated listener on tbody (0ms init instead of attaching thousands of listeners)
+            if (tbody) {
+                tbody.addEventListener('change', function(e) {
+                    const sel = e.target;
+                    if (sel && sel.classList && sel.classList.contains('att-select')) {
+                        updateRowTotals(sel.closest('tr'));
+                    }
                 });
-            });
+            }
 
-            // --- Feature 2: Dynamic Days based on Month ---
-            const dayCells = document.querySelectorAll('.day-cell');
-            
+            // --- Feature 2: Dynamic Days based on Month (Only touch days 29-31 to avoid DOM thrashing) ---
             const khmerDigits = {'០':0,'១':1,'២':2,'៣':3,'៤':4,'៥':5,'៦':6,'៧':7,'៨':8,'៩':9};
             function parseKhmerYear(str) {
                 return parseInt(str.split('').map(c => khmerDigits[c] !== undefined ? khmerDigits[c] : c).join(''));
             }
 
             function updateDaysInMonth() {
-                if (!monthSelect || dayCells.length === 0) return;
+                if (!monthSelect) return;
                 const val = monthSelect.value;
                 let month = 0;
                 if (val.includes('មករា')) month = 1;
@@ -889,24 +898,23 @@
                     daysInMonth = isLeap ? 29 : 28;
                 }
 
-                dayCells.forEach(cell => {
-                    const day = parseInt(cell.getAttribute('data-day'));
-                    if (day > daysInMonth) {
-                        cell.style.display = 'none';
-                        // if a hidden day was selected, reset it
-                        const sel = cell.querySelector('select');
-                        if (sel && sel.value !== "") {
-                            sel.value = "";
+                if (daysInMonth < 31) {
+                    const tailCells = document.querySelectorAll('.day-cell[data-day="29"], .day-cell[data-day="30"], .day-cell[data-day="31"]');
+                    const dirtyRows = new Set();
+                    tailCells.forEach(cell => {
+                        const day = parseInt(cell.getAttribute('data-day'), 10);
+                        if (day > daysInMonth) {
+                            cell.style.display = 'none';
+                            const sel = cell.querySelector('select');
+                            if (sel && sel.value !== '') {
+                                sel.value = '';
+                                const tr = cell.closest('tr');
+                                if (tr) dirtyRows.add(tr);
+                            }
                         }
-                    } else {
-                        cell.style.display = 'table-cell';
-                    }
-                });
-                
-                // Recalculate totals in case hidden days were reset
-                rows.forEach(row => {
-                    updateRowTotals(row);
-                });
+                    });
+                    dirtyRows.forEach(tr => updateRowTotals(tr));
+                }
             }
 
             updateDaysInMonth();
