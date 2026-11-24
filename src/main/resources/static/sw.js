@@ -1,7 +1,6 @@
-// CMS Progressive Web App Service Worker (v7 - Gold App Icon + Mobile Bottom Nav)
-const CACHE_NAME = 'cms-pwa-v8';
+// CMS Progressive Web App Service Worker (v9 - Clean UTF-8 Manifest & Network-First Assets)
+const CACHE_NAME = 'cms-pwa-v9';
 const STATIC_ASSETS = [
-  '/manifest.json',
   '/icons/icon-192.png?v=20261124r',
   '/icons/icon-512.png?v=20261124r',
   '/icons/apple-touch-icon.png'
@@ -31,8 +30,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // Network-first for JS/CSS so mobile screen-fit updates reach phones immediately
-  if (url.pathname === '/js/pwa-install.js' || url.pathname === '/css/style.css') {
+  // Network-first for manifest, JS, and CSS so updates reach phones/desktops immediately
+  if (url.pathname === '/manifest.json' || url.pathname === '/js/pwa-install.js' || url.pathname === '/css/style.css') {
     event.respondWith(
       fetch(req).then((res) => {
         if (res && res.ok) {
@@ -45,8 +44,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for static PWA icons & manifest
-  if (url.pathname.startsWith('/icons/') || url.pathname === '/manifest.json') {
+  // Cache-first for static PWA icons
+  if (url.pathname.startsWith('/icons/')) {
     event.respondWith(
       caches.match(req).then((cached) => cached || fetch(req).then((res) => {
         if (res && res.ok) {
