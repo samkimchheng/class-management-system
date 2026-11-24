@@ -836,25 +836,31 @@
             const totalCount = CURRENT_STUDENTS.length;
             const femaleCount = CURRENT_STUDENTS.filter(s => s.gender === 'ស').length;
 
-            // Split students cleanly: Page 1 = 23 rows, subsequent pages = 26 rows (matching uploaded PDF)
+            // Split students cleanly: Page 1 = 23 rows (with header), Page 2+ = 27 rows (fills full A4 landscape height)
+            const P1_MAX = 23;
+            const PN_MAX = 27;
+            const P1_SUMMARY_MAX = 14;
+            const PN_SUMMARY_MAX = 17;
+
             const pages = [];
             let idx = 0;
-            const page1List = CURRENT_STUDENTS.slice(0, 23);
+            const page1List = CURRENT_STUDENTS.slice(0, P1_MAX);
             pages.push({ isFirst: true, startNo: 1, students: page1List });
-            idx = 23;
+            idx = P1_MAX;
             while (idx < CURRENT_STUDENTS.length) {
-                pages.push({ isFirst: false, startNo: idx + 1, students: CURRENT_STUDENTS.slice(idx, idx + 26) });
-                idx += 26;
+                pages.push({ isFirst: false, startNo: idx + 1, students: CURRENT_STUDENTS.slice(idx, idx + PN_MAX) });
+                idx += PN_MAX;
             }
 
             // Decide if summary footer fits on last page or goes on a clean final summary page (like Page 3 of PDF)
             const lastPage = pages[pages.length - 1];
-            const needsSeparateSummaryPage = lastPage.students.length > (lastPage.isFirst ? 13 : 16);
+            const needsSeparateSummaryPage = lastPage.students.length > (lastPage.isFirst ? P1_SUMMARY_MAX : PN_SUMMARY_MAX);
 
             let html = '';
             pages.forEach((pg, pIdx) => {
                 const isLastStudentPage = (pIdx === pages.length - 1);
                 const includeSummaryHere = isLastStudentPage && !needsSeparateSummaryPage;
+                const pageCapacity = pg.isFirst ? P1_MAX : PN_MAX;
                 const rowsHtml = pg.students.map((s, si) => `
                     <tr class="student-row">
                         <td>${pg.startNo + si}</td>
@@ -863,14 +869,12 @@
                         ${emptyCells}
                     </tr>`).join('');
 
-                // Pad blank rows cleanly so Page 1 fills the full A4 landscape sheet
+                // Pad blank rows cleanly so every non-summary page (Page 1, Page 2, etc.) fills the full A4 landscape sheet
                 let blankCount = 0;
-                if (pg.isFirst && !includeSummaryHere) {
-                    blankCount = Math.max(0, 23 - pg.students.length);
-                } else if (isLastStudentPage && !needsSeparateSummaryPage) {
+                if (!includeSummaryHere) {
+                    blankCount = Math.max(0, pageCapacity - pg.students.length);
+                } else {
                     blankCount = 2;
-                } else if (isLastStudentPage && pg.students.length < 26) {
-                    blankCount = Math.min(2, 26 - pg.students.length);
                 }
                 const extraBlankRows = `<tr class="student-row"><td></td><td></td><td></td>${emptyCells}</tr>`.repeat(blankCount);
 
@@ -1121,23 +1125,25 @@
 
             const emptyDayCells = dayInfos.map(di => `<td class="${di.isSun ? 'att-sun-cell' : ''}"></td>`).join('') + '<td></td><td></td>';
 
-            // Paginate: Page 1 = 26 rows (fills A4 landscape); last page has exactly 2 blank rows
+            // Paginate: Page 1 = 26 rows (with header), Page 2+ = 29 rows (no header, fills full A4 landscape); last page has 2 blank rows
+            const ATT_P1_MAX = 26;
+            const ATT_PN_MAX = 29;
             const pages = [];
             if (students.length <= 24) {
                 pages.push({ isFirst: true, startNo: 1, students: students.slice(0), padTo: students.length + 2 });
             } else {
-                pages.push({ isFirst: true, startNo: 1, students: students.slice(0, 26), padTo: 26 });
-                let idx = 26;
+                pages.push({ isFirst: true, startNo: 1, students: students.slice(0, ATT_P1_MAX), padTo: ATT_P1_MAX });
+                let idx = ATT_P1_MAX;
                 while (idx < students.length) {
-                    const chunk = students.slice(idx, idx + 26);
-                    const isLastChunk = (idx + 26 >= students.length);
+                    const chunk = students.slice(idx, idx + ATT_PN_MAX);
+                    const isLastChunk = (idx + ATT_PN_MAX >= students.length);
                     pages.push({
                         isFirst: false,
                         startNo: idx + 1,
                         students: chunk,
-                        padTo: isLastChunk ? (chunk.length + 2) : 26
+                        padTo: isLastChunk ? (chunk.length + 2) : ATT_PN_MAX
                     });
-                    idx += 26;
+                    idx += ATT_PN_MAX;
                 }
             }
 
