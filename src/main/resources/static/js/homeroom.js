@@ -429,9 +429,11 @@ function renderDashboardAndSubjects() {
             <td class="text-left">${esc(sub.teacherName || '-')}</td>
             <td>${sub.maxScore}</td>
             <td>${sub.coefficient}</td>
-            <td class="no-print">
-                <button class="btn btn-outline btn-sm" onclick="openEditSubjectModal(${sub.id})">✏️ កែ</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteSubject(${sub.id})">🗑️</button>
+            <td class="no-print" style="white-space:nowrap;">
+                <div style="display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap;">
+                    <button class="btn btn-outline btn-sm" style="white-space:nowrap;" onclick="openEditSubjectModal(${sub.id})">✏️ កែ</button>
+                    <button class="btn btn-danger btn-sm" style="white-space:nowrap;" onclick="deleteSubject(${sub.id})">🗑️</button>
+                </div>
             </td>
         </tr>
     `).join('');
