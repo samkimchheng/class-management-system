@@ -1,9 +1,9 @@
 // CMS Progressive Web App Service Worker (v7 - Gold App Icon + Mobile Bottom Nav)
-const CACHE_NAME = 'cms-pwa-v7';
+const CACHE_NAME = 'cms-pwa-v8';
 const STATIC_ASSETS = [
   '/manifest.json',
-  '/icons/icon-192.png?v=20261124g',
-  '/icons/icon-512.png?v=20261124g',
+  '/icons/icon-192.png?v=20261124r',
+  '/icons/icon-512.png?v=20261124r',
   '/icons/apple-touch-icon.png'
 ];
 
