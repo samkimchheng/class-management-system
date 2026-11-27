@@ -51,7 +51,7 @@
     <meta name="apple-mobile-web-app-title" content="CMS">
     <meta name="application-name" content="CMS">
     <meta name="theme-color" content="#1e3a8a">
-    <script src="/js/pwa-install.js?v=20261124a" defer></script>
+    <script src="/js/pwa-install.js?v=20261127a" defer></script>
 </head>
 <body>
         <!-- Sidebar -->
@@ -156,6 +156,49 @@
                 </div>
             </div>
 
+            <!-- Quick Direct Teacher Account Inspector (ចូលត្រួតពិនិត្យគណនីគ្រូដោយផ្ទាល់ មិនបាច់វាយលេខសម្ងាត់) -->
+            <div style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%); padding: 20px 24px; border-radius: 12px; box-shadow: 0 2px 10px rgba(5, 150, 105, 0.1); margin-bottom: 24px; border: 1.5px solid #6ee7b7; border-left: 5px solid #059669;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+                    <div>
+                        <h3 style="margin: 0; color: #065f46; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                            <span>👁️ ចូលត្រួតពិនិត្យគណនីគ្រូបង្រៀនដោយផ្ទាល់ (Direct Account Inspector)</span>
+                        </h3>
+                        <div style="font-size: 0.88rem; color: #047857; margin-top: 4px;">
+                            ជ្រើសរើសឈ្មោះគ្រូណាម្នាក់ ដើម្បីចូលពិនិត្យមើលទិន្នន័យថ្នាក់ សិស្ស វត្តមាន ពិន្ទុ និងគ្រូបន្ទុកថ្នាក់ភ្លាមៗ — មិនចាំបាច់បំពេញឈ្មោះ ឬលេខសម្ងាត់គ្រូឡើយ!
+                        </div>
+                    </div>
+                    <a href="/admin/accounts" class="btn" style="background: #fff; color: #065f46; border: 1.5px solid #34d399; font-weight: 700; font-size: 0.86rem;">
+                        👥 មើលបញ្ជីគ្រូទាំងអស់ &rarr;
+                    </a>
+                </div>
+                <form id="quickInspectForm" method="post" onsubmit="return submitQuickInspect(event, '/')" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                    <input type="hidden" name="returnUrl" value="/admin">
+                    <input type="hidden" name="targetPath" id="quickInspectTargetPath" value="/">
+                    <input type="text" id="quickInspectFilter" oninput="filterQuickInspectOptions(this.value)"
+                           placeholder="🔍 វាយស្វែងរកឈ្មោះគ្រូ..."
+                           style="padding: 10px 12px; border: 1.5px solid #6ee7b7; border-radius: 8px; font-family: inherit; font-size: 0.92rem; background: #fff; min-width: 190px; flex: 0 1 220px;">
+                    <select id="quickInspectTeacherSelect" onchange="updateQuickInspectHomeroomBtn()"
+                            style="padding: 10px 12px; border: 1.5px solid #6ee7b7; border-radius: 8px; font-family: inherit; font-size: 0.94rem; font-weight: 600; color: #0f172a; background: #fff; flex: 1 1 280px; min-width: 240px;">
+                        <option value="">-- ជ្រើសរើសគណនីគ្រូដើម្បីចូលត្រួតពិនិត្យ --</option>
+                        <option th:each="t : ${teacherAccounts}"
+                                th:value="${t.id}"
+                                th:data-homeroom="${t.homeroomPermission == true}"
+                                th:data-search="${(t.fullName ?: '') + ' ' + (t.username ?: '') + ' ' + (t.subject ?: '')}"
+                                th:text="${(t.fullName ?: t.username) + ' (@' + t.username + ')' + (t.subject != null and !t.subject.isEmpty() ? ' • ' + t.subject : '') + (t.homeroomPermission == true ? ' [👑 គ្រូបន្ទុក]' : '') + (t.active != null and !t.active ? ' [🔴 ផ្អាក]' : '')}">
+                            គ្រូបង្រៀន
+                        </option>
+                    </select>
+                    <button type="submit" class="btn"
+                            style="background: linear-gradient(135deg, #059669 0%, #0d9488 100%); color: white; padding: 10px 18px; font-weight: 800; font-size: 0.92rem; border-radius: 8px; box-shadow: 0 3px 10px rgba(5,150,105,0.28); white-space: nowrap;">
+                        👁️ ចូលត្រួតពិនិត្យគណនីនេះ
+                    </button>
+                    <button type="button" id="btnQuickInspectHomeroom" onclick="submitQuickInspect(event, '/homeroom')"
+                            style="display: none; background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); color: #fff; padding: 10px 16px; font-weight: 800; font-size: 0.92rem; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; box-shadow: 0 3px 10px rgba(217,119,6,0.28); white-space: nowrap;">
+                        👑 ចូលផ្ទាំងគ្រូបន្ទុក
+                    </button>
+                </form>
+            </div>
+
             <!-- Student Leave Requests Section on Admin Dashboard -->
             <div style="background: white; padding: 22px 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 24px; border-left: 5px solid #f59e0b;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
@@ -246,6 +289,47 @@
     </div>
 
     <script>
+        function filterQuickInspectOptions(q) {
+            const sel = document.getElementById('quickInspectTeacherSelect');
+            if (!sel) return;
+            const term = (q || '').trim().toLowerCase();
+            let firstVisible = '';
+            Array.from(sel.options).forEach((opt, idx) => {
+                if (idx === 0) return;
+                const hay = (opt.getAttribute('data-search') || opt.textContent || '').toLowerCase();
+                const match = !term || hay.includes(term);
+                opt.hidden = !match;
+                if (match && !firstVisible) firstVisible = opt.value;
+            });
+            if (term && firstVisible) {
+                sel.value = firstVisible;
+            }
+            updateQuickInspectHomeroomBtn();
+        }
+
+        function updateQuickInspectHomeroomBtn() {
+            const sel = document.getElementById('quickInspectTeacherSelect');
+            const btnHr = document.getElementById('btnQuickInspectHomeroom');
+            if (!sel || !btnHr) return;
+            const opt = sel.options[sel.selectedIndex];
+            const hasHr = opt && opt.getAttribute('data-homeroom') === 'true';
+            btnHr.style.display = hasHr ? 'inline-flex' : 'none';
+        }
+
+        function submitQuickInspect(event, targetPath) {
+            if (event) event.preventDefault();
+            const sel = document.getElementById('quickInspectTeacherSelect');
+            const form = document.getElementById('quickInspectForm');
+            if (!sel || !sel.value) {
+                alert('សូមជ្រើសរើសគណនីគ្រូបង្រៀនណាម្នាក់ជាមុនសិន!');
+                return false;
+            }
+            document.getElementById('quickInspectTargetPath').value = targetPath || '/';
+            form.action = '/admin/accounts/impersonate/' + encodeURIComponent(sel.value);
+            form.submit();
+            return true;
+        }
+
         function confirmRestore(form) {
             const fileInput = form.querySelector('input[name="sqlFile"]');
             if (!fileInput || !fileInput.files || fileInput.files.length === 0) {

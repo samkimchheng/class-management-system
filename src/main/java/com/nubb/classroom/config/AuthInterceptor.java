@@ -245,14 +245,65 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
 
-        // Admin paths require ADMIN role
+        // Admin paths require ADMIN role (or an active Admin currently inspecting a teacher account)
         if (path.startsWith("/admin")) {
             String role = (String) session.getAttribute("ACCOUNT_ROLE");
-            if (role == null || !"ADMIN".equals(role)) {
+            Long impAdminId = (Long) session.getAttribute("IMPERSONATOR_ADMIN_ID");
+
+            // Lightweight status endpoint used by the Admin Inspector banner on teacher pages
+            if ("/admin/api/impersonation-status".equals(path)) {
+                return true;
+            }
+
+            // Allow impersonation switch / exit when caller is ADMIN or currently impersonating as ADMIN
+            if (path.equals("/admin/impersonate/exit") || path.startsWith("/admin/accounts/impersonate/")) {
+                if ("ADMIN".equals(role) || impAdminId != null) {
+                    return true;
+                }
                 response.sendRedirect("/login");
                 return false;
             }
-            return true;
+
+            if ("ADMIN".equals(role)) {
+                return true;
+            }
+
+            // If Admin navigates directly back to /admin/** while inspecting a teacher, restore Admin session cleanly
+            if (impAdminId != null) {
+                Optional<Account> adminOpt = accountRepository.findById(impAdminId);
+                if (adminOpt.isPresent() && "ADMIN".equalsIgnoreCase(adminOpt.get().getRole())
+                        && !Boolean.FALSE.equals(adminOpt.get().getActive())) {
+                    Account adminAcc = adminOpt.get();
+                    session.setAttribute("ACCOUNT_ID", adminAcc.getId());
+                    session.setAttribute("ACCOUNT_ROLE", "ADMIN");
+                    session.setAttribute("ACCOUNT_NAME", adminAcc.getFullName());
+                    session.setAttribute("ACCOUNT_USERNAME", adminAcc.getUsername());
+                    session.setAttribute("VOCABULARY_PERMISSION", true);
+                    session.setAttribute("HOMEROOM_PERMISSION", true);
+                    if (adminAcc.getCurrentAcademicYear() != null && !adminAcc.getCurrentAcademicYear().trim().isEmpty()) {
+                        session.setAttribute("CURRENT_ACADEMIC_YEAR", adminAcc.getCurrentAcademicYear().trim());
+                    } else {
+                        session.setAttribute("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧");
+                    }
+                    session.removeAttribute("IMPERSONATOR_ADMIN_ID");
+                    session.removeAttribute("IMPERSONATOR_ADMIN_NAME");
+                    session.removeAttribute("IMPERSONATOR_ADMIN_USERNAME");
+                    session.removeAttribute("IMPERSONATOR_RETURN_URL");
+                    session.removeAttribute("LAST_SELECTED_CLASS");
+                    session.removeAttribute("STUDENT_SORT_MODE");
+                    ResponseCookie clrInspect = ResponseCookie.from("CMS_ADMIN_INSPECT", "")
+                            .httpOnly(false)
+                            .path("/")
+                            .maxAge(0)
+                            .sameSite("Lax")
+                            .build();
+                    response.addHeader(HttpHeaders.SET_COOKIE, clrInspect.toString());
+                    return true;
+                }
+            }
+
+            response.sendRedirect("/login");
+            return false;
         }
 
         // Allow student portal API and test routes if loggedInStudent is present (or teacher previewing vocabulary/phonics)
@@ -266,7 +317,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
             if (session.getAttribute("loggedInStudent") != null) {
                 session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
-            } else if (session.getAttribute("ACCOUNT_ID") != null) {
+            } else if (session.getAttribute("ACCOUNT_ID") != null && session.getAttribute("IMPERSONATOR_ADMIN_ID") == null) {
                 String r = (String) session.getAttribute("ACCOUNT_ROLE");
                 if (r == null || !"ADMIN".equalsIgnoreCase(r)) {
                     recordTeacherActivity((Long) session.getAttribute("ACCOUNT_ID"), path);
@@ -298,7 +349,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
             if (session.getAttribute("loggedInStudent") != null) {
                 session.setAttribute("ACTIVE_USER_MODE", "STUDENT");
-            } else if (session.getAttribute("ACCOUNT_ID") != null) {
+            } else if (session.getAttribute("ACCOUNT_ID") != null && session.getAttribute("IMPERSONATOR_ADMIN_ID") == null) {
                 String r = (String) session.getAttribute("ACCOUNT_ROLE");
                 if (r == null || !"ADMIN".equalsIgnoreCase(r)) {
                     recordTeacherActivity((Long) session.getAttribute("ACCOUNT_ID"), path);
@@ -327,10 +378,25 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         // Verify account is still active and keep VOCABULARY_PERMISSION synced with DB
         try {
+            Long impAdminId = (Long) session.getAttribute("IMPERSONATOR_ADMIN_ID");
+            boolean isAdminImpersonating = impAdminId != null;
+            if (isAdminImpersonating) {
+                Optional<Account> adminCheck = accountRepository.findById(impAdminId);
+                if (adminCheck.isEmpty() || !"ADMIN".equalsIgnoreCase(adminCheck.get().getRole())
+                        || Boolean.FALSE.equals(adminCheck.get().getActive())) {
+                    session.invalidate();
+                    ResponseCookie clrInspect = ResponseCookie.from("CMS_ADMIN_INSPECT", "")
+                            .httpOnly(false).path("/").maxAge(0).sameSite("Lax").build();
+                    response.addHeader(HttpHeaders.SET_COOKIE, clrInspect.toString());
+                    response.sendRedirect("/login");
+                    return false;
+                }
+            }
+
             Optional<Account> currentAccOpt = accountRepository.findById(accountId);
             if (currentAccOpt.isPresent()) {
                 Account curr = currentAccOpt.get();
-                if (Boolean.FALSE.equals(curr.getActive())) {
+                if (!isAdminImpersonating && Boolean.FALSE.equals(curr.getActive())) {
                     session.invalidate();
                     ResponseCookie clr = ResponseCookie.from("REMEMBER_ACCOUNT_ID", "")
                             .httpOnly(true)
@@ -349,7 +415,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 session.setAttribute("HOMEROOM_PERMISSION", canAccessHomeroom);
 
                 if (path.equals("/homeroom") || path.startsWith("/homeroom/") || path.startsWith("/api/homeroom")) {
-                    if (!canAccessHomeroom) {
+                    if (!canAccessHomeroom && !isAdminImpersonating) {
                         if (path.startsWith("/api/")) {
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Homeroom permission required");
                         } else {
@@ -358,7 +424,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                         return false;
                     }
                 }
-                if (!"ADMIN".equalsIgnoreCase(curr.getRole())) {
+                if (!isAdminImpersonating && !"ADMIN".equalsIgnoreCase(curr.getRole())) {
                     recordTeacherActivity(curr.getId(), path);
                 }
             }

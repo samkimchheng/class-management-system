@@ -91,9 +91,20 @@ public class AuthController {
             // Successful login: reset rate limiter
             loginRateLimiter.recordSuccess(clientIp);
 
-            // Clear any previous student session or cookie on the same browser
+            // Clear any previous student session, impersonation state, or cookie on the same browser
             session.removeAttribute("loggedInStudent");
+            session.removeAttribute("IMPERSONATOR_ADMIN_ID");
+            session.removeAttribute("IMPERSONATOR_ADMIN_NAME");
+            session.removeAttribute("IMPERSONATOR_ADMIN_USERNAME");
+            session.removeAttribute("IMPERSONATOR_RETURN_URL");
             session.setAttribute("ACTIVE_USER_MODE", "TEACHER");
+            ResponseCookie clearInspectCookie = ResponseCookie.from("CMS_ADMIN_INSPECT", "")
+                    .httpOnly(false)
+                    .path("/")
+                    .maxAge(0)
+                    .sameSite("Lax")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, clearInspectCookie.toString());
             ResponseCookie clearStudentCookie = ResponseCookie.from("REMEMBER_STUDENT_ID", "")
                     .httpOnly(true)
                     .path("/")
@@ -162,6 +173,14 @@ public class AuthController {
                 .sameSite("Lax")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, studentCookie.toString());
+
+        ResponseCookie inspectCookie = ResponseCookie.from("CMS_ADMIN_INSPECT", "")
+                .httpOnly(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, inspectCookie.toString());
 
         session.invalidate();
         return "redirect:/login";

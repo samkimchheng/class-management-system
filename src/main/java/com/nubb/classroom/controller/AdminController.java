@@ -16,8 +16,11 @@ import com.nubb.classroom.repository.StudentPhonicsProgressRepository;
 import com.nubb.classroom.repository.StudentRepository;
 import com.nubb.classroom.repository.StudentVocabularyProgressRepository;
 import com.nubb.classroom.repository.VocabularyWordRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -91,12 +94,21 @@ public class AdminController {
         List<LeaveRequest> leaveReqs = List.of();
         long pendingLeaves = 0;
         Map<Long, String> teacherNames = new HashMap<>();
+        List<Account> teacherAccounts = new java.util.ArrayList<>();
         try {
             for (Account acc : accountRepository.findAll()) {
                 if (acc.getId() != null && acc.getFullName() != null) {
                     teacherNames.put(acc.getId(), acc.getFullName());
                 }
+                if (acc.getId() != null && !"ADMIN".equalsIgnoreCase(acc.getRole())) {
+                    teacherAccounts.add(acc);
+                }
             }
+            teacherAccounts.sort((a, b) -> {
+                String na = a.getFullName() != null ? a.getFullName() : (a.getUsername() != null ? a.getUsername() : "");
+                String nb = b.getFullName() != null ? b.getFullName() : (b.getUsername() != null ? b.getUsername() : "");
+                return na.compareToIgnoreCase(nb);
+            });
             if (leaveRequestRepository != null) {
                 leaveReqs = leaveRequestRepository.findAllByOrderByCreatedAtDesc();
                 pendingLeaves = leaveReqs.stream().filter(LeaveRequest::isPending).count();
@@ -106,6 +118,7 @@ public class AdminController {
         model.addAttribute("totalLeaveRequests", leaveReqs.size());
         model.addAttribute("pendingLeaveRequests", pendingLeaves);
         model.addAttribute("teacherNames", teacherNames);
+        model.addAttribute("teacherAccounts", teacherAccounts);
         return "admin/dashboard";
     }
 
@@ -287,6 +300,229 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("successMessage", state + " សម្រាប់ «" + acc.getFullName() + "» ដោយជោគជ័យ!");
         }
         return "redirect:/admin/accounts";
+    }
+
+    // ================= Admin Direct Teacher Account Inspection (Impersonation) =================
+
+    private String sanitizeAdminReturnUrl(String url) {
+        if (url == null) return "/admin/accounts";
+        String clean = url.trim();
+        if (clean.startsWith("/admin") && !clean.startsWith("//") && !clean.contains("\n") && !clean.contains("\r")) {
+            return clean;
+        }
+        return "/admin/accounts";
+    }
+
+    private String sanitizeTeacherTargetPath(String targetPath) {
+        if (targetPath == null || targetPath.trim().isEmpty()) return "/";
+        String clean = targetPath.trim();
+        if (clean.startsWith("/") && !clean.startsWith("//") && !clean.startsWith("/admin")
+                && !clean.contains("\n") && !clean.contains("\r")) {
+            return clean;
+        }
+        return "/";
+    }
+
+    private Account resolveVerifiedAdmin(HttpSession session) {
+        Long adminId = (Long) session.getAttribute("IMPERSONATOR_ADMIN_ID");
+        if (adminId == null && "ADMIN".equalsIgnoreCase((String) session.getAttribute("ACCOUNT_ROLE"))) {
+            adminId = (Long) session.getAttribute("ACCOUNT_ID");
+        }
+        if (adminId == null) return null;
+        Optional<Account> opt = accountRepository.findById(adminId);
+        if (opt.isEmpty()) return null;
+        Account admin = opt.get();
+        if (!"ADMIN".equalsIgnoreCase(admin.getRole()) || Boolean.FALSE.equals(admin.getActive())) {
+            return null;
+        }
+        return admin;
+    }
+
+    @PostMapping("/accounts/impersonate/{id}")
+    public String impersonateTeacher(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "returnUrl", required = false) String returnUrl,
+            @RequestParam(value = "targetPath", required = false) String targetPath,
+            HttpServletRequest request,
+            HttpServletResponse response,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Account admin = resolveVerifiedAdmin(session);
+        if (admin == null) {
+            return "redirect:/login";
+        }
+
+        if (id == null || id.equals(admin.getId())) {
+            redirectAttributes.addFlashAttribute("error", "អ្នកកំពុងស្ថិតក្នុងគណនី Admin ផ្ទាល់ខ្លួនស្រាប់ហើយ!");
+            return "redirect:/admin/accounts";
+        }
+
+        Optional<Account> targetOpt = accountRepository.findById(id);
+        if (targetOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "រកមិនឃើញគណនីគ្រូដែលត្រូវចូលត្រួតពិនិត្យទេ!");
+            return "redirect:/admin/accounts";
+        }
+        Account target = targetOpt.get();
+
+        // Preserve original Admin info & return URL even when quick-switching from Teacher A to Teacher B
+        if (session.getAttribute("IMPERSONATOR_ADMIN_ID") == null) {
+            session.setAttribute("IMPERSONATOR_ADMIN_ID", admin.getId());
+            session.setAttribute("IMPERSONATOR_ADMIN_NAME", admin.getFullName());
+            session.setAttribute("IMPERSONATOR_ADMIN_USERNAME", admin.getUsername());
+            session.setAttribute("IMPERSONATOR_RETURN_URL", sanitizeAdminReturnUrl(returnUrl));
+        } else if (returnUrl != null && !returnUrl.trim().isEmpty()) {
+            session.setAttribute("IMPERSONATOR_RETURN_URL", sanitizeAdminReturnUrl(returnUrl));
+        }
+
+        // Switch active session to target teacher (keep REMEMBER_ACCOUNT_ID cookie belonging to Admin!)
+        session.removeAttribute("loggedInStudent");
+        session.removeAttribute("IS_EXTERNAL_LEARNER");
+        session.removeAttribute("loggedInExternalLearner");
+        session.removeAttribute("LAST_SELECTED_CLASS");
+        session.removeAttribute("STUDENT_SORT_MODE");
+
+        session.setAttribute("ACTIVE_USER_MODE", "TEACHER");
+        session.setAttribute("ACCOUNT_ID", target.getId());
+        session.setAttribute("ACCOUNT_ROLE", target.getRole() != null ? target.getRole() : "TEACHER");
+        session.setAttribute("ACCOUNT_NAME", target.getFullName() != null ? target.getFullName() : target.getUsername());
+        session.setAttribute("ACCOUNT_USERNAME", target.getUsername());
+        boolean canAccessVocab = PhonicsController.isAuthorizedForPhonics(target);
+        session.setAttribute("VOCABULARY_PERMISSION", canAccessVocab);
+        boolean canAccessHomeroom = Boolean.TRUE.equals(target.getHomeroomPermission())
+                || "ADMIN".equalsIgnoreCase(target.getRole());
+        session.setAttribute("HOMEROOM_PERMISSION", canAccessHomeroom);
+        if (target.getCurrentAcademicYear() != null && !target.getCurrentAcademicYear().trim().isEmpty()) {
+            session.setAttribute("CURRENT_ACADEMIC_YEAR", target.getCurrentAcademicYear().trim());
+        } else {
+            session.setAttribute("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧");
+        }
+
+        boolean isHttps = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+        ResponseCookie inspectCookie = ResponseCookie.from("CMS_ADMIN_INSPECT", "1")
+                .httpOnly(false)
+                .secure(isHttps)
+                .path("/")
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, inspectCookie.toString());
+
+        String safeTarget = sanitizeTeacherTargetPath(targetPath);
+        if ("/homeroom".equals(safeTarget) && !canAccessHomeroom) {
+            safeTarget = "/";
+        }
+        return "redirect:" + safeTarget;
+    }
+
+    @RequestMapping(value = "/impersonate/exit", method = {RequestMethod.GET, RequestMethod.POST})
+    public String exitImpersonation(
+            @RequestParam(value = "returnUrl", required = false) String returnUrl,
+            HttpServletResponse response,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Long adminId = (Long) session.getAttribute("IMPERSONATOR_ADMIN_ID");
+        String savedReturn = (String) session.getAttribute("IMPERSONATOR_RETURN_URL");
+        String finalReturn = sanitizeAdminReturnUrl(
+                (returnUrl != null && !returnUrl.trim().isEmpty()) ? returnUrl : savedReturn
+        );
+
+        ResponseCookie clearInspect = ResponseCookie.from("CMS_ADMIN_INSPECT", "")
+                .httpOnly(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, clearInspect.toString());
+
+        if (adminId == null) {
+            if ("ADMIN".equalsIgnoreCase((String) session.getAttribute("ACCOUNT_ROLE"))) {
+                return "redirect:" + finalReturn;
+            }
+            return "redirect:/login";
+        }
+
+        Optional<Account> adminOpt = accountRepository.findById(adminId);
+        if (adminOpt.isEmpty() || !"ADMIN".equalsIgnoreCase(adminOpt.get().getRole())
+                || Boolean.FALSE.equals(adminOpt.get().getActive())) {
+            session.invalidate();
+            return "redirect:/login";
+        }
+
+        Account admin = adminOpt.get();
+        session.setAttribute("ACCOUNT_ID", admin.getId());
+        session.setAttribute("ACCOUNT_ROLE", "ADMIN");
+        session.setAttribute("ACCOUNT_NAME", admin.getFullName());
+        session.setAttribute("ACCOUNT_USERNAME", admin.getUsername());
+        session.setAttribute("VOCABULARY_PERMISSION", true);
+        session.setAttribute("HOMEROOM_PERMISSION", true);
+        if (admin.getCurrentAcademicYear() != null && !admin.getCurrentAcademicYear().trim().isEmpty()) {
+            session.setAttribute("CURRENT_ACADEMIC_YEAR", admin.getCurrentAcademicYear().trim());
+        } else {
+            session.setAttribute("CURRENT_ACADEMIC_YEAR", "២០២៦-២០២៧");
+        }
+        session.removeAttribute("IMPERSONATOR_ADMIN_ID");
+        session.removeAttribute("IMPERSONATOR_ADMIN_NAME");
+        session.removeAttribute("IMPERSONATOR_ADMIN_USERNAME");
+        session.removeAttribute("IMPERSONATOR_RETURN_URL");
+        session.removeAttribute("LAST_SELECTED_CLASS");
+        session.removeAttribute("STUDENT_SORT_MODE");
+
+        redirectAttributes.addFlashAttribute("successMessage", "✅ បានត្រឡប់មកផ្ទាំងអ្នកគ្រប់គ្រង (Admin) វិញដោយជោគជ័យ!");
+        return "redirect:" + finalReturn;
+    }
+
+    @GetMapping("/api/impersonation-status")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getImpersonationStatus(HttpSession session) {
+        Long impAdminId = (Long) session.getAttribute("IMPERSONATOR_ADMIN_ID");
+        if (impAdminId == null) {
+            return ResponseEntity.ok(Map.of("impersonating", false));
+        }
+
+        Optional<Account> adminOpt = accountRepository.findById(impAdminId);
+        if (adminOpt.isEmpty() || !"ADMIN".equalsIgnoreCase(adminOpt.get().getRole())
+                || Boolean.FALSE.equals(adminOpt.get().getActive())) {
+            return ResponseEntity.ok(Map.of("impersonating", false));
+        }
+
+        Long teacherId = (Long) session.getAttribute("ACCOUNT_ID");
+        Account teacher = teacherId != null ? accountRepository.findById(teacherId).orElse(null) : null;
+
+        List<Map<String, Object>> teachers = new java.util.ArrayList<>();
+        try {
+            List<Account> all = accountRepository.findAll();
+            all.sort((a, b) -> {
+                String na = a.getFullName() != null ? a.getFullName() : (a.getUsername() != null ? a.getUsername() : "");
+                String nb = b.getFullName() != null ? b.getFullName() : (b.getUsername() != null ? b.getUsername() : "");
+                return na.compareToIgnoreCase(nb);
+            });
+            for (Account acc : all) {
+                if (acc.getId() == null || acc.getId().equals(impAdminId)) continue;
+                if ("ADMIN".equalsIgnoreCase(acc.getRole())) continue;
+                Map<String, Object> item = new java.util.LinkedHashMap<>();
+                item.put("id", acc.getId());
+                item.put("fullName", acc.getFullName() != null ? acc.getFullName() : acc.getUsername());
+                item.put("username", acc.getUsername() != null ? acc.getUsername() : "");
+                item.put("subject", acc.getSubject() != null ? acc.getSubject() : "");
+                item.put("homeroom", Boolean.TRUE.equals(acc.getHomeroomPermission()));
+                item.put("active", !Boolean.FALSE.equals(acc.getActive()));
+                teachers.add(item);
+            }
+        } catch (Exception ignored) {}
+
+        Map<String, Object> res = new java.util.LinkedHashMap<>();
+        res.put("impersonating", true);
+        res.put("adminName", adminOpt.get().getFullName());
+        res.put("teacherId", teacherId);
+        res.put("teacherName", teacher != null && teacher.getFullName() != null ? teacher.getFullName() : session.getAttribute("ACCOUNT_NAME"));
+        res.put("teacherUsername", teacher != null ? teacher.getUsername() : session.getAttribute("ACCOUNT_USERNAME"));
+        res.put("teacherSubject", teacher != null && teacher.getSubject() != null ? teacher.getSubject() : "");
+        res.put("hasHomeroom", teacher != null && (Boolean.TRUE.equals(teacher.getHomeroomPermission()) || "ADMIN".equalsIgnoreCase(teacher.getRole())));
+        res.put("isActive", teacher == null || !Boolean.FALSE.equals(teacher.getActive()));
+        res.put("returnUrl", sanitizeAdminReturnUrl((String) session.getAttribute("IMPERSONATOR_RETURN_URL")));
+        res.put("teachers", teachers);
+        return ResponseEntity.ok(res);
     }
 
     // ================= Feedback Management (មតិកែលម្អប្រព័ន្ធ) =================

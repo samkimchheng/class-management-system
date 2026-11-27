@@ -240,7 +240,107 @@
                     }
                 }
                 @media print {
-                    #cmsMobileBottomNav, #cmsTopNavProgress { display: none !important; }
+                    #cmsMobileBottomNav, #cmsTopNavProgress, #cmsAdminInspectBar { display: none !important; }
+                    body.cms-admin-inspect-active { padding-top: 0 !important; }
+                }
+                #cmsAdminInspectBar {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    z-index: 99990;
+                    background: linear-gradient(90deg, #0f172a 0%, #1e293b 55%, #065f46 100%);
+                    color: #ffffff;
+                    border-bottom: 2px solid #10b981;
+                    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.28);
+                    padding: 7px 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    flex-wrap: wrap;
+                    gap: 8px 12px;
+                    font-family: 'Kantumruy Pro', 'Battambang', sans-serif;
+                    font-size: 0.86rem;
+                    box-sizing: border-box;
+                }
+                #cmsAdminInspectBar .cms-ins-left {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                    min-width: 0;
+                }
+                #cmsAdminInspectBar .cms-ins-badge {
+                    background: rgba(16, 185, 129, 0.22);
+                    border: 1px solid #34d399;
+                    color: #a7f3d0;
+                    padding: 2px 8px;
+                    border-radius: 999px;
+                    font-weight: 800;
+                    font-size: 0.78rem;
+                    white-space: nowrap;
+                }
+                #cmsAdminInspectBar .cms-ins-name {
+                    font-weight: 800;
+                    color: #fef08a;
+                    font-size: 0.92rem;
+                }
+                #cmsAdminInspectBar .cms-ins-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                }
+                #cmsAdminInspectBar select.cms-ins-select {
+                    background: #ffffff;
+                    color: #0f172a;
+                    border: 1.5px solid #34d399;
+                    border-radius: 7px;
+                    padding: 4px 9px;
+                    font-family: inherit;
+                    font-size: 0.82rem;
+                    font-weight: 700;
+                    max-width: 230px;
+                    cursor: pointer;
+                }
+                #cmsAdminInspectBar a.cms-ins-btn-hr {
+                    background: linear-gradient(135deg, #d97706, #f59e0b);
+                    color: #ffffff !important;
+                    text-decoration: none !important;
+                    padding: 5px 11px;
+                    border-radius: 7px;
+                    font-weight: 800;
+                    font-size: 0.8rem;
+                    white-space: nowrap;
+                }
+                #cmsAdminInspectBar a.cms-ins-btn-exit {
+                    background: linear-gradient(135deg, #dc2626, #ef4444);
+                    color: #ffffff !important;
+                    text-decoration: none !important;
+                    padding: 5px 12px;
+                    border-radius: 7px;
+                    font-weight: 800;
+                    font-size: 0.82rem;
+                    border: 1px solid #fca5a5;
+                    white-space: nowrap;
+                    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+                }
+                body.cms-admin-inspect-active {
+                    padding-top: var(--cms-inspect-bar-h, 46px) !important;
+                }
+                body.cms-admin-inspect-active .sidebar {
+                    top: var(--cms-inspect-bar-h, 46px) !important;
+                    height: calc(100vh - var(--cms-inspect-bar-h, 46px)) !important;
+                }
+                @media screen and (max-width: 768px) {
+                    #cmsAdminInspectBar {
+                        padding: 6px 10px;
+                        font-size: 0.78rem;
+                    }
+                    #cmsAdminInspectBar select.cms-ins-select {
+                        max-width: 155px;
+                        font-size: 0.76rem;
+                    }
                 }
                 @keyframes cmsTopBarPulse {
                     0% { width: 12%; }
@@ -394,6 +494,110 @@
                         parent.insertBefore(wrap, tbl);
                         wrap.appendChild(tbl);
                     });
+                }
+
+                // 1b. Admin Direct Teacher Account Inspector Bar (ONLY runs when CMS_ADMIN_INSPECT=1 cookie is present)
+                const hasInspectCookie = document.cookie.split(';').some((c) => c.trim() === 'CMS_ADMIN_INSPECT=1');
+                if (hasInspectCookie && !window.location.pathname.startsWith('/admin')) {
+                    fetch('/admin/api/impersonation-status', { credentials: 'same-origin', cache: 'no-store' })
+                        .then((r) => (r.ok ? r.json() : null))
+                        .then((info) => {
+                            if (!info || !info.impersonating) {
+                                document.cookie = 'CMS_ADMIN_INSPECT=; Max-Age=0; path=/';
+                                return;
+                            }
+                            if (document.getElementById('cmsAdminInspectBar')) return;
+
+                            const bar = document.createElement('div');
+                            bar.id = 'cmsAdminInspectBar';
+                            bar.className = 'no-print';
+
+                            const left = document.createElement('div');
+                            left.className = 'cms-ins-left';
+
+                            const badge = document.createElement('span');
+                            badge.className = 'cms-ins-badge';
+                            badge.textContent = '🛡️ របៀបត្រួតពិនិត្យ Admin';
+                            left.appendChild(badge);
+
+                            const txt = document.createElement('span');
+                            const nameSpan = document.createElement('span');
+                            nameSpan.className = 'cms-ins-name';
+                            nameSpan.textContent = info.teacherName || info.teacherUsername || 'គ្រូបង្រៀន';
+                            txt.appendChild(document.createTextNode('កំពុងមើលគណនី៖ '));
+                            txt.appendChild(nameSpan);
+                            if (info.teacherUsername) {
+                                const usr = document.createElement('span');
+                                usr.style.cssText = 'color:#cbd5e1;font-size:0.8rem;margin-left:5px;';
+                                usr.textContent = '(@' + info.teacherUsername + ')';
+                                txt.appendChild(usr);
+                            }
+                            if (info.isActive === false) {
+                                const dis = document.createElement('span');
+                                dis.style.cssText = 'background:#991b1b;color:#fecaca;padding:1px 7px;border-radius:999px;font-size:0.74rem;font-weight:700;margin-left:6px;';
+                                dis.textContent = '🔴 គណនីផ្អាក';
+                                txt.appendChild(dis);
+                            }
+                            left.appendChild(txt);
+                            bar.appendChild(left);
+
+                            const actions = document.createElement('div');
+                            actions.className = 'cms-ins-actions';
+
+                            if (Array.isArray(info.teachers) && info.teachers.length > 0) {
+                                const sel = document.createElement('select');
+                                sel.className = 'cms-ins-select';
+                                sel.title = 'ប្តូរទៅត្រួតពិនិត្យគណនីគ្រូផ្សេងភ្លាមៗ';
+                                info.teachers.forEach((t) => {
+                                    const opt = document.createElement('option');
+                                    opt.value = String(t.id);
+                                    opt.textContent = (t.fullName || t.username) + (t.homeroom ? ' 👑' : '') + (t.active === false ? ' [ផ្អាក]' : '');
+                                    if (String(t.id) === String(info.teacherId)) opt.selected = true;
+                                    sel.appendChild(opt);
+                                });
+                                sel.addEventListener('change', () => {
+                                    const nextId = sel.value;
+                                    if (!nextId || String(nextId) === String(info.teacherId)) return;
+                                    const f = document.createElement('form');
+                                    f.method = 'POST';
+                                    f.action = '/admin/accounts/impersonate/' + encodeURIComponent(nextId);
+                                    const ret = document.createElement('input');
+                                    ret.type = 'hidden';
+                                    ret.name = 'returnUrl';
+                                    ret.value = info.returnUrl || '/admin/accounts';
+                                    f.appendChild(ret);
+                                    document.body.appendChild(f);
+                                    f.submit();
+                                });
+                                actions.appendChild(sel);
+                            }
+
+                            if (info.hasHomeroom && !window.location.pathname.startsWith('/homeroom')) {
+                                const hrLink = document.createElement('a');
+                                hrLink.href = '/homeroom';
+                                hrLink.className = 'cms-ins-btn-hr';
+                                hrLink.textContent = '👑 គ្រូបន្ទុក';
+                                actions.appendChild(hrLink);
+                            }
+
+                            const exitLink = document.createElement('a');
+                            exitLink.href = '/admin/impersonate/exit';
+                            exitLink.className = 'cms-ins-btn-exit';
+                            exitLink.textContent = '🔙 ត្រឡប់ទៅផ្ទាំង Admin';
+                            actions.appendChild(exitLink);
+
+                            bar.appendChild(actions);
+                            document.body.insertBefore(bar, document.body.firstChild);
+
+                            const syncBarHeight = () => {
+                                const h = bar.offsetHeight || 46;
+                                document.documentElement.style.setProperty('--cms-inspect-bar-h', h + 'px');
+                                document.body.classList.add('cms-admin-inspect-active');
+                            };
+                            syncBarHeight();
+                            window.addEventListener('resize', syncBarHeight);
+                        })
+                        .catch(() => {});
                 }
             } catch (e) {}
         });

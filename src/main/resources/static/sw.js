@@ -1,5 +1,5 @@
-// CMS Progressive Web App Service Worker (v9 - Clean UTF-8 Manifest & Network-First Assets)
-const CACHE_NAME = 'cms-pwa-v9';
+// CMS Progressive Web App Service Worker (v10 - Admin Direct Account Inspector + Network-First Assets)
+const CACHE_NAME = 'cms-pwa-v10';
 const STATIC_ASSETS = [
   '/icons/icon-192.png?v=20261124r',
   '/icons/icon-512.png?v=20261124r',

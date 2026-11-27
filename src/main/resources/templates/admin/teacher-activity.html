@@ -112,7 +112,7 @@
     </style>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1e3a8a">
-    <script src="/js/pwa-install.js?v=20261124a" defer></script>
+    <script src="/js/pwa-install.js?v=20261127a" defer></script>
 </head>
 <body>
     <div class="sidebar" id="adminSidebar">
@@ -246,10 +246,11 @@
                                 <th>ភាគរយសរុបក្នុងប្រព័ន្ធ</th>
                                 <th>ចូលប្រើចុងក្រោយ</th>
                                 <th>ទិន្នន័យសរុបក្នុងប្រព័ន្ធ</th>
+                                <th style="text-align:center;">ត្រួតពិនិត្យ</th>
                             </tr>
                         </thead>
                         <tbody id="teacherTableBody">
-                            <tr><td colspan="9" style="text-align:center;padding:24px;color:#64748b;">កំពុងផ្ទុកទិន្នន័យ...</td></tr>
+                            <tr><td colspan="10" style="text-align:center;padding:24px;color:#64748b;">កំពុងផ្ទុកទិន្នន័យ...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -303,7 +304,7 @@
             } catch (e) {
                 console.error(e);
                 document.getElementById('teacherTableBody').innerHTML =
-                    '<tr><td colspan="9" style="text-align:center;color:#dc2626;padding:20px;">មានបញ្ហាក្នុងការទាញទិន្នន័យ សូមផ្ទុកឡើងវិញ!</td></tr>';
+                    '<tr><td colspan="10" style="text-align:center;color:#dc2626;padding:20px;">មានបញ្ហាក្នុងការទាញទិន្នន័យ សូមផ្ទុកឡើងវិញ!</td></tr>';
             }
         }
 
@@ -371,7 +372,7 @@
             document.getElementById('tableCountNote').textContent = `បង្ហាញ ${list.length} / ${(cachedData.teachers || []).length} គណនី`;
             const tbody = document.getElementById('teacherTableBody');
             if (!list.length) {
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:#64748b;">គ្មានទិន្នន័យគ្រូត្រូវនឹងលក្ខខណ្ឌស្វែងរក</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:#64748b;">គ្មានទិន្នន័យគ្រូត្រូវនឹងលក្ខខណ្ឌស្វែងរក</td></tr>';
                 return;
             }
 
@@ -423,6 +424,24 @@
                         </td>
                         <td style="white-space:nowrap;font-size:0.83rem;color:#334155;">${esc(t.lastUsedAt)}</td>
                         <td>${sysInfo}</td>
+                        <td style="text-align:center;white-space:nowrap;">
+                            <div style="display:flex;flex-direction:column;gap:5px;align-items:center;">
+                                <form action="/admin/accounts/impersonate/${t.id}" method="post" style="margin:0;">
+                                    <input type="hidden" name="returnUrl" value="/admin/teacher-activity">
+                                    <button type="submit" style="background:linear-gradient(135deg,#059669,#0d9488);color:#fff;border:none;padding:6px 11px;border-radius:7px;font-weight:700;font-size:0.8rem;cursor:pointer;font-family:inherit;white-space:nowrap;" title="ចូលត្រួតពិនិត្យគណនីគ្រូនេះដោយផ្ទាល់">
+                                        👁️ ចូលមើល
+                                    </button>
+                                </form>
+                                ${t.isHomeroom ? `
+                                <form action="/admin/accounts/impersonate/${t.id}" method="post" style="margin:0;">
+                                    <input type="hidden" name="returnUrl" value="/admin/teacher-activity">
+                                    <input type="hidden" name="targetPath" value="/homeroom">
+                                    <button type="submit" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;border:none;padding:5px 10px;border-radius:7px;font-weight:700;font-size:0.76rem;cursor:pointer;font-family:inherit;white-space:nowrap;" title="ចូលផ្ទាំងគ្រូបន្ទុកថ្នាក់ដោយផ្ទាល់">
+                                        👑 គ្រូបន្ទុក
+                                    </button>
+                                </form>` : ''}
+                            </div>
+                        </td>
                     </tr>`;
             }).join('');
         }

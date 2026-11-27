@@ -81,7 +81,7 @@
     <meta name="apple-mobile-web-app-title" content="CMS">
     <meta name="application-name" content="CMS">
     <meta name="theme-color" content="#1e3a8a">
-    <script src="/js/pwa-install.js?v=20261124a" defer></script>
+    <script src="/js/pwa-install.js?v=20261127a" defer></script>
 </head>
 <body>
         <!-- Sidebar -->
@@ -195,6 +195,8 @@
                         <span style="font-size: 0.9rem; color: #64748b;">(គ្រប់គ្រង កែប្រែឈ្មោះ លេខសម្ងាត់ មុខវិជ្ជា ឬបិទ/បើកសិទ្ធិចូលប្រើប្រាស់របស់គ្រូនីមួយៗ)</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" id="accountSearchInput" oninput="filterAccountsTable(this.value)" placeholder="🔍 ស្វែងរកឈ្មោះគ្រូ ឬ Username..."
+                               style="padding: 7px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.88rem; min-width: 220px; outline: none;">
                         <!-- Summary Badges -->
                         <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 8px; font-weight: 700; color: #334155; font-size: 0.9rem; border: 1px solid #cbd5e1; display: flex; align-items: center; gap: 6px;">
                             <span>សរុប៖ <b th:text="${#lists.size(accounts)}">0</b></span>
@@ -244,11 +246,12 @@
                                 <th style="text-align: center; width: 115px;">ស្ថានភាព</th>
                                 <th style="text-align: center; width: 135px;">សិទ្ធិវាក្យសព្ទ & ប្រកប</th>
                                 <th style="text-align: center; width: 130px;">🎓 សិទ្ធិគ្រូបន្ទុក</th>
-                                <th style="text-align: center; width: 220px;">សកម្មភាព</th>
+                                <th style="text-align: center; width: 300px;">សកម្មភាព</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr th:each="acc, iterStat : ${accounts}">
+                        <tbody id="accountsTableBody">
+                            <tr th:each="acc, iterStat : ${accounts}" class="account-row"
+                                th:data-search="${(acc.fullName ?: '') + ' ' + (acc.username ?: '') + ' ' + (acc.subject ?: '') + ' ' + (acc.teachingClasses ?: '')}">
                                 <td th:text="${iterStat.count}" style="text-align: center; font-weight: 800; color: #475569;">១</td>
                                 <td style="font-weight: 700; color: #0f172a;">
                                     <span th:text="${acc.fullName}">ឈ្មោះ</span>
@@ -309,6 +312,18 @@
                                     </span>
                                 </td>
                                 <td style="text-align: center; white-space: nowrap;">
+                                    <!-- Direct Inspect / Impersonate Button (Admin enters teacher account without password) -->
+                                    <form th:if="${acc.id != session.ACCOUNT_ID}"
+                                          th:action="@{/admin/accounts/impersonate/{id}(id=${acc.id})}"
+                                          method="post" style="display:inline; margin:0 4px 0 0;">
+                                        <input type="hidden" name="returnUrl" value="/admin/accounts">
+                                        <button type="submit" class="btn"
+                                                style="background: linear-gradient(135deg, #059669 0%, #0d9488 100%); color: white; padding: 6px 12px; font-size: 0.84rem; border-radius: 6px; font-weight: 700; cursor: pointer;"
+                                                title="ចូលត្រួតពិនិត្យគណនីគ្រូនេះដោយផ្ទាល់ (មិនចាំបាច់វាយឈ្មោះ ឬលេខសម្ងាត់)">
+                                            👁️ ចូលមើល
+                                        </button>
+                                    </form>
+
                                     <!-- Edit Button (Available for all accounts) -->
                                     <button type="button" class="btn"
                                              th:data-id="${acc.id}"
@@ -353,7 +368,7 @@
                                 </td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(accounts)}">
-                                <td colspan="10" style="text-align: center; padding: 30px; color: #64748b;">មិនទាន់មានគណនីគ្រូណាមួយត្រូវបានបង្កើតនៅឡើយទេ</td>
+                                <td colspan="12" style="text-align: center; padding: 30px; color: #64748b;">មិនទាន់មានគណនីគ្រូណាមួយត្រូវបានបង្កើតនៅឡើយទេ</td>
                             </tr>
                         </tbody>
                     </table>
@@ -450,6 +465,14 @@
     </div>
 
     <script>
+        function filterAccountsTable(query) {
+            const q = (query || '').trim().toLowerCase();
+            document.querySelectorAll('#accountsTableBody tr.account-row').forEach(tr => {
+                const hay = (tr.getAttribute('data-search') || '').toLowerCase();
+                tr.style.display = (!q || hay.includes(q)) ? '' : 'none';
+            });
+        }
+
         function openEditModal(id, fullName, username, password, role, subject, teachingClasses, phone, telegram, vocabPerm, homeroomPerm) {
             document.getElementById('editAccountId').value = id || '';
             document.getElementById('editFullName').value = fullName || '';
