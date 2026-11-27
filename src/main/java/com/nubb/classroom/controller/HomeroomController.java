@@ -48,6 +48,9 @@ public class HomeroomController {
     @Autowired
     private HomeroomClassAdminRepository homeroomClassAdminRepository;
 
+    @Autowired
+    private com.nubb.classroom.service.StoredMediaService storedMediaService;
+
     private Long getAccountId() {
         return (Long) session.getAttribute("ACCOUNT_ID");
     }
@@ -531,14 +534,7 @@ public class HomeroomController {
             return ResponseEntity.badRequest().body(Map.of("error", "សូមជ្រើសរើសរូបថត"));
         }
         try {
-            File dir = new File("./uploads/images");
-            if (!dir.exists()) dir.mkdirs();
-            String orig = file.getOriginalFilename() != null ? file.getOriginalFilename() : "student.jpg";
-            String cleanName = orig.replaceAll("[^a-zA-Z0-9.-]", "_");
-            String filename = "stu_" + studentId + "_" + System.currentTimeMillis() + "_" + cleanName;
-            Path path = dir.toPath().resolve(filename);
-            Files.write(path, file.getBytes());
-            String photoUrl = "/uploads/images/" + filename;
+            String photoUrl = storedMediaService.saveMedia("images", file, accountId, "stu_" + studentId);
 
             HomeroomStudentExtra ex = homeroomStudentExtraRepository
                     .findByAccountIdAndStudentId(accountId, studentId)

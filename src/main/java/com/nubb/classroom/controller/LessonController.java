@@ -47,6 +47,9 @@ public class LessonController {
     private com.nubb.classroom.config.StandardLessonSeeder standardLessonSeeder;
 
     @Autowired
+    private com.nubb.classroom.service.StoredMediaService storedMediaService;
+
+    @Autowired
     private HttpSession session;
 
     private String getCurrentAcademicYear() {
@@ -520,16 +523,22 @@ public class LessonController {
 
         // Handle Main MP3 File Upload if provided
         if (audioFile != null && !audioFile.isEmpty()) {
-            String uploadedPath = saveMp3File(audioFile);
-            if (uploadedPath != null) {
-                lesson.setAudioUrl(uploadedPath);
+            String uploadedPath = saveMp3File(audioFile, accountId);
+            if (uploadedPath == null) {
+                return ResponseEntity.status(500).body(Map.of("error", "មិនអាចរក្សាទុកឯកសារសំឡេង MP3 បានទេ! សូមព្យាយាមម្តងទៀត"));
             }
+            lesson.setAudioUrl(uploadedPath);
         } else if (audioUrl != null) {
             String aUrl = audioUrl.trim();
             if (!aUrl.isEmpty() && !aUrl.startsWith("http://") && !aUrl.startsWith("https://") && !aUrl.startsWith("data:") && !aUrl.startsWith("/")) {
                 aUrl = "/" + aUrl;
             }
             lesson.setAudioUrl(aUrl.isEmpty() ? null : aUrl);
+            if (!aUrl.isEmpty()) {
+                storedMediaService.ensureUrlPersistedToDatabase(aUrl, accountId);
+            }
+        } else if (lesson.getAudioUrl() != null) {
+            storedMediaService.ensureUrlPersistedToDatabase(lesson.getAudioUrl(), accountId);
         }
 
         lessonRepository.save(lesson);
@@ -591,25 +600,37 @@ public class LessonController {
                 }
 
                 // Check for new uploaded MP3 file for this transcript
+                boolean uploadedNewAudio = false;
                 if (tsAudioFile != null && i < tsAudioFile.size()) {
                     MultipartFile f = tsAudioFile.get(i);
                     if (f != null && !f.isEmpty()) {
-                        String uploaded = saveMp3File(f);
-                        if (uploaded != null) {
-                            tAudioUrl = uploaded;
+                        String uploaded = saveMp3File(f, accountId);
+                        if (uploaded == null) {
+                            return ResponseEntity.status(500).body(Map.of("error", "មិនអាចរក្សាទុកឯកសារសំឡេង MP3 សម្រាប់អត្ថបទ «" + tTitle.trim() + "» បានទេ!"));
                         }
+                        tAudioUrl = uploaded;
+                        uploadedNewAudio = true;
                     }
+                }
+                if (!uploadedNewAudio && tAudioUrl != null && !tAudioUrl.isEmpty()) {
+                    storedMediaService.ensureUrlPersistedToDatabase(tAudioUrl, accountId);
                 }
 
                 // Check for new uploaded Image file for this transcript
+                boolean uploadedNewImage = false;
                 if (tsImageFile != null && i < tsImageFile.size()) {
                     MultipartFile imgF = tsImageFile.get(i);
                     if (imgF != null && !imgF.isEmpty()) {
-                        String uploadedImg = saveImageFile(imgF);
-                        if (uploadedImg != null) {
-                            tImageUrl = uploadedImg;
+                        String uploadedImg = saveImageFile(imgF, accountId);
+                        if (uploadedImg == null) {
+                            return ResponseEntity.status(500).body(Map.of("error", "មិនអាចរក្សាទុករូបភាពសម្រាប់អត្ថបទ «" + tTitle.trim() + "» បានទេ!"));
                         }
+                        tImageUrl = uploadedImg;
+                        uploadedNewImage = true;
                     }
+                }
+                if (!uploadedNewImage && tImageUrl != null && !tImageUrl.isEmpty()) {
+                    storedMediaService.ensureUrlPersistedToDatabase(tImageUrl, accountId);
                 }
 
                 LessonTranscript lt = new LessonTranscript(lesson.getId(), tTitle.trim(), tContent, tKhmerContent, tAudioUrl, tImageUrl, i + 1);
@@ -751,40 +772,20 @@ public class LessonController {
         return ResponseEntity.status(400).body(Map.of("error", "ឯកសារ MP3 ធំពេក! សូមជ្រើសរើសឯកសារទំហំតូចជាង 100MB"));
     }
 
-    private String saveMp3File(MultipartFile file) {
+    private String saveMp3File(MultipartFile file, Long accountId) {
         try {
-            String uploadDir = "./uploads/audio/";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-            String orig = (file.getOriginalFilename() != null && !file.getOriginalFilename().trim().isEmpty())
-                    ? file.getOriginalFilename() : "audio.mp3";
-            String cleanName = orig.replaceAll("[^a-zA-Z0-9.-]", "_");
-            String filename = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + "_" + cleanName;
-            Path filePath = dir.toPath().resolve(filename);
-            Files.write(filePath, file.getBytes());
-            return "/uploads/audio/" + filename;
+            return storedMediaService.saveMedia("audio", file, accountId, null);
         } catch (Exception e) {
+            System.err.println(">>> [LessonController] Failed to persist MP3 audio: " + e.getMessage());
             return null;
         }
     }
 
-    private String saveImageFile(MultipartFile file) {
+    private String saveImageFile(MultipartFile file, Long accountId) {
         try {
-            String uploadDir = "./uploads/images/";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-            String orig = (file.getOriginalFilename() != null && !file.getOriginalFilename().trim().isEmpty())
-                    ? file.getOriginalFilename() : "image.jpg";
-            String cleanName = orig.replaceAll("[^a-zA-Z0-9.-]", "_");
-            String filename = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + "_" + cleanName;
-            Path filePath = dir.toPath().resolve(filename);
-            Files.write(filePath, file.getBytes());
-            return "/uploads/images/" + filename;
+            return storedMediaService.saveMedia("images", file, accountId, null);
         } catch (Exception e) {
+            System.err.println(">>> [LessonController] Failed to persist lesson image: " + e.getMessage());
             return null;
         }
     }
