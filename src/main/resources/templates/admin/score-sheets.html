@@ -137,8 +137,10 @@
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
         .pdf-score-table td.sum-slash {
-            background: linear-gradient(to top left, transparent calc(50% - 1px), #2563eb calc(50% - 0.5px), #2563eb calc(50% + 0.5px), transparent calc(50% + 1px)) !important;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            background: #ffffff !important;
+            padding: 0 !important;
+            line-height: 0;
+            vertical-align: middle;
         }
         .pdf-score-table td.sum-borderless { border: none !important; background: #fff !important; }
 
@@ -820,8 +822,9 @@
                     leftCell = `<td colspan="3" class="sum-borderless"></td>`;
                 }
                 let gCells = '';
+                const slashSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="25" viewBox="0 0 42 26" preserveAspectRatio="none" style="display:block;"><line x1="0" y1="26" x2="42" y2="0" stroke="#334155" stroke-width="0.9"/></svg>`;
                 PERIOD_GROUPS.forEach(p => {
-                    gCells += `<td style="font-weight:400;font-size:13.5px;color:#000;">${g}</td><td class="sum-slash"></td>` + (p.hasRank ? `<td class="sum-gray"></td>` : '');
+                    gCells += `<td style="font-weight:400;font-size:13.5px;color:#000;">${g}</td><td class="sum-slash">${slashSvg}</td>` + (p.hasRank ? `<td class="sum-gray"></td>` : '');
                 });
                 html += `<tr style="height:26px;">${leftCell}${gCells}</tr>`;
             });
